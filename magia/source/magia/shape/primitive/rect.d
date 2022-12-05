@@ -35,10 +35,10 @@ class RectPrototype {
     this() {
         // Rectangle vertices
         vec2[] vertices = [
-	        vec2( 1.0f,  1.0f),
-	        vec2(-1.0f,  1.0f),
-	        vec2( 1.0f, -1.0f),
-	        vec2(-1.0f, -1.0f)
+            vec2( 1.0f,  1.0f),
+            vec2(-1.0f,  1.0f),
+            vec2( 1.0f, -1.0f),
+            vec2(-1.0f, -1.0f)
         ];
 
         _VAO = new VAO();
@@ -47,7 +47,7 @@ class RectPrototype {
         VBO _VBO = new VBO(vertices);
         _VAO.linkAttributes(_VBO, 0, 2, GL_FLOAT, vec2.sizeof, null);
 
-        _shader = new Shader("primitive.vert", "primitive.frag");
+        _shader = new Shader("rectangle.vert", "rectangle.frag");
         _sizeUniform = glGetUniformLocation(_shader.id, "size");
         _positionUniform = glGetUniformLocation(_shader.id, "position");
         _colorUniform = glGetUniformLocation(_shader.id, "color");
