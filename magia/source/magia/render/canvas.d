@@ -2,7 +2,9 @@ module magia.render.canvas;
 
 import std.string;
 import bindbc.opengl, bindbc.sdl;
-import magia.core, magia.render.window;
+import magia.core;
+import magia.render.shader;
+import magia.render.window;
 
 /// Base rendering class.
 final class Canvas {
@@ -14,9 +16,9 @@ final class Canvas {
         both
     }
 
-    /// Blending algorithm \
-    /// none: Paste everything without transparency \
-    /// additive: Add color value with the destination \
+    /// Blending algorithm
+    /// none: Paste everything without transparency
+    /// additive: Add color value with the destination
     /// alpha: Paste everything with transparency (Default one)
     enum Blend {
         none,
@@ -28,8 +30,16 @@ final class Canvas {
         GLuint _texId;
         GLuint _sp2;
         GLuint _vao;
-        GLint _sizeUniform, _positionUniform, _clipUniform, _rotUniform,
-            _flipUniform, _colorUniform;
+
+        Shader _shader;
+
+        GLint _sizeUniform;
+        GLint _positionUniform;
+        GLint _clipUniform;
+        GLint _rotUniform;
+        GLint _flipUniform;
+        GLint _colorUniform;
+
         uint _width, _height;
         Vec2u _renderSize;
     }
@@ -61,23 +71,33 @@ final class Canvas {
     }
 
     /// The view position inside the canvas.
-    Vec2f position = Vec2f.zero, /// The size of the view inside of the canvas.
-        size = Vec2f.zero;
-    /// Is the Canvas rendered from its center or from the top left corner ? \
+    Vec2f position = Vec2f.zero;
+    
+    /// The size of the view inside of the canvas.
+    Vec2f size = Vec2f.zero;
+
+    /// Is the Canvas rendered from its center or from the top left corner ?
     /// (only change the render position, not the view).
     bool isCentered = true;
+
     /// The base color when nothing is rendered.
     Color color = Color.black;
+
     /// The base opacity when nothing is rendered.
     float alpha = 0f;
+
     /// Mirroring property.
     Flip flip = Flip.none;
+
     /// Blending algorithm.
     Blend blend = Blend.alpha;
 
+    /// Constructor
     this(uint width_, uint height_) {
-        if (width_ >= 2048u || height_ >= 2048u)
+        if (width_ >= 2048u || height_ >= 2048u) {
             throw new Exception("Canvas render size exceeds limits.");
+        }
+
         _renderSize = Vec2u(width_, height_);
         _width = width_;
         _height = height_;
@@ -94,19 +114,22 @@ final class Canvas {
         glGenTextures(1, &_texId);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, _texId);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0, GL_RGBA,
-                GL_UNSIGNED_BYTE, null);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
         glGenerateMipmap(GL_TEXTURE_2D);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+        // Frame buffer
         glGenFramebuffers(1, &_frameId);
+
         pushCanvas(this, false);
+
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texId, 0);
         GLenum[1] drawBuff = [GL_COLOR_ATTACHMENT0];
         glDrawBuffers(1, drawBuff.ptr);
+
         popCanvas();
 
         // Vertices
@@ -125,7 +148,7 @@ final class Canvas {
         glEnableVertexAttribArray(0);
 
         {
-            immutable char* vshader = toStringz("
+            /*immutable char* vshader = toStringz("
             #version 400
             layout (location = 0) in vec2 vp;
             out vec2 st;
@@ -168,12 +191,22 @@ final class Canvas {
             glAttachShader(_sp2, fs);
             glAttachShader(_sp2, vs);
             glLinkProgram(_sp2);
+
             _sizeUniform = glGetUniformLocation(_sp2, "size");
             _positionUniform = glGetUniformLocation(_sp2, "position");
             _clipUniform = glGetUniformLocation(_sp2, "clip");
             _rotUniform = glGetUniformLocation(_sp2, "rot");
             _flipUniform = glGetUniformLocation(_sp2, "flip");
-            _colorUniform = glGetUniformLocation(_sp2, "color");
+            _colorUniform = glGetUniformLocation(_sp2, "color");*/
+
+            _shader = new Shader("canvas.vert", "canvas.frag");
+
+            _sizeUniform = glGetUniformLocation(_shader.id, "size");
+            _positionUniform = glGetUniformLocation(_shader.id, "position");
+            _clipUniform = glGetUniformLocation(_shader.id, "clip");
+            _rotUniform = glGetUniformLocation(_shader.id, "rot");
+            _flipUniform = glGetUniformLocation(_shader.id, "flip");
+            _colorUniform = glGetUniformLocation(_shader.id, "color");
         }
     }
 
@@ -182,29 +215,33 @@ final class Canvas {
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
-    void draw(Vec2f renderPosition, Vec2f renderSize_, Vec4i clip, float angle,
-            Vec2f anchor = Vec2f.half) const {
-
+    /// Draw call
+    void draw(Vec2f renderPosition, Vec2f renderSize_, Vec4i clip, float angle, Vec2f anchor = Vec2f.half) const {
+        // Handle flip
         final switch (flip) with (Flip) {
-        case none:
-            glUniform2f(_flipUniform, 0f, 0f);
-            break;
-        case horizontal:
-            glUniform2f(_flipUniform, 1f, 0f);
-            break;
-        case vertical:
-            glUniform2f(_flipUniform, 0f, 1f);
-            break;
-        case both:
-            glUniform2f(_flipUniform, 1f, 1f);
-            break;
+            case none:
+                glUniform2f(_flipUniform, 0f, 0f);
+                break;
+            case horizontal:
+                glUniform2f(_flipUniform, 1f, 0f);
+                break;
+            case vertical:
+                glUniform2f(_flipUniform, 0f, 1f);
+                break;
+            case both:
+                glUniform2f(_flipUniform, 1f, 1f);
+                break;
         }
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, _texId);
-        glUseProgram(_sp2);
-        renderSize_ = (transformScale() * renderSize_) / screenSize(); //Replace with transform canvas space
-        renderPosition = transformRenderSpace(renderPosition) / screenSize(); //Replace with transform canvas space
+        _shader.activate();
+        //glUseProgram(_sp2);
+
+        // @TODO: Replace with transform canvas space
+        renderSize_ = (transformScale() * renderSize_) / screenSize();
+        renderPosition = transformRenderSpace(renderPosition) / screenSize();
+
         renderPosition -= anchor * renderSize_;
         glUniform2f(_sizeUniform, renderSize_.x, renderSize_.y);
         glUniform2f(_positionUniform, renderPosition.x, renderPosition.y);
@@ -223,21 +260,24 @@ final class Canvas {
         glUniform2f(_rotUniform, c, s);
         glBindVertexArray(_vao);
 
+        // Handle blending mode
         glEnable(GL_BLEND);
         final switch (blend) with (Blend) {
-        case none:
-            glBlendFuncSeparate(GL_SRC_COLOR, GL_ZERO, GL_ONE, GL_ZERO);
-            glBlendEquation(GL_FUNC_ADD);
-            break;
-        case additive:
-            glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_COLOR, GL_ZERO, GL_ONE);
-            glBlendEquation(GL_FUNC_ADD);
-            break;
-        case alpha:
-            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-            glBlendEquation(GL_FUNC_ADD);
-            break;
+            case none:
+                glBlendFuncSeparate(GL_SRC_COLOR, GL_ZERO, GL_ONE, GL_ZERO);
+                glBlendEquation(GL_FUNC_ADD);
+                break;
+            case additive:
+                glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_COLOR, GL_ZERO, GL_ONE);
+                glBlendEquation(GL_FUNC_ADD);
+                break;
+            case alpha:
+                glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+                glBlendEquation(GL_FUNC_ADD);
+                break;
         }
+
+        // Draw call
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 }
