@@ -4,6 +4,7 @@ import std.conv : to;
 import std.math;
 import std.algorithm.comparison : min, max;
 
+import app;
 import grimoire;
 import magia.core;
 import magia.ui;
@@ -483,7 +484,7 @@ private void _ui_append_root(GrCall call) {
         return;
     }
 
-    appendRoot(ui);
+    _UIManager.appendRoot(ui);
 }
 
 private void _ui_append_child(GrCall call) {

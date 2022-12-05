@@ -1,3 +1,5 @@
+module app;
+
 import std.stdio;
 
 import std.conv : to;
@@ -6,6 +8,8 @@ import std.datetime, core.thread;
 import magia, grimoire;
 
 import sorcier.script;
+
+UIManager _UIManager;
 
 private {
     float _deltatime = 1f;
@@ -37,11 +41,10 @@ void runApplication() {
     initializeEvents();
     _tickStartFrame = Clock.currStdTime();
 
+    // Inits
     initFont();
-
     initializeScene();
-
-    initUI();
+    _UIManager = new UIManager();
 
     // Script
     _stdlib = grLoadStdLibrary();
@@ -86,7 +89,7 @@ void runApplication() {
         }
 
         updateScene(_deltatime);
-        updateUI(_deltatime);
+        _UIManager.update(_deltatime);
 
         // Rendu
         // 3D
@@ -95,7 +98,7 @@ void runApplication() {
 
         // 2D
         setup2DRender();
-        drawUI();
+        _UIManager.draw();
 
         rectPrototype.drawFilledRect(Vec2f(200f, 200f),
                                      Vec2f(50f, 20f),
@@ -121,7 +124,7 @@ void runApplication() {
 
 bool loadScript() {
     resetScene();
-    removeRoots();
+    _UIManager.removeRoots();
 
     GrCompiler compiler = new GrCompiler;
     compiler.addLibrary(_stdlib);
