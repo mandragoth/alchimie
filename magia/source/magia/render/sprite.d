@@ -170,9 +170,9 @@ final class Sprite {
 
     /// Draw sprite at given position
     void draw(mat4 transform, float posX, float posY, float sizeX, float sizeY,
-        Vec4i clip, Flip flip = Flip.none,
-        Blend blend = Blend.alpha, Color color = Color.white, float alpha = 1f) const {
-
+              Vec4i clip, Flip flip = Flip.none, Blend blend = Blend.alpha,
+              Color color = Color.white, float alpha = 1f) const {
+        // Select flip
         final switch (flip) with (Flip) {
             case none:
                 glUniform2f(_flipUniform, 0f, 0f);
@@ -210,18 +210,18 @@ final class Sprite {
 
         glEnable(GL_BLEND);
         final switch (blend) with (Blend) {
-        case none:
-            glBlendFuncSeparate(GL_SRC_COLOR, GL_ZERO, GL_ONE, GL_ZERO);
-            glBlendEquation(GL_FUNC_ADD);
-            break;
-        case additive:
-            glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_COLOR, GL_ZERO, GL_ONE);
-            glBlendEquation(GL_FUNC_ADD);
-            break;
-        case alpha:
-            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-            glBlendEquation(GL_FUNC_ADD);
-            break;
+            case none:
+                glBlendFuncSeparate(GL_SRC_COLOR, GL_ZERO, GL_ONE, GL_ZERO);
+                glBlendEquation(GL_FUNC_ADD);
+                break;
+            case additive:
+                glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_COLOR, GL_ZERO, GL_ONE);
+                glBlendEquation(GL_FUNC_ADD);
+                break;
+            case alpha:
+                glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+                glBlendEquation(GL_FUNC_ADD);
+                break;
         }
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
     }

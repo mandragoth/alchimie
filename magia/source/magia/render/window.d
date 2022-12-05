@@ -10,7 +10,7 @@ import std.stdio;
 import std.string;
 import std.exception;
 import bindbc.opengl, bindbc.sdl, bindbc.sdl.image, bindbc.sdl.mixer, bindbc.sdl.ttf;
-import magia.core, magia.common, magia.render.canvas, magia.render.postprocess;
+import magia.core, magia.common, magia.render.postprocess;
 
 static {
     /// SDL window
@@ -61,16 +61,6 @@ static {
         return _sdlWindow;
     }
 }
-
-private struct CanvasReference {
-	Vec2f position;
-	Vec2f renderSize;
-	Vec2f size;
-	Canvas canvas;
-	uint frameId;
-}
-
-static private CanvasReference[] _canvases;
 
 /// Window display mode.
 enum DisplayMode {
@@ -130,19 +120,6 @@ void createWindow(const Vec2u windowSize, string title) {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
 
-    // Enable blending
-    /*glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
-
-    // Deactivate vsync
-    // SDL_GL_SetSwapInterval(0);
-
-    CanvasReference canvasRef;
-	canvasRef.position = cast(Vec2f)(windowSize) / 2;
-	canvasRef.size = cast(Vec2f)(windowSize);
-	canvasRef.renderSize = cast(Vec2f)(windowSize);
-	_canvases ~= canvasRef;
-
     _windowSize = windowSize;
     _screenSize = cast(Vec2f)(windowSize);
     _centerScreen = _screenSize / 2f;
@@ -177,25 +154,13 @@ void setWindowTitle(string title) {
     SDL_SetWindowTitle(_sdlWindow, toStringz(title));
 }
 
-/// Update the window size. \
-/// If `isLogical` is set, the actual window won't be resized, only the canvas will.
-void setWindowSize(const Vec2u windowSize) {
-    resizeWindow(windowSize);
-    SDL_SetWindowSize(_sdlWindow, windowSize.x, windowSize.y);
-}
-
-/// Call this to update canvas size when window's size is changed externally.
+/// Resize windows
 void resizeWindow(const Vec2u windowSize) {
     _windowSize = windowSize;
     _screenSize = cast(Vec2f)(windowSize);
     _centerScreen = _screenSize / 2f;
 
     glViewport(0, 0, windowSize.x, windowSize.y);
-    /*if (_canvases.length) {
-		_canvases[0].position = cast(Vec2f)(windowSize) / 2;
-		_canvases[0].size = cast(Vec2f)(windowSize);
-		_canvases[0].renderSize = cast(Vec2f) windowSize;
-	}*/
 }
 
 /// Reset viewport
@@ -294,86 +259,20 @@ void renderWindow() {
     SDL_GL_SwapWindow(_sdlWindow);
 }
 
-/// Push a render canvas on the stack.
-/// Everything after that and before the next popCanvas will be rendered onto this.
-/// You **must** call popCanvas after that.
-void pushCanvas(Canvas canvas, bool clear = true) {
-	CanvasReference canvasRef;
-	canvasRef.position = canvas.position;
-	canvasRef.size = canvas.size;
-	canvasRef.renderSize = Vec2f(canvas.width, canvas.height);
-	canvasRef.canvas = canvas;
-	canvasRef.frameId = canvas._frameId;
-	_canvases ~= canvasRef;
-
-	glBindFramebuffer(GL_FRAMEBUFFER, canvasRef.frameId);
-	canvas._isTargetOnStack = true;
-
-	if (clear) {
-		canvas.clear();
-	}
-}
-
-/// Called after pushCanvas to remove the render canvas from the stack.
-/// When there is no canvas on the stack, everything is displayed directly on screen.
-void popCanvas() {
-	assert(_canvases.length > 1, "Attempt to pop the main canvas.");
-	_canvases[$ - 1].canvas._isTargetOnStack = false;
-	_canvases.length--;
-
-	if (_canvases.length == 1) {
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, _windowSize.x, _windowSize.y);
-	}
-	else {
-		glBindFramebuffer(GL_FRAMEBUFFER, _canvases[$ - 1].frameId);
-		glViewport(0, 0, _canvases[$ - 1].canvas.width, _canvases[$ - 1].canvas.height);
-	}
-}
-
 /// Change coordinate system from inside to outside the canvas.
 Vec2f transformRenderSpace(const Vec2f pos) {
-	const CanvasReference* canvasRef = &_canvases[$ - 1];
-	return (pos - canvasRef.position) * (
-			canvasRef.renderSize / canvasRef.size) + canvasRef.renderSize * 0.5f;
-}
+    Vec2f size = cast(Vec2f)(_windowSize);
+    Vec2f position = size / 2f;
 
-/// Change coordinate system from outside to inside the canvas.
-Vec2f transformCanvasSpace(const Vec2f pos, const Vec2f renderPos) {
-	const CanvasReference* canvasRef = &_canvases[$ - 1];
-	return (pos - renderPos) * (canvasRef.size / canvasRef.renderSize) + canvasRef.position;
-}
-
-/// Change coordinate system from outside to insside the canvas.
-Vec2f transformCanvasSpace(const Vec2f pos) {
-	const CanvasReference* canvasRef = &_canvases[$ - 1];
-	return pos * (canvasRef.size / canvasRef.renderSize);
+    // @TODO apply canvas scale ratio
+	return (pos - position) + size * 0.5f;
 }
 
 /// Change the scale from outside to inside the canvas.
 Vec2f transformScale() {
-	const CanvasReference* canvasRef = &_canvases[$ - 1];
-	return canvasRef.renderSize / canvasRef.size;
+    // @TODO apply canvas scale ratio
+	return Vec2f.one;
 }
-
-/// Get the canvas size.
-Vec2f transformSize() {
-	const CanvasReference* canvasRef = &_canvases[$ - 1];
-	return canvasRef.size;
-}
-
-/// Check if something is inside the actual canvas rendering area.
-/*bool isVisible(const Vec2f targetPosition, const Vec2f targetSize) {
-	const CanvasReference* canvasRef = &_canvases[$ - 1];
-	return (((canvasRef.position.x - canvasRef.size.x * .5f) < (
-			targetPosition.x + targetSize.x * .5f))
-			&& ((canvasRef.position.x + canvasRef.size.x * .5f) > (
-				targetPosition.x - targetSize.x * .5f))
-			&& ((canvasRef.position.y - canvasRef.size.y * .5f) < (
-				targetPosition.y + targetSize.y * .5f))
-			&& ((canvasRef.position.y + canvasRef.size.y * .5f) > (
-				targetPosition.y - targetSize.y * .5f)));
-}*/
 
 /// Sets shader main entry point
 void setShaderProgram(GLuint shaderProgram) {

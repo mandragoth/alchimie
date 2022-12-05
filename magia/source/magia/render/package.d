@@ -1,7 +1,6 @@
 module magia.render;
 
 public {
-    import magia.render.canvas;
     import magia.render.camera;
     import magia.render.drawable;
     import magia.render.entity;
