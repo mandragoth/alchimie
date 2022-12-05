@@ -1,0 +1,8 @@
+function fib(int n) (int) {
+    if(n < 2) return n;
+    return self(n - 1) + self(n - 2);
+}
+
+event onLoad() {
+    34:fib:print;
+}

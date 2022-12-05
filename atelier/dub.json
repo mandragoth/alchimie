@@ -1,0 +1,18 @@
+{
+	"authors": [
+		"Enalye",
+		"Jonath"
+	],
+	"copyright": "Copyright © 2022, Enalye, Jonath",
+	"description": "Éditeur de Magia",
+	"license": "Zlib",
+	"name": "atelier",
+    "targetType": "executable",
+    "targetName": "atelier",
+    "targetPath": "./bin$ARCH",
+    "dependencies": {
+        "magia": {
+            "path": "../magia"
+        }
+    }
+}

@@ -1,0 +1,20 @@
+/** 
+ * Droits d’auteur: Enalye
+ * Licence: Zlib
+ * Auteur: Enalye
+ */
+
+event index() {
+    var n = [1, 2, 3, 4];
+
+    assert(n[2] == 3);
+
+    n[1] = 12;
+    n[1] ++;
+
+    assert(n[1] == 13);
+}
+
+event concatenation() {
+    //assert(false, "aaaaaa");
+}

@@ -1,0 +1,21 @@
+{
+    "authors": [
+        "Enalye",
+        "Jonath"
+    ],
+    "copyright": "Copyright © 2022, Enalye, Jonath",
+    "description": "Module d'exécution de Magia",
+    "license": "Zlib",
+    "name": "sorcier",
+    "targetType": "executable",
+    "targetName": "sorcier",
+    "targetPath": "./bin$ARCH",
+    "dependencies": {
+        "magia": {
+            "path": "../magia"
+        },
+        "grimoire": {
+            "path": "../grimoire"
+        }
+    }
+}
