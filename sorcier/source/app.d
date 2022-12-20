@@ -37,7 +37,7 @@ void main() {
 
 /// Lance l’application
 void runApplication() {
-    createWindow(Vec2u(800, 600), "Magia - Runtime");
+    createWindow(Vec2u(800, 800), "Magia - Runtime");
     initializeEvents();
     _tickStartFrame = Clock.currStdTime();
 

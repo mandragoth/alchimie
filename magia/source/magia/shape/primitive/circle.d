@@ -27,6 +27,7 @@ class CirclePrototype {
         VBO _VBO;
         Shader _shader;
 
+        GLint _resolutionUniform;
         GLint _positionUniform;
         GLint _sizeUniform;
         GLint _colorUniform;
@@ -49,6 +50,7 @@ class CirclePrototype {
         _VAO.linkAttributes(_VBO, 0, 2, GL_FLOAT, vec2.sizeof, null);
 
         _shader = new Shader("circle.vert", "circle.frag");
+        _resolutionUniform = glGetUniformLocation(_shader.id, "resolution");
         _sizeUniform = glGetUniformLocation(_shader.id, "size");
         _positionUniform = glGetUniformLocation(_shader.id, "position");
         _colorUniform = glGetUniformLocation(_shader.id, "color");
@@ -58,6 +60,9 @@ class CirclePrototype {
     void drawFilledCircle(Vec2f center, float radius, Color color = Color.white, float alpha = 1f) {
         _shader.activate();
 
+        Vec2i resolution = getWindowSize();
+
+        glUniform2f(_resolutionUniform, resolution.x, resolution.y);
         glUniform1f(_sizeUniform, radius);
         glUniform2f(_positionUniform, center.x, center.y);
         glUniform4f(_colorUniform, color.r, color.g, color.b, alpha);
