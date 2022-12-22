@@ -11,7 +11,12 @@ module magia.core.util;
 public import std.math;
 public import std.algorithm.comparison : clamp, min, max;
 
-import magia.core.vec2;
+import magia.core.vec;
+
+/// Ratio to multiply with to get a value in radians from a value in degrees.
+enum double degToRad = std.math.PI / 180.0;
+/// Ratio to multiply with to get a value in degrees from a value in radians.
+enum double radToDeg = 180.0 / std.math.PI;
 
 /// The square root of 2, then divided by 2.
 enum sqrt2_2 = std.math.sqrt(2.0) / 2.0;
@@ -46,12 +51,14 @@ float angleLerp(float a, float b, float t) {
 }
 
 /// Scale a vector to fit the specified vector while keeping its ratio.
-Vec2f scaleToFit(Vec2f src, Vec2f dst) {
+vec2 scaleToFit(vec2 src, vec2 dst) {
     float scale;
-    if (dst.x / dst.y > src.x / src.y)
+    if (dst.x / dst.y > src.x / src.y) {
         scale = dst.y / src.y;
-    else
+    } else {
         scale = dst.x / src.x;
+    }
+        
     return src * scale;
 }
 

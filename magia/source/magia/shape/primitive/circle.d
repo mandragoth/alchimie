@@ -1,10 +1,10 @@
 module magia.shape.primitive.circle;
 
 import bindbc.opengl;
-import gl3n.linalg;
 
-import magia.core.vec2;
 import magia.core.color;
+import magia.core.vec;
+
 import magia.render.mesh;
 import magia.render.scene;
 import magia.render.shader;
@@ -57,10 +57,10 @@ class CirclePrototype {
     }
 
     /// Render a circle
-    void drawFilledCircle(Vec2f center, float radius, Color color = Color.white, float alpha = 1f) {
+    void drawFilledCircle(vec2 center, float radius, Color color = Color.white, float alpha = 1f) {
         _shader.activate();
 
-        Vec2i resolution = getWindowSize();
+        vec2i resolution = getWindowSize();
 
         glUniform2f(_resolutionUniform, resolution.x, resolution.y);
         glUniform1f(_sizeUniform, radius);

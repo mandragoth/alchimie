@@ -16,7 +16,7 @@ public import std.algorithm.comparison : clamp;
 import bindbc.sdl;
 
 import magia.core.stream;
-import magia.core.vec3;
+import magia.core.vec;
 
 /// An RGB color structure.
 struct Color {
@@ -102,11 +102,11 @@ struct Color {
         }
 
         /// Convert to Vec3
-        Vec3f rgb() const {
-            return Vec3f(_r, _g, _b);
+        vec3 rgb() const {
+            return vec3(_r, _g, _b);
         }
         /// Convert from Vec3
-        Vec3f rgb(Vec3f v) {
+        vec3 rgb(vec3 v) {
             set(v.x, v.y, v.z);
             return v;
         }
@@ -124,7 +124,7 @@ struct Color {
     }
 
     /// Sets the RGB values, between 0 and 1.
-    this(Vec3f v) {
+    this(vec3 v) {
         _r = clamp(v.x, 0f, 1f);
         _g = clamp(v.y, 0f, 1f);
         _b = clamp(v.z, 0f, 1f);

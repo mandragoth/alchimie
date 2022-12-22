@@ -1,7 +1,6 @@
 module magia.shape.planet;
 
 import bindbc.opengl;
-import gl3n.linalg;
 
 import magia.core;
 
@@ -33,6 +32,7 @@ final class Planet : Sphere {
         float _minHeight;
     }
 
+    /// Constructor
     this(int resolution, float radius, vec3 noiseOffset, int nbLayers,
         float strength, float roughness, float persistence, float minHeight) {
         _noiseOffset = noiseOffset;

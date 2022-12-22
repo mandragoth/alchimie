@@ -1,6 +1,8 @@
 module magia.core.transform;
 
-import gl3n.linalg;
+import magia.core.mat;
+import magia.core.quat;
+import magia.core.vec;
 
 /// Transform structure
 struct Transform {
@@ -17,7 +19,7 @@ struct Transform {
     mat4 model;
 
     /// Constructor
-    this(vec3 position_, quat rotation_ = quat.identity, vec3 scale_ = vec3(1.0f, 1.0f, 1.0f)) {
+    this(vec3 position_, quat rotation_ = quat.identity, vec3 scale_ = vec3.one) {
         position = position_;
         rotation = rotation_;
         scale = scale_;
@@ -25,8 +27,8 @@ struct Transform {
     }
 
     /// Constructor (given model)
-    this(mat4 model_, vec3 position_ = vec3(0.0f, 0.0f, 0.0f),
-         quat rotation_ = quat.identity, vec3 scale_ = vec3(1.0f, 1.0f, 1.0f)) {
+    this(mat4 model_, vec3 position_ = vec3.zero,
+         quat rotation_ = quat.identity, vec3 scale_ = vec3.one) {
         model = model_;
         position = position_;
         rotation = rotation_;

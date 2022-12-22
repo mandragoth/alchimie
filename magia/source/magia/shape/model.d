@@ -1,10 +1,10 @@
 module magia.shape.model;
 
 import bindbc.opengl;
-import gl3n.linalg;
 
+import magia.core.mat;
 import magia.core.transform;
-import magia.core.vec3;
+import magia.core.vec;
 import magia.render.entity;
 import magia.render.model;
 import magia.render.shader;

@@ -3,7 +3,6 @@ module magia.render.scene;
 import std.stdio;
 
 import bindbc.opengl;
-import gl3n.linalg;
 
 import magia.core, magia.render;
 import magia.common.event;
@@ -156,7 +155,7 @@ void updateScene(float deltaTime) {
     }
 
     /// Look
-    const Vec2f deltaPos = getRelativeMousePos(); // @TODO mouse pos here
+    const vec2 deltaPos = getRelativeMousePos(); // @TODO mouse pos here
 
     const float rotX = sensitivity * deltaPos.y;
     const float rotY = sensitivity * deltaPos.x;
@@ -179,6 +178,7 @@ void updateScene(float deltaTime) {
     }
 }
 
+/// Draw 3D part of the scene
 void drawScene() {
     if (!_camera || !_globalLight) {
         return;
@@ -228,9 +228,6 @@ void drawScene() {
 }
 
 /// @TODO: Bouger ça à un endroit plus approprié.
-alias Quaternionf = Quaternion!(float);
-
-/// @TODO: Bouger ça à un endroit plus approprié.
 /// Rotates p around axis r by angle
 vec3 rotate(vec3 p, float angle, vec3 r) {
     const float halfAngle = angle / 2;
@@ -238,9 +235,9 @@ vec3 rotate(vec3 p, float angle, vec3 r) {
     const float cosRot = cos(halfAngle);
     const float sinRot = sin(halfAngle);
 
-    const Quaternionf q1 = Quaternionf(0f, p.x, p.y, p.z);
-    const Quaternionf q2 = Quaternionf(cosRot, r.x * sinRot, r.y * sinRot, r.z * sinRot);
-    const Quaternionf q3 = q2 * q1 * q2.conjugated;
+    const quat q1 = quat(0f, p.x, p.y, p.z);
+    const quat q2 = quat(cosRot, r.x * sinRot, r.y * sinRot, r.z * sinRot);
+    const quat q3 = q2 * q1 * q2.conjugated;
 
     return vec3(q3.x, q3.y, q3.z);
 }

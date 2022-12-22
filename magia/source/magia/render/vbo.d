@@ -1,8 +1,9 @@
 module magia.render.vbo;
 
 import bindbc.opengl;
-import gl3n.linalg;
 
+import magia.core.mat;
+import magia.core.vec;
 import magia.render.vertex;
 
 /// Class holding a Vertex Buffer Object

@@ -55,7 +55,7 @@ final class Label : UIElement {
 
     override void draw(mat4 transform) {
         Color color = Color.white;
-        Vec2f pos = Vec2f.zero;
+        vec2 pos = vec2.zero;
 
         dchar prevChar;
         foreach (dchar ch; _text) {
@@ -78,7 +78,7 @@ final class Label : UIElement {
     }
 
     private void reload() {
-        Vec2f totalSize_ = Vec2f(0f, _font.ascent - _font.descent) * _charScale;
+        vec2 totalSize_ = vec2(0f, _font.ascent - _font.descent) * _charScale;
         float lineWidth = 0f;
 
         dchar prevChar;

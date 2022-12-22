@@ -1,10 +1,9 @@
 module magia.shape.primitive.rect;
 
 import bindbc.opengl;
-import gl3n.linalg;
 
-import magia.core.vec2;
 import magia.core.color;
+import magia.core.vec;
 import magia.render.mesh;
 import magia.render.scene;
 import magia.render.shader;
@@ -54,7 +53,7 @@ class RectPrototype {
     }
 
     /// Render the rectangle
-    void drawFilledRect(Vec2f origin, Vec2f size, Color color = Color.white, float alpha = 1f) {
+    void drawFilledRect(vec2 origin, vec2 size, Color color = Color.white, float alpha = 1f) {
         origin = transformRenderSpace(origin) / screenSize();
         size = size * transformScale() / screenSize();
 

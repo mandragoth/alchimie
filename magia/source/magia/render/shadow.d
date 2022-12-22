@@ -1,9 +1,10 @@
 module magia.render.shadow;
 
 import bindbc.opengl;
-import gl3n.linalg;
 
+import magia.core.mat;
 import magia.core.transform;
+import magia.core.vec;
 import magia.render.entity;
 import magia.render.fbo;
 import magia.render.mesh;

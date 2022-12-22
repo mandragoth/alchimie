@@ -4,9 +4,10 @@ import std.conv;
 import std.stdio;
 
 import bindbc.opengl;
-import gl3n.linalg;
 
+import magia.core.mat;
 import magia.core.transform;
+import magia.core.vec;
 import magia.render.vao;
 import magia.render.vbo;
 import magia.render.ebo;
