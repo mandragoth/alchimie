@@ -18,8 +18,8 @@ class Shader {
 
     /// Constructor
     this(string vertexFile, string fragmentFile) {
-        const char* vertexSource = toStringz(readText("assets/shader/" ~ vertexFile));
-        const char* fragmentSource = toStringz(readText("assets/shader/" ~ fragmentFile));
+        const char* vertexSource = toStringz(readText("../assets/shader/" ~ vertexFile));
+        const char* fragmentSource = toStringz(readText("../assets/shader/" ~ fragmentFile));
 
         // Setup shader program
         _vertexShader = glCreateShader(GL_VERTEX_SHADER);

@@ -282,11 +282,30 @@ T.vectorType dot(T)(const T veca, const T vecb) @safe pure nothrow if(is_vector!
     return toReturn;
 }
 
+/// Returns the angle between two vectors
+T.vectorType angle(T)(const T veca, const T vecb) @safe pure nothrow if(is_vector!T) {
+    return acos(dot(veca.normalized, vecb.normalized));
+}
+
 /// Calculates the cross product of two 3-dimensional vectors
 T cross(T)(const T veca, const T vecb) @safe pure nothrow if(is_vector!T && (T.dimension == 3)) {
    return T(veca.y * vecb.z - vecb.y * veca.z,
             veca.z * vecb.x - vecb.z * veca.x,
             veca.x * vecb.y - vecb.x * veca.y);
+}
+
+/// Rotates p around axis r by angle
+T rotate(T)(const T p, const T r, float angle) @safe pure nothrow if(is_vector!T && (T.dimension == 3)) {
+    const float halfAngle = angle / 2;
+
+    const float cosRot = cos(halfAngle);
+    const float sinRot = sin(halfAngle);
+
+    const quat q1 = quat(0f, p.x, p.y, p.z);
+    const quat q2 = quat(cosRot, r.x * sinRot, r.y * sinRot, r.z * sinRot);
+    const quat q3 = q2 * q1 * q2.conjugated;
+
+    return vec3(q3.x, q3.y, q3.z);
 }
 
 alias vec2 = Vector!(float, 2);

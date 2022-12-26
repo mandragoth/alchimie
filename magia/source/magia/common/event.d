@@ -399,18 +399,18 @@ void destroyApplication() {
     destroyWindow();
 }
 
-/// Check if the application's still running.
+/// Check if the application's still running
 bool isRunning() {
     return _isRunning;
 }
 
-/// Dispatch an event to GUIs.
+/// Dispatch an event to GUIs
 void sendEvent(EventType eventType) {
     Event event = Event(eventType);
     _globalEvents ~= event;
 }
 
-/// Dispatch an event to GUIs.
+/// Dispatch an event to GUIs
 void sendEvent(Event event) {
     _globalEvents ~= event;
 }
@@ -424,14 +424,14 @@ void sendCustomEvent(string id, void* data = null) {
     _globalEvents ~= event;
 }
 
-/// Capture interruptions.
+/// Capture interruptions
 extern (C) void signalHandler(int sig) nothrow @nogc @system {
     cast(void) sig;
     _isRunning = false;
 }
 
-/// Initialize everything mouse, keyboard or controller related.
-void initializeEvents() {
+/// Initialize everything mouse, keyboard or controller related
+void initEvents() {
     signal(SIGINT, &signalHandler);
     _isRunning = true;
     _mousePosition = vec2.zero;
@@ -443,17 +443,17 @@ void initializeEvents() {
     SDL_ShowCursor(SDL_DISABLE);
 }
 
-/// Closes everything mouse, keyboard or controller related.
+/// Closes everything mouse, keyboard or controller related
 void destroyEvents() {
     destroyControllers();
 }
 
-/// Updates everything mouse, keyboard or controller related.
+/// Updates everything mouse, keyboard or controller related
 void updateEvents(float deltaTime) {
     updateControllers(deltaTime);
 }
 
-/// Process and dispatch window, input, etc events.
+/// Process and dispatch window, input, etc events
 bool processEvents() {
     Event event;
     SDL_Event sdlEvent;
@@ -473,7 +473,7 @@ bool processEvents() {
             event.type = EventType.quit;
             //handleGuiElementEvent(event);
             destroyWindow();
-            //No operation involving the SDL after this.
+            //No operation involving the SDL after this
             return false;
         case SDL_KEYDOWN:
             if (sdlEvent.key.keysym.scancode >= _keys.length)

@@ -37,7 +37,7 @@ class Texture {
         }
     }
 
-    /// Default constructor
+    /// Base constructor (used for inheriting classes)
     this(uint width, uint height, GLenum target, string type_) {
         _width = width;
         _height = height;
@@ -158,7 +158,7 @@ class Texture {
         glTexParameteri(_target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
         for (int i = 0; i < paths.length; ++i) {
-            string path = "assets/skybox/" ~ paths[i];
+            string path = "../assets/skybox/" ~ paths[i];
 
             SDL_Surface *surface = IMG_Load(toStringz(path));
             enforce(surface, "can't load image `" ~ path ~ "`");

@@ -72,8 +72,8 @@ enum DisplayMode {
 /// Set to true to debug load
 const bool debugLoad = false;
 
-/// Loads all libraries and creates the application window
-void createWindow(const vec2u windowSize, string title) {
+/// Load SDL and OpenGL (@TODO move)
+void loadSDLOpenGL() {
     SDLSupport sdlSupport = loadSDL();
     SDLImageSupport imageSupport = loadSDLImage();
     SDLTTFSupport ttfSupport = loadSDLTTF();
@@ -86,25 +86,30 @@ void createWindow(const vec2u windowSize, string title) {
         writeln(mixerSupport);
     }
 
+    /// SDL load
     enforce(sdlSupport >= SDLSupport.sdl202, "Failed to load SDL");
     enforce(imageSupport >= SDLImageSupport.sdlImage200, "Failed to load SDLImage");
     enforce(ttfSupport >= SDLTTFSupport.sdlTTF2014, "Failed to load SDLTTF");
     enforce(mixerSupport >= SDLMixerSupport.sdlMixer200, "Failed to load SDLMixer");
 
-    enforce(SDL_Init(SDL_INIT_EVERYTHING) == 0,
-        "could not initialize SDL: " ~ fromStringz(SDL_GetError()));
+    /// Initilizations
+    enforce(SDL_Init(SDL_INIT_EVERYTHING) == 0, "Could not initialize SDL: " ~ fromStringz(SDL_GetError()));
+    enforce(TTF_Init() != -1, "Could not initialize TTF module");
+    enforce(Mix_OpenAudio(44_100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) != -1, "No audio device connected");
+    enforce(Mix_AllocateChannels(16) != -1, "Could not allocate audio channels");
+}
 
-    enforce(TTF_Init() != -1, "could not initialize TTF module");
-    enforce(Mix_OpenAudio(44_100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS,
-            1024) != -1, "no audio device connected");
-    enforce(Mix_AllocateChannels(16) != -1, "could not allocate audio channels");
-
+/// Loads all libraries and creates the application window
+void createWindow(const vec2u windowSize, string title) {
+    // Create SDL window
     _sdlWindow = SDL_CreateWindow(toStringz(title), SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED, windowSize.x, windowSize.y,
         SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     enforce(_sdlWindow, "failed to create the window");
+
+    // Create OpenGL context and load OpenGL
     _glContext = SDL_GL_CreateContext(_sdlWindow);
-    enforce(loadOpenGL() == GLSupport.gl41, "failed to load opengl");
+    enforce(loadOpenGL() == GLSupport.gl41, "Failed to load opengl");
 
     SDL_GL_MakeCurrent(_sdlWindow, _glContext);
 
@@ -125,21 +130,6 @@ void createWindow(const vec2u windowSize, string title) {
     _centerScreen = _screenSize / 2f;
 
     setWindowTitle(title);
-}
-
-/// Prepare to render 2D items
-void setup2DRender() {
-    glDisable(GL_DEPTH_TEST);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-    glDisable(GL_CULL_FACE);
-}
-
-/// Prepare to render 3D items
-void setup3DRender() {
-    glEnable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
-    glEnable(GL_CULL_FACE);
 }
 
 /// Cleanup the application window.

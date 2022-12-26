@@ -8,12 +8,11 @@ import magia.core.vec;
 import magia.render.entity;
 import magia.render.model;
 import magia.render.shader;
-import magia.render.shadow;
 import magia.render.window;
 import magia.shape.light;
 
 /// Instance of a **Model** to render
-final class ModelInstance : Entity3D {
+final class ModelInstance : Entity {
     private {
         Model _model;
     }

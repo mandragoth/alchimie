@@ -1,0 +1,108 @@
+
+func randf() (float) {
+    return rand(-1f, 1f);
+}
+
+event onLoad() {
+    var camera = Camera();
+    //camera:position(0., .5, 2.);
+    //camera:position(-22., 20., 11.);
+    //camera:orientation(1., -0.25, 0.29);
+
+    var light: Light = loadLight(LightKind.SPOT);
+    light.position(0f, 2f, 0f);
+
+    var skybox: Skybox = loadSkybox();
+    var quad: Quad = loadQuad();
+    //Model tree = loadModel("tree/scene");
+    //Model grass = loadModel("grass/scene");
+    //Model ground = loadModel("ground/scene");
+    var bunny: Model = loadModel("bunny/scene");
+    //bunny:position(vec3(1., 1., 1.));
+    //var statue: Model = loadModel("statue/scene");
+    //Model jupiter = loadModel("jupiter/scene");
+    //jupiter:position(vec3(1., 0., 1.));
+    //jupiter:scale(vec3(0.05, 0.05, 0.05));
+    //Model crow = loadModel("crow/scene");
+    //Terrain terrain = loadTerrain(0, 0, 800, 800, 128, 3);
+
+    // Sphere(resolution, radius, noiseOffset, nbLayers, strength, roughness, persistence, minHeight);
+    //var planet: Planet = loadPlanet(10, 2.72, vec3(0f, 0f, 0f), 5, 0.24, 1.84, 0.5, 1.22);
+    //Line line = loadLine(vec3(0., 0., 0.), vec3(1., 0., 0.), vec3(1., 0., 0.));
+    //Line line = loadLine(vec3(0., 0., 0.), vec3(0., 1., 0.), vec3(0., 1., 0.));
+    //Line line = loadLine(vec3(0., 0., 0.), vec3(0., 0., 1.), vec3(0., 0., 1.));
+
+    //Model cubeBlender = loadModel("cube/cube");
+
+    var nbAsteroids: int = 500;
+
+    var instanceMatrices: list<mat4>;
+
+    // Radius for asteroid belt
+    var radius = 50.0f;
+
+    // Standard deviation from radius
+    var radiusDeviation = 5f;
+
+    // Gets stuck?
+    loop(nbAsteroids) {
+        var x = randf();
+        var y = (rand(0, 1) * 2 - 1) * sqrt(1.0f - x * x);
+
+        var finalRadius = radius + randf() * radiusDeviation;
+        
+        var position: vec3 = vec3();
+        if (randf() > 0.5f) {
+            position = vec3(y * finalRadius, randf(), x * finalRadius);
+        } else {
+            position = vec3(x * finalRadius, randf(), y * finalRadius);
+        }
+
+        var rotation = quat(1f, randf(), randf(), randf());
+        var scale = vec3(0.1, 0.1, 0.1);
+
+        var instanceMatrix = packInstanceMatrix(position, rotation, scale);
+        instanceMatrices ~= instanceMatrix;
+    }
+    //Model asteroid = loadModel("asteroid/scene", nbAsteroids, instanceMatrices);
+
+    testUI();
+
+    /*loop {
+        print("HAAAAAAAA", 0., 50.);
+        yield
+    }*/
+}
+
+/*
+scale: scale/screen
+rota: angle
+trans: identité
+
+
+
+
+Local = Trans * Rota * Scale
+M = World * Local
+*/
+
+func testUI() {
+    var label = @Label("Hello World !");
+    label.pos(200f, 200f);
+    label.align(AlignX.right, AlignY.top);
+    appendUI(label);
+
+    //label.hover? = true;
+
+    var state = @UIState("hidden");
+    state.time = .25;
+    state.time += 2f;
+    state.spline = Spline.sineInOut;
+    state.alpha = .0;
+    state.offsetX = -100f;
+    state.angle = rad(45.0);
+    label.addState(state);
+
+    sleep(2.seconds);
+    label.runState("hidden");
+}

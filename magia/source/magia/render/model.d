@@ -56,7 +56,7 @@ final class Model : Renderable {
     /// Constructor
     this(string fileName, uint instances = 1, mat4[] instanceMatrices = [mat4.identity]) {
         auto split = fileName.findSplitAfter("/");
-        _fileDirectory = "assets/model/" ~ split[0];
+        _fileDirectory = "../assets/model/" ~ split[0];
         string filePath = _fileDirectory ~ split[1] ~ ".gltf";
 
         if (_trace) {

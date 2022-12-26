@@ -15,7 +15,7 @@ import std.stdio;
 import std.random;
 
 /// Instance of terrain
-final class Terrain : Entity3D {
+final class Terrain : Entity {
     private {
         Mesh _mesh;
         vec2 _gridPos;

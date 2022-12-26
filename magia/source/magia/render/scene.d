@@ -10,240 +10,45 @@ import magia.shape.light;
 import magia.shape.line;
 import magia.shape.terrain;
 
-alias Entities = Entity3D[];
-alias Lines = Line[];
+alias Entities = Entity[];
 
-private {
-    // Camera, light
-    Camera _camera;
-    LightInstance _globalLight;
+/// Scene class
+class Scene() {
+    private {
+        /// Default camera is also an entity
+        Camera _camera;
 
-    // 3D entity containers
-    Entities _entities;
-    Entities[Model] _modelEntityMap;
-
-    // Skybox
-    Skybox _skybox;
-
-    // Terrain
-    Terrain _terrain;
-
-    // Lines
-    Lines _lines;
-
-    // Processing
-    ShadowMap _shadowMap;
-    PostProcess _postProcess;
-
-    // Shaders
-    Shader _defaultShader;
-    Shader _lightShader;
-    Shader _shadowShader;
-    Shader _terrainShader;
-    Shader _lineShader;
-
-    // Flags
-    bool _showShadows = false;
-}
-
-void setCamera(Camera camera) {
-    _camera = camera;
-}
-
-void setSkybox(Skybox skybox) {
-    _skybox = skybox;
-}
-
-void setTerrain(Terrain terrain) {
-    _terrain = terrain;
-}
-
-void setGlobalLight(LightInstance globalLight) {
-    _globalLight = globalLight;
-}
-
-Camera getCamera() {
-    return _camera;
-}
-
-ShadowMap getShadowMap() {
-    return _shadowMap;
-}
-
-void addEntity(Entity3D entity) {
-    _entities ~= entity;
-}
-
-void addLine(Line line) {
-    _lines ~= line;
-}
-
-void initializeScene() {
-    _shadowMap = new ShadowMap();
-    _postProcess = new PostProcess(screenMaxDim);
-    
-    _defaultShader = new Shader("default.vert", "default.frag");
-    _lightShader = new Shader("light.vert", "light.frag");
-    _shadowShader = new Shader("shadow.vert", "shadow.frag");
-    _terrainShader = new Shader("terrain.vert", "terrain.frag");
-    _lineShader = new Shader("line.vert", "line.frag");
-}
-
-void resetScene() {
-    _entities.length = 0;
-}
-
-void updateScene(float deltaTime) {
-    if (!_camera) {
-        return;
+        /// @TODO replace entity array with hierarchy
+        Entities _entities;
     }
 
-    _camera.update();
-
-    if (getButtonDown(KeyButton.escape)) {
-        stopApplication();
+    /// Constructor
+    this(Camera camera) {
+        _camera = camera;
+        _entities ~= camera;
     }
 
-    /// Contrôles temporaire subjectifs
-
-    /// Speed at which the camera moves (uniform across all axis so far)
-    const float speed = isButtonDown(KeyButton.leftShift) ? 1f : .1f;
-
-    /// How well the speed of the camera scales up when it moves continuously
-    const float sensitivity = .25f;
-
-    /// Forward along X axis
-    if (isButtonDown(KeyButton.a)) {
-        _camera.position = _camera.position + (speed * -_camera.right);
+    /// Add an entity
+    void addEntity(Entity entity) {
+        _entities ~= entity;
     }
 
-    /// Backwards along X axis
-    if (isButtonDown(KeyButton.d)) {
-        _camera.position = _camera.position + (speed * _camera.right);
+    /// Clear scene from all its entities
+    void clear() {
+        _entities.length = 0;
     }
 
-    /// Forward along Y axis
-    if (isButtonDown(KeyButton.space)) {
-        _camera.position = _camera.position + (speed * _camera.up);
+    /// Update scene
+    void update(float deltaTime) {
+        foreach(entity; _entities) {
+            entity.update(deltaTime);
+        }
     }
 
-    /// Backwards along Y axis
-    if (isButtonDown(KeyButton.leftControl)) {
-        _camera.position = _camera.position + (speed * -_camera.up);
+    /// Draw scene
+    void draw() {
+        foreach(entity; _entities) {
+            entity.draw();
+        }
     }
-
-    /// Forward along Z axis
-    if (isButtonDown(KeyButton.w)) {
-        _camera.position = _camera.position + (speed * _camera.forward);
-    }
-
-    /// Backwards along Z axis
-    if (isButtonDown(KeyButton.s)) {
-        _camera.position = _camera.position + (speed * -_camera.forward);
-    }
-
-    /// Show/hide shadows
-    if (getButtonDown(KeyButton.r)) {
-        _showShadows = !_showShadows;
-    }
-
-    /// Left click to select objects in the scene
-    if (isButtonDown(MouseButton.left)) {
-        // @TODO Get mouse position, create a Ray from it (cached as private variable)
-
-        // @TODO Use ray to query entities in the scene, fetch the one closest to the camera near plane
-    }
-
-    /// Look
-    const vec2 deltaPos = getRelativeMousePos(); // @TODO mouse pos here
-
-    const float rotX = sensitivity * deltaPos.y;
-    const float rotY = sensitivity * deltaPos.x;
-
-    const vec3 newOrientation = rotate(_camera.forward, -rotX * degToRad, _camera.right);
-
-    const float limitRotX = 5f * degToRad;
-
-    const float angleUp = angle(newOrientation, _camera.up);
-    const float angleDown = angle(newOrientation, -_camera.up);
-
-    if (!(angleUp <= limitRotX || angleDown <= limitRotX)) {
-        _camera.forward = newOrientation;
-    }
-
-    _camera.forward = rotate(_camera.forward, -rotY * degToRad, _camera.up);
-
-    foreach(entity; _entities) {
-        entity.update(deltaTime);
-    }
-}
-
-/// Draw 3D part of the scene
-void drawScene() {
-    if (!_camera || !_globalLight) {
-        return;
-    }
-
-    // @TODO reference default shader and terrain shader together in a list "material shaders"
-    _camera.passToShader(_defaultShader);
-    _camera.passToShader(_terrainShader);
-    _camera.passToShader(_lineShader);
-    _globalLight.setupShaders(_lightShader, _defaultShader);
-    _globalLight.setupShaders(_lightShader, _terrainShader);
-
-    if (_showShadows) {
-        _shadowMap.register(_entities, vec3(-20.0, -20.0, -20.0)); // _globalLight.transform.position
-    } else {
-        _shadowMap.clear();
-    }
-
-    _postProcess.prepare();
-
-    // @TODO: post-processing should not apply
-    if (_skybox) {
-        _skybox.draw();
-    }
-
-    if (_globalLight) {
-        _globalLight.draw(_lightShader);
-    }
-
-    _shadowMap.bind(_defaultShader);
-
-    if (_terrain) {
-        _terrain.draw(_terrainShader);
-    }
-
-    foreach(entity; _entities) {
-        entity.draw(_defaultShader);
-    }
-
-    // rectangle(200f, 200f, 50f, 20f);
-
-    foreach(line; _lines) {
-        line.draw(_lineShader);
-    }
-
-    _postProcess.draw();
-}
-
-/// @TODO: Bouger ça à un endroit plus approprié.
-/// Rotates p around axis r by angle
-vec3 rotate(vec3 p, float angle, vec3 r) {
-    const float halfAngle = angle / 2;
-
-    const float cosRot = cos(halfAngle);
-    const float sinRot = sin(halfAngle);
-
-    const quat q1 = quat(0f, p.x, p.y, p.z);
-    const quat q2 = quat(cosRot, r.x * sinRot, r.y * sinRot, r.z * sinRot);
-    const quat q3 = q2 * q1 * q2.conjugated;
-
-    return vec3(q3.x, q3.y, q3.z);
-}
-
-/// @TODO: Bouger ça à un endroit plus approprié.
-/// Returns the angle between two vectors
-float angle(vec3 a, vec3 b) {
-    return acos(dot(a.normalized, b.normalized));
 }

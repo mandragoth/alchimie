@@ -11,7 +11,6 @@ module magia.core;
 public {
     import magia.core.color;
     import magia.core.indexedarray;
-    import magia.core.instance;
     import magia.core.json;
     import magia.core.quat;
     import magia.core.mat;

@@ -10,7 +10,7 @@ import magia.render.vao;
 import magia.render.vbo;
 
 /// Line instance
-class Line : Entity3D {
+class Line : Entity {
     private {
         VAO _VAO;
         VBO _VBO;

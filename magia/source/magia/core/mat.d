@@ -239,7 +239,7 @@ struct Matrix(type, uint rows_, uint columns_) {
                         return [left, right, bottom, top, near, far];
                     }
 
-                /// Returns a perspective matrix (4x4 and floating-point matrices only)
+                /// Returns a perspective matrix
                 static Matrix perspective(type width, type height, type fov, type near, type far) {
                     type[6] cdata = cperspective(width, height, fov, near, far);
                     return perspective(cdata[0], cdata[1], cdata[2], cdata[3], cdata[4], cdata[5]);
@@ -267,7 +267,7 @@ struct Matrix(type, uint rows_, uint columns_) {
                         return toReturn;
                     }
 
-                /// Returns an orthographic matrix (4x4 and floating-point matrices only)
+                /// Returns an orthographic matrix
                 static Matrix orthographic(type left, type right, type bottom, type top, type near, type far)
                 in {
                     assert(right-left != 0);
@@ -289,7 +289,7 @@ struct Matrix(type, uint rows_, uint columns_) {
                     return toReturn;
                 }
 
-                /// Returns a look at matrix (4x4 and floating-point matrices only).
+                /// Returns a look at matrix
                 static Matrix look_at(vec3mt eye, vec3mt target, vec3mt up) {    
                     vec3mt look_dir = (target - eye).normalized;
                     vec3mt up_dir = up.normalized;

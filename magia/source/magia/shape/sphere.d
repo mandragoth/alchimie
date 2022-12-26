@@ -16,15 +16,26 @@ import magia.render.scene;
 
 import std.stdio;
 
+/// Up axis @TODO extract to vec
 vec3 up      = vec3( 0,  1,  0);
+
+/// Down axis
 vec3 down    = vec3( 0, -1,  0);
+
+/// Left axis
 vec3 left    = vec3(-1,  0,  0);
+
+/// Right axis
 vec3 right   = vec3( 1,  0,  0);
+
+/// Forward axis
 vec3 forward = vec3( 0,  0,  1);
+
+/// Back axis
 vec3 back    = vec3( 0,  0, -1);
 
 /// Instance of sphere
-class Sphere : Entity3D {
+class Sphere : Entity {
     protected {
         Mesh[]    _meshes;
         Texture[] _textures;

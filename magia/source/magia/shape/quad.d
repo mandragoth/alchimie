@@ -16,7 +16,7 @@ import magia.render.window;
 import magia.shape.light;
 
 /// Instance of quad
-final class QuadInstance : Entity3D {
+final class QuadInstance : Entity {
     private {
         Mesh _mesh;
     }
@@ -40,7 +40,7 @@ final class QuadInstance : Entity3D {
             0, 2, 3
         ];
 
-        string pathPrefix = "assets/texture/";
+        string pathPrefix = "../assets/texture/";
 
         Texture[] textures = [
             new Texture(pathPrefix ~ "planks.png", "diffuse", 0),
