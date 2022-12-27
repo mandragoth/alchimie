@@ -43,6 +43,7 @@ void runApplication() {
 
     // Inits
     initFont();
+    loadResources();
     initializeScene();
     _UIManager = new UIManager();
 
@@ -100,13 +101,9 @@ void runApplication() {
         setup2DRender();
         _UIManager.draw();
 
-        rectPrototype.drawFilledRect(Vec2f(200f, 200f),
-                                     Vec2f(50f, 20f),
-                                     Color.red);
+        rectPrototype.drawFilledRect(Vec2f(200f, 200f), Vec2f(50f, 20f), Color.red);
 
-        circlePrototype.drawFilledCircle(Vec2f(400f, 300f),
-                                         50f,
-                                         Color.green);
+        circlePrototype.drawFilledCircle(Vec2f(400f, 300f), 50f, Color.green);
 
         renderWindow();
 
@@ -150,4 +147,14 @@ bool loadScript() {
         _engine.callEvent("onLoad");
 
     return true;
+}
+
+void loadResources() {
+    import std.path, std.file;
+
+    auto files = dirEntries(buildNormalizedPath("assets", "texture"), "{*.png}", SpanMode.depth);
+    foreach (file; files) {
+        string name = baseName(file, ".png");
+        storePrototype!Texture(name, new Texture(file, "sprite"));
+    }
 }

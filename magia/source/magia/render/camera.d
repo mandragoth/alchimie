@@ -86,6 +86,7 @@ class Camera {
 
     /// Sets camera matrix in shader
     void passToSkyboxShader(Shader shader) {
+        shader.activate();
         mat4 view = mat4(mat3(_view));
         glUniformMatrix4fv(glGetUniformLocation(shader.id, "view"), 1, GL_TRUE, view.value_ptr);
         glUniformMatrix4fv(glGetUniformLocation(shader.id, "projection"), 1, GL_TRUE, _projection.value_ptr);

@@ -201,6 +201,7 @@ void drawScene() {
 
     // @TODO: post-processing should not apply
     if (_skybox) {
+        _camera.passToSkyboxShader(_skybox.shader);
         _skybox.draw();
     }
 

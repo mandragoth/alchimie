@@ -14,4 +14,5 @@ public {
     import magia.render.sprite;
     import magia.render.text;
     import magia.render.window;
+    import magia.render.texture;
 }

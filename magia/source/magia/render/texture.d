@@ -48,7 +48,7 @@ class Texture {
     /// Constructor for usual 2D texture from path
     this(string path, string texType, GLuint slot = 0) {
         // Get surface and process it
-        SDL_Surface *surface = IMG_Load(toStringz(path));
+        SDL_Surface* surface = IMG_Load(toStringz(path));
         enforce(surface, "can't load image `" ~ path ~ "`");
         setupData(surface, texType, slot);
 
@@ -58,12 +58,24 @@ class Texture {
     }
 
     /// Constructor for usual 2D texture from surface
-    this (SDL_Surface *surface, string texType, GLuint slot = 0) {
+    this(SDL_Surface* surface, string texType, GLuint slot = 0) {
         setupData(surface, texType, slot);
     }
 
+    /// Copie
+    this(Texture texture_) {
+        id = texture_.id;
+        type = texture_.type;
+        _width = texture_._width;
+        _height = texture_._height;
+        _slot = texture_._slot;
+        _target = texture_._target;
+        _trace = texture_._trace;
+        _nbTextures = texture_._nbTextures;
+    }
+
     /// Setup data
-    void setupData(SDL_Surface *surface, string texType, GLuint slot) {
+    void setupData(SDL_Surface* surface, string texType, GLuint slot) {
         // Setup type
         type = texType;
 
@@ -90,7 +102,8 @@ class Texture {
             // Setup wrap
             glTexParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        } else {
+        }
+        else {
             // Setup filters
             glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -112,18 +125,22 @@ class Texture {
         if (nbChannels == 4) {
             format = GL_RGBA;
             internalFormat = GL_SRGB_ALPHA;
-        } else if (nbChannels == 3) {
+        }
+        else if (nbChannels == 3) {
             format = GL_RGB;
             internalFormat = GL_SRGB;
-        } else if (nbChannels == 1) {
+        }
+        else if (nbChannels == 1) {
             format = GL_RED;
             internalFormat = GL_SRGB;
-        } else {
+        }
+        else {
             new Exception("Unsupported texture format for " ~ type ~ " texture type");
         }
 
         // Generate texture image
-        glTexImage2D(_target, 0, internalFormat, _width, _height, 0, format, GL_UNSIGNED_BYTE, surface.pixels);
+        glTexImage2D(_target, 0, internalFormat, _width, _height, 0, format,
+            GL_UNSIGNED_BYTE, surface.pixels);
         _nbTextures = 1;
 
         // Generate mipmaps
@@ -147,7 +164,7 @@ class Texture {
         // Generate texture and bind data
         glGenTextures(1, &id);
         glBindTexture(_target, id);
-        
+
         // Setup filters
         glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -160,15 +177,15 @@ class Texture {
         for (int i = 0; i < paths.length; ++i) {
             string path = "assets/skybox/" ~ paths[i];
 
-            SDL_Surface *surface = IMG_Load(toStringz(path));
+            SDL_Surface* surface = IMG_Load(toStringz(path));
             enforce(surface, "can't load image `" ~ path ~ "`");
 
             // Read data from handler
             _width = surface.w;
             _height = surface.h;
 
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, _width, _height, 0,
-                         GL_RGB, GL_UNSIGNED_BYTE, surface.pixels);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, _width,
+                _height, 0, GL_RGB, GL_UNSIGNED_BYTE, surface.pixels);
             ++_nbTextures;
 
             SDL_FreeSurface(surface);
@@ -218,7 +235,7 @@ class MultiSampleTexture : Texture {
 
         // Create texture
         glTexImage2DMultisample(_target, nbSamples, GL_RGB16F, _width, _height, GL_TRUE);
-        
+
         // Setup filters
         glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -244,7 +261,7 @@ class PostProcessTexture : Texture {
 
         // Create texture
         glTexImage2D(_target, 0, GL_RGB16F, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, null);
-        
+
         // Setup filters
         glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -269,8 +286,9 @@ class ShadowmapTexture : Texture {
         glBindTexture(_target, id);
 
         // Create texture
-        glTexImage2D(_target, 0, GL_DEPTH_COMPONENT, _width, _height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, null);
-        
+        glTexImage2D(_target, 0, GL_DEPTH_COMPONENT, _width, _height, 0,
+            GL_DEPTH_COMPONENT, GL_FLOAT, null);
+
         // Setup filters
         glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

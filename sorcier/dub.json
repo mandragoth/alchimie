@@ -9,7 +9,8 @@
     "name": "sorcier",
     "targetType": "executable",
     "targetName": "sorcier",
-    "targetPath": "./bin$ARCH",
+    "targetPath": "../bin$ARCH",
+	"workingDirectory": "..",
     "dependencies": {
         "magia": {
             "path": "../magia"
