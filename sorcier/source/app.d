@@ -101,19 +101,9 @@ void runApplication() {
         setup2DRender();
         _UIManager.draw();
 
-<<<<<<< HEAD
-        rectPrototype.drawFilledRect(Vec2f(200f, 200f), Vec2f(50f, 20f), Color.red);
+        rectPrototype.drawFilledRect(vec2(200f, 200f), vec2(50f, 20f), Color.red);
 
-        circlePrototype.drawFilledCircle(Vec2f(400f, 300f), 50f, Color.green);
-=======
-        rectPrototype.drawFilledRect(vec2(200f, 200f),
-                                     vec2(50f, 20f),
-                                     Color.red);
-
-        circlePrototype.drawFilledCircle(vec2(400f, 300f),
-                                         50f,
-                                         Color.green);
->>>>>>> master
+        circlePrototype.drawFilledCircle(vec2(400f, 300f), 50f, Color.green);
 
         renderWindow();
 
