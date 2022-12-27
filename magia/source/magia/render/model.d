@@ -8,7 +8,10 @@ import std.stdio;
 import std.typecons;
 
 import bindbc.opengl;
-import gl3n.linalg;
+
+import magia.core.mat;
+import magia.core.quat;
+import magia.core.vec;
 
 import magia.core.json;
 import magia.core.transform;

@@ -1,6 +1,6 @@
 module magia.render.vertex;
 
-import gl3n.linalg;
+import magia.core.vec;
 
 /// Class holding a Vertex
 struct Vertex {

@@ -2,8 +2,6 @@ module sorcier.script.drawable;
 
 import grimoire;
 
-import gl3n.linalg;
-
 import magia.core, magia.render, magia.shape;
 
 import std.stdio;

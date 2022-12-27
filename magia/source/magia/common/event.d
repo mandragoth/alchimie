@@ -32,7 +32,7 @@ import magia.common.controller;
 static private {
     bool[KeyButton.max] _keys;
     bool[MouseButton.max] _buttons;
-    Vec2f _mousePosition, _mouseRelativePosition;
+    vec2 _mousePosition, _mouseRelativePosition;
     Event[] _globalEvents;
 }
 
@@ -329,18 +329,23 @@ struct Event {
 
     /// For base type `keyDown` and `keyUp`.
     struct KeyEvent {
+        /// Button used
         KeyButton button;
+        /// Is the button repeated?
         bool isRepeated;
     }
 
     /// For base type `resize`.
     struct WindowEvent {
         /// New size of the window.
-        Vec2u size;
+        vec2u size;
     }
 
+    /// Generic custom event
     struct CustomEvent {
+        /// Event indentifier
         string id;
+        /// Data (to downcast on handler side)
         void* data;
     }
 }
@@ -374,12 +379,12 @@ bool getButtonDown(MouseButton button) {
 }
 
 /// Returns the position of the mouse relative to the window.
-Vec2f getMousePos() {
+vec2 getMousePos() {
     return _mousePosition;
 }
 
 /// Returns the relative position of the mouse.
-Vec2f getRelativeMousePos() {
+vec2 getRelativeMousePos() {
     return _mouseRelativePosition;
 }
 
@@ -429,8 +434,8 @@ extern (C) void signalHandler(int sig) nothrow @nogc @system {
 void initializeEvents() {
     signal(SIGINT, &signalHandler);
     _isRunning = true;
-    _mousePosition = Vec2f.zero;
-    _mouseRelativePosition = Vec2f.zero;
+    _mousePosition = vec2.zero;
+    _mouseRelativePosition = vec2.zero;
     initializeControllers();
 
     // Toggle when window is in focus
@@ -528,7 +533,7 @@ bool processEvents() {
             switch (sdlEvent.window.event) {
             case SDL_WINDOWEVENT_RESIZED:
                 event.type = EventType.resize;
-                event.window.size = Vec2u(sdlEvent.window.data1, sdlEvent.window.data2);
+                event.window.size = vec2u(sdlEvent.window.data1, sdlEvent.window.data2);
                 resizeWindow(event.window.size);
                 //handleGuiElementEvent(event);
                 break;

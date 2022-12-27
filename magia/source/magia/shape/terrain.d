@@ -1,7 +1,6 @@
 module magia.shape.terrain;
 
 import bindbc.opengl;
-import gl3n.linalg;
 
 import magia.core;
 

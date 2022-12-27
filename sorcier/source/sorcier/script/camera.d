@@ -1,6 +1,5 @@
 module sorcier.script.camera;
 
-import gl3n.linalg;
 import grimoire;
 
 import magia.core, magia.render;

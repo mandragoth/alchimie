@@ -1,7 +1,6 @@
 module magia.shape.line;
 
 import bindbc.opengl;
-import gl3n.linalg;
 
 import magia.core;
 
@@ -10,6 +9,7 @@ import magia.render.shader;
 import magia.render.vao;
 import magia.render.vbo;
 
+/// Line instance
 class Line : Entity3D {
     private {
         VAO _VAO;
@@ -20,6 +20,7 @@ class Line : Entity3D {
         vec3 _color;
     }
 
+    /// Constructor
     this(vec3 start, vec3 end, vec3 color) {
         transform = Transform.identity;
 
@@ -37,6 +38,7 @@ class Line : Entity3D {
         _VAO.linkAttributes(_VBO, 0, 3, GL_FLOAT, vec3.sizeof, null);
     }
 
+    /// Draw call
     void draw(Shader shader) {
         shader.activate();
         _VAO.bind();

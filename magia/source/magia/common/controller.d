@@ -28,7 +28,7 @@ private {
 
     Timer[6] _analogTimers, _analogTimeoutTimers;
 
-    Vec2f _left = Vec2f.zero, _right = Vec2f.zero;
+    vec2 _left = vec2.zero, _right = vec2.zero;
 
     bool _buttonA, _buttonB, _buttonX, _buttonY,
         _buttonSelect, _buttonMode, _buttonStart,
@@ -267,12 +267,12 @@ void setControllerButton(SDL_GameControllerButton button, bool state) {
 
 @property {
     /// Left analog stick
-    Vec2f getControllerInputLAnalog() {
+    vec2 getControllerInputLAnalog() {
         return _left;
     }
 
     /// Right analog stick
-    Vec2f getControllerInputRAnalog() {
+    vec2 getControllerInputRAnalog() {
         return _right;
     }
 

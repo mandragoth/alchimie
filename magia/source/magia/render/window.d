@@ -21,8 +21,8 @@ static {
 
     private {
         SDL_Surface* _icon;
-        Vec2u _windowSize;
-        Vec2f _screenSize, _centerScreen;
+        vec2u _windowSize;
+        vec2 _screenSize, _centerScreen;
         DisplayMode _displayMode = DisplayMode.windowed;
         GLuint _currentShaderProgram;
         float _baseAlpha = 1f;
@@ -49,11 +49,11 @@ static {
         return max(screenWidth, screenHeight);
     }
     /// Size of the window in pixels.
-    Vec2f screenSize() {
+    vec2 screenSize() {
         return _screenSize;
     }
     /// Half of the size of the window in pixels.
-    Vec2f centerScreen() {
+    vec2 centerScreen() {
         return _centerScreen;
     }
     /// SDL window
@@ -73,7 +73,7 @@ enum DisplayMode {
 const bool debugLoad = false;
 
 /// Loads all libraries and creates the application window
-void createWindow(const Vec2u windowSize, string title) {
+void createWindow(const vec2u windowSize, string title) {
     SDLSupport sdlSupport = loadSDL();
     SDLImageSupport imageSupport = loadSDLImage();
     SDLTTFSupport ttfSupport = loadSDLTTF();
@@ -121,7 +121,7 @@ void createWindow(const Vec2u windowSize, string title) {
     glCullFace(GL_FRONT);
 
     _windowSize = windowSize;
-    _screenSize = cast(Vec2f)(windowSize);
+    _screenSize = cast(vec2)(windowSize);
     _centerScreen = _screenSize / 2f;
 
     setWindowTitle(title);
@@ -155,9 +155,9 @@ void setWindowTitle(string title) {
 }
 
 /// Resize windows
-void resizeWindow(const Vec2u windowSize) {
+void resizeWindow(const vec2u windowSize) {
     _windowSize = windowSize;
-    _screenSize = cast(Vec2f)(windowSize);
+    _screenSize = cast(vec2)(windowSize);
     _centerScreen = _screenSize / 2f;
 
     glViewport(0, 0, windowSize.x, windowSize.y);
@@ -169,19 +169,20 @@ void resetViewport() {
 }
 
 /// Current window size.
-Vec2i getWindowSize() {
-    Vec2i windowSize;
-    SDL_GetWindowSize(_sdlWindow, &windowSize.x, &windowSize.y);
-    return windowSize;
+vec2i getWindowSize() {
+    int width;
+    int height;
+    SDL_GetWindowSize(_sdlWindow, &width, &height);
+    return vec2i(width, height);
 }
 
 /// The window cannot be resized less than this.
-void setWindowMinSize(Vec2u size) {
+void setWindowMinSize(vec2u size) {
     SDL_SetWindowMinimumSize(_sdlWindow, size.x, size.y);
 }
 
 /// The window cannot be resized more than this.
-void setWindowMaxSize(Vec2u size) {
+void setWindowMaxSize(vec2u size) {
     SDL_SetWindowMaximumSize(_sdlWindow, size.x, size.y);
 }
 
@@ -212,7 +213,7 @@ void setWindowDisplay(DisplayMode displayMode) {
         break;
     }
     SDL_SetWindowFullscreen(_sdlWindow, mode);
-    Vec2u newSize = cast(Vec2u) getWindowSize();
+    vec2u newSize = cast(vec2u) getWindowSize();
     resizeWindow(newSize);
     Event event;
     event.type = EventType.resize;
@@ -260,18 +261,18 @@ void renderWindow() {
 }
 
 /// Change coordinate system from inside to outside the canvas.
-Vec2f transformRenderSpace(const Vec2f pos) {
-    Vec2f size = cast(Vec2f)(_windowSize);
-    Vec2f position = size / 2f;
+vec2 transformRenderSpace(const vec2 pos) {
+    vec2 size = cast(vec2)(_windowSize);
+    vec2 position = size / 2f;
 
     // @TODO apply canvas scale ratio
 	return (pos - position) + size * 0.5f;
 }
 
 /// Change the scale from outside to inside the canvas.
-Vec2f transformScale() {
+vec2 transformScale() {
     // @TODO apply canvas scale ratio
-	return Vec2f.one;
+	return vec2.one;
 }
 
 /// Sets shader main entry point

@@ -1,8 +1,8 @@
 module sorcier.script.text;
 
 import grimoire;
-import gl3n.linalg;
 
+import magia.core.mat;
 import magia.render;
 
 void loadMagiaLibText(GrLibrary library) {

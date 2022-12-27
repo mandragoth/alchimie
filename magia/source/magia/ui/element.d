@@ -1,6 +1,5 @@
 module magia.ui.element;
 
-import gl3n.linalg;
 import magia.core;
 
 /// Abstract class representing an UI element

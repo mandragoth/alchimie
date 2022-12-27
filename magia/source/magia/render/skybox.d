@@ -3,7 +3,6 @@ module magia.render.skybox;
 import std.stdio;
 
 import bindbc.opengl;
-import gl3n.linalg;
 
 import magia.render.camera;
 import magia.render.postprocess;

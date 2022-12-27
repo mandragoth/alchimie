@@ -2,8 +2,6 @@ module sorcier.script.transform;
 
 import grimoire;
 
-import gl3n.linalg;
-
 void loadMagiaLibTransform(GrLibrary library) {
     GrType transformType = library.addNative("Transform");
 

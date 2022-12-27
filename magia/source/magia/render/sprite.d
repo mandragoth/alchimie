@@ -2,7 +2,6 @@ module magia.render.sprite;
 
 import std.string, std.exception;
 import bindbc.opengl, bindbc.sdl;
-import gl3n.linalg;
 import magia.core;
 import magia.render.texture;
 import magia.render.shader;
@@ -170,7 +169,7 @@ final class Sprite {
 
     /// Draw sprite at given position
     void draw(mat4 transform, float posX, float posY, float sizeX, float sizeY,
-              Vec4i clip, Flip flip = Flip.none, Blend blend = Blend.alpha,
+              vec4i clip, Flip flip = Flip.none, Blend blend = Blend.alpha,
               Color color = Color.white, float alpha = 1f) const {
         // Select flip
         final switch (flip) with (Flip) {

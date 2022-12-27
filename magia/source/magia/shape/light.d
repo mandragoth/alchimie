@@ -4,9 +4,9 @@ import std.string;
 import std.stdio;
 
 import bindbc.opengl;
-import gl3n.linalg;
 
 import magia.core.transform;
+import magia.core.vec;
 import magia.render.entity;
 import magia.render.mesh;
 import magia.render.shader;
@@ -14,6 +14,7 @@ import magia.render.texture;
 import magia.render.vertex;
 import magia.render.window;
 
+/// Type of instantiated light
 enum LightType {
     DIRECTIONAL,
     POINT,

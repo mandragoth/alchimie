@@ -12,12 +12,12 @@ event onLoad() {
     var light: Light = loadLight(LightKind.SPOT);
     light.position(0f, 5f, 0f);
 
-    //var skybox: Skybox = loadSkybox();
-    //var quad: Quad = loadQuad();
+    var skybox: Skybox = loadSkybox();
+    var quad: Quad = loadQuad();
     //Model tree = loadModel("tree/scene");
     //Model grass = loadModel("grass/scene");
     //Model ground = loadModel("ground/scene");
-    //Model bunny = loadModel("bunny/scene");
+    var bunny: Model = loadModel("bunny/scene");
     //bunny:position(vec3(1., 1., 1.));
     //Model statue = loadModel("statue/scene");
     //Model jupiter = loadModel("jupiter/scene");
