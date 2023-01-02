@@ -484,7 +484,7 @@ private void _ui_append_root(GrCall call) {
         return;
     }
 
-    _currentApplication.appendUIRootElement(ui);
+    currentApplication.appendUIRootElement(ui);
 }
 
 private void _ui_append_child(GrCall call) {

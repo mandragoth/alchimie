@@ -5,8 +5,6 @@ import bindbc.opengl, bindbc.sdl;
 import magia.core;
 import magia.render.texture;
 import magia.render.shader;
-import magia.render.vao;
-import magia.render.vbo;
 import magia.render.window;
 
 /// Base rendering class.

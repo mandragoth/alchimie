@@ -13,19 +13,13 @@ import magia.shape.terrain;
 alias Entities = Entity[];
 
 /// Scene class
-class Scene() {
-    private {
-        /// Default camera is also an entity
-        Camera _camera;
+class Scene {
+    /// Main camera
+    Camera camera;
 
+    private {
         /// @TODO replace entity array with hierarchy
         Entities _entities;
-    }
-
-    /// Constructor
-    this(Camera camera) {
-        _camera = camera;
-        _entities ~= camera;
     }
 
     /// Add an entity

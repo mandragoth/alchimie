@@ -4,40 +4,31 @@ import std.conv : to;
 import std.algorithm.comparison : clamp;
 import grimoire;
 import magia.common;
+import magia.core.color;
 import magia.script.util;
 
 package void loadMagiaLibColor(GrLibrary library) {
-    auto colorType = library.addClass("color", ["r", "g", "b"], [
-            grFloat, grFloat, grFloat
-        ]);
+    auto colorType = library.addClass("color", ["r", "g", "b"], [grFloat, grFloat, grFloat]);
 
     library.addFunction(&_color, "color", [], [colorType]);
-    library.addFunction(&_color_3r, "color", [grFloat, grFloat, grFloat], [
-            colorType
-        ]);
-
+    library.addFunction(&_color_3r, "color", [grFloat, grFloat, grFloat], [colorType]);
     library.addFunction(&_color_3i, "color", [grInt, grInt, grInt], [colorType]);
 
     static foreach (op; ["+", "-", "*", "/", "%"]) {
         library.addOperator(&_opBinaryColor!op, op, [colorType, colorType], colorType);
         library.addOperator(&_opBinaryScalarColor!op, op, [colorType, grFloat], colorType);
-        library.addOperator(&_opBinaryScalarRightColor!op, op, [
-                grFloat, colorType
-            ], colorType);
+        library.addOperator(&_opBinaryScalarRightColor!op, op, [grFloat, colorType], colorType);
     }
 
-    library.addFunction(&_lerp, "lerp", [colorType, colorType, grFloat], [
-            colorType
-        ]);
+    library.addFunction(&_lerp, "lerp", [colorType, colorType, grFloat], [colorType]);
 
     library.addCast(&_fromList, grList(grInt), colorType);
     library.addCast(&_toString, colorType, grString);
 
-    library.addFunction(&_unpack, "unpack", [colorType], [
-            grFloat, grFloat, grFloat
-        ]);
-
+    library.addFunction(&_unpack, "unpack", [colorType], [grFloat, grFloat, grFloat]);
     library.addFunction(&_print, "print", [colorType]);
+
+    library.addFunction(&_red, "red", [], [colorType]);
 }
 
 private void _color(GrCall call) {
@@ -195,4 +186,12 @@ private void _print(GrCall call) {
     }
     print("color(" ~ to!string(self.getFloat("r")) ~ ", " ~ to!string(
             self.getFloat("g")) ~ ", " ~ to!string(self.getFloat("b")) ~ ")");
+}
+
+private void _red(GrCall call) {
+    GrObject self = call.createObject("color");
+    self.setFloat("r", Color.red.r);
+    self.setFloat("g", Color.red.g);
+    self.setFloat("b", Color.red.b);
+    call.setObject(self);
 }

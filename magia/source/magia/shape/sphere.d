@@ -48,6 +48,7 @@ class Sphere : Entity {
         bool _debug;
     }
 
+    /// Constructor
     this(int resolution, float radius) {
         transform = Transform.identity;
 
@@ -69,13 +70,13 @@ class Sphere : Entity {
         vec3 directionX = vec3(directionY.y, directionY.z, directionY.x);
         vec3 directionZ = directionX.cross(directionY);
 
-        int nbVertices = _resolution * _resolution;
+        const int nbVertices = _resolution * _resolution;
         Vertex[] vertices = new Vertex[nbVertices];
 
         int resolution2 = _resolution - 1;
         float fResolution2 = cast(float)(resolution2); 
 
-        int nbIndices = resolution2 * resolution2 * 6;
+        const int nbIndices = resolution2 * resolution2 * 6;
         GLuint[] indices = new uint[nbIndices];
 
         int indiceIdx = 0;
@@ -114,8 +115,9 @@ class Sphere : Entity {
     /// Generate a point on the sphere's surface
     protected vec3 generateSurfacePoint(vec3 directionX, vec3 directionY, vec3 directionZ,
                                         int x, int y, int resolution) {
-        vec2 ratio = vec2(x, y) / resolution;
-        vec2 ratioScale = (ratio - vec2(0.5f, 0.5f)) * 2;
+        const vec2 ratio = vec2(x, y) / resolution;
+        const vec2 ratioScale = (ratio - vec2(0.5f, 0.5f)) * 2;
+
         vec3 surfacePoint = directionY + ratioScale.x * directionX + ratioScale.y * directionZ;
         return surfacePoint.normalized;
     }
@@ -127,13 +129,14 @@ class Sphere : Entity {
 
     // Compute normals 
     private vec3 computeNormal(vec3 surfacePoint) {
-        vec3 center = transform.position;
+        const vec3 center = transform.position;
+
         vec3 normal = surfacePoint - center;
         normal.normalize();
 
-        if (_debug) {
+        /*if (_debug) {
             addLine(new Line(surfacePoint, surfacePoint + normal * _radius / 100, vec3(0., 1., 0.)));
-        }
+        }*/
 
         return normal;
     }

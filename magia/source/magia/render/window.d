@@ -115,16 +115,6 @@ void createWindow(const vec2u windowSize, string title) {
 
     glViewport(0, 0, windowSize.x, windowSize.y);
 
-    // Enable depth buffer
-    glEnable(GL_DEPTH_TEST);
-
-    // Enables multi-samples
-    glEnable(GL_MULTISAMPLE);
-
-    // Enable culling
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
-
     _windowSize = windowSize;
     _screenSize = cast(vec2)(windowSize);
     _centerScreen = _screenSize / 2f;

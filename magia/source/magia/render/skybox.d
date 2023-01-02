@@ -4,13 +4,12 @@ import std.stdio;
 
 import bindbc.opengl;
 
+import magia.render.array;
+import magia.render.buffer;
 import magia.render.camera;
 import magia.render.postprocess;
 import magia.render.shader;
 import magia.render.texture;
-import magia.render.ebo;
-import magia.render.vao;
-import magia.render.vbo;
 import magia.render.vertex;
 
 /// Class handling skybox data and draw call
@@ -55,9 +54,8 @@ final class Skybox {
         Shader _shader;
         Texture _texture;
         
-        VAO _VAO;
-        VBO _VBO;
-        EBO _EBO;
+        VertexArray _vertexArray;
+        IndexBuffer _indexBuffer;
     }
 
     /// Constructor
@@ -78,20 +76,20 @@ final class Skybox {
         _texture.forwardToShader(_shader, _texture.type, 0);
 
         // Generate and bind VAO
-        _VAO = new VAO();
-        _VAO.bind();
+        _vertexArray = new VertexArray();
+        _vertexArray.bind();
 
         // Generate and bind VBO, EBO
-        _VBO = new VBO(_vertices);
-        _EBO = new EBO(_indices);
+        VertexBuffer vertexBuffer = new VertexBuffer(_vertices);
+        _indexBuffer = new IndexBuffer(_indices);
 
         // Link VBO attributes
-        _VAO.linkAttributes(_VBO, 0, 3, GL_FLOAT, 3 * float.sizeof, null);
+        _vertexArray.linkAttributes(vertexBuffer, 0, 3, GL_FLOAT, 3 * float.sizeof, null);
 
         // Unbind all objects
-        VAO.unbind();
-        VBO.unbind();
-        EBO.unbind();
+        VertexArray.unbind();
+        VertexBuffer.unbind();
+        IndexBuffer.unbind();
     }
 
     /// Draw call
@@ -102,7 +100,7 @@ final class Skybox {
         _camera.passToSkyboxShader(_shader);
         glUniform1f(glGetUniformLocation(_shader.id, "gamma"), gamma);
 
-        _VAO.bind();
+        _vertexArray.bind();
         _texture.bind();
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, null);
 

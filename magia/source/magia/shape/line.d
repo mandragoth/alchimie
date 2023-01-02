@@ -4,16 +4,15 @@ import bindbc.opengl;
 
 import magia.core;
 
+import magia.render.array;
+import magia.render.buffer;
 import magia.render.entity;
 import magia.render.shader;
-import magia.render.vao;
-import magia.render.vbo;
 
 /// Line instance
 class Line : Entity {
     private {
-        VAO _VAO;
-        VBO _VBO;
+        VertexArray _vertexArray;
 
         vec3 _start;
         vec3 _end;
@@ -30,18 +29,17 @@ class Line : Entity {
 
         _color = color;
 
-        _VAO = new VAO();
-        _VAO.bind();
+        _vertexArray = new VertexArray();
+        _vertexArray.bind();
 
-        _VBO = new VBO(vertices);
-
-        _VAO.linkAttributes(_VBO, 0, 3, GL_FLOAT, vec3.sizeof, null);
+        VertexBuffer vertexBuffer = new VertexBuffer(vertices);
+        _vertexArray.linkAttributes(vertexBuffer, 0, 3, GL_FLOAT, vec3.sizeof, null);
     }
 
     /// Draw call
     void draw(Shader shader) {
         shader.activate();
-        _VAO.bind();
+        _vertexArray.bind();
 
         glUniformMatrix4fv(glGetUniformLocation(shader.id, "model"), 1, GL_TRUE, transform.model.value_ptr);
         glUniform3fv(glGetUniformLocation(shader.id, "color"), 1, _color.value_ptr);

@@ -6,21 +6,22 @@ import magia.core.color;
 import magia.core.mat;
 import magia.core.vec;
 
+import magia.render.array;
+import magia.render.buffer;
 import magia.render.camera;
 import magia.render.material;
+import magia.render.postprocess;
 import magia.render.shader;
 import magia.render.sprite;
-import magia.render.vao;
-import magia.render.vbo;
 import magia.render.window;
 
-/// Global renderer
-Renderer renderer;
+// @TODO remove
+import std.stdio;
 
 /// 2D renderer
 class Renderer {
     private {
-        VAO _VAO;
+        VertexArray _vertexArray;
         Shader _shader;
 
         // @TODO remove / factorize
@@ -33,26 +34,58 @@ class Renderer {
         GLint _flipUniform;
     }
 
+    @property {
+        /// Set background color
+        void backgroundColor(Color color) {
+            bgColor = color;
+            glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
+        }
+    }
+
     /// Constructor
     this() {
-        // Rectangle vertices
+        // Rectangle vertices @TODO size should be -1/1 for full screen to multiply by size
         vec2[] vertices = [
-            vec2( 1.0f,  1.0f),
-            vec2(-1.0f,  1.0f),
-            vec2( 1.0f, -1.0f),
-            vec2(-1.0f, -1.0f)
+            vec2(-0.5f, -0.5f),
+            vec2( 0.5f, -0.5f),
+            vec2( 0.5f,  0.5f),
+            vec2(-0.5f,  0.5f)
         ];
 
-        _VAO = new VAO();
-        _VAO.bind();
+        // Define shader layout
+        BufferLayout layout = new BufferLayout([
+            BufferElement("a_Position", LayoutType.ltFloat2)
+        ]);
+        
+        // @TODO improve layout debug
+        writeln("Layout: ", layout.toString());
 
-        VBO _VBO = new VBO(vertices);
-        _VAO.linkAttributes(_VBO, 0, 2, GL_FLOAT, vec2.sizeof, null);
+        // Create and bind vertex array
+        _vertexArray = new VertexArray();
+        _vertexArray.bind();
 
+        // Create vertex buffer and attach layout, set it in the vertex array
+        VertexBuffer vertexBuffer = new VertexBuffer(vertices);
+        vertexBuffer.layout = layout;
+        _vertexArray.addVertexBuffer(vertexBuffer);
+
+        // Create index buffer and set it into vertex buffer
+        uint[] indices = [0, 1, 2, 2, 3, 0];
+        _vertexArray.setIndexBuffer(new IndexBuffer(indices));
+
+        // Load global shader to render 2D textured/colored quads
         _shader = new Shader("image.vert", "image.frag");
         _sizeUniform = glGetUniformLocation(_shader.id, "size");
         _positionUniform = glGetUniformLocation(_shader.id, "position");
         _colorUniform = glGetUniformLocation(_shader.id, "color");
+
+        glEnable(GL_MULTISAMPLE);
+        glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
+    }
+
+    /// Clear rendered frame
+    void clear() {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     /// Prepare to render 2D items
@@ -68,6 +101,7 @@ class Renderer {
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
         glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
     }
 
     /// Render the rectangle
@@ -76,13 +110,13 @@ class Renderer {
         size = size * transformScale() / screenSize();
 
         setupShader(origin, size, color, alpha);
-        drawCall();
+        drawIndexed(_vertexArray);
     }
 
     /// Render a circle
     void drawFilledCircle(vec2 center, float radius, Color color = Color.white, float alpha = 1f) {
         setupShader(center, vec2(radius, radius), color, alpha);
-        drawCall();
+        drawIndexed(_vertexArray);
     }
 
     /// Render a sprite @TODO handle clip, transform, sprite
@@ -99,7 +133,7 @@ class Renderer {
         vec4 clipf = vec4(clipX, clipY, clipW, clipH);
 
         setupShader(vec2(posX, posY), vec2(sizeX, sizeY), color, alpha, transform, clipf, flip, blend);
-        drawCall();
+        drawIndexed(_vertexArray);
     }
 
     private void setupShader(vec2 pos, vec2 size, Color color = Color.white, float alpha = 1f,
@@ -108,8 +142,11 @@ class Renderer {
         // Activate shader
         _shader.activate();
 
+        // Set color
+        glUniform4f(_colorUniform, color.r, color.g, color.b, alpha);
+
         // Set resolution
-        vec2i resolution = getWindowSize();
+        /*vec2i resolution = getWindowSize();
         glUniform2f(_resolutionUniform, resolution.x, resolution.y);
 
         // Set model
@@ -155,12 +192,17 @@ class Renderer {
                 glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
                 glBlendEquation(GL_FUNC_ADD);
                 break;
-        }
+        }*/
+    }
+
+    /// Submit a vertex array to the render queue
+    void submit(VertexArray vertexArray) {
+
     }
 
     /// @TODO batching
-    private void drawCall() {
-        _VAO.bind();
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    void drawIndexed(const VertexArray vertexArray) {
+        vertexArray.bind();
+        glDrawElements(GL_TRIANGLES, vertexArray.indexBuffer.count, GL_UNSIGNED_INT, null);
     }
 }

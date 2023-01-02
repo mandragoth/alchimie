@@ -4,8 +4,6 @@ import std.string;
 import bindbc.opengl, bindbc.sdl;
 import magia.core, magia.render;
 import magia.ui.element;
-import magia.render.vao;
-import magia.render.vbo;
 
 /// UI elements manager
 class UIManager {

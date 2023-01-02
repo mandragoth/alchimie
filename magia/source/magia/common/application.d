@@ -9,18 +9,23 @@ import std.stdio;
 import magia.common.event;
 import magia.core.vec;
 import magia.core.timer;
-import magia.render.renderer;
-import magia.ui.manager;
-import magia.ui.element;
+import magia.render.camera;
+import magia.render.command;
 import magia.render.font;
 import magia.render.scene;
 import magia.render.window;
+import magia.render.renderer;
+import magia.ui.manager;
+import magia.ui.element;
 import magia.script;
+
+// @TODO remove
+import magia.core.color;
 
 import grimoire;
 
 /// Current application being tracked
-Application _currentApplication;
+Application currentApplication;
 
 /// Application class
 class Application {
@@ -33,8 +38,23 @@ class Application {
         GrLibrary _stdlib;
         GrLibrary _magialib;
 
-        Scene _scene; // @TODO handle several scene (Ressource?)
-        //UIManager _UIManager;
+        // @TODO handle several scene (Ressource?)
+        Scene _scene;
+
+        // @TODO merge UIManager with scene / hierarchy
+        UIManager _UIManager;
+    }
+
+    @property {
+        /// Get current scene
+        Scene scene() {
+            return _scene;
+        }
+
+        /// Get current renderer
+        private Renderer renderer() {
+            return Command.renderer;
+        }
     }
 
     /// Constructor
@@ -51,11 +71,9 @@ class Application {
         initFont();
 
         createWindow(size, title);
-        renderer = new Renderer();
+        Command.renderer = new Renderer();
         _scene = new Scene();
-        //initScene();
-
-        //_UIManager = new UIManager();
+        _UIManager = new UIManager();
 
         // Load grimoire libs and scripts
         _stdlib = grLoadStdLibrary();
@@ -82,8 +100,14 @@ class Application {
             updateScripts();
 
             if (_scene) {
-                _scene.update();
+                _scene.update(_deltatime);
                 _scene.draw();
+
+                // TEST: check
+                Command.clear();
+                renderer.setup2DRender();
+                renderer.drawFilledRect(vec2(0f, 0f), vec2(800f, 800f), Color.green);
+                renderer.drawFilledRect(vec2(200f, 200f), vec2(50f, 20f), Color.red);
             }
 
             renderWindow();
@@ -103,7 +127,9 @@ class Application {
 
     /// Load scripts
     private bool loadScript() {
-        resetScene();
+        if (_scene) {
+          _scene.clear();
+        }
         _UIManager.removeRoots();
 
         GrCompiler compiler = new GrCompiler;
