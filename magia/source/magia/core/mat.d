@@ -191,6 +191,11 @@ struct Matrix(type, uint rows_, uint columns_) {
                 return toReturn;
             }
 
+            /// Override for vec3
+            static Matrix translation(vec3 v) {
+                return translation(v.x, v.y, v.z);
+            }
+
             /// Applys a translation on the current matrix and returns it
             Matrix translate(type x, type y, type z) {
                 this = Matrix.translation(x, y, z) * this;

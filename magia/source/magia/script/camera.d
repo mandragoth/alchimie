@@ -12,13 +12,13 @@ package void loadMagiaLibCamera(GrLibrary library) {
     library.addFunction(&_getCamera, "getCamera", [], [cameraType]);
     library.addFunction(&_setCameraPosition, "position", [cameraType, grFloat, grFloat, grFloat]);
     library.addFunction(&_getCameraPosition, "position", [cameraType], [grFloat, grFloat, grFloat]);
-    library.addFunction(&_setCameraOrientation, "orientation", [cameraType, grFloat, grFloat, grFloat]);
+    /*library.addFunction(&_setCameraOrientation, "orientation", [cameraType, grFloat, grFloat, grFloat]);
     library.addFunction(&_getCameraOrientation, "orientation", [cameraType], [grFloat, grFloat, grFloat]);
-    library.addFunction(&_update, "update", [cameraType], []);
+    library.addFunction(&_update, "update", [cameraType], []);*/
 }
 
 private void _camera(GrCall call) {
-    Camera camera_ = new Camera(screenWidth, screenHeight);
+    Camera camera_ = new PerspectiveCamera(screenWidth, screenHeight);
     currentApplication.scene.camera = camera_;
     call.setNative(camera_);
 }
@@ -41,7 +41,8 @@ private void _setCameraPosition(GrCall call) {
         call.raise("NullError");
         return;
     }
-    camera.position(vec3(call.getFloat(1), call.getFloat(2), call.getFloat(3)));
+
+    camera.position = vec3(call.getFloat(1), call.getFloat(2), call.getFloat(3));
 }
 
 private void _getCameraPosition(GrCall call) {
@@ -50,18 +51,20 @@ private void _getCameraPosition(GrCall call) {
         call.raise("NullError");
         return;
     }
+
     call.setFloat(camera.position.x);
     call.setFloat(camera.position.y);
     call.setFloat(camera.position.z);
 }
 
-private void _setCameraOrientation(GrCall call) {
+/*private void _setCameraOrientation(GrCall call) {
     Camera camera = call.getNative!Camera(0);
     if (!camera) {
         call.raise("NullError");
         return;
     }
-    camera.forward(vec3(call.getFloat(1), call.getFloat(2), call.getFloat(3)));
+
+    camera.forward = vec3(call.getFloat(1), call.getFloat(2), call.getFloat(3));
 }
 
 private void _getCameraOrientation(GrCall call) {
@@ -70,6 +73,7 @@ private void _getCameraOrientation(GrCall call) {
         call.raise("NullError");
         return;
     }
+
     call.setFloat(camera.forward.x);
     call.setFloat(camera.forward.y);
     call.setFloat(camera.forward.z);
@@ -81,5 +85,6 @@ private void _update(GrCall call) {
         call.raise("NullError");
         return;
     }
+
     camera.update();
-}
+}*/
