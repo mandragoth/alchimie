@@ -10,7 +10,7 @@ import std.stdio;
 import std.string;
 import std.exception;
 import bindbc.opengl, bindbc.sdl, bindbc.sdl.image, bindbc.sdl.mixer, bindbc.sdl.ttf;
-import magia.core, magia.common, magia.render.postprocess;
+import magia.core, magia.render.postprocess;
 
 static {
     /// SDL window

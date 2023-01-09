@@ -8,8 +8,6 @@
 
 module magia.core.timer;
 
-import magia.common;
-
 private {
     uint _nominalFPS = 60u;
 }

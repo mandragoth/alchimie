@@ -9,6 +9,7 @@
 module magia.core;
 
 public {
+    import magia.core.resource;
     import magia.core.color;
     import magia.core.indexedarray;
     import magia.core.instance;

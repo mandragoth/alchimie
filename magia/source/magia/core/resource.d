@@ -6,7 +6,7 @@
     Authors: Enalye
 */
 
-module magia.common.resource;
+module magia.core.resource;
 
 import std.typecons;
 import std.algorithm : count;

@@ -3,7 +3,6 @@ module sorcier.script.color;
 import std.conv : to;
 import std.algorithm.comparison : clamp;
 import grimoire;
-import magia.common;
 import sorcier.script.util;
 
 package void loadMagiaLibColor(GrLibrary library) {

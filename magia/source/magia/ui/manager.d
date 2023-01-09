@@ -8,7 +8,7 @@ import magia.render.vao;
 import magia.render.vbo;
 
 /// UI elements manager
-class UIManager {
+class UI {
     private {
         UIElement[] _roots;
     }

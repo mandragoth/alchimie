@@ -5,7 +5,6 @@ import std.math;
 import std.algorithm.comparison : min, max;
 
 import grimoire;
-import magia.common;
 import sorcier.script.util;
 
 package void loadMagiaLibVec2(GrLibrary library) {

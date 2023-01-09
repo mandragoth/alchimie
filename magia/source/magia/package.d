@@ -1,7 +1,7 @@
 module magia;
 
 public {
-    import magia.common;
+    import magia.main;
     import magia.core;
     import magia.render;
     import magia.shape;

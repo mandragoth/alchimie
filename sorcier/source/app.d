@@ -9,8 +9,7 @@ import magia, grimoire;
 
 import sorcier.script;
 
-UIManager _UIManager;
-Input _input;
+Magia _magia;
 
 private {
     float _deltatime = 1f;
@@ -38,15 +37,10 @@ void main() {
 
 /// Lance l’application
 void runApplication() {
-    createWindow(vec2u(800, 800), "Magia - Runtime");
     _tickStartFrame = Clock.currStdTime();
 
-    // Inits
-    initFont();
+    _magia = new Magia(vec2u(800, 800), "Magia - Runtime");
     loadResources();
-    initializeScene();
-    _UIManager = new UIManager();
-    _input = new Input;
 
     // Script
     _stdlib = grLoadStdLibrary();
@@ -58,10 +52,7 @@ void runApplication() {
         return;
     }
 
-    while (!_input.hasQuit()) {
-        // Màj
-        _input.poll();
-
+    while (_magia.isRunning()) {
         /*if (getButtonDown(KeyButton.f5)) {
             if (!loadScript()) {
                 destroyApplication();
@@ -88,23 +79,8 @@ void runApplication() {
             }
         }
 
-        updateScene(_deltatime);
-        _UIManager.update(_deltatime);
-
-        // Rendu
-        // 3D
-        setup3DRender();
-        drawScene(); /// @ERROR: crash ici quand le script ne compile pas
-
-        // 2D
-        setup2DRender();
-        _UIManager.draw();
-
-        rectPrototype.drawFilledRect(vec2(200f, 200f), vec2(50f, 20f), Color.red);
-
-        circlePrototype.drawFilledCircle(vec2(400f, 300f), 50f, Color.green);
-
-        renderWindow();
+        _magia.update(_deltatime);
+        _magia.render();
 
         // IPS
         long deltaTicks = Clock.currStdTime() - _tickStartFrame;
@@ -120,7 +96,7 @@ void runApplication() {
 
 bool loadScript() {
     resetScene();
-    _UIManager.removeRoots();
+    _magia.ui.removeRoots();
 
     GrCompiler compiler = new GrCompiler;
     compiler.addLibrary(_stdlib);

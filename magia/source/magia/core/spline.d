@@ -10,7 +10,6 @@ module magia.core.spline;
 
 import std.math;
 
-import magia.common;
 import magia.core.util;
 
 alias SplineFunc = float function(float);
