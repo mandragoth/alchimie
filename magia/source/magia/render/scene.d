@@ -5,7 +5,6 @@ import std.stdio;
 import bindbc.opengl;
 
 import magia.core, magia.render;
-import magia.common.event;
 import magia.shape.light;
 import magia.shape.line;
 import magia.shape.terrain;
@@ -100,7 +99,7 @@ void updateScene(float deltaTime) {
 
     _camera.update();
 
-    if (getButtonDown(KeyButton.escape)) {
+    /+if (getButtonDown(KeyButton.escape)) {
         stopApplication();
     }
 
@@ -172,7 +171,7 @@ void updateScene(float deltaTime) {
     }
 
     _camera.forward = rotate(_camera.forward, -rotY * degToRad, _camera.up);
-
++/
     foreach(entity; _entities) {
         entity.update(deltaTime);
     }

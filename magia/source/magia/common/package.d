@@ -9,8 +9,6 @@
 module magia.common;
 
 public {
-	import magia.common.event;
-	import magia.common.controller;
 	import magia.common.resource;
 	import magia.common.settings;
 }

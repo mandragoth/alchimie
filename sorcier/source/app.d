@@ -10,6 +10,7 @@ import magia, grimoire;
 import sorcier.script;
 
 UIManager _UIManager;
+Input _input;
 
 private {
     float _deltatime = 1f;
@@ -38,7 +39,6 @@ void main() {
 /// Lance l’application
 void runApplication() {
     createWindow(vec2u(800, 800), "Magia - Runtime");
-    initializeEvents();
     _tickStartFrame = Clock.currStdTime();
 
     // Inits
@@ -46,6 +46,7 @@ void runApplication() {
     loadResources();
     initializeScene();
     _UIManager = new UIManager();
+    _input = new Input;
 
     // Script
     _stdlib = grLoadStdLibrary();
@@ -53,28 +54,26 @@ void runApplication() {
     grSetOutputFunction(&print);
 
     if (!loadScript()) {
-        destroyApplication();
+        destroyWindow();
         return;
     }
 
-    while (processEvents()) {
+    while (!_input.hasQuit()) {
         // Màj
-        updateEvents(_deltatime);
+        _input.poll();
 
-        if (getButtonDown(KeyButton.f5)) {
+        /*if (getButtonDown(KeyButton.f5)) {
             if (!loadScript()) {
                 destroyApplication();
                 return;
             }
-        }
+        }*/
 
         if (_engine) {
             if (_engine.hasTasks)
                 _engine.process();
 
             if (_engine.isPanicking) {
-                writeln(_engine.prettifyProfiling());
-
                 string err = "panique: " ~ _engine.panicMessage ~ "\n";
                 foreach (trace; _engine.stackTraces) {
                     err ~= "[" ~ to!string(
@@ -84,7 +83,7 @@ void runApplication() {
                 _engine = null;
                 writeln(err);
 
-                destroyApplication();
+                destroyWindow();
                 return;
             }
         }

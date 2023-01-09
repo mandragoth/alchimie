@@ -3,7 +3,6 @@ module magia.render.camera;
 import bindbc.sdl, bindbc.opengl;
 import std.math;
 import std.stdio;
-import magia.common.event;
 import magia.core.mat;
 import magia.core.vec;
 import magia.render.shader;

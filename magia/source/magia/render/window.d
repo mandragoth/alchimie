@@ -215,9 +215,6 @@ void setWindowDisplay(DisplayMode displayMode) {
     SDL_SetWindowFullscreen(_sdlWindow, mode);
     vec2u newSize = cast(vec2u) getWindowSize();
     resizeWindow(newSize);
-    Event event;
-    event.type = EventType.resize;
-    event.window.size = newSize;
 }
 
 /// Current display mode.
@@ -266,13 +263,13 @@ vec2 transformRenderSpace(const vec2 pos) {
     vec2 position = size / 2f;
 
     // @TODO apply canvas scale ratio
-	return (pos - position) + size * 0.5f;
+    return (pos - position) + size * 0.5f;
 }
 
 /// Change the scale from outside to inside the canvas.
 vec2 transformScale() {
     // @TODO apply canvas scale ratio
-	return vec2.one;
+    return vec2.one;
 }
 
 /// Sets shader main entry point
