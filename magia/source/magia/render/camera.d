@@ -11,14 +11,28 @@ import magia.render.window;
 
 /// Global camera class
 abstract class Camera {
-    /// Position
-    vec3 position;
-
     protected {
+        /// Position
+        vec3 _position;
+
         /// Camera matrices
         mat4 _matrix = mat4.identity;
         mat4 _projection = mat4.identity;
         mat4 _view = mat4.identity;
+    }
+
+    @property {
+        mat4 matrix() const {
+            return _matrix;
+        }
+
+        void position(vec3 position_) {
+            _position = position_;
+        }
+
+        vec3 position() {
+            return _position;
+        }
     }
 
     void update() {}
@@ -27,16 +41,34 @@ abstract class Camera {
 }
 
 /// Orthographic camera class
-class OthographicCamera : Camera {
+class OrthographicCamera : Camera {
     /// Rotation around Z axis
-    float rotation;
+    protected {
+        float _zRotation;
+    }
+
+    @property {
+        override void position(vec3 position_) {
+            _position = position_;
+            computeViewMatrix();
+        }
+
+        void zRotation(float zRotation_) {
+            _zRotation = zRotation_;
+            computeViewMatrix();
+        }
+    }
 
     this(float left, float right, float bottom, float top) {
         _projection = mat4.orthographic(left, right, bottom, top, -1f, 1f);
+        _view = mat4.identity;
+        _matrix = _projection * _view;
     }
 
     void computeViewMatrix() {
-        mat4 transform = mat4.translation(position) * mat4.zrotation(rotation);
+        mat4 transform = mat4.translation(_position) * mat4.zrotation(_zRotation);
+        _view = transform.inverse();
+        _matrix = _projection * _view;
     }
 }
 
@@ -80,12 +112,12 @@ class PerspectiveCamera : Camera {
     this(int width_, int height_, vec3 position_ = vec3(0f, 0f, 0f)) {
         _width = width_;
         _height = height_;
-        position = position_;
+        _position = position_;
     }
 
     /// Setting up camera matrices operations
     void updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
-        _view = mat4.look_at(position, position + _orientation, _up);
+        _view = mat4.look_at(_position, _position + _orientation, _up);
         _projection = mat4.perspective(_width, _height, FOVdeg, nearPlane, farPlane);
         _matrix = _projection * _view;
     }
@@ -93,7 +125,7 @@ class PerspectiveCamera : Camera {
     /// Sets camera matrix in shader
     override void passToShader(Shader shader) {
         shader.activate();
-        glUniform3f(glGetUniformLocation(shader.id, "camPos"), position.x, position.x, position.z);
+        glUniform3f(glGetUniformLocation(shader.id, "camPos"), _position.x, _position.x, _position.z);
         glUniformMatrix4fv(glGetUniformLocation(shader.id, "camMatrix"), 1, GL_TRUE, _matrix.value_ptr);
     }
 

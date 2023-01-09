@@ -4,6 +4,7 @@ import std.file, std.string, std.stdio;
 
 import bindbc.opengl;
 
+import magia.core.mat;
 import magia.render.window;
 
 /// Class holding a shader
@@ -48,6 +49,12 @@ class Shader {
         glDeleteProgram(id);
         glDeleteShader(_vertexShader);
         glDeleteShader(_fragmentShader);
+    }
+
+    /// Upload an uniform of type mat4 to the shader
+    void uploadUniformMat4(const char* label, mat4 matrix) {
+        GLint labelId = glGetUniformLocation(id, label);
+        glUniformMatrix4fv(labelId, 1, GL_TRUE, matrix.value_ptr);
     }
 
     private {

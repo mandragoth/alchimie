@@ -228,6 +228,69 @@ struct Matrix(type, uint rows_, uint columns_) {
 
         /// 4x4 matrices
         static if(rows == 4) {
+            /// Determinant
+            @property type det() const {
+                return (data[0][3] * data[1][2] * data[2][1] * data[3][0] - data[0][2] * data[1][3] * data[2][1] * data[3][0]
+                      - data[0][3] * data[1][1] * data[2][2] * data[3][0] + data[0][1] * data[1][3] * data[2][2] * data[3][0]
+                      + data[0][2] * data[1][1] * data[2][3] * data[3][0] - data[0][1] * data[1][2] * data[2][3] * data[3][0]
+                      - data[0][3] * data[1][2] * data[2][0] * data[3][1] + data[0][2] * data[1][3] * data[2][0] * data[3][1]
+                      + data[0][3] * data[1][0] * data[2][2] * data[3][1] - data[0][0] * data[1][3] * data[2][2] * data[3][1]
+                      - data[0][2] * data[1][0] * data[2][3] * data[3][1] + data[0][0] * data[1][2] * data[2][3] * data[3][1]
+                      + data[0][3] * data[1][1] * data[2][0] * data[3][2] - data[0][1] * data[1][3] * data[2][0] * data[3][2]
+                      - data[0][3] * data[1][0] * data[2][1] * data[3][2] + data[0][0] * data[1][3] * data[2][1] * data[3][2]
+                      + data[0][1] * data[1][0] * data[2][3] * data[3][2] - data[0][0] * data[1][1] * data[2][3] * data[3][2]
+                      - data[0][2] * data[1][1] * data[2][0] * data[3][3] + data[0][1] * data[1][2] * data[2][0] * data[3][3]
+                      + data[0][2] * data[1][0] * data[2][1] * data[3][3] - data[0][0] * data[1][2] * data[2][1] * data[3][3]
+                      - data[0][1] * data[1][0] * data[2][2] * data[3][3] + data[0][0] * data[1][1] * data[2][2] * data[3][3]);
+            }
+
+            /// Inverse
+            @property Matrix inverse() const {
+                Matrix toReturn;
+                invert(toReturn);
+                return toReturn;
+            }
+
+            /// Invert mat4
+            private Matrix invert(ref Matrix mat) const {
+                type d = 1 / det;
+
+                mat.data = [[(data[1][1] * data[2][2] * data[3][3] + data[1][2] * data[2][3] * data[3][1] + data[1][3] * data[2][1] * data[3][2]
+                            - data[1][1] * data[2][3] * data[3][2] - data[1][2] * data[2][1] * data[3][3] - data[1][3] * data[2][2] * data[3][1]) * d,
+                             (data[0][1] * data[2][3] * data[3][2] + data[0][2] * data[2][1] * data[3][3] + data[0][3] * data[2][2] * data[3][1]
+                            - data[0][1] * data[2][2] * data[3][3] - data[0][2] * data[2][3] * data[3][1] - data[0][3] * data[2][1] * data[3][2]) * d,
+                             (data[0][1] * data[1][2] * data[3][3] + data[0][2] * data[1][3] * data[3][1] + data[0][3] * data[1][1] * data[3][2]
+                            - data[0][1] * data[1][3] * data[3][2] - data[0][2] * data[1][1] * data[3][3] - data[0][3] * data[1][2] * data[3][1]) * d,
+                             (data[0][1] * data[1][3] * data[2][2] + data[0][2] * data[1][1] * data[2][3] + data[0][3] * data[1][2] * data[2][1]
+                            - data[0][1] * data[1][2] * data[2][3] - data[0][2] * data[1][3] * data[2][1] - data[0][3] * data[1][1] * data[2][2]) * d],
+                            [(data[1][0] * data[2][3] * data[3][2] + data[1][2] * data[2][0] * data[3][3] + data[1][3] * data[2][2] * data[3][0]
+                            - data[1][0] * data[2][2] * data[3][3] - data[1][2] * data[2][3] * data[3][0] - data[1][3] * data[2][0] * data[3][2]) * d,
+                             (data[0][0] * data[2][2] * data[3][3] + data[0][2] * data[2][3] * data[3][0] + data[0][3] * data[2][0] * data[3][2]
+                            - data[0][0] * data[2][3] * data[3][2] - data[0][2] * data[2][0] * data[3][3] - data[0][3] * data[2][2] * data[3][0]) * d,
+                             (data[0][0] * data[1][3] * data[3][2] + data[0][2] * data[1][0] * data[3][3] + data[0][3] * data[1][2] * data[3][0]
+                            - data[0][0] * data[1][2] * data[3][3] - data[0][2] * data[1][3] * data[3][0] - data[0][3] * data[1][0] * data[3][2]) * d,
+                             (data[0][0] * data[1][2] * data[2][3] + data[0][2] * data[1][3] * data[2][0] + data[0][3] * data[1][0] * data[2][2]
+                            - data[0][0] * data[1][3] * data[2][2] - data[0][2] * data[1][0] * data[2][3] - data[0][3] * data[1][2] * data[2][0]) * d],
+                            [(data[1][0] * data[2][1] * data[3][3] + data[1][1] * data[2][3] * data[3][0] + data[1][3] * data[2][0] * data[3][1]
+                            - data[1][0] * data[2][3] * data[3][1] - data[1][1] * data[2][0] * data[3][3] - data[1][3] * data[2][1] * data[3][0]) * d,
+                             (data[0][0] * data[2][3] * data[3][1] + data[0][1] * data[2][0] * data[3][3] + data[0][3] * data[2][1] * data[3][0]
+                            - data[0][0] * data[2][1] * data[3][3] - data[0][1] * data[2][3] * data[3][0] - data[0][3] * data[2][0] * data[3][1]) * d,
+                             (data[0][0] * data[1][1] * data[3][3] + data[0][1] * data[1][3] * data[3][0] + data[0][3] * data[1][0] * data[3][1]
+                            - data[0][0] * data[1][3] * data[3][1] - data[0][1] * data[1][0] * data[3][3] - data[0][3] * data[1][1] * data[3][0]) * d,
+                             (data[0][0] * data[1][3] * data[2][1] + data[0][1] * data[1][0] * data[2][3] + data[0][3] * data[1][1] * data[2][0]
+                            - data[0][0] * data[1][1] * data[2][3] - data[0][1] * data[1][3] * data[2][0] - data[0][3] * data[1][0] * data[2][1]) * d],
+                            [(data[1][0] * data[2][2] * data[3][1] + data[1][1] * data[2][0] * data[3][2] + data[1][2] * data[2][1] * data[3][0]
+                            - data[1][0] * data[2][1] * data[3][2] - data[1][1] * data[2][2] * data[3][0] - data[1][2] * data[2][0] * data[3][1]) * d,
+                             (data[0][0] * data[2][1] * data[3][2] + data[0][1] * data[2][2] * data[3][0] + data[0][2] * data[2][0] * data[3][1]
+                            - data[0][0] * data[2][2] * data[3][1] - data[0][1] * data[2][0] * data[3][2] - data[0][2] * data[2][1] * data[3][0]) * d,
+                             (data[0][0] * data[1][2] * data[3][1] + data[0][1] * data[1][0] * data[3][2] + data[0][2] * data[1][1] * data[3][0]
+                            - data[0][0] * data[1][1] * data[3][2] - data[0][1] * data[1][2] * data[3][0] - data[0][2] * data[1][0] * data[3][1]) * d,
+                             (data[0][0] * data[1][1] * data[2][2] + data[0][1] * data[1][2] * data[2][0] + data[0][2] * data[1][0] * data[2][1]
+                            - data[0][0] * data[1][2] * data[2][1] - data[0][1] * data[1][0] * data[2][2] - data[0][2] * data[1][1] * data[2][0]) * d]];
+                
+                return mat;
+            }
+
             /// Floating point type
             static if(isFloatingPoint!type) {
                 alias vec3mt = Vector!(type, 3);

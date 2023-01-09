@@ -22,6 +22,7 @@ import std.stdio;
 class Renderer {
     private {
         VertexArray _vertexArray;
+        Camera _camera;
         Shader _shader;
 
         // @TODO remove / factorize
@@ -38,12 +39,14 @@ class Renderer {
         /// Set background color
         void backgroundColor(Color color) {
             bgColor = color;
-            glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
+            glClearColor(bgColor.r, bgColor.g, bgColor.b, 1f);
         }
     }
 
     /// Constructor
     this() {
+        _camera = new OrthographicCamera(-1f, 1f, -1f, 1f); // @TODO bind with resolution
+
         // Rectangle vertices @TODO size should be -1/1 for full screen to multiply by size
         vec2[] vertices = [
             vec2(-0.5f, -0.5f),
@@ -56,9 +59,6 @@ class Renderer {
         BufferLayout layout = new BufferLayout([
             BufferElement("a_Position", LayoutType.ltFloat2)
         ]);
-        
-        // @TODO improve layout debug
-        writeln("Layout: ", layout.toString());
 
         // Create and bind vertex array
         _vertexArray = new VertexArray();
@@ -144,6 +144,9 @@ class Renderer {
 
         // Set color
         glUniform4f(_colorUniform, color.r, color.g, color.b, alpha);
+
+        // Set camera
+        _shader.uploadUniformMat4("camMatrix", _camera.matrix);
 
         // Set resolution
         /*vec2i resolution = getWindowSize();
