@@ -15,6 +15,9 @@ abstract class Camera {
         /// Position
         vec3 _position;
 
+        /// Rotation around Z axis
+        float _zRotation;
+
         /// Camera matrices
         mat4 _matrix = mat4.identity;
         mat4 _projection = mat4.identity;
@@ -33,6 +36,10 @@ abstract class Camera {
         vec3 position() {
             return _position;
         }
+
+        void zRotation(float zRotation_) {
+            _zRotation = zRotation_;
+        }
     }
 
     void update() {}
@@ -42,18 +49,13 @@ abstract class Camera {
 
 /// Orthographic camera class
 class OrthographicCamera : Camera {
-    /// Rotation around Z axis
-    protected {
-        float _zRotation;
-    }
-
     @property {
         override void position(vec3 position_) {
             _position = position_;
             computeViewMatrix();
         }
 
-        void zRotation(float zRotation_) {
+        override void zRotation(float zRotation_) {
             _zRotation = zRotation_;
             computeViewMatrix();
         }
@@ -63,6 +65,7 @@ class OrthographicCamera : Camera {
         _projection = mat4.orthographic(left, right, bottom, top, -1f, 1f);
         _view = mat4.identity;
         _matrix = _projection * _view;
+        _zRotation = 0f;
     }
 
     void computeViewMatrix() {

@@ -46,6 +46,8 @@ class Renderer {
     /// Constructor
     this() {
         _camera = new OrthographicCamera(-1f, 1f, -1f, 1f); // @TODO bind with resolution
+        _camera.position = vec3(0.2f, 0.2f, 0.0f);
+        _camera.zRotation = 0.5f;
 
         // Rectangle vertices @TODO size should be -1/1 for full screen to multiply by size
         vec2[] vertices = [
