@@ -9,12 +9,11 @@ import std.stdio;
 import magia.common.event;
 import magia.core.vec;
 import magia.core.timer;
+import magia.core.timestep;
 import magia.render.camera;
-import magia.render.command;
 import magia.render.font;
 import magia.render.scene;
 import magia.render.window;
-import magia.render.renderer;
 import magia.ui.manager;
 import magia.ui.element;
 import magia.script;
@@ -30,7 +29,8 @@ Application currentApplication;
 /// Application class
 class Application {
     private {
-        float _deltatime = 1f;
+        TimeStep _timeStep;
+
         float _currentFps;
         long _tickStartFrame;
 
@@ -50,11 +50,6 @@ class Application {
         Scene scene() {
             return _scene;
         }
-
-        /// Get current renderer
-        private Renderer renderer() {
-            return Command.renderer;
-        }
     }
 
     /// Constructor
@@ -71,7 +66,6 @@ class Application {
         initFont();
 
         createWindow(size, title);
-        Command.renderer = new Renderer();
         _scene = new Scene();
         _UIManager = new UIManager();
 
@@ -96,18 +90,26 @@ class Application {
     /// Run application
     void run() {
         while (processEvents()) {
-            updateEvents(_deltatime);
+            updateEvents(_timeStep);
             updateScripts();
 
             if (_scene) {
-                _scene.update(_deltatime);
+                _scene.update(_timeStep);
                 _scene.draw();
 
                 // TEST: check
-                Command.clear();
-                renderer.setup2DRender();
-                renderer.drawFilledRect(vec2(0f, 0f), vec2(800f, 800f), Color.green);
-                renderer.drawFilledRect(vec2(200f, 200f), vec2(50f, 20f), Color.red);
+                _scene.renderer.setup2DRender();
+                //_scene.renderer.drawFilledRect(vec2(0f, 0f), vec2(800f, 800f), Color.green);
+                //_scene.renderer.drawFilledRect(vec2(-400f, -400f), vec2(400f, 400f), Color.blue);
+                //_scene.renderer.drawFilledRect(vec2(200f, 200f), vec2(50f, 20f), Color.red);
+
+                vec2 scale = vec2.one * 10f;
+                for(int x = 0; x < 20; ++x) {
+                    for(int y = 0; y < 20; ++y) {
+                        vec2 position = vec2(x * 50f, y * 50f);
+                        _scene.renderer.drawFilledRect(position, scale, Color.blue);
+                    }
+                }
             }
 
             renderWindow();
@@ -198,14 +200,14 @@ class Application {
     /// Update delta time, tick, FPS
     private void updateFPS() {
         long deltaTicks = Clock.currStdTime() - _tickStartFrame;
-
         if (deltaTicks < (10_000_000 / getNominalFPS())) {
             Thread.sleep(dur!("hnsecs")((10_000_000 / getNominalFPS()) - deltaTicks));
         }
-
         deltaTicks = Clock.currStdTime() - _tickStartFrame;
-        _deltatime = (cast(float)(deltaTicks) / 10_000_000f) * getNominalFPS();
-        _currentFps = (_deltatime == .0f) ? .0f : (10_000_000f / cast(float)(deltaTicks));
+
+        float deltatime = (cast(float)(deltaTicks) / 10_000_000f) * getNominalFPS();
+        _timeStep = TimeStep(deltatime);
+        _currentFps = (deltatime == .0f) ? .0f : (10_000_000f / cast(float)(deltaTicks));
         _tickStartFrame = Clock.currStdTime();
     }
 }

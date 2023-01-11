@@ -5,6 +5,7 @@ import magia.core.quat;
 import magia.core.tuple;
 import std.format;
 import std.math;
+import std.traits;
 
 /// Generic vector class
 struct Vector(type, uint dimension_) {
@@ -85,6 +86,12 @@ struct Vector(type, uint dimension_) {
             toReturn.normalize();
             return toReturn;
         }
+    }
+
+    static void isCompatibleVectorImpl(int d)(Vector!(type, d) vec) if(d <= dimension) {}
+
+    template isCompatibleVector(T) {
+        enum isCompatibleVector = is(typeof(isCompatibleVectorImpl(T.init)));
     }
 
     /// Internal generic function in charge of building a vector

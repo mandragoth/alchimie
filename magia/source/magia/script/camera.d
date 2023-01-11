@@ -32,7 +32,7 @@ private void _setCamera1(GrCall call) {
 }
 
 private void _getCamera(GrCall call) {
-    call.setNative(currentApplication.scene.camera);
+    call.setNative(currentApplication.scene.renderer.camera);
 }
 
 private void _setCameraPosition(GrCall call) {

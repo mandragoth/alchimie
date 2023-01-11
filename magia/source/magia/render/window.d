@@ -26,6 +26,7 @@ static {
         DisplayMode _displayMode = DisplayMode.windowed;
         GLuint _currentShaderProgram;
         float _baseAlpha = 1f;
+        bool _vsync;
 
         double previousTime = 0.0;
         double currentTime = 0.0;
@@ -55,6 +56,10 @@ static {
     /// Half of the size of the window in pixels.
     vec2 centerScreen() {
         return _centerScreen;
+    }
+    /// Set vsync
+    void vsync(bool vsync) {
+        _vsync = vsync;
     }
     /// SDL window
     SDL_Window* window() {

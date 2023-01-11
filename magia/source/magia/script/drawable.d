@@ -188,7 +188,7 @@ private void _planet(GrCall call) {
 }
 
 private void _skybox(GrCall call) {
-    Skybox skybox = new Skybox(currentApplication.scene.camera);
+    Skybox skybox = new Skybox(currentApplication.scene.renderer.camera);
     call.setNative(skybox);
     //setSkybox(skybox);
 }

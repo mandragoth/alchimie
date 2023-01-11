@@ -5,6 +5,7 @@ import std.math;
 import std.stdio;
 import magia.common.event;
 import magia.core.mat;
+import magia.core.timestep;
 import magia.core.vec;
 import magia.render.shader;
 import magia.render.window;
@@ -42,13 +43,18 @@ abstract class Camera {
         }
     }
 
-    void update() {}
+    void update(TimeStep timeStep) {}
     void passToShader(Shader shader) {}
     void passToSkyboxShader(Shader shader) {}
 }
 
 /// Orthographic camera class
 class OrthographicCamera : Camera {
+    protected {
+        float _moveSpeed = 0.1f;
+        float _zRotationSpeed = 0.1f;
+    }
+
     @property {
         override void position(vec3 position_) {
             _position = position_;
@@ -65,6 +71,7 @@ class OrthographicCamera : Camera {
         _projection = mat4.orthographic(left, right, bottom, top, -1f, 1f);
         _view = mat4.identity;
         _matrix = _projection * _view;
+        _position = vec3.zero;
         _zRotation = 0f;
     }
 
@@ -72,6 +79,38 @@ class OrthographicCamera : Camera {
         mat4 transform = mat4.translation(_position) * mat4.zrotation(_zRotation);
         _view = transform.inverse();
         _matrix = _projection * _view;
+    }
+
+    override void update(TimeStep timeStep) {
+        //writeln("Delta time: ", timeStep.seconds, "s (", timeStep.milliseconds, "ms)");
+
+        float deltaTime = timeStep.time;
+        float moveDelta = _moveSpeed * deltaTime;
+        float zRotationDelta = _zRotationSpeed * deltaTime;
+
+        vec3 newPosition = _position;
+        float newZRotation = _zRotation;
+
+        if (isButtonDown(KeyButton.left)) {
+            newPosition.x -= moveDelta;
+        } else if (isButtonDown(KeyButton.right)) {
+            newPosition.x += moveDelta;
+        }
+
+        if (isButtonDown(KeyButton.down)) {
+            newPosition.y -= moveDelta;
+        } else if (isButtonDown(KeyButton.up)) {
+            newPosition.y += moveDelta;
+        }
+
+        if (isButtonDown(KeyButton.a)) {
+            newZRotation += zRotationDelta;
+        } else if (isButtonDown(KeyButton.d)) {
+            newZRotation -= zRotationDelta;
+        }
+
+        position = newPosition;
+        zRotation = newZRotation;
     }
 }
 
@@ -140,7 +179,7 @@ class PerspectiveCamera : Camera {
     }
 
     /// Update the camera
-    override void update() {
+    override void update(TimeStep timeStep) {
         updateMatrix(45f, 0.1f, 1000f);
     }
 }

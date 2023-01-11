@@ -9,7 +9,10 @@
 module magia.common.controller;
 
 import bindbc.sdl;
-import magia.core;
+import magia.core.timer;
+import magia.core.timestep;
+import magia.core.util;
+import magia.core.vec;
 import magia.common.resource;
 
 import std.string;
@@ -69,10 +72,10 @@ void addControllerMapping(string mapping) {
 }
 
 /// Update the state of the controllers
-void updateControllers(float deltaTime) {
+void updateControllers(TimeStep timeStep) {
     foreach(axisIndex; 0.. 4) {
-        _analogTimers[axisIndex].update(deltaTime);
-        _analogTimeoutTimers[axisIndex].update(deltaTime);
+        _analogTimers[axisIndex].update(timeStep.time);
+        _analogTimeoutTimers[axisIndex].update(timeStep.time);
     }
 }
 

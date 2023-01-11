@@ -1,5 +1,6 @@
 module magia.render.entity;
 
+import magia.core.timestep;
 import magia.core.transform;
 import magia.render.material;
 
@@ -9,7 +10,7 @@ abstract class Instance {
     Transform transform;
 
     /// Update the object (given a deltaTime)
-    void update(float) {}
+    void update(TimeStep) {}
 }
 
 /// An entity is a drawable instance

@@ -4,6 +4,8 @@ import bindbc.opengl; /// @TODO remove (encapsulation should fix this)
 
 import magia.core.color;
 import magia.core.mat;
+import magia.core.timestep;
+import magia.core.transform;
 import magia.core.vec;
 
 import magia.render.array;
@@ -20,9 +22,10 @@ import std.stdio;
 
 /// 2D renderer
 class Renderer {
+    Camera camera;
+
     private {
         VertexArray _vertexArray;
-        Camera _camera;
         Shader _shader;
 
         // @TODO remove / factorize
@@ -44,17 +47,13 @@ class Renderer {
     }
 
     /// Constructor
-    this() {
-        _camera = new OrthographicCamera(-1f, 1f, -1f, 1f); // @TODO bind with resolution
-        _camera.position = vec3(0.2f, 0.2f, 0.0f);
-        _camera.zRotation = 0.5f;
-
+    this(Camera camera_) {
         // Rectangle vertices @TODO size should be -1/1 for full screen to multiply by size
         vec2[] vertices = [
-            vec2(-0.5f, -0.5f),
-            vec2( 0.5f, -0.5f),
-            vec2( 0.5f,  0.5f),
-            vec2(-0.5f,  0.5f)
+            vec2(-1f, -1f),
+            vec2( 1f, -1f),
+            vec2( 1f,  1f),
+            vec2(-1f,  1f)
         ];
 
         // Define shader layout
@@ -82,7 +81,9 @@ class Renderer {
         _colorUniform = glGetUniformLocation(_shader.id, "color");
 
         glEnable(GL_MULTISAMPLE);
-        glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
+        glClearColor(bgColor.r, bgColor.g, bgColor.b, 1f);
+
+        camera = camera_;
     }
 
     /// Clear rendered frame
@@ -106,23 +107,30 @@ class Renderer {
         glCullFace(GL_FRONT);
     }
 
+    /// Update
+    void update(TimeStep timeStep) {
+        camera.update(timeStep);
+    }
+
     /// Render the rectangle
     void drawFilledRect(vec2 origin, vec2 size, Color color = Color.white, float alpha = 1f) {
         origin = transformRenderSpace(origin) / screenSize();
         size = size * transformScale() / screenSize();
 
-        setupShader(origin, size, color, alpha);
+        Transform transform = Transform(vec3(origin, 0), vec3(size, 0));
+        setupShader(transform.model, color, alpha);
         drawIndexed(_vertexArray);
     }
 
     /// Render a circle
     void drawFilledCircle(vec2 center, float radius, Color color = Color.white, float alpha = 1f) {
-        setupShader(center, vec2(radius, radius), color, alpha);
+        Transform transform = Transform(vec3(center, 0), vec3(radius, radius, 0));
+        setupShader(transform.model, color, alpha);
         drawIndexed(_vertexArray);
     }
 
     /// Render a sprite @TODO handle clip, transform, sprite
-    void drawSprite(Sprite sprite, mat4 transform, float posX, float posY, float sizeX, float sizeY,
+    void drawSprite(Sprite sprite, Transform transform,
                     vec4i clip, Flip flip = Flip.none, Blend blend = Blend.alpha,
                     Color color = Color.white, float alpha = 1f) {
         // Cut texture depending on clip parameters
@@ -134,13 +142,12 @@ class Renderer {
         // Remap global clip
         vec4 clipf = vec4(clipX, clipY, clipW, clipH);
 
-        setupShader(vec2(posX, posY), vec2(sizeX, sizeY), color, alpha, transform, clipf, flip, blend);
+        setupShader(transform.model, color, alpha, clipf, flip, blend);
         drawIndexed(_vertexArray);
     }
 
-    private void setupShader(vec2 pos, vec2 size, Color color = Color.white, float alpha = 1f,
-                             mat4 transform = mat4.identity, vec4 clip = vec4.one,
-                             Flip flip = Flip.none, Blend blend = Blend.alpha) {
+    private void setupShader(mat4 transform = mat4.identity, Color color = Color.white, float alpha = 1f,
+                             vec4 clip = vec4.one, Flip flip = Flip.none, Blend blend = Blend.alpha) {
         // Activate shader
         _shader.activate();
 
@@ -148,7 +155,10 @@ class Renderer {
         glUniform4f(_colorUniform, color.r, color.g, color.b, alpha);
 
         // Set camera
-        _shader.uploadUniformMat4("camMatrix", _camera.matrix);
+        _shader.uploadUniformMat4("camMatrix", camera.matrix);
+
+        // Set transform
+        _shader.uploadUniformMat4("transform", transform);
 
         // Set resolution
         /*vec2i resolution = getWindowSize();

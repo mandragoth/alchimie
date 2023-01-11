@@ -4,7 +4,7 @@ func randf() (float) {
 }
 
 event onLoad() {
-    var camera = Camera();
+    //var camera = Camera();
     //camera:position(0., .5, 2.);
     //camera:position(-22., 20., 11.);
     //camera:orientation(1., -0.25, 0.29);

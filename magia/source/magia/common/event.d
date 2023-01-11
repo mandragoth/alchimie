@@ -13,6 +13,8 @@ import std.string;
 import std.conv;
 import std.utf;
 
+import magia.core.timestep;
+
 version (linux) {
     import core.sys.posix.unistd;
     import core.sys.posix.signal;
@@ -449,8 +451,8 @@ void destroyEvents() {
 }
 
 /// Updates everything mouse, keyboard or controller related
-void updateEvents(float deltaTime) {
-    updateControllers(deltaTime);
+void updateEvents(TimeStep timeStep) {
+    updateControllers(timeStep);
 }
 
 /// Process and dispatch window, input, etc events
