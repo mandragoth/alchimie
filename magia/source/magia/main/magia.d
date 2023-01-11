@@ -37,9 +37,15 @@ final class Magia {
         initializeScene();
     }
 
+    /// Récupère les événements (clavier/souris/manette/etc)
+    /// et les événements de la fenêtre (redimmensionnement/glisser-déposer/etc)
+    /// et les redistribue sous forme d’InputEvent
+    InputEvent[] pollEvents() {
+        return _input.pollEvents();
+    }
+
     /// Mise à jour des événements, de l’ui et de la scène
     void update(float deltatime) {
-        _input.poll();
         updateScene(deltatime);
         _ui.update(deltatime);
     }

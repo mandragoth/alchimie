@@ -14,6 +14,7 @@ import sorcier.script.vec2;
 import sorcier.script.vec3;
 import sorcier.script.color;
 import sorcier.script.ui;
+import sorcier.script.input;
 
 /// Loads all sub libraries
 GrLibrary loadMagiaLibrary() {
@@ -30,5 +31,6 @@ GrLibrary loadMagiaLibrary() {
     loadMagiaLibVec3(library);
     loadMagiaLibColor(library);
     loadMagiaLibUI(library);
+    loadMagiaLibInput(library);
     return library;
 }

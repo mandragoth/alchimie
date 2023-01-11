@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../sorcier"
+		},
+		{
+			"path": "../grimoire"
 		}
 	]
 }

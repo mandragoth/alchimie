@@ -106,3 +106,7 @@ func testUI() {
     sleep(2.seconds);
     label.runState("hidden");
 }
+
+event input(input: InputEvent) {
+    print(input as<string>);
+}

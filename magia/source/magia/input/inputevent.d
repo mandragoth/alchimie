@@ -1,16 +1,38 @@
 module magia.input.inputevent;
 
+import std.array : join;
+import std.conv : to;
+
 import bindbc.sdl;
 
 import magia.core;
 
 /// Événement utilisateur
 abstract class InputEvent {
+    private {
+        bool _isAccepted;
+    }
+
     @property {
         /// Cet événement peut-il servir d’action ?
         /// Voir InputMap
         bool isAction() const {
             return false;
+        }
+
+        /// Dans le cas d’une touche ou d’un bouton, est-il appuyé ?
+        bool isPressed() const {
+            return false;
+        }
+
+        /// Formate l’événement
+        string prettify() const {
+            return __traits(identifier, typeof(this));
+        }
+
+        /// L’événement a-t’il été consommé ?
+        final isAccepted() const {
+            return _isAccepted;
         }
     }
 
@@ -21,6 +43,11 @@ abstract class InputEvent {
     /// L’événement correspond-t’il à l’autre ?
     bool match(const InputEvent event) const {
         return false;
+    }
+
+    /// Consomme l’événement et empêche sa propagation
+    final void accept() {
+        _isAccepted = true;
     }
 }
 
@@ -274,8 +301,10 @@ final class InputEventKey : InputEvent {
     /// Ditto
     Button button;
 
-    /// Est-ce que la touche est pressée ?
-    bool isPressed;
+    private {
+        /// Est-ce que la touche est pressée ?
+        bool _pressed;
+    }
 
     /// Est-ce une répétition de touche automatique ?
     bool isEcho;
@@ -286,19 +315,38 @@ final class InputEventKey : InputEvent {
         override bool isAction() const {
             return true;
         }
+
+        /// Est-ce que la touche est pressée ?
+        override bool isPressed() const {
+            return _pressed;
+        }
+
+        /// Formate l’événement
+        override string prettify() const {
+            string txt = __traits(identifier, typeof(this));
+            string[] info;
+            txt ~= "{";
+            info ~= to!string(button);
+            info ~= _pressed ? "pressed" : "released";
+            if (isEcho)
+                info ~= "echo";
+            txt ~= info.join(", ");
+            txt ~= "}";
+            return txt;
+        }
     }
 
     /// Init
-    this(Button button_, bool isPressed_, bool isEcho_) {
+    this(Button button_, bool pressed_, bool isEcho_) {
         button = button_;
-        isPressed = isPressed_;
+        _pressed = pressed_;
         isEcho = isEcho_;
     }
 
     /// Copie
     this(const InputEventKey event) {
         button = event.button;
-        isPressed = event.isPressed;
+        _pressed = event._pressed;
         isEcho = event.isEcho;
     }
 
@@ -319,6 +367,20 @@ abstract class InputEventMouse : InputEvent {
 
     /// Position relative au nœud actuel
     vec2i position;
+
+    @property {
+        /// Formate l’événement
+        override string prettify() const {
+            string txt = __traits(identifier, typeof(this));
+            string[] info;
+            txt ~= "{";
+            info ~= "globalPosition: " ~ to!string(globalPosition);
+            info ~= "position: " ~ to!string(position);
+            txt ~= info.join(", ");
+            txt ~= "}";
+            return txt;
+        }
+    }
 
     /// Init
     this(vec2i globalPosition_, vec2i position_) {
@@ -347,8 +409,10 @@ final class InputEventMouseButton : InputEventMouse {
     /// Ditto
     Button button;
 
-    /// Est-ce que la touche est pressée ?
-    bool isPressed;
+    private {
+        /// Est-ce que la touche est pressée ?
+        bool _pressed;
+    }
 
     /// Combien de fois cette touche a été appuyé ?
     uint clicks;
@@ -359,12 +423,32 @@ final class InputEventMouseButton : InputEventMouse {
         override bool isAction() const {
             return true;
         }
+
+        /// Est-ce que la touche est pressée ?
+        override bool isPressed() const {
+            return _pressed;
+        }
+
+        /// Formate l’événement
+        override string prettify() const {
+            string txt = __traits(identifier, typeof(this));
+            string[] info;
+            txt ~= "{";
+            info ~= to!string(button);
+            info ~= _pressed ? "pressed" : "released";
+            info ~= "clicks: " ~ to!string(clicks);
+            info ~= "globalPosition: " ~ to!string(globalPosition);
+            info ~= "position: " ~ to!string(position);
+            txt ~= info.join(", ");
+            txt ~= "}";
+            return txt;
+        }
     }
 
     /// Init
-    this(vec2i globalPosition_, vec2i position_, Button button_, bool isPressed_, uint clicks_) {
+    this(vec2i globalPosition_, vec2i position_, Button button_, bool pressed_, uint clicks_) {
         button = button_;
-        isPressed = isPressed_;
+        _pressed = pressed_;
         clicks = clicks_;
         super(globalPosition_, position_);
     }
@@ -372,7 +456,7 @@ final class InputEventMouseButton : InputEventMouse {
     /// Copie
     this(const InputEventMouseButton event) {
         button = event.button;
-        isPressed = event.isPressed;
+        _pressed = event._pressed;
         clicks = event.clicks;
         super(event);
     }
@@ -392,6 +476,21 @@ final class InputEventMouseWheel : InputEventMouse {
     /// Delta
     vec2i wheel;
 
+    @property {
+        /// Formate l’événement
+        override string prettify() const {
+            string txt = __traits(identifier, typeof(this));
+            string[] info;
+            txt ~= "{";
+            info ~= "wheel: " ~ to!string(wheel);
+            info ~= "globalPosition: " ~ to!string(globalPosition);
+            info ~= "position: " ~ to!string(position);
+            txt ~= info.join(", ");
+            txt ~= "}";
+            return txt;
+        }
+    }
+
     /// Init
     this(vec2i globalPosition_, vec2i position_, vec2i wheel_) {
         wheel = wheel_;
@@ -407,6 +506,20 @@ final class InputEventMouseWheel : InputEventMouse {
 
 /// Déplacement de la souris
 final class InputEventMouseMotion : InputEventMouse {
+    @property {
+        /// Formate l’événement
+        override string prettify() const {
+            string txt = __traits(identifier, typeof(this));
+            string[] info;
+            txt ~= "{";
+            info ~= "globalPosition: " ~ to!string(globalPosition);
+            info ~= "position: " ~ to!string(position);
+            txt ~= info.join(", ");
+            txt ~= "}";
+            return txt;
+        }
+    }
+
     /// Init
     this(vec2i globalPosition_, vec2i position_) {
         super(globalPosition_, position_);
@@ -417,6 +530,17 @@ final class InputEventMouseMotion : InputEventMouse {
 final class InputEventText : InputEvent {
     /// Texte
     string text;
+
+    @property {
+        /// Formate l’événement
+        override string prettify() const {
+            string txt = __traits(identifier, typeof(this));
+            txt ~= "{";
+            txt ~= to!string(text);
+            txt ~= "}";
+            return txt;
+        }
+    }
 
     /// Init
     this(string text_) {
@@ -433,6 +557,13 @@ final class InputEventText : InputEvent {
 final class InputEventFile : InputEvent {
     /// Chemin du fichier
     string path;
+
+    @property {
+        /// Formate l’événement
+        override string prettify() const {
+            return __traits(identifier, typeof(this)) ~ "{}";
+        }
+    }
 
     /// Init
     this(string path_) {

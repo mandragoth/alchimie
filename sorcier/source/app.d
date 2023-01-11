@@ -31,7 +31,10 @@ void main() {
         runApplication();
     }
     catch (Exception e) {
-        writeln(e.msg);
+        writeln("Erreur: ", e.msg);
+        foreach (trace; e.info) {
+            writeln("at: ", trace);
+        }
     }
 }
 
@@ -60,7 +63,19 @@ void runApplication() {
             }
         }*/
 
+        InputEvent[] inputEvents = _magia.pollEvents();
+
         if (_engine) {
+            GrEvent grEvent = _engine.getEvent("input", [
+                    grGetNativeType("InputEvent")
+                ]);
+
+            if (grEvent) {
+                foreach (InputEvent inputEvent; inputEvents) {
+                    _engine.callEvent(grEvent, [GrValue(inputEvent)]);
+                }
+            }
+
             if (_engine.hasTasks)
                 _engine.process();
 
@@ -103,7 +118,7 @@ bool loadScript() {
     compiler.addLibrary(_magialib);
 
     GrBytecode bytecode = compiler.compileFile("assets/script/main.gr",
-        GrOption.profile | GrOption.symbols, GrLocale.fr_FR);
+        GrOption.profile | GrOption.symbols | GrOption.safe, GrLocale.fr_FR);
 
     if (!bytecode) {
         writeln(compiler.getError().prettify(GrLocale.fr_FR));

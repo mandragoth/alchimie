@@ -22,8 +22,18 @@ private shared bool _isRunning = false;
 /// Gère les entrés et notifications de l’application
 final class Input {
     private {
+        InputMap _map;
         bool _hasQuit;
         vec2i _globalMousePosition, _mousePosition;
+
+        bool[InputEventKey.Button.max + 1] _keyButtonsPressed;
+        bool[InputEventMouseButton.Button.max + 1] _mouseButtonsPressed;
+
+        struct Action {
+            bool pressed;
+        }
+
+        Action[string] _actions;
     }
 
     @property {
@@ -49,29 +59,32 @@ final class Input {
         //SDL_ShowCursor(SDL_DISABLE);
 
         input = this;
+
+        _map = new InputMap;
     }
 
-    /// Returns the content of the clipboard
+    /// Récupère le contenu du presse-papier
     string getClipboard() const {
         auto clipboard = SDL_GetClipboardText();
 
-        if (clipboard) {
-            string text = to!string(fromStringz(clipboard));
-            SDL_free(clipboard);
-            return text;
-        }
-        return "";
+        if (!clipboard)
+            return "";
+
+        string text = to!string(fromStringz(clipboard));
+        SDL_free(clipboard);
+        return text;
     }
 
-    /// Fill the clipboard
+    /// Renseigne le presse-papier
     void setClipboard(string text) {
         SDL_SetClipboardText(toStringz(text));
     }
 
-    /// Rècupère les événements (clavier/souris/manette/etc)
+    /// Récupère les événements (clavier/souris/manette/etc)
     /// et les événements de la fenêtre (redimmensionnement/glisser-déposer/etc)
-    /// et les redistribue sous forme d’InputEvent ou WindowEvent
-    void poll() {
+    /// et les redistribue sous forme d’InputEvent
+    InputEvent[] pollEvents() {
+        InputEvent[] events;
         SDL_Event sdlEvent;
 
         while (SDL_PollEvent(&sdlEvent)) {
@@ -85,7 +98,7 @@ final class Input {
                     true, //
                     sdlEvent.key.repeat > 0);
 
-                _dispatchEvent(event);
+                events ~= event;
                 break;
             case SDL_KEYUP:
                 InputEventKey event = new InputEventKey( //
@@ -93,14 +106,14 @@ final class Input {
                     false, //
                     sdlEvent.key.repeat > 0);
 
-                _dispatchEvent(event);
+                events ~= event;
                 break;
             case SDL_TEXTINPUT:
                 string text = to!string(sdlEvent.text.text);
                 text.length = stride(text);
                 InputEventText event = new InputEventText(text);
 
-                _dispatchEvent(event);
+                events ~= event;
                 break;
             case SDL_MOUSEMOTION:
                 _globalMousePosition = vec2i(sdlEvent.motion.x, sdlEvent.motion.y);
@@ -109,7 +122,7 @@ final class Input {
                     _globalMousePosition, //
                     _mousePosition);
 
-                _dispatchEvent(event);
+                events ~= event;
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
@@ -120,7 +133,7 @@ final class Input {
                     true, //
                     sdlEvent.button.clicks);
 
-                _dispatchEvent(event);
+                events ~= event;
                 break;
             case SDL_MOUSEBUTTONUP:
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
@@ -131,14 +144,14 @@ final class Input {
                     false, //
                     sdlEvent.button.clicks);
 
-                _dispatchEvent(event);
+                events ~= event;
                 break;
             case SDL_MOUSEWHEEL:
                 InputEventMouseWheel event = new InputEventMouseWheel(_globalMousePosition, //
                     _mousePosition, //
                     vec2i(sdlEvent.wheel.x, sdlEvent.wheel.y));
 
-                _dispatchEvent(event);
+                events ~= event;
                 break;
             case SDL_WINDOWEVENT:
                 switch (sdlEvent.window.event) {
@@ -172,7 +185,7 @@ final class Input {
 
                 InputEventFile event = new InputEventFile(path);
 
-                _dispatchEvent(event);
+                events ~= event;
                 break;
             case SDL_CONTROLLERDEVICEADDED:
                 break;
@@ -190,10 +203,51 @@ final class Input {
                 break;
             }
         }
+
+        _processEvents(events);
+
+        return events;
     }
 
-    private void _dispatchEvent(InputEvent event) {
+    private void _processEvents(InputEvent[] events) {
+        foreach (event; events) {
+            if (event.isAction) {
+                InputAction matchingAction = _map.getAction(event);
 
+                if (matchingAction) {
+                    auto p = matchingAction.id in _actions;
+
+                    if (p) {
+                        (*p).pressed = event.isPressed;
+                    }
+                    else {
+                        Action action;
+                        action.pressed = event.isPressed;
+                        _actions[matchingAction.id] = action;
+                    }
+                }
+            }
+        }
+    }
+
+    /// Est-ce que la touche est appuyée ?
+    bool isPressed(InputEventKey.Button button) const {
+        return _keyButtonsPressed[button];
+    }
+
+    /// Ditto
+    bool isPressed(InputEventMouseButton.Button button) const {
+        return _mouseButtonsPressed[button];
+    }
+
+    /// L’action est-t’elle activé ?
+    bool isActionPressed(string id) const {
+        auto p = id in _actions;
+
+        if (!p)
+            return false;
+
+        return (*p).pressed;
     }
 }
 
