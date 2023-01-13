@@ -26,8 +26,8 @@ final class Input {
         bool _hasQuit;
         vec2i _globalMousePosition, _mousePosition;
 
-        bool[InputEventKey.Button.max + 1] _keyButtonsPressed;
-        bool[InputEventMouseButton.Button.max + 1] _mouseButtonsPressed;
+        bool[KeyButton.max + 1] _keyButtonsPressed;
+        bool[MouseButton.max + 1] _mouseButtonsPressed;
 
         struct Action {
             bool pressed;
@@ -93,16 +93,16 @@ final class Input {
                 _hasQuit = true;
                 break;
             case SDL_KEYDOWN:
-                InputEventKey event = new InputEventKey( //
-                    cast(InputEventKey.Button) sdlEvent.key.keysym.scancode,
+                InputEvent event = InputEvent.keyButton( //
+                    cast(KeyButton) sdlEvent.key.keysym.scancode,
                     true, //
                     sdlEvent.key.repeat > 0);
 
                 events ~= event;
                 break;
             case SDL_KEYUP:
-                InputEventKey event = new InputEventKey( //
-                    cast(InputEventKey.Button) sdlEvent.key.keysym.scancode,
+                InputEvent event = InputEvent.keyButton( //
+                    cast(KeyButton) sdlEvent.key.keysym.scancode,
                     false, //
                     sdlEvent.key.repeat > 0);
 
@@ -111,14 +111,14 @@ final class Input {
             case SDL_TEXTINPUT:
                 string text = to!string(sdlEvent.text.text);
                 text.length = stride(text);
-                InputEventText event = new InputEventText(text);
+                InputEvent event = InputEvent.textInput(text);
 
                 events ~= event;
                 break;
             case SDL_MOUSEMOTION:
                 _globalMousePosition = vec2i(sdlEvent.motion.x, sdlEvent.motion.y);
                 _mousePosition = _globalMousePosition;
-                InputEventMouseMotion event = new InputEventMouseMotion( //
+                InputEvent event = InputEvent.mouseMotion( //
                     _globalMousePosition, //
                     _mousePosition);
 
@@ -127,28 +127,29 @@ final class Input {
             case SDL_MOUSEBUTTONDOWN:
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
                 _mousePosition = _globalMousePosition;
-                InputEventMouseButton event = new InputEventMouseButton(_globalMousePosition, //
-                    _mousePosition, //
-                    cast(InputEventMouseButton.Button) sdlEvent.button.button,
+                InputEvent event = InputEvent.mouseButton( //
+                    cast(MouseButton) sdlEvent.button.button,
                     true, //
-                    sdlEvent.button.clicks);
+                    sdlEvent.button.clicks, //
+                    _globalMousePosition, //
+                    _mousePosition);
 
                 events ~= event;
                 break;
             case SDL_MOUSEBUTTONUP:
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
                 _mousePosition = _globalMousePosition;
-                InputEventMouseButton event = new InputEventMouseButton(_globalMousePosition, //
-                    _mousePosition, //
-                    cast(InputEventMouseButton.Button) sdlEvent.button.button,
+                InputEvent event = InputEvent.mouseButton( //
+                    cast(MouseButton) sdlEvent.button.button,
                     false, //
-                    sdlEvent.button.clicks);
+                    sdlEvent.button.clicks, //
+                    _globalMousePosition, //
+                    _mousePosition);
 
                 events ~= event;
                 break;
             case SDL_MOUSEWHEEL:
-                InputEventMouseWheel event = new InputEventMouseWheel(_globalMousePosition, //
-                    _mousePosition, //
+                InputEvent event = InputEvent.mouseWheel( //
                     vec2i(sdlEvent.wheel.x, sdlEvent.wheel.y));
 
                 events ~= event;
@@ -183,8 +184,7 @@ final class Input {
                 }
                 SDL_free(sdlEvent.drop.file);
 
-                InputEventFile event = new InputEventFile(path);
-
+                InputEvent event = InputEvent.dropFile(path);
                 events ~= event;
                 break;
             case SDL_CONTROLLERDEVICEADDED:
@@ -231,12 +231,12 @@ final class Input {
     }
 
     /// Est-ce que la touche est appuyée ?
-    bool isPressed(InputEventKey.Button button) const {
+    bool isPressed(KeyButton button) const {
         return _keyButtonsPressed[button];
     }
 
     /// Ditto
-    bool isPressed(InputEventMouseButton.Button button) const {
+    bool isPressed(MouseButton button) const {
         return _mouseButtonsPressed[button];
     }
 
