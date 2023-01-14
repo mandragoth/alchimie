@@ -58,7 +58,7 @@ class Texture {
     }
 
     /// Constructor for usual 2D texture from surface
-    this (SDL_Surface *surface, string texType, GLuint slot = 0) {
+    this(SDL_Surface *surface, string texType, GLuint slot = 0) {
         setupData(surface, texType, slot);
     }
 
@@ -78,26 +78,25 @@ class Texture {
         _height = surface.h;
 
         // Generate texture and bind data
-        glGenTextures(1, &id);
+        glCreateTextures(_target, 1, &id);
         glActiveTexture(GL_TEXTURE0 + _slot); // @TODO check if needed?
-        glBindTexture(_target, id);
 
         if (type == "sprite") {
             // Setup filter
-            glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTextureParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTextureParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
             // Setup wrap
-            glTexParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTextureParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTextureParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         } else {
             // Setup filters
-            glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTextureParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTextureParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
             // Setup wrap
-            glTexParameteri(_target, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTextureParameteri(_target, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTextureParameteri(_target, GL_TEXTURE_WRAP_T, GL_REPEAT);
         }
 
         const uint nbChannels = surface.format.BitsPerPixel / 8;
@@ -149,13 +148,13 @@ class Texture {
         glBindTexture(_target, id);
         
         // Setup filters
-        glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         // Setup wrap
-        glTexParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(_target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(_target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
         for (int i = 0; i < paths.length; ++i) {
             string path = "../assets/skybox/" ~ paths[i];
@@ -220,12 +219,12 @@ class MultiSampleTexture : Texture {
         glTexImage2DMultisample(_target, nbSamples, GL_RGB16F, _width, _height, GL_TRUE);
         
         // Setup filters
-        glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTextureParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTextureParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         // Setup wrap
-        glTexParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         // Bind to FBO
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _target, id, 0);
@@ -246,12 +245,12 @@ class PostProcessTexture : Texture {
         glTexImage2D(_target, 0, GL_RGB16F, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, null);
         
         // Setup filters
-        glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTextureParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTextureParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         // Setup wrap
-        glTexParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         // Bind to FBO
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _target, id, 0);
@@ -272,12 +271,12 @@ class ShadowmapTexture : Texture {
         glTexImage2D(_target, 0, GL_DEPTH_COMPONENT, _width, _height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, null);
         
         // Setup filters
-        glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTextureParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTextureParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         // Setup wrap
-        glTexParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        glTextureParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTextureParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
         // Setup shadow color (black)
         float[] clampColor = [1.0, 1.0, 1.0, 1.0];

@@ -27,15 +27,6 @@ class Renderer {
     private {
         VertexArray _vertexArray;
         Shader _shader;
-
-        // @TODO remove / factorize
-        GLint _resolutionUniform;
-        GLint _positionUniform;
-        GLint _sizeUniform;
-        GLint _modelUniform;
-        GLint _clipUniform;
-        GLint _colorUniform;
-        GLint _flipUniform;
     }
 
     @property {
@@ -49,16 +40,17 @@ class Renderer {
     /// Constructor
     this(Camera camera_) {
         // Rectangle vertices @TODO size should be -1/1 for full screen to multiply by size
-        vec2[] vertices = [
-            vec2(-1f, -1f),
-            vec2( 1f, -1f),
-            vec2( 1f,  1f),
-            vec2(-1f,  1f)
+        float[] vertices = [
+            -1f, -1f, 0f, 0f,
+             1f, -1f, 1f, 0f,
+             1f,  1f, 1f, 1f,
+            -1f,  1f, 0f, 1f 
         ];
 
         // Define shader layout
         BufferLayout layout = new BufferLayout([
-            BufferElement("a_Position", LayoutType.ltFloat2)
+            BufferElement("a_Position", LayoutType.ltFloat2),
+            BufferElement("a_TexCoord", LayoutType.ltFloat2)
         ]);
 
         // Create and bind vertex array
@@ -76,9 +68,6 @@ class Renderer {
 
         // Load global shader to render 2D textured/colored quads
         _shader = new Shader("image.vert", "image.frag");
-        _sizeUniform = glGetUniformLocation(_shader.id, "size");
-        _positionUniform = glGetUniformLocation(_shader.id, "position");
-        _colorUniform = glGetUniformLocation(_shader.id, "color");
 
         glEnable(GL_MULTISAMPLE);
         glClearColor(bgColor.r, bgColor.g, bgColor.b, 1f);
@@ -152,7 +141,7 @@ class Renderer {
         _shader.activate();
 
         // Set color
-        glUniform4f(_colorUniform, color.r, color.g, color.b, alpha);
+        _shader.uploadUniformVec4("color", vec4(color.r, color.g, color.b, alpha));
 
         // Set camera
         _shader.uploadUniformMat4("camMatrix", camera.matrix);

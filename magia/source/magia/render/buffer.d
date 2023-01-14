@@ -5,6 +5,7 @@ import bindbc.opengl;
 import magia.core.mat;
 import magia.core.vec;
 import magia.render.vertex;
+
 import std.conv;
 import std.format;
 
@@ -151,7 +152,7 @@ class BufferLayout {
 
     private void computeOffsets() {
         uint offset = 0;
-        foreach (BufferElement element; _elements) {
+        foreach (ref BufferElement element; _elements) {
             element.offset = offset;
             offset += element.size;
         }

@@ -99,17 +99,17 @@ class Application {
 
                 // TEST: check
                 _scene.renderer.setup2DRender();
-                //_scene.renderer.drawFilledRect(vec2(0f, 0f), vec2(800f, 800f), Color.green);
+                _scene.renderer.drawFilledRect(vec2(0f, 0f), vec2(400f, 400f), Color.green);
                 //_scene.renderer.drawFilledRect(vec2(-400f, -400f), vec2(400f, 400f), Color.blue);
                 //_scene.renderer.drawFilledRect(vec2(200f, 200f), vec2(50f, 20f), Color.red);
 
-                vec2 scale = vec2.one * 10f;
-                for(int x = 0; x < 20; ++x) {
-                    for(int y = 0; y < 20; ++y) {
+                /*vec2 scale = vec2.one * 20f;
+                for(int x = 0; x < 22; ++x) {
+                    for(int y = 0; y < 22; ++y) {
                         vec2 position = vec2(x * 50f, y * 50f);
                         _scene.renderer.drawFilledRect(position, scale, Color.blue);
                     }
-                }
+                }*/
             }
 
             renderWindow();

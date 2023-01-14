@@ -47,7 +47,7 @@ class VertexArray {
         vertexBuffer.bind();
 
         uint layoutId = 0;
-        foreach(BufferElement element; vertexBuffer.layout.elements) {
+        foreach(ref BufferElement element; vertexBuffer.layout.elements) {
             glEnableVertexAttribArray(layoutId);
             glVertexAttribPointer(layoutId,
                                   element.count,

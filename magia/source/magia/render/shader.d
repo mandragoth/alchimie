@@ -5,6 +5,7 @@ import std.file, std.string, std.stdio;
 import bindbc.opengl;
 
 import magia.core.mat;
+import magia.core.vec;
 import magia.render.window;
 
 /// Class holding a shader
@@ -51,31 +52,57 @@ class Shader {
         glDeleteShader(_fragmentShader);
     }
 
-    /// Upload an uniform of type mat4 to the shader
-    void uploadUniformMat4(const char* label, mat4 matrix) {
+    /// Upload an uniform of type float to the shader
+    void uploadUniformFloat(const char* label, float data) {
         GLint labelId = glGetUniformLocation(id, label);
-        glUniformMatrix4fv(labelId, 1, GL_TRUE, matrix.value_ptr);
+        glUniform1f(labelId, data);
+    }
+
+    /// Upload an uniform of type vec2 to the shader
+    void uploadUniformVec4(const char* label, vec2 data) {
+        GLint labelId = glGetUniformLocation(id, label);
+        glUniform2f(labelId, data.x, data.y);
+    }
+
+    /// Upload an uniform of type vec3 to the shader
+    void uploadUniformVec4(const char* label, vec3 data) {
+        GLint labelId = glGetUniformLocation(id, label);
+        glUniform3f(labelId, data.x, data.y, data.z);
+    }
+
+    /// Upload an uniform of type vec4 to the shader
+    void uploadUniformVec4(const char* label, vec4 data) {
+        GLint labelId = glGetUniformLocation(id, label);
+        glUniform4f(labelId, data.x, data.y, data.z, data.w);
+    }
+
+    /// Upload an uniform of type mat4 to the shader
+    void uploadUniformMat4(const char* label, mat4 data) {
+        GLint labelId = glGetUniformLocation(id, label);
+        glUniformMatrix4fv(labelId, 1, GL_TRUE, data.value_ptr);
     }
 
     private {
         void compileErrors(GLuint shaderId, string source, string type) {
+            // Check if compilation OK
             GLint hasCompiled;
-            char[1024] infoLog;
+            glGetShaderiv(shaderId, GL_COMPILE_STATUS, &hasCompiled);
+                
+            if (hasCompiled == GL_FALSE) {
+                // Get log size
+                GLint maxSize = 0;
+                glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &maxSize);
 
-            if (type != "PROGRAM") {
-                glGetShaderiv(shaderId, GL_COMPILE_STATUS, &hasCompiled);
+                // Create dynamic array and set its length to include NULL character
+                GLchar[] infoLog;
+                infoLog.length = maxSize;
 
-                if (hasCompiled == GL_FALSE) {
-                    glGetShaderInfoLog(shaderId, 1024, null, infoLog.ptr);
-                    writeln("SHADER COMPILER ERROR FOR ", type, ": ", source);
-                }
-            } else {
-                glGetProgramiv(shaderId, GL_COMPILE_STATUS, &hasCompiled);
+                // Delete shader as we don't need it anymore
+                glDeleteShader(shaderId);
 
-                if (hasCompiled == GL_FALSE) {
-                    glGetProgramInfoLog(shaderId, 1024, null, infoLog.ptr);
-                    writeln("SHADER LINKING ERROR FOR ", type, ": ", source);
-                }
+                // Log type, source, error info
+                glGetShaderInfoLog(shaderId, maxSize, &maxSize, infoLog.ptr);
+                writeln(type, " SHADER ERROR FOR ", source, ": ", infoLog);
             }
         }
     }
