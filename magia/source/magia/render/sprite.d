@@ -10,92 +10,59 @@ import magia.render.window;
 /// Base rendering class.
 final class Sprite {
     private {
-        // @TODO texture cache?
+        // @TODO texture cache? with Resource.fetch
         Texture _texture;
 
-        // @TODO defer to texture?
-        SDL_Surface* _surface = null;
-        uint _width, _height;
+        // Is sprite loaded
         bool _isLoaded, _ownData;
     }
 
     @property {
-        /// loaded ?
+        /// Loaded?
         bool isLoaded() const {
             return _isLoaded;
         }
-        /// Width in texels.
-        uint width() const {
-            return _width;
+
+        /// Return texture id
+        int textureId() {
+            return _texture.id;
         }
-        /// Height in texels.
+
+        /// Underlying texture width
+        uint width() const {
+            return _texture.width;
+        }
+
+        /// Underlying texture height
         uint height() const {
-            return _height;
+            return _texture.height;
         }
     }
 
     /// Constructor
     this(Sprite sprite) {
-        _isLoaded = sprite._isLoaded;
-        _width = sprite._width;
-        _height = sprite._height;
         _texture = sprite._texture;
+        _isLoaded = sprite._isLoaded;
         _ownData = false;
     }
 
     /// Constructor given an SDL surface
     this(SDL_Surface* surface, bool preload = false) {
         // Image data
-        _surface = surface;
-        enforce(_surface, "invalid surface");
-
-        _width = _surface.w;
-        _height = _surface.h;
-
-        if (!preload) {
-            postload();
-        }
+        _texture = new Texture(surface, "sprite");
+        _isLoaded = true;
     }
 
     /// Constructor given an image path
     this(string path, bool preload = false) {
         // Image data
-        _surface = IMG_Load(toStringz(path));
-        enforce(_surface, "can't load image `" ~ path ~ "`");
-
-        _width = _surface.w;
-        _height = _surface.h;
+        _texture = new Texture(path, "sprite");
         _ownData = true;
-
-        if (!preload) {
-            postload();
-        }
+        _isLoaded = true;
     }
 
     ~this() {
         unload();
-    }
-
-    package void load(SDL_Surface* surface) {
-        _width = surface.w;
-        _height = surface.h;
-
-        _isLoaded = true;
-        _ownData = true;
-    }
-
-    /// Call it if you set the preload flag on ctor.
-    void postload() {
-        if (_isLoaded) {
-            return;
-        }
-
-        _texture = new Texture(_surface, "sprite");
-
-        if (_ownData) {
-            SDL_FreeSurface(_surface);
-            _surface = null;
-        }
     }
 
     /// Free image data

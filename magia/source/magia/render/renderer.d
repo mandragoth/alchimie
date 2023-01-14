@@ -22,6 +22,7 @@ import std.stdio;
 
 /// 2D renderer
 class Renderer {
+    /// Renderer active camera
     Camera camera;
 
     private {
@@ -119,9 +120,14 @@ class Renderer {
     }
 
     /// Render a sprite @TODO handle clip, transform, sprite
-    void drawSprite(Sprite sprite, Transform transform,
-                    vec4i clip, Flip flip = Flip.none, Blend blend = Blend.alpha,
+    void drawSprite(Sprite sprite, vec2 position, vec2 size,
+                    vec4i clip = vec4i.zero, Flip flip = Flip.none, Blend blend = Blend.alpha,
                     Color color = Color.white, float alpha = 1f) {
+        // Set transform
+        position = transformRenderSpace(position) / screenSize();
+        size = size * transformScale() / screenSize();
+        Transform transform = Transform(vec3(position, 0), vec3(size, 0));
+
         // Cut texture depending on clip parameters
         const float clipX = cast(float) clip.x / cast(float) sprite.width;
         const float clipY = cast(float) clip.y / cast(float) sprite.height;
@@ -131,23 +137,26 @@ class Renderer {
         // Remap global clip
         vec4 clipf = vec4(clipX, clipY, clipW, clipH);
 
-        setupShader(transform.model, color, alpha, clipf, flip, blend);
+        setupShader(transform.model, color, alpha, sprite.textureId, clipf, flip, blend);
         drawIndexed(_vertexArray);
     }
 
     private void setupShader(mat4 transform = mat4.identity, Color color = Color.white, float alpha = 1f,
-                             vec4 clip = vec4.one, Flip flip = Flip.none, Blend blend = Blend.alpha) {
+                             int textureId = 0, vec4 clip = vec4.one, Flip flip = Flip.none, Blend blend = Blend.alpha) {
         // Activate shader
         _shader.activate();
 
         // Set color
-        _shader.uploadUniformVec4("color", vec4(color.r, color.g, color.b, alpha));
+        _shader.uploadUniformVec4("u_Color", vec4(color.r, color.g, color.b, alpha));
 
         // Set camera
-        _shader.uploadUniformMat4("camMatrix", camera.matrix);
+        _shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
 
         // Set transform
-        _shader.uploadUniformMat4("transform", transform);
+        _shader.uploadUniformMat4("u_Transform", transform);
+
+        // Set taxture
+        _shader.uploadUniformInt("u_Texture", textureId);
 
         // Set resolution
         /*vec2i resolution = getWindowSize();

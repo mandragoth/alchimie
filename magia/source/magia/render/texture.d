@@ -35,6 +35,16 @@ class Texture {
         GLenum target() const {
             return _target;
         }
+
+        /// Get texture width
+        int width() const {
+            return _width;
+        }
+
+        /// Get texture height
+        int height() const {
+            return _height;
+        }
     }
 
     /// Base constructor (used for inheriting classes)
@@ -47,6 +57,9 @@ class Texture {
 
     /// Constructor for usual 2D texture from path
     this(string path, string texType, GLuint slot = 0) {
+        // Prefix path
+        path = "../assets/texture/" ~ path;
+
         // Get surface and process it
         SDL_Surface *surface = IMG_Load(toStringz(path));
         enforce(surface, "can't load image `" ~ path ~ "`");
@@ -83,8 +96,8 @@ class Texture {
 
         if (type == "sprite") {
             // Setup filter
-            glTextureParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTextureParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTextureParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTextureParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
             // Setup wrap
             glTextureParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

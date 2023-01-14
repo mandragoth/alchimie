@@ -77,11 +77,6 @@ final class BitmapFont : Font {
         _sprite = new Sprite(font._sprite);
     }
 
-    /// Call only after Renderer is created in main thread.
-    void postload() {
-        _sprite.postload();
-    }
-
     @property {
         /// Font name
         string name() const {

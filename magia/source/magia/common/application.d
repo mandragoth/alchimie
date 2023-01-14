@@ -13,6 +13,7 @@ import magia.core.timestep;
 import magia.render.camera;
 import magia.render.font;
 import magia.render.scene;
+import magia.render.sprite;
 import magia.render.window;
 import magia.ui.manager;
 import magia.ui.element;
@@ -89,6 +90,8 @@ class Application {
 
     /// Run application
     void run() {
+        Sprite sprite = new Sprite("planks.png");
+
         while (processEvents()) {
             updateEvents(_timeStep);
             updateScripts();
@@ -99,7 +102,9 @@ class Application {
 
                 // TEST: check
                 _scene.renderer.setup2DRender();
-                _scene.renderer.drawFilledRect(vec2(0f, 0f), vec2(400f, 400f), Color.green);
+
+                _scene.renderer.drawSprite(sprite, vec2(0f, 0f), vec2(400f, 400f));
+                //_scene.renderer.drawFilledRect(vec2(0f, 0f), vec2(400f, 400f), Color.green);
                 //_scene.renderer.drawFilledRect(vec2(-400f, -400f), vec2(400f, 400f), Color.blue);
                 //_scene.renderer.drawFilledRect(vec2(200f, 200f), vec2(50f, 20f), Color.red);
 
