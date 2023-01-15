@@ -110,8 +110,10 @@ func testUI() {
 event input(input: InputEvent) {
     switch(input.type)
     case(InputEventType.keyButton) {
-        print("KEY !");
+        var input = input.keyButton?;
+        if(input.button == KeyButton.w and input.pressed)
+            print("En avant ! ");
     }
 
-    print(input as<string>);
+    //print(input);
 }

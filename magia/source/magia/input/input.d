@@ -26,8 +26,8 @@ final class Input {
         bool _hasQuit;
         vec2i _globalMousePosition, _mousePosition;
 
-        bool[KeyButton.max + 1] _keyButtonsPressed;
-        bool[MouseButton.max + 1] _mouseButtonsPressed;
+        bool[InputEvent.KeyButton.Button.max + 1] _keyButtonsPressed;
+        bool[InputEvent.MouseButton.Button.max + 1] _mouseButtonsPressed;
 
         struct Action {
             bool pressed;
@@ -94,7 +94,7 @@ final class Input {
                 break;
             case SDL_KEYDOWN:
                 InputEvent event = InputEvent.keyButton( //
-                    cast(KeyButton) sdlEvent.key.keysym.scancode,
+                    cast(InputEvent.KeyButton.Button) sdlEvent.key.keysym.scancode,
                     true, //
                     sdlEvent.key.repeat > 0);
 
@@ -102,7 +102,7 @@ final class Input {
                 break;
             case SDL_KEYUP:
                 InputEvent event = InputEvent.keyButton( //
-                    cast(KeyButton) sdlEvent.key.keysym.scancode,
+                    cast(InputEvent.KeyButton.Button) sdlEvent.key.keysym.scancode,
                     false, //
                     sdlEvent.key.repeat > 0);
 
@@ -128,7 +128,7 @@ final class Input {
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
                 _mousePosition = _globalMousePosition;
                 InputEvent event = InputEvent.mouseButton( //
-                    cast(MouseButton) sdlEvent.button.button,
+                    cast(InputEvent.MouseButton.Button) sdlEvent.button.button,
                     true, //
                     sdlEvent.button.clicks, //
                     _globalMousePosition, //
@@ -140,7 +140,7 @@ final class Input {
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
                 _mousePosition = _globalMousePosition;
                 InputEvent event = InputEvent.mouseButton( //
-                    cast(MouseButton) sdlEvent.button.button,
+                    cast(InputEvent.MouseButton.Button) sdlEvent.button.button,
                     false, //
                     sdlEvent.button.clicks, //
                     _globalMousePosition, //
@@ -231,12 +231,12 @@ final class Input {
     }
 
     /// Est-ce que la touche est appuyée ?
-    bool isPressed(KeyButton button) const {
+    bool isPressed(InputEvent.KeyButton.Button button) const {
         return _keyButtonsPressed[button];
     }
 
     /// Ditto
-    bool isPressed(MouseButton button) const {
+    bool isPressed(InputEvent.MouseButton.Button button) const {
         return _mouseButtonsPressed[button];
     }
 
