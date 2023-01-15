@@ -96,19 +96,20 @@ final class Mesh : Renderable {
         uint nbDiffuseTextures = 0;
         uint nbSpecularTextures = 0;
 
+        /// @TODO rewrite shader forward
         uint textureId = 0;
         foreach (Texture texture; _textures) {
-            const string type = texture.type;
+            const TextureType type = texture.type;
 
             string name;
-            if (type == "diffuse") {
-                name = type ~ to!string(nbDiffuseTextures);
+            if (type == TextureType.diffuse) {
+                name = to!string(type) ~ to!string(nbDiffuseTextures);
                 ++nbDiffuseTextures;
-            } else if (type == "specular") {
-                name = type ~ to!string(nbSpecularTextures);
+            } else if (type == TextureType.specular) {
+                name = to!string(type) ~ to!string(nbSpecularTextures);
                 ++nbSpecularTextures;
             } else {
-                name = type;
+                name = to!string(type);
             }
 
             texture.forwardToShader(shader, name, textureId);

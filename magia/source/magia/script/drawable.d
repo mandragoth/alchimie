@@ -111,11 +111,6 @@ private void _drawFilledRect(GrCall call) {
 
     Color color = Color(colorObj.getFloat("r"), colorObj.getFloat("g"), colorObj.getFloat("b"));
 
-    writeln("DRAWABLE SCRIPT");
-    writeln("position: ", position);
-    writeln("size: ", size);
-    writeln("color: ", color);
-
     //renderer.drawFilledRect(position, size, color);
 }
 

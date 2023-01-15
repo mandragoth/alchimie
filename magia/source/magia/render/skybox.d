@@ -1,6 +1,7 @@
 module magia.render.skybox;
 
 import std.stdio;
+import std.conv;
 
 import bindbc.opengl;
 
@@ -73,7 +74,8 @@ final class Skybox {
         ];
 
         _texture = new Texture(faceCubemaps);
-        _texture.forwardToShader(_shader, _texture.type, 0);
+        // @TODO rewrite shader forward
+        _texture.forwardToShader(_shader, to!string(_texture.type), 0);
 
         // Generate and bind VAO
         _vertexArray = new VertexArray();

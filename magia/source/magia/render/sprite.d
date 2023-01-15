@@ -48,15 +48,13 @@ final class Sprite {
 
     /// Constructor given an SDL surface
     this(SDL_Surface* surface, bool preload = false) {
-        // Image data
-        _texture = new Texture(surface, "sprite");
+        _texture = new Texture(surface);
         _isLoaded = true;
     }
 
     /// Constructor given an image path
     this(string path, bool preload = false) {
-        // Image data
-        _texture = new Texture(path, "sprite");
+        _texture = new Texture(path);
         _ownData = true;
         _isLoaded = true;
     }

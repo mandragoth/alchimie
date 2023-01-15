@@ -114,7 +114,7 @@ void createWindow(const vec2u windowSize, string title) {
 
     // Create OpenGL context and load OpenGL
     _glContext = SDL_GL_CreateContext(_sdlWindow);
-    enforce(loadOpenGL() == GLSupport.gl41, "Failed to load opengl");
+    enforce(loadOpenGL() == glSupport, "Failed to load opengl");
 
     SDL_GL_MakeCurrent(_sdlWindow, _glContext);
 

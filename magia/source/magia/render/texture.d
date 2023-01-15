@@ -1,21 +1,38 @@
 module magia.render.texture;
 
-import std.string, std.exception;
-import bindbc.opengl, bindbc.sdl;
+import bindbc.sdl;
+import bindbc.opengl;
+
+// @TODO remove dependency
 import magia.render.shader;
+
+import std.exception;
+import std.conv;
 import std.stdio;
+import std.string;
+
+/// Possible types of textures
+enum TextureType {
+    sprite,
+    diffuse,
+    specular,
+    cubemap,
+    multisample,
+    postprocess,
+    shadow
+}
 
 /// Class holding texture data
 class Texture {
     /// Texture index
     GLuint id;
 
-    /// Texture type
-    string type;
-
     protected {
         // Teture image attributes
         int _width, _height;
+
+        // Texture type
+        TextureType _type;
 
         // Slot
         GLuint _slot;
@@ -31,6 +48,11 @@ class Texture {
     }
 
     @property {
+        /// Get texture type
+        TextureType type() const {
+            return _type;
+        }
+
         /// Get texture target
         GLenum target() const {
             return _target;
@@ -48,22 +70,22 @@ class Texture {
     }
 
     /// Base constructor (used for inheriting classes)
-    this(uint width, uint height, GLenum target, string type_) {
+    this(uint width, uint height, GLenum target, TextureType type) {
         _width = width;
         _height = height;
         _target = target;
-        type = type_;
+        _type = type;
     }
 
     /// Constructor for usual 2D texture from path
-    this(string path, string texType, GLuint slot = 0) {
+    this(string path, TextureType type = TextureType.sprite, GLuint slot = 0) {
         // Prefix path
         path = "../assets/texture/" ~ path;
 
         // Get surface and process it
         SDL_Surface *surface = IMG_Load(toStringz(path));
         enforce(surface, "can't load image `" ~ path ~ "`");
-        setupData(surface, texType, slot);
+        setupData(surface, type, slot);
 
         // Free surface
         SDL_FreeSurface(surface);
@@ -71,14 +93,14 @@ class Texture {
     }
 
     /// Constructor for usual 2D texture from surface
-    this(SDL_Surface *surface, string texType, GLuint slot = 0) {
-        setupData(surface, texType, slot);
+    this(SDL_Surface *surface, TextureType type = TextureType.sprite, GLuint slot = 0) {
+        setupData(surface, type, slot);
     }
 
     /// Setup data
-    void setupData(SDL_Surface *surface, string texType, GLuint slot) {
+    void setupData(SDL_Surface *surface, TextureType type, GLuint slot) {
         // Setup type
-        type = texType;
+        _type = type;
 
         // Setup slot
         _slot = slot;
@@ -90,26 +112,26 @@ class Texture {
         _width = surface.w;
         _height = surface.h;
 
-        // Generate texture and bind data
-        glCreateTextures(_target, 1, &id);
-        glActiveTexture(GL_TEXTURE0 + _slot); // @TODO check if needed?
+        // Generate texture and bind texture
+        glGenTextures(1, &id);
+        glBindTexture(_target, id);
 
-        if (type == "sprite") {
+        if (type == TextureType.sprite) {
             // Setup filter
-            glTextureParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTextureParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
             // Setup wrap
-            glTextureParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTextureParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         } else {
             // Setup filters
-            glTextureParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTextureParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
             // Setup wrap
-            glTextureParameteri(_target, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTextureParameteri(_target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(_target, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_REPEAT);
         }
 
         const uint nbChannels = surface.format.BitsPerPixel / 8;
@@ -131,7 +153,7 @@ class Texture {
             format = GL_RED;
             internalFormat = GL_SRGB;
         } else {
-            new Exception("Unsupported texture format for " ~ type ~ " texture type");
+            new Exception("Unsupported texture format for " ~ to!string(type) ~ " texture type");
         }
 
         // Generate texture image
@@ -140,15 +162,12 @@ class Texture {
 
         // Generate mipmaps
         glGenerateMipmap(_target);
-
-        // Unbind data (check if needed?)
-        glBindTexture(_target, 0);
     }
 
     /// Constructor for cubemap texture
     this(string[6] paths) {
         // Setup type
-        type = "skybox";
+        _type = TextureType.cubemap;
 
         // Setup target
         _target = GL_TEXTURE_CUBE_MAP;
@@ -161,13 +180,13 @@ class Texture {
         glBindTexture(_target, id);
         
         // Setup filters
-        glTextureParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTextureParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         // Setup wrap
-        glTextureParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTextureParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTextureParameteri(_target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(_target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
         for (int i = 0; i < paths.length; ++i) {
             string path = "../assets/skybox/" ~ paths[i];
@@ -187,7 +206,7 @@ class Texture {
         }
     }
 
-    /// Pass texture onto shader
+    /// Pass texture onto shader (@TODO DELETE, DEPRECATED)
     void forwardToShader(Shader shader, string uniform, GLuint unit) {
         GLuint texUni = glGetUniformLocation(shader.id, toStringz(uniform));
 
@@ -222,7 +241,7 @@ class Texture {
 class MultiSampleTexture : Texture {
     /// Constructor for FBO multisample texture
     this(uint width, uint height, uint nbSamples) {
-        super(width, height, GL_TEXTURE_2D_MULTISAMPLE, "multisample");
+        super(width, height, GL_TEXTURE_2D_MULTISAMPLE, TextureType.multisample);
 
         // Generate and bind texture
         glGenTextures(1, &id);
@@ -248,7 +267,7 @@ class MultiSampleTexture : Texture {
 class PostProcessTexture : Texture {
     /// Constructor for FBO postprocess texture
     this(uint width, uint height) {
-        super(width, height, GL_TEXTURE_2D, "postprocess");
+        super(width, height, GL_TEXTURE_2D, TextureType.postprocess);
 
         // Generate and bind texture
         glGenTextures(1, &id);
@@ -274,7 +293,7 @@ class PostProcessTexture : Texture {
 class ShadowmapTexture : Texture {
     /// Constructor for FBO shadow
     this(uint width, uint height) {
-        super(width, height, GL_TEXTURE_2D, "shadow");
+        super(width, height, GL_TEXTURE_2D, TextureType.shadow);
 
         // Generate and bind texture
         glGenTextures(1, &id);

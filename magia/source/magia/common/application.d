@@ -7,20 +7,18 @@ import std.datetime;
 import std.stdio;
 
 import magia.common.event;
+import magia.core.color;
 import magia.core.vec;
 import magia.core.timer;
 import magia.core.timestep;
 import magia.render.camera;
 import magia.render.font;
 import magia.render.scene;
-import magia.render.sprite;
+import magia.render.texture;
 import magia.render.window;
 import magia.ui.manager;
 import magia.ui.element;
 import magia.script;
-
-// @TODO remove
-import magia.core.color;
 
 import grimoire;
 
@@ -83,14 +81,10 @@ class Application {
         _tickStartFrame = Clock.currStdTime();
     }
 
-    /// Load a scene
-    void loadScene(string sceneName) {
-
-    }
-
     /// Run application
     void run() {
-        Sprite sprite = new Sprite("planks.png");
+        Texture texture1 = new Texture("checkerboard.png");
+        Texture texture2 = new Texture("yinyang.png");
 
         while (processEvents()) {
             updateEvents(_timeStep);
@@ -103,12 +97,16 @@ class Application {
                 // TEST: check
                 _scene.renderer.setup2DRender();
 
-                _scene.renderer.drawSprite(sprite, vec2(0f, 0f), vec2(400f, 400f));
+                texture1.bind();
+                _scene.renderer.drawSprite(texture1, vec2(0f, 0f), vec2(400f, 400f));
+                _scene.renderer.drawSprite(texture2, vec2(0f, 0f), vec2(400f, 400f));
+
                 //_scene.renderer.drawFilledRect(vec2(0f, 0f), vec2(400f, 400f), Color.green);
                 //_scene.renderer.drawFilledRect(vec2(-400f, -400f), vec2(400f, 400f), Color.blue);
                 //_scene.renderer.drawFilledRect(vec2(200f, 200f), vec2(50f, 20f), Color.red);
 
-                /*vec2 scale = vec2.one * 20f;
+                /*Color color = Color(0.2f, 0.3f, 0.8f);
+                vec2 scale = vec2.one * 20f;
                 for(int x = 0; x < 22; ++x) {
                     for(int y = 0; y < 22; ++y) {
                         vec2 position = vec2(x * 50f, y * 50f);

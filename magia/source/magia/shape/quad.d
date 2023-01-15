@@ -40,11 +40,9 @@ final class QuadInstance : Entity {
             0, 2, 3
         ];
 
-        string pathPrefix = "../assets/texture/";
-
         Texture[] textures = [
-            new Texture(pathPrefix ~ "planks.png", "diffuse", 0),
-            new Texture(pathPrefix ~ "planksSpec.png", "specular", 1)
+            new Texture("planks.png", TextureType.diffuse, 0),
+            new Texture("planksSpec.png", TextureType.specular, 1)
         ];
 
         _mesh = new Mesh(vertices, indices, textures);

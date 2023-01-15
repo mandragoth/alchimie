@@ -55,9 +55,7 @@ class Sphere : Entity {
         _resolution = resolution;
         _radius = radius;
 
-        string pathPrefix = "assets/texture/"; // @TODO factorize
-
-        _textures ~= new Texture(pathPrefix ~ "pixel.png", "diffuse", 0);
+        _textures ~= new Texture("pixel.png", TextureType.diffuse, 0);
 
         vec3[] directions = [up, down, left, right, forward, back];
 

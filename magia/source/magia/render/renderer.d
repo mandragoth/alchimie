@@ -14,7 +14,7 @@ import magia.render.camera;
 import magia.render.material;
 import magia.render.postprocess;
 import magia.render.shader;
-import magia.render.sprite;
+import magia.render.texture;
 import magia.render.window;
 
 // @TODO remove
@@ -42,10 +42,10 @@ class Renderer {
     this(Camera camera_) {
         // Rectangle vertices @TODO size should be -1/1 for full screen to multiply by size
         float[] vertices = [
-            -1f, -1f, 0f, 0f,
-             1f, -1f, 1f, 0f,
-             1f,  1f, 1f, 1f,
-            -1f,  1f, 0f, 1f 
+            -1f, -1f, 0f, 1f,
+             1f, -1f, 1f, 1f,
+             1f,  1f, 1f, 0f,
+            -1f,  1f, 0f, 0f
         ];
 
         // Define shader layout
@@ -120,7 +120,7 @@ class Renderer {
     }
 
     /// Render a sprite @TODO handle clip, transform, sprite
-    void drawSprite(Sprite sprite, vec2 position, vec2 size,
+    void drawSprite(Texture texture, vec2 position, vec2 size,
                     vec4i clip = vec4i.zero, Flip flip = Flip.none, Blend blend = Blend.alpha,
                     Color color = Color.white, float alpha = 1f) {
         // Set transform
@@ -129,20 +129,20 @@ class Renderer {
         Transform transform = Transform(vec3(position, 0), vec3(size, 0));
 
         // Cut texture depending on clip parameters
-        const float clipX = cast(float) clip.x / cast(float) sprite.width;
-        const float clipY = cast(float) clip.y / cast(float) sprite.height;
-        const float clipW = clipX + (cast(float) clip.z / cast(float) sprite.width);
-        const float clipH = clipY + (cast(float) clip.w / cast(float) sprite.height);
+        const float clipX = cast(float) clip.x / cast(float) texture.width;
+        const float clipY = cast(float) clip.y / cast(float) texture.height;
+        const float clipW = clipX + (cast(float) clip.z / cast(float) texture.width);
+        const float clipH = clipY + (cast(float) clip.w / cast(float) texture.height);
 
         // Remap global clip
         vec4 clipf = vec4(clipX, clipY, clipW, clipH);
 
-        setupShader(transform.model, color, alpha, sprite.textureId, clipf, flip, blend);
+        setupShader(transform.model, color, alpha, texture, clipf, flip, blend);
         drawIndexed(_vertexArray);
     }
 
     private void setupShader(mat4 transform = mat4.identity, Color color = Color.white, float alpha = 1f,
-                             int textureId = 0, vec4 clip = vec4.one, Flip flip = Flip.none, Blend blend = Blend.alpha) {
+                             Texture texture = null, vec4 clip = vec4.one, Flip flip = Flip.none, Blend blend = Blend.alpha) {
         // Activate shader
         _shader.activate();
 
@@ -155,8 +155,11 @@ class Renderer {
         // Set transform
         _shader.uploadUniformMat4("u_Transform", transform);
 
-        // Set taxture
-        _shader.uploadUniformInt("u_Texture", textureId);
+        // Set texture
+        if (texture) {
+            texture.bind();
+            _shader.uploadUniformInt("u_Texture", 0);
+        }
 
         // Set resolution
         /*vec2i resolution = getWindowSize();
