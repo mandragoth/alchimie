@@ -114,6 +114,10 @@ event input(input: InputEvent) {
         if(input.button == KeyButton.w and input.pressed)
             print("En avant ! ");
     }
+    case(InputEventType.controllerButton) {
+        var input = input.controllerButton?;
+        print(input.button);
+    }
 
     //print(input);
 }

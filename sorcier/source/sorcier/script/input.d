@@ -10,9 +10,19 @@ void loadMagiaLibInput(GrLibrary library) {
     GrType keyButton = library.addEnum("KeyButton", [
             __traits(allMembers, InputEvent.KeyButton.Button)
         ], cast(GrInt[])[EnumMembers!(InputEvent.KeyButton.Button)]);
+
     GrType mouseButton = library.addEnum("MouseButton", [
             __traits(allMembers, InputEvent.MouseButton.Button)
         ], cast(GrInt[])[EnumMembers!(InputEvent.MouseButton.Button)]);
+
+    GrType controllerButton = library.addEnum("ControllerButton", [
+            __traits(allMembers, InputEvent.ControllerButton.Button)
+        ], cast(GrInt[])[EnumMembers!(InputEvent.ControllerButton.Button)]);
+
+    GrType controllerAxis = library.addEnum("ControllerAxis", [
+            __traits(allMembers, InputEvent.ControllerAxis.Axis)
+        ], cast(GrInt[])[EnumMembers!(InputEvent.ControllerAxis.Axis)]);
+
     GrType inputEventType = library.addEnum("InputEventType",
         [__traits(allMembers, InputEvent.Type)]);
 
@@ -21,6 +31,8 @@ void loadMagiaLibInput(GrLibrary library) {
     GrType inputEventMouseButton = library.addNative("InputEventMouseButton");
     GrType inputEventMouseMotion = library.addNative("InputEventMouseMotion");
     GrType inputEventMouseWheel = library.addNative("InputEventMouseWheel");
+    GrType inputEventControllerButton = library.addNative("InputEventControllerButton");
+    GrType inputEventControllerAxis = library.addNative("InputEventControllerAxis");
     GrType inputEventTextInput = library.addNative("InputEventTextInput");
     GrType inputEventDropFile = library.addNative("InputEventDropFile");
 
@@ -38,6 +50,10 @@ void loadMagiaLibInput(GrLibrary library) {
         grOptional(inputEventMouseMotion));
     library.addProperty(&_mouseWheel, null, "mouseWheel", inputEvent,
         grOptional(inputEventMouseWheel));
+    library.addProperty(&_controllerButton, null, "controllerButton",
+        inputEvent, grOptional(inputEventControllerButton));
+    library.addProperty(&_controllerAxis, null, "controllerAxis", inputEvent,
+        grOptional(inputEventControllerAxis));
     library.addProperty(&_textInput, null, "textInput", inputEvent,
         grOptional(inputEventTextInput));
     library.addProperty(&_dropFile, null, "dropFile", inputEvent, grOptional(inputEventDropFile));
@@ -68,6 +84,17 @@ void loadMagiaLibInput(GrLibrary library) {
     // MouseWheel
     library.addProperty(&_MouseWheel_x, null, "x", inputEventMouseWheel, grInt);
     library.addProperty(&_MouseWheel_y, null, "y", inputEventMouseWheel, grInt);
+
+    // ControllerButton
+    library.addProperty(&_ControllerButton_button, null, "button",
+        inputEventControllerButton, controllerButton);
+    library.addProperty(&_ControllerButton_pressed, null, "pressed",
+        inputEventControllerButton, grBool);
+
+    // ControllerAxis
+    library.addProperty(&_ControllerAxis_axis, null, "axis",
+        inputEventControllerAxis, controllerButton);
+    library.addProperty(&_ControllerAxis_value, null, "value", inputEventControllerAxis, grFloat);
 
     // TextInput
     library.addProperty(&_TextInput_text, null, "text", inputEventTextInput, grString);
@@ -113,6 +140,22 @@ private void _mouseWheel(GrCall call) {
     InputEvent.MouseWheel mouseWheel = call.getNative!InputEvent(0).asMouseWheel;
     if (mouseWheel)
         call.setNative(mouseWheel);
+    else
+        call.setNull();
+}
+
+private void _controllerButton(GrCall call) {
+    InputEvent.ControllerButton controllerButton = call.getNative!InputEvent(0).asControllerButton;
+    if (controllerButton)
+        call.setNative(controllerButton);
+    else
+        call.setNull();
+}
+
+private void _controllerAxis(GrCall call) {
+    InputEvent.ControllerAxis controllerAxis = call.getNative!InputEvent(0).asControllerAxis;
+    if (controllerAxis)
+        call.setNative(controllerAxis);
     else
         call.setNull();
 }
@@ -185,7 +228,7 @@ private void _MouseButton_y(GrCall call) {
     call.setInt(call.getNative!(InputEvent.MouseButton)(0).position.y);
 }
 
-// MouseButton
+// MouseMotion
 
 private void _MouseMotion_globalX(GrCall call) {
     call.setInt(call.getNative!(InputEvent.MouseMotion)(0).globalPosition.x);
@@ -211,6 +254,26 @@ private void _MouseWheel_x(GrCall call) {
 
 private void _MouseWheel_y(GrCall call) {
     call.setInt(call.getNative!(InputEvent.MouseWheel)(0).wheel.y);
+}
+
+// ControllerButton
+
+private void _ControllerButton_button(GrCall call) {
+    call.setEnum(call.getNative!(InputEvent.ControllerButton)(0).button);
+}
+
+private void _ControllerButton_pressed(GrCall call) {
+    call.setBool(call.getNative!(InputEvent.ControllerButton)(0).pressed);
+}
+
+// ControllerButton
+
+private void _ControllerAxis_axis(GrCall call) {
+    call.setEnum(call.getNative!(InputEvent.ControllerAxis)(0).axis);
+}
+
+private void _ControllerAxis_value(GrCall call) {
+    call.setFloat(call.getNative!(InputEvent.ControllerAxis)(0).value);
 }
 
 // TextInput

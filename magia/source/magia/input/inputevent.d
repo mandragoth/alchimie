@@ -16,6 +16,8 @@ final class InputEvent {
         mouseButton,
         mouseMotion,
         mouseWheel,
+        controllerButton,
+        controllerAxis,
         textInput,
         dropFile
     }
@@ -373,6 +375,79 @@ final class InputEvent {
         }
     }
 
+    /// Bouton de la manette
+    final class ControllerButton {
+        /// Boutons de la manette
+        enum Button {
+            unknown = SDL_CONTROLLER_BUTTON_INVALID,
+            a = SDL_CONTROLLER_BUTTON_A,
+            b = SDL_CONTROLLER_BUTTON_B,
+            x = SDL_CONTROLLER_BUTTON_X,
+            y = SDL_CONTROLLER_BUTTON_Y,
+            back = SDL_CONTROLLER_BUTTON_BACK,
+            guide = SDL_CONTROLLER_BUTTON_GUIDE,
+            start = SDL_CONTROLLER_BUTTON_START,
+            leftStick = SDL_CONTROLLER_BUTTON_LEFTSTICK,
+            rightStick = SDL_CONTROLLER_BUTTON_RIGHTSTICK,
+            leftShoulder = SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
+            rightShoulder = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,
+            up = SDL_CONTROLLER_BUTTON_DPAD_UP,
+            down = SDL_CONTROLLER_BUTTON_DPAD_DOWN,
+            left = SDL_CONTROLLER_BUTTON_DPAD_LEFT,
+            right = SDL_CONTROLLER_BUTTON_DPAD_RIGHT
+        }
+
+        /// Bouton de la manette
+        Button button;
+
+        /// Est-ce que la touche est pressée ?
+        bool pressed;
+
+        /// Init
+        this(Button button_, bool pressed_) {
+            button = button_;
+            pressed = pressed_;
+        }
+
+        /// Copie
+        this(const ControllerButton event) {
+            button = event.button;
+            pressed = event.pressed;
+        }
+    }
+
+    /// Axe de la manette
+    final class ControllerAxis {
+        /// Axes de la manette
+        enum Axis {
+            unknown = SDL_CONTROLLER_AXIS_INVALID,
+            leftX = SDL_CONTROLLER_AXIS_LEFTX,
+            leftY = SDL_CONTROLLER_AXIS_LEFTY,
+            rightX = SDL_CONTROLLER_AXIS_RIGHTX,
+            rightY = SDL_CONTROLLER_AXIS_RIGHTY,
+            leftTrigger = SDL_CONTROLLER_AXIS_TRIGGERLEFT,
+            rightTrigger = SDL_CONTROLLER_AXIS_TRIGGERRIGHT
+        }
+
+        /// Axe de la manette
+        Axis axis;
+
+        /// La valeur de l’axe
+        double value;
+
+        /// Init
+        this(Axis axis_, double value_) {
+            axis = axis_;
+            value = value_;
+        }
+
+        /// Copie
+        this(const ControllerAxis event) {
+            axis = event.axis;
+            value = event.value;
+        }
+    }
+
     /// Texte entré par l’utilisateur
     final class TextInput {
         /// Texte
@@ -414,6 +489,8 @@ final class InputEvent {
             MouseButton _mouseButton;
             MouseMotion _mouseMotion;
             MouseWheel _mouseWheel;
+            ControllerButton _controllerButton;
+            ControllerAxis _controllerAxis;
             TextInput _textInput;
             DropFile _dropFile;
         }
@@ -451,6 +528,20 @@ final class InputEvent {
             if (_type != Type.mouseWheel)
                 return null;
             return _mouseWheel;
+        }
+
+        /// Si l’événement est de type ControllerButton, le retourne, sinon retourne null
+        ControllerButton asControllerButton() {
+            if (_type != Type.controllerButton)
+                return null;
+            return _controllerButton;
+        }
+
+        /// Si l’événement est de type ControllerAxis, le retourne, sinon retourne null
+        ControllerAxis asControllerAxis() {
+            if (_type != Type.controllerAxis)
+                return null;
+            return _controllerAxis;
         }
 
         /// Si l’événement est de type TextInput, le retourne, sinon retourne null
@@ -521,6 +612,14 @@ final class InputEvent {
             case mouseWheel:
                 info ~= "wheel: " ~ to!string(_mouseWheel.wheel);
                 break;
+            case controllerButton:
+                info ~= "button: " ~ to!string(_controllerButton.button);
+                info ~= _controllerButton.pressed ? "pressed" : "released";
+                break;
+            case controllerAxis:
+                info ~= "axis: " ~ to!string(_controllerAxis.axis);
+                info ~= "value: " ~ to!string(_controllerAxis.value);
+                break;
             case textInput:
                 info ~= "text: " ~ to!string(_textInput.text);
                 break;
@@ -562,6 +661,12 @@ final class InputEvent {
         case mouseWheel:
             _mouseWheel = new MouseWheel(event._mouseWheel);
             break;
+        case controllerButton:
+            _controllerButton = new ControllerButton(event._controllerButton);
+            break;
+        case controllerAxis:
+            _controllerAxis = new ControllerAxis(event._controllerAxis);
+            break;
         case textInput:
             _textInput = new TextInput(event._textInput);
             break;
@@ -587,6 +692,14 @@ final class InputEvent {
 
         void _makeMouseWheel(vec2i wheel) {
             _mouseWheel = new MouseWheel(wheel);
+        }
+
+        void _makeControllerButton(ControllerButton.Button button, bool pressed) {
+            _controllerButton = new ControllerButton(button, pressed);
+        }
+
+        void _makeControllerAxis(ControllerAxis.Axis axis, double value) {
+            _controllerAxis = new ControllerAxis(axis, value);
         }
 
         void _makeTextInput(string text) {
@@ -634,6 +747,24 @@ final class InputEvent {
             event._type = Type.mouseWheel;
             event._isAccepted = false;
             event._makeMouseWheel(wheel);
+            return event;
+        }
+
+        /// Retourne un événement correspondant à un bouton de la manette
+        InputEvent controllerButton(ControllerButton.Button button, bool pressed) {
+            InputEvent event = new InputEvent;
+            event._type = Type.controllerButton;
+            event._isAccepted = false;
+            event._makeControllerButton(button, pressed);
+            return event;
+        }
+
+        /// Retourne un événement correspondant à un bouton de la manette
+        InputEvent controllerAxis(ControllerAxis.Axis axis, double value) {
+            InputEvent event = new InputEvent;
+            event._type = Type.controllerAxis;
+            event._isAccepted = false;
+            event._makeControllerAxis(axis, value);
             return event;
         }
 

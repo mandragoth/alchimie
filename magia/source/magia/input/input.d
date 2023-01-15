@@ -8,6 +8,7 @@ version (Windows) {
     import core.stdc.signal;
 }
 
+import std.file : exists;
 import std.conv : to, parse;
 import std.path, std.string, std.utf;
 
@@ -17,17 +18,26 @@ import magia.core, magia.render;
 
 import magia.input.inputevent, magia.input.inputmap;
 
-private shared bool _isRunning = false;
-
 /// Gère les entrés et notifications de l’application
 final class Input {
     private {
+        final class Controller {
+            SDL_GameController* sdlController;
+            SDL_Joystick* sdlJoystick;
+            int index, joystickId;
+        }
+
         InputMap _map;
         bool _hasQuit;
+
+        Controller[] _controllers;
+
         vec2i _globalMousePosition, _mousePosition;
 
         bool[InputEvent.KeyButton.Button.max + 1] _keyButtonsPressed;
         bool[InputEvent.MouseButton.Button.max + 1] _mouseButtonsPressed;
+        bool[InputEvent.ControllerButton.Button.max + 1] _controllerButtonsPressed;
+        double[InputEvent.ControllerAxis.Axis.max + 1] _controllerAxisValues = .0;
 
         struct Action {
             bool pressed;
@@ -50,15 +60,19 @@ final class Input {
 
     /// Init
     this() {
-        signal(SIGINT, &signalHandler);
-        /*_mousePosition = vec2.zero;
-        _mouseRelativePosition = vec2.zero;
-        initializeControllers();*/
+        signal(SIGINT, &_signalHandler);
+        _globalMousePosition = vec2i.zero;
+        _mousePosition = vec2i.zero;
+
+        // Initialise toutes les manettes connectées
+        foreach (index; 0 .. SDL_NumJoysticks())
+            _addController(index);
+        SDL_GameControllerEventState(SDL_ENABLE);
 
         //SDL_SetRelativeMouseMode(SDL_TRUE);
         //SDL_ShowCursor(SDL_DISABLE);
 
-        input = this;
+        _input = this;
 
         _map = new InputMap;
     }
@@ -93,20 +107,26 @@ final class Input {
                 _hasQuit = true;
                 break;
             case SDL_KEYDOWN:
-                InputEvent event = InputEvent.keyButton( //
-                    cast(InputEvent.KeyButton.Button) sdlEvent.key.keysym.scancode,
-                    true, //
-                    sdlEvent.key.repeat > 0);
+                InputEvent.KeyButton.Button button = cast(
+                    InputEvent.KeyButton.Button) sdlEvent.key.keysym.scancode;
 
-                events ~= event;
+                if (button > InputEvent.KeyButton.Button.max)
+                    break;
+
+                _keyButtonsPressed[button] = true;
+
+                events ~= InputEvent.keyButton(button, true, sdlEvent.key.repeat > 0);
                 break;
             case SDL_KEYUP:
-                InputEvent event = InputEvent.keyButton( //
-                    cast(InputEvent.KeyButton.Button) sdlEvent.key.keysym.scancode,
-                    false, //
-                    sdlEvent.key.repeat > 0);
+                InputEvent.KeyButton.Button button = cast(
+                    InputEvent.KeyButton.Button) sdlEvent.key.keysym.scancode;
 
-                events ~= event;
+                if (button > InputEvent.KeyButton.Button.max)
+                    break;
+
+                _keyButtonsPressed[button] = false;
+
+                events ~= InputEvent.keyButton(button, false, sdlEvent.key.repeat > 0);
                 break;
             case SDL_TEXTINPUT:
                 string text = to!string(sdlEvent.text.text);
@@ -125,34 +145,83 @@ final class Input {
                 events ~= event;
                 break;
             case SDL_MOUSEBUTTONDOWN:
+                InputEvent.MouseButton.Button button = cast(
+                    InputEvent.MouseButton.Button) sdlEvent.button.button;
+
+                if (button > InputEvent.MouseButton.Button.max)
+                    break;
+
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
                 _mousePosition = _globalMousePosition;
-                InputEvent event = InputEvent.mouseButton( //
-                    cast(InputEvent.MouseButton.Button) sdlEvent.button.button,
-                    true, //
-                    sdlEvent.button.clicks, //
-                    _globalMousePosition, //
-                    _mousePosition);
 
-                events ~= event;
+                _mouseButtonsPressed[button] = true;
+
+                events ~= InputEvent.mouseButton(button, true,
+                    sdlEvent.button.clicks, _globalMousePosition, _mousePosition);
                 break;
             case SDL_MOUSEBUTTONUP:
+                InputEvent.MouseButton.Button button = cast(
+                    InputEvent.MouseButton.Button) sdlEvent.button.button;
+
+                if (button > InputEvent.MouseButton.Button.max)
+                    break;
+
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
                 _mousePosition = _globalMousePosition;
-                InputEvent event = InputEvent.mouseButton( //
-                    cast(InputEvent.MouseButton.Button) sdlEvent.button.button,
-                    false, //
-                    sdlEvent.button.clicks, //
-                    _globalMousePosition, //
-                    _mousePosition);
 
-                events ~= event;
+                _mouseButtonsPressed[button] = false;
+
+                events ~= InputEvent.mouseButton(button, false,
+                    sdlEvent.button.clicks, _globalMousePosition, _mousePosition);
                 break;
             case SDL_MOUSEWHEEL:
                 InputEvent event = InputEvent.mouseWheel( //
                     vec2i(sdlEvent.wheel.x, sdlEvent.wheel.y));
 
                 events ~= event;
+                break;
+            case SDL_CONTROLLERDEVICEADDED:
+                _addController(sdlEvent.cdevice.which);
+                break;
+            case SDL_CONTROLLERDEVICEREMOVED:
+                _removeController(sdlEvent.cdevice.which);
+                break;
+            case SDL_CONTROLLERDEVICEREMAPPED:
+                break;
+            case SDL_CONTROLLERAXISMOTION:
+                InputEvent.ControllerAxis.Axis axis = cast(
+                    InputEvent.ControllerAxis.Axis) sdlEvent.caxis.axis;
+
+                if (axis > InputEvent.ControllerAxis.Axis.max)
+                    break;
+
+                const double value = rlerp(-32_768, 32_767, cast(double) sdlEvent.caxis.value) *
+                    2f - 1f;
+                _controllerAxisValues[axis] = value;
+
+                events ~= InputEvent.controllerAxis(axis, value);
+                break;
+            case SDL_CONTROLLERBUTTONDOWN:
+                InputEvent.ControllerButton.Button button = cast(
+                    InputEvent.ControllerButton.Button) sdlEvent.cbutton.button;
+
+                if (button > InputEvent.ControllerButton.Button.max)
+                    break;
+
+                _controllerButtonsPressed[button] = true;
+
+                events ~= InputEvent.controllerButton(button, true);
+                break;
+            case SDL_CONTROLLERBUTTONUP:
+                InputEvent.ControllerButton.Button button = cast(
+                    InputEvent.ControllerButton.Button) sdlEvent.cbutton.button;
+
+                if (button > InputEvent.ControllerButton.Button.max)
+                    break;
+
+                _controllerButtonsPressed[button] = false;
+
+                events ~= InputEvent.controllerButton(button, false);
                 break;
             case SDL_WINDOWEVENT:
                 switch (sdlEvent.window.event) {
@@ -187,18 +256,6 @@ final class Input {
                 InputEvent event = InputEvent.dropFile(path);
                 events ~= event;
                 break;
-            case SDL_CONTROLLERDEVICEADDED:
-                break;
-            case SDL_CONTROLLERDEVICEREMOVED:
-                break;
-            case SDL_CONTROLLERDEVICEREMAPPED:
-                break;
-            case SDL_CONTROLLERAXISMOTION:
-                break;
-            case SDL_CONTROLLERBUTTONDOWN:
-                break;
-            case SDL_CONTROLLERBUTTONUP:
-                break;
             default:
                 break;
             }
@@ -207,6 +264,90 @@ final class Input {
         _processEvents(events);
 
         return events;
+    }
+
+    /// Enregistre toutes les définitions de manettes depuis un fichier valide
+    private void _addControllerMappingsFromFile(string filePath) {
+        if (!exists(filePath))
+            throw new Exception("could not find `" ~ filePath ~ "`");
+        if (-1 == SDL_GameControllerAddMappingsFromFile(toStringz(filePath)))
+            throw new Exception("invalid mapping file `" ~ filePath ~ "`");
+    }
+
+    /// Enregistre une définition de manette
+    private void _addControllerMapping(string mapping) {
+        if (-1 == SDL_GameControllerAddMapping(toStringz(mapping)))
+            throw new Exception("Invalid mapping.");
+    }
+
+    /// Ajoute une manette connectée
+    private void _addController(int index) {
+        //writeln("Detected device at index ", index, ".");
+
+        auto c = SDL_JoystickNameForIndex(index);
+        auto d = fromStringz(c);
+        //writeln("Device name: ", d);
+
+        if (!SDL_IsGameController(index)) {
+            //writeln("The device is not recognised as a game controller.");
+            auto stick = SDL_JoystickOpen(index);
+            auto guid = SDL_JoystickGetGUID(stick);
+            //writeln("The device guid is: ");
+            //foreach (i; 0 .. 16)
+            //    printf("%02x", guid.data[i]);
+            //writeln("");
+            return;
+        }
+        //writeln("The device has been detected as a game controller.");
+        foreach (controller; _controllers) {
+            if (controller.index == index) {
+                //writeln("The controller is already open, aborted.");
+                return;
+            }
+        }
+
+        auto sdlController = SDL_GameControllerOpen(index);
+        if (!sdlController) {
+            //writeln("Could not connect the game controller.");
+            return;
+        }
+
+        Controller controller = new Controller;
+        controller.sdlController = sdlController;
+        controller.index = index;
+        controller.sdlJoystick = SDL_GameControllerGetJoystick(controller.sdlController);
+        controller.joystickId = SDL_JoystickInstanceID(controller.sdlJoystick);
+        _controllers ~= controller;
+
+        //writeln("The game controller is now connected.");
+    }
+
+    /// Retire une manette déconnectée
+    private void _removeController(int joystickId) {
+        //writeln("Controller disconnected: ", joystickId);
+
+        int index;
+        bool isControllerPresent;
+        foreach (ref controller; _controllers) {
+            if (controller.joystickId == joystickId) {
+                isControllerPresent = true;
+                break;
+            }
+            index++;
+        }
+
+        if (!isControllerPresent)
+            return;
+
+        SDL_GameControllerClose(_controllers[index].sdlController);
+
+        //Remove from list
+        if (index + 1 == _controllers.length)
+            _controllers.length--;
+        else if (index == 0)
+            _controllers = _controllers[1 .. $];
+        else
+            _controllers = _controllers[0 .. index] ~ _controllers[(index + 1) .. $];
     }
 
     private void _processEvents(InputEvent[] events) {
@@ -240,7 +381,17 @@ final class Input {
         return _mouseButtonsPressed[button];
     }
 
-    /// L’action est-t’elle activé ?
+    /// Ditto
+    bool isPressed(InputEvent.ControllerButton.Button button) const {
+        return _controllerButtonsPressed[button];
+    }
+
+    /// Retourne la valeur de l’axe
+    double getAxis(InputEvent.ControllerAxis.Axis axis) const {
+        return _controllerAxisValues[axis];
+    }
+
+    /// L’action est-t’elle activée ?
     bool isActionPressed(string id) const {
         auto p = id in _actions;
 
@@ -252,12 +403,12 @@ final class Input {
 }
 
 /// Ditto
-Input input;
+private Input _input;
 
 /// Capture les interruptions
-extern (C) void signalHandler(int sig) nothrow @nogc @system {
+private extern (C) void _signalHandler(int sig) nothrow @nogc @system {
     cast(void) sig;
 
-    if (input)
-        input._hasQuit = true;
+    if (_input)
+        _input._hasQuit = true;
 }
