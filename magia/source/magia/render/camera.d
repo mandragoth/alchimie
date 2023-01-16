@@ -1,11 +1,15 @@
 module magia.render.camera;
 
-import bindbc.sdl, bindbc.opengl;
+import bindbc.sdl;
+import bindbc.opengl;
+
 import std.math;
 import std.stdio;
+
 import magia.common.event;
 import magia.core.mat;
 import magia.core.timestep;
+import magia.core.util;
 import magia.core.vec;
 import magia.render.shader;
 import magia.render.window;
@@ -26,33 +30,42 @@ abstract class Camera {
     }
 
     @property {
+        /// Get model matrix
         mat4 matrix() const {
             return _matrix;
         }
 
+        /// Set position
         void position(vec3 position_) {
             _position = position_;
         }
 
-        vec3 position() {
+        /// Get position
+        vec3 position() const {
             return _position;
         }
 
+        /// Set rotation along Z axis
         void zRotation(float zRotation_) {
             _zRotation = zRotation_;
         }
     }
 
-    void update(TimeStep timeStep) {}
-    void passToShader(Shader shader) {}
-    void passToSkyboxShader(Shader shader) {}
+    /// Update
+    void update(TimeStep) {}
+
+    /// Pass camera to object rendering shader
+    void passToShader(Shader) {}
+
+    /// Pass camera to skybox shader
+    void passToSkyboxShader(Shader) {}
 }
 
 /// Orthographic camera class
 class OrthographicCamera : Camera {
     protected {
-        float _moveSpeed = 0.1f;
-        float _zRotationSpeed = 0.1f;
+        float _moveSpeed = 0.01f;
+        float _zRotationSpeed = 2f;
     }
 
     @property {
@@ -67,6 +80,7 @@ class OrthographicCamera : Camera {
         }
     }
 
+    /// Constructor
     this(float left, float right, float bottom, float top) {
         _projection = mat4.orthographic(left, right, bottom, top, -1f, 1f);
         _view = mat4.identity;
@@ -75,18 +89,18 @@ class OrthographicCamera : Camera {
         _zRotation = 0f;
     }
 
+    /// Recompute view and model matrices
     void computeViewMatrix() {
         mat4 transform = mat4.translation(_position) * mat4.zrotation(_zRotation);
         _view = transform.inverse();
         _matrix = _projection * _view;
     }
 
+    /// Update camera
     override void update(TimeStep timeStep) {
-        //writeln("Delta time: ", timeStep.seconds, "s (", timeStep.milliseconds, "ms)");
-
-        float deltaTime = timeStep.time;
-        float moveDelta = _moveSpeed * deltaTime;
-        float zRotationDelta = _zRotationSpeed * deltaTime;
+        const float deltaTime = timeStep.time;
+        const float moveDelta = _moveSpeed * deltaTime;
+        const float zRotationDelta = _zRotationSpeed * degToRad * deltaTime;
 
         vec3 newPosition = _position;
         float newZRotation = _zRotation;
