@@ -68,7 +68,7 @@ class Renderer {
         _vertexArray.setIndexBuffer(new IndexBuffer(indices));
 
         // Load global shader to render 2D textured/colored quads
-        _shader = new Shader("image.vert", "image.frag");
+        _shader = new Shader("image.glsl");
 
         glEnable(GL_MULTISAMPLE);
         glClearColor(bgColor.r, bgColor.g, bgColor.b, 1f);

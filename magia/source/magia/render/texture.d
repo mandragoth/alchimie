@@ -80,7 +80,7 @@ class Texture {
     /// Constructor for usual 2D texture from path
     this(string path, TextureType type = TextureType.sprite, GLuint slot = 0) {
         // Prefix path
-        path = "../assets/texture/" ~ path;
+        path = "../assets/img/" ~ path;
 
         // Get surface and process it
         SDL_Surface *surface = IMG_Load(toStringz(path));
