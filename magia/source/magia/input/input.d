@@ -16,7 +16,7 @@ import bindbc.sdl;
 
 import magia.core, magia.render;
 
-import magia.input.inputevent, magia.input.inputmap;
+import magia.input.inputevent, magia.input.inputmap, magia.input.data;
 
 /// Gère les entrés et notifications de l’application
 final class Input {
@@ -39,11 +39,17 @@ final class Input {
         bool[InputEvent.ControllerButton.Button.max + 1] _controllerButtonsPressed;
         double[InputEvent.ControllerAxis.Axis.max + 1] _controllerAxisValues = .0;
 
-        struct Action {
-            bool pressed;
+        struct ActionState {
+            string id;
+            bool pressed = false;
+            double strength = 0.0;
+
+            this(string id_) {
+                id = id_;
+            }
         }
 
-        Action[string] _actions;
+        ActionState[string] _actionStates;
     }
 
     @property {
@@ -63,6 +69,14 @@ final class Input {
         signal(SIGINT, &_signalHandler);
         _globalMousePosition = vec2i.zero;
         _mousePosition = vec2i.zero;
+
+        // Ouvre la base de donnée des manettes
+        foreach (string line; _gameControllerDb.splitLines()) {
+            if (!line.length || line[0] == '#')
+                continue;
+
+            _addControllerMapping(line);
+        }
 
         // Initialise toutes les manettes connectées
         foreach (index; 0 .. SDL_NumJoysticks())
@@ -261,7 +275,7 @@ final class Input {
             }
         }
 
-        _processEvents(events);
+        _updateActionStates();
 
         return events;
     }
@@ -277,7 +291,7 @@ final class Input {
     /// Enregistre une définition de manette
     private void _addControllerMapping(string mapping) {
         if (-1 == SDL_GameControllerAddMapping(toStringz(mapping)))
-            throw new Exception("Invalid mapping.");
+            throw new Exception("invalid mapping");
     }
 
     /// Ajoute une manette connectée
@@ -350,24 +364,47 @@ final class Input {
             _controllers = _controllers[0 .. index] ~ _controllers[(index + 1) .. $];
     }
 
-    private void _processEvents(InputEvent[] events) {
-        foreach (event; events) {
-            if (event.isAction) {
-                InputAction matchingAction = _map.getAction(event);
+    // Mise à jour des états des actions
+    private void _updateActionStates() {
+        foreach (ref ActionState actionState; _actionStates) {
+            InputMap.Action action = _map.getAction(actionState.id);
+            bool isActionPressed = false;
+            double actionStrength = 0.0;
 
-                if (matchingAction) {
-                    auto p = matchingAction.id in _actions;
+            foreach (InputEvent event; action.events) {
+                bool isEventPressed = false;
+                double eventStrength = 0.0;
 
-                    if (p) {
-                        (*p).pressed = event.isPressed;
-                    }
-                    else {
-                        Action action;
-                        action.pressed = event.isPressed;
-                        _actions[matchingAction.id] = action;
-                    }
+                switch (event.type) with (InputEvent.Type) {
+                case keyButton:
+                    isEventPressed = isPressed(event.asKeyButton().button);
+                    eventStrength = isEventPressed ? 1.0 : 0.0;
+                    break;
+                case mouseButton:
+                    isEventPressed = isPressed(event.asMouseButton().button);
+                    eventStrength = isEventPressed ? 1.0 : 0.0;
+                    break;
+                case controllerButton:
+                    isEventPressed = isPressed(event.asControllerButton().button);
+                    eventStrength = isEventPressed ? 1.0 : 0.0;
+                    break;
+                case controllerAxis:
+                    double strength = getAxis(event.asControllerAxis().axis);
+                    isEventPressed = ((strength < 0.0) == (event.value < 0.0) &&
+                            (strength > 0.0) == (event.value > 0.0) &&
+                            abs(strength) > action.deadzone);
+                    strength = clamp(abs(strength), 0.0, 1.0);
+                    eventStrength = isEventPressed ? rlerp(action.deadzone, 1.0, strength) : 0.0;
+                    break;
+                default:
+                    break;
                 }
+                isActionPressed = isActionPressed || isEventPressed;
+                actionStrength += eventStrength;
             }
+
+            actionState.pressed = isActionPressed;
+            actionState.strength = clamp(actionStrength, 0.0, 1.0);
         }
     }
 
@@ -391,15 +428,57 @@ final class Input {
         return _controllerAxisValues[axis];
     }
 
-    /// L’action est-t’elle activée ?
-    bool isActionPressed(string id) const {
-        auto p = id in _actions;
-
-        if (!p)
-            return false;
-
-        return (*p).pressed;
+    /// Ajoute une nouvelle action
+    void addAction(string id, double deadzone) {
+        _map.addAction(id, deadzone);
+        _actionStates[id] = ActionState(id);
     }
+
+    /// Retire une action existante
+    void removeAction(string id) {
+        _map.removeAction(id);
+    }
+
+    /// Vérifie si une action existe
+    bool hasAction(string id) const {
+        return _map.hasAction(id);
+    }
+
+    /// Cet événement correspond-t’il a une action ?
+    bool isAction(string id, InputEvent event) {
+        InputMap.Action action = _map.getAction(id);
+        return action ? action.match(event) : false;
+    }
+
+    /// Associe un événement à une action existante
+    void addActionEvent(string id, InputEvent event) {
+        _map.addActionEvent(id, event);
+    }
+
+    /// Supprime tous les événements associés à une action
+    void removeActionEvents(string id) {
+        _map.removeActionEvents(id);
+    }
+
+    /// L’action est-t’elle activée ?
+    bool isPressed(string id) const {
+        auto action = id in _actionStates;
+        return action ? (*action).pressed : false;
+    }
+
+    double getActionStrength(string id) const {
+        auto action = id in _actionStates;
+        return action ? (*action).strength : 0.0;
+    }
+
+    double getActionAxis(string negativeId, string positiveId) {
+        return getActionStrength(positiveId) - getActionStrength(negativeId);
+    }
+
+    /*
+    vec2f getVector(string leftAction, string rightAction, string upAction, string downAction) {
+
+    }*/
 }
 
 /// Ditto

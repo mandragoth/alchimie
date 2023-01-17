@@ -105,19 +105,50 @@ func testUI() {
 
     sleep(2.seconds);
     label.runState("hidden");
+
+    addAction("move_up", 0.5);
+    addAction("move_down", 0.5);
+    addAction("jump", 0.5);
+
+    var jump = @InputEvent.keyButton(KeyButton.space, true, false);
+    addActionEvent("jump", jump);
+
+    var jump = @InputEvent.controllerButton(ControllerButton.a, true);
+    addActionEvent("jump", jump);
+
+    var move_up = @InputEvent.controllerAxis(ControllerAxis.leftY, -1f);
+    addActionEvent("move_up", move_up);
+
+    var move_down = @InputEvent.controllerAxis(ControllerAxis.leftY, 1f);
+    addActionEvent("move_down", move_down);
+
+    loop yield {
+        //if(isActionPressed("jump"))
+        //  print("JUMP !");
+        //print(getActionStrength("move_up"));
+        //print(getActionAxis("move_down", "move_up"));
+    }
 }
 
-event input(input: InputEvent) {
-    switch(input.type)
-    case(InputEventType.keyButton) {
-        var input = input.keyButton?;
-        if(input.button == KeyButton.w and input.pressed)
-            print("En avant ! ");
-    }
-    case(InputEventType.controllerButton) {
-        var input = input.controllerButton?;
-        print(input.button);
-    }
+event input(inputs: list<InputEvent>) {
+    for(input, inputs) {
+        if(input.isAction("jump") and not input.isEcho()) {
+            if(input.isPressed())
+                print("ON SAUTE !");
+            else
+                print("on saute plus");
+        }
 
+        switch(input.type)
+        case(InputEventType.keyButton) {
+            var input = input.keyButton?;
+            if(input.button == KeyButton.w and input.pressed)
+                print("En avant ! ");
+        }
+        case(InputEventType.controllerButton) {
+            var input = input.controllerButton?;
+            print(input.button);
+        }
+    }
     //print(input);
 }

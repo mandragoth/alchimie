@@ -4,38 +4,38 @@ import std.algorithm.mutation : remove;
 
 import magia.input.inputevent;
 
-/// Associe une action à un événement
-final class InputAction {
-    /// Nom de l’action
-    string id;
-
-    /// Événements activant l’action
-    InputEvent[] events;
-
-    /// Seuil d’activation de l’action
-    float deadzone;
-
-    /// Init
-    this(string id_, float deadzone_ = .2f) {
-        id = id_;
-        deadzone = deadzone_;
-    }
-
-    /// L’événement active-t’il cette action ?
-    bool match(InputEvent event_) {
-        foreach (InputEvent event; events) {
-            if (event_.match(event))
-                return true;
-        }
-
-        return false;
-    }
-}
-
 /// Gère l’association de certaines entrés avec leurs actions correspondantes
 final class InputMap {
+    /// Associe une action à un événement
+    final class Action {
+        /// Nom de l’action
+        string id;
+
+        /// Événements activant l’action
+        InputEvent[] events;
+
+        /// Seuil d’activation de l’action
+        double deadzone;
+
+        /// Init
+        this(string id_, double deadzone_ = .2f) {
+            id = id_;
+            deadzone = deadzone_;
+        }
+
+        /// L’événement active-t’il cette action ?
+        bool match(InputEvent event_) {
+            foreach (InputEvent event; events) {
+                if (event_.match(event))
+                    return true;
+            }
+
+            return false;
+        }
+    }
+
     private {
-        InputAction[string] _actions;
+        Action[string] _actions;
     }
 
     @property {
@@ -48,8 +48,8 @@ final class InputMap {
     }
 
     /// Ajoute une nouvelle action
-    void addAction(string id, float deadzone) {
-        _actions[id] = new InputAction(id, deadzone);
+    void addAction(string id, double deadzone) {
+        _actions[id] = new Action(id, deadzone);
     }
 
     /// Retire une action existante
@@ -61,6 +61,12 @@ final class InputMap {
     bool hasAction(string id) const {
         auto p = id in _actions;
         return p !is null;
+    }
+
+    /// Retourne l’action
+    Action getAction(string id) {
+        auto p = id in _actions;
+        return p ? *p : null;
     }
 
     /// Associe un événement à une action existante
@@ -105,8 +111,8 @@ final class InputMap {
         return _actions.keys;
     }
 
-    InputAction getAction(InputEvent event) {
-        foreach (InputAction action; _actions) {
+    Action getAction(InputEvent event) {
+        foreach (Action action; _actions) {
             if (action.match(event)) {
                 return action;
             }

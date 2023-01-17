@@ -2,14 +2,13 @@ module app;
 
 import std.stdio;
 
+import std.algorithm.mutation : remove;
 import std.conv : to;
 import std.datetime, core.thread;
 
 import magia, grimoire;
 
 import sorcier.script;
-
-Magia _magia;
 
 private {
     float _deltatime = 1f;
@@ -55,6 +54,16 @@ void runApplication() {
         return;
     }
 
+    GrEvent grEventInput, grEventLateInput;
+    if (_engine) {
+        grEventInput = _engine.getEvent("input", [
+                grList(grGetNativeType("InputEvent"))
+            ]);
+        grEventLateInput = _engine.getEvent("lateInput", [
+                grList(grGetNativeType("InputEvent"))
+            ]);
+    }
+
     while (_magia.isRunning()) {
         /*if (getButtonDown(KeyButton.f5)) {
             if (!loadScript()) {
@@ -66,14 +75,9 @@ void runApplication() {
         InputEvent[] inputEvents = _magia.pollEvents();
 
         if (_engine) {
-            GrEvent grEvent = _engine.getEvent("input", [
-                    grGetNativeType("InputEvent")
-                ]);
-
-            if (grEvent) {
-                foreach (InputEvent inputEvent; inputEvents) {
-                    _engine.callEvent(grEvent, [GrValue(inputEvent)]);
-                }
+            if (grEventInput && inputEvents.length) {
+                _engine.callEvent(grEventInput, [GrValue(inputEvents)]);
+                remove!(a => a.isAccepted)(inputEvents);
             }
 
             if (_engine.hasTasks)
@@ -95,6 +99,13 @@ void runApplication() {
         }
 
         _magia.update(_deltatime);
+
+        if (_engine) {
+            if (grEventLateInput && inputEvents.length) {
+                _engine.callEvent(grEventLateInput, [GrValue(inputEvents)]);
+            }
+        }
+
         _magia.render();
 
         // IPS

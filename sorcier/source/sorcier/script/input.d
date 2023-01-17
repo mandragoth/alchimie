@@ -36,11 +36,13 @@ void loadMagiaLibInput(GrLibrary library) {
     GrType inputEventTextInput = library.addNative("InputEventTextInput");
     GrType inputEventDropFile = library.addNative("InputEventDropFile");
 
-    GrType inputMap = library.addNative("InputMap");
-
     // InputEvent
     library.addCast(&_asString, inputEvent, grString);
     library.addProperty(&_type, null, "type", inputEvent, inputEventType);
+    library.addFunction(&_inputEvent_isPressed, "isPressed", [inputEvent], [
+            grBool
+        ]);
+    library.addFunction(&_inputEvent_isEcho, "isEcho", [inputEvent], [grBool]);
 
     library.addProperty(&_keyButton, null, "keyButton", inputEvent,
         grOptional(inputEventKeyButton));
@@ -102,6 +104,64 @@ void loadMagiaLibInput(GrLibrary library) {
     // DropFile
     library.addProperty(&_DropFile_path, null, "path", inputEventDropFile, grString);
 
+    // Input
+
+    library.addStatic(&_makeKeyButton, inputEvent, "keyButton", [
+            keyButton, grBool, grBool
+        ], [inputEvent]);
+
+    library.addStatic(&_makeMouseButton, inputEvent, "mouseButton",
+        [mouseButton, grBool, grInt, grInt, grInt, grInt, grInt], [inputEvent]);
+
+    library.addStatic(&_makeMouseMotion, inputEvent, "mouseMotion", [
+            grInt, grInt, grInt, grInt
+        ], [inputEvent]);
+
+    library.addStatic(&_makeMouseWheel, inputEvent, "mouseWheel", [grInt, grInt], [
+            inputEvent
+        ]);
+
+    library.addStatic(&_makeControllerButton, inputEvent, "controllerButton",
+        [controllerButton, grBool], [inputEvent]);
+
+    library.addStatic(&_makeControllerAxis, inputEvent, "controllerAxis",
+        [controllerAxis, grFloat], [inputEvent]);
+
+    library.addStatic(&_makeTextInput, inputEvent, "textInput", [grString], [
+            inputEvent
+        ]);
+
+    library.addStatic(&_makeDropFile, inputEvent, "dropFile", [grString], [
+            inputEvent
+        ]);
+
+    library.addFunction(&_isPressed!(InputEvent.KeyButton.Button),
+        "isPressed", [keyButton], [grBool]);
+    library.addFunction(&_isPressed!(InputEvent.MouseButton.Button),
+        "isPressed", [mouseButton], [grBool]);
+    library.addFunction(&_isPressed!(InputEvent.ControllerButton.Button),
+        "isPressed", [controllerButton], [grBool]);
+
+    // Action
+
+    library.addFunction(&_addAction, "addAction", [grString, grFloat]);
+    library.addFunction(&_removeAction, "removeAction", [grString]);
+    library.addFunction(&_hasAction, "hasAction", [grString], [grBool]);
+    library.addFunction(&_isAction, "isAction", [inputEvent, grString], [grBool]);
+    library.addFunction(&_addActionEvent, "addActionEvent", [
+            grString, inputEvent
+        ]);
+    library.addFunction(&_removeActionEvents, "removeActionEvents", [grString]);
+    library.addFunction(&_isActionPressed, "isActionPressed", [grString], [
+            grBool
+        ]);
+    library.addFunction(&_getActionStrength, "getActionStrength", [grString], [
+            grFloat
+        ]);
+    library.addFunction(&_getActionAxis, "getActionAxis", [grString, grString], [
+            grFloat
+        ]);
+
 }
 
 private void _asString(GrCall call) {
@@ -110,6 +170,14 @@ private void _asString(GrCall call) {
 
 private void _type(GrCall call) {
     call.setEnum(call.getNative!InputEvent(0).type);
+}
+
+private void _inputEvent_isPressed(GrCall call) {
+    call.setBool(call.getNative!InputEvent(0).isPressed());
+}
+
+private void _inputEvent_isEcho(GrCall call) {
+    call.setBool(call.getNative!InputEvent(0).isEcho());
 }
 
 private void _keyButton(GrCall call) {
@@ -286,4 +354,90 @@ private void _TextInput_text(GrCall call) {
 
 private void _DropFile_path(GrCall call) {
     call.setString(call.getNative!(InputEvent.DropFile)(0).path);
+}
+
+// Input
+
+private void _makeKeyButton(GrCall call) {
+    call.setNative(InputEvent.keyButton(call.getEnum!(InputEvent.KeyButton.Button)(0),
+            call.getBool(1), call.getBool(2)));
+}
+
+private void _makeMouseButton(GrCall call) {
+    call.setNative(InputEvent.mouseButton(call.getEnum!(InputEvent.MouseButton.Button)(0),
+            call.getBool(1), call.getInt(2), vec2i(call.getInt(3),
+            call.getInt(4)), vec2i(call.getInt(5), call.getInt(6))));
+}
+
+private void _makeMouseMotion(GrCall call) {
+    call.setNative(InputEvent.mouseMotion(vec2i(call.getInt(0),
+            call.getInt(1)), vec2i(call.getInt(2), call.getInt(3))));
+}
+
+private void _makeMouseWheel(GrCall call) {
+    call.setNative(InputEvent.mouseWheel(vec2i(call.getInt(0), call.getInt(1))));
+}
+
+private void _makeControllerButton(GrCall call) {
+    call.setNative(InputEvent.controllerButton(
+            call.getEnum!(InputEvent.ControllerButton.Button)(0), call.getBool(1)));
+}
+
+private void _makeControllerAxis(GrCall call) {
+    call.setNative(InputEvent.controllerAxis(
+            call.getEnum!(InputEvent.ControllerAxis.Axis)(0), call.getFloat(1)));
+}
+
+private void _makeTextInput(GrCall call) {
+    call.setNative(InputEvent.textInput(call.getString(0)));
+}
+
+private void _makeDropFile(GrCall call) {
+    call.setNative(InputEvent.dropFile(call.getString(0)));
+}
+
+private void _isPressed(T)(GrCall call) {
+    call.setBool(_magia.input.isPressed(call.getEnum!T(0)));
+}
+
+private void _getAxis(GrCall call) {
+    call.setFloat(_magia.input.getAxis(call.getEnum!(InputEvent.ControllerAxis.Axis)(0)));
+}
+
+// Action
+
+private void _addAction(GrCall call) {
+    _magia.input.addAction(call.getString(0), call.getFloat(1));
+}
+
+private void _removeAction(GrCall call) {
+    _magia.input.removeAction(call.getString(0));
+}
+
+private void _hasAction(GrCall call) {
+    call.setBool(_magia.input.hasAction(call.getString(0)));
+}
+
+private void _isAction(GrCall call) {
+    call.setBool(_magia.input.isAction(call.getString(1), call.getNative!InputEvent(0)));
+}
+
+private void _addActionEvent(GrCall call) {
+    _magia.input.addActionEvent(call.getString(0), call.getNative!InputEvent(1));
+}
+
+private void _removeActionEvents(GrCall call) {
+    _magia.input.removeActionEvents(call.getString(0));
+}
+
+private void _isActionPressed(GrCall call) {
+    call.setBool(_magia.input.isPressed(call.getString(0)));
+}
+
+private void _getActionStrength(GrCall call) {
+    call.setFloat(_magia.input.getActionStrength(call.getString(0)));
+}
+
+private void _getActionAxis(GrCall call) {
+    call.setFloat(_magia.input.getActionAxis(call.getString(0), call.getString(1)));
 }

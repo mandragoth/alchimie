@@ -33,7 +33,7 @@ T lerp(T)(T a, T b, float t) {
 /// Reverse lerp, returns a value between 0 and 1. \
 /// 0 if v = a. \
 /// 1 if v = b.
-float rlerp(float a, float b, float v) {
+double rlerp(double a, double b, double v) {
     return (v - a) / (b - a);
 }
 
@@ -55,10 +55,11 @@ vec2 scaleToFit(vec2 src, vec2 dst) {
     float scale;
     if (dst.x / dst.y > src.x / src.y) {
         scale = dst.y / src.y;
-    } else {
+    }
+    else {
         scale = dst.x / src.x;
     }
-        
+
     return src * scale;
 }
 

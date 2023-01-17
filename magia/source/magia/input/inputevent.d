@@ -558,18 +558,6 @@ final class InputEvent {
             return _dropFile;
         }
 
-        /// Cet événement peut-il servir d’action ?
-        /// Voir InputMap
-        bool isAction() const {
-            switch (_type) with (Type) {
-            case keyButton:
-            case mouseButton:
-                return true;
-            default:
-                return false;
-            }
-        }
-
         /// Dans le cas d’une touche ou d’un bouton, est-il appuyé ?
         bool isPressed() const {
             switch (_type) with (Type) {
@@ -577,8 +565,38 @@ final class InputEvent {
                 return _keyButton.pressed;
             case mouseButton:
                 return _mouseButton.pressed;
+            case controllerButton:
+                return _controllerButton.pressed;
+            case controllerAxis:
+                return abs(_controllerAxis.value) > 0.5;
             default:
                 return false;
+            }
+        }
+
+        /// L’événement est-il un écho ?
+        bool isEcho() const {
+            switch (_type) with (Type) {
+            case keyButton:
+                return _keyButton.isEcho;
+            default:
+                return false;
+            }
+        }
+
+        /// Valeur analogique du bouton ou de l’axe
+        double value() const {
+            switch (_type) with (Type) {
+            case keyButton:
+                return _keyButton.pressed ? 1.0 : .0;
+            case mouseButton:
+                return _mouseButton.pressed ? 1.0 : .0;
+            case controllerButton:
+                return _controllerButton.pressed ? 1.0 : .0;
+            case controllerAxis:
+                return _controllerAxis.value;
+            default:
+                return .0;
             }
         }
 
@@ -794,6 +812,12 @@ final class InputEvent {
             return _keyButton.button == event._keyButton.button;
         case mouseButton:
             return _mouseButton.button == event._mouseButton.button;
+        case controllerButton:
+            return _controllerButton.button == event._controllerButton.button;
+        case controllerAxis:
+            return _controllerAxis.axis == event._controllerAxis.axis &&
+                (event._controllerAxis.value < 0.0) == (_controllerAxis.value < 0.0) &&
+                (event._controllerAxis.value > 0.0) == (_controllerAxis.value > 0.0);
         default:
             return false;
         }

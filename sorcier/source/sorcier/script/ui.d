@@ -9,6 +9,8 @@ import grimoire;
 import magia.core;
 import magia.ui;
 
+import sorcier.script.util;
+
 package void loadMagiaLibUI(GrLibrary library) {
     GrType splineType = grGetEnumType("Spline");
     GrType alignXType = library.addEnum("AlignX", ["left", "center", "right"]);
@@ -48,19 +50,29 @@ package void loadMagiaLibUI(GrLibrary library) {
 
     library.addConstructor(&_ui_state_new, stateType, [grString]);
 
-    library.addFunction(&_ui_state_offset, "offset", [stateType, grFloat, grFloat]);
-    library.addProperty(&_ui_state_offsetX!"get", &_ui_state_offsetX!"set", "offsetX", stateType, grFloat);
-    library.addProperty(&_ui_state_offsetY!"get", &_ui_state_offsetY!"set", "offsetY", stateType, grFloat);
+    library.addFunction(&_ui_state_offset, "offset", [
+            stateType, grFloat, grFloat
+        ]);
+    library.addProperty(&_ui_state_offsetX!"get", &_ui_state_offsetX!"set",
+        "offsetX", stateType, grFloat);
+    library.addProperty(&_ui_state_offsetY!"get", &_ui_state_offsetY!"set",
+        "offsetY", stateType, grFloat);
 
     library.addFunction(&_ui_state_scale, "scale", [stateType, grFloat, grFloat]);
-    library.addProperty(&_ui_state_scaleX!"get", &_ui_state_scaleX!"set", "scaleX", stateType, grFloat);
-    library.addProperty(&_ui_state_scaleY!"get", &_ui_state_scaleY!"set", "scaleY", stateType, grFloat);
+    library.addProperty(&_ui_state_scaleX!"get", &_ui_state_scaleX!"set",
+        "scaleX", stateType, grFloat);
+    library.addProperty(&_ui_state_scaleY!"get", &_ui_state_scaleY!"set",
+        "scaleY", stateType, grFloat);
 
-    library.addProperty(&_ui_state_angle!"get", &_ui_state_angle!"set", "angle", stateType, grFloat);
-    library.addProperty(&_ui_state_alpha!"get", &_ui_state_alpha!"set", "alpha", stateType, grFloat);
+    library.addProperty(&_ui_state_angle!"get", &_ui_state_angle!"set",
+        "angle", stateType, grFloat);
+    library.addProperty(&_ui_state_alpha!"get", &_ui_state_alpha!"set",
+        "alpha", stateType, grFloat);
 
-    library.addProperty(&_ui_state_time!"get", &_ui_state_time!"set", "time", stateType, grFloat);
-    library.addProperty(&_ui_state_spline!"get", &_ui_state_spline!"set", "spline", stateType, splineType);
+    library.addProperty(&_ui_state_time!"get", &_ui_state_time!"set",
+        "time", stateType, grFloat);
+    library.addProperty(&_ui_state_spline!"get", &_ui_state_spline!"set",
+        "spline", stateType, splineType);
 
     library.addFunction(&_ui_addState, "addState", [uiType, stateType]);
     library.addFunction(&_ui_setState, "setState", [uiType, grString]);
