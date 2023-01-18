@@ -108,8 +108,8 @@ void loadSDLOpenGL() {
 void createWindow(const vec2u windowSize, string title) {
     // Create SDL window
     _sdlWindow = SDL_CreateWindow(toStringz(title), SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED, windowSize.x, windowSize.y,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+                                            SDL_WINDOWPOS_CENTERED, windowSize.x, windowSize.y,
+                                            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     enforce(_sdlWindow, "failed to create the window");
 
     // Create OpenGL context and load OpenGL
@@ -243,21 +243,6 @@ void renderWindow() {
     }
 
     SDL_GL_SwapWindow(_sdlWindow);
-}
-
-/// Change coordinate system from inside to outside the canvas.
-vec2 transformRenderSpace(const vec2 pos) {
-    vec2 size = cast(vec2)(_windowSize);
-    vec2 position = size / 2f;
-
-    // @TODO apply canvas scale ratio
-	return (pos - position) + size * 0.5f;
-}
-
-/// Change the scale from outside to inside the canvas.
-vec2 transformScale() {
-    // @TODO apply canvas scale ratio
-	return vec2.one;
 }
 
 /// Sets shader main entry point

@@ -89,7 +89,6 @@ class Texture {
 
         // Free surface
         SDL_FreeSurface(surface);
-        surface = null;
     }
 
     /// Constructor for usual 2D texture from surface

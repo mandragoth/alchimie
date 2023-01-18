@@ -439,10 +439,6 @@ void initEvents() {
     _mousePosition = vec2.zero;
     _mouseRelativePosition = vec2.zero;
     initializeControllers();
-
-    // Toggle when window is in focus
-    SDL_SetRelativeMouseMode(SDL_TRUE);
-    SDL_ShowCursor(SDL_DISABLE);
 }
 
 /// Closes everything mouse, keyboard or controller related

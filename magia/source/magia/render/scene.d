@@ -14,9 +14,6 @@ alias Entities = Entity[];
 
 /// Scene class
 class Scene {
-    /// Renderer
-    Renderer renderer;
-
     private {
         /// @TODO replace entity array with hierarchy
         Entities _entities;
@@ -29,6 +26,7 @@ class Scene {
         }
     }
 
+    /// Constructor
     this() {
         renderer = new Renderer(new OrthographicCamera(-1f, 1f, -1f, 1f));
     }

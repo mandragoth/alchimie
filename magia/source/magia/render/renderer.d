@@ -17,8 +17,26 @@ import magia.render.shader;
 import magia.render.texture;
 import magia.render.window;
 
-// @TODO remove
+// @TODO remove or improve traces
 import std.stdio;
+
+/// Global renderer
+Renderer renderer;
+
+/// Representation of a 2D coordinate system
+struct Coordinates {
+    /// Origin
+    vec2 origin;
+
+    /// X,Y axis
+    vec2 axis;
+}
+
+/// Default coordinate system
+Coordinates defaultCoordinates = Coordinates(vec2.zero, vec2.one);
+
+/// Topleft coordinate system
+Coordinates topLeftCoordinates = Coordinates(vec2.topLeft, vec2.bottomRight);
 
 /// 2D renderer
 class Renderer {
@@ -26,6 +44,7 @@ class Renderer {
     Camera camera;
 
     private {
+        Coordinates _coordinates;
         VertexArray _vertexArray;
         Shader _shader;
     }
@@ -36,16 +55,24 @@ class Renderer {
             bgColor = color;
             glClearColor(bgColor.r, bgColor.g, bgColor.b, 1f);
         }
+
+        /// Set coordinates
+        void coordinates(Coordinates coord) {
+            _coordinates = coord;
+        }
     }
 
     /// Constructor
     this(Camera camera_) {
-        // Rectangle vertices @TODO size should be -1/1 for full screen to multiply by size
+        // Set screen origin
+        _coordinates = defaultCoordinates;
+
+        // Rectangle vertices
         float[] vertices = [
-            -1f, -1f, 0f, 1f,
-             1f, -1f, 1f, 1f,
-             1f,  1f, 1f, 0f,
-            -1f,  1f, 0f, 0f
+            -1f, -1f, 0f, 0f,
+             1f, -1f, 1f, 0f,
+             1f,  1f, 1f, 1f,
+            -1f,  1f, 0f, 1f
         ];
 
         // Define shader layout
@@ -104,45 +131,63 @@ class Renderer {
 
     /// Render the rectangle
     void drawFilledRect(vec2 origin, vec2 size, Color color = Color.white, float alpha = 1f) {
-        origin = transformRenderSpace(origin) / screenSize();
-        size = size * transformScale() / screenSize();
-
         Transform transform = Transform(vec3(origin, 0), vec3(size, 0));
         setupShader(transform.model, color, alpha);
         drawIndexed(_vertexArray);
     }
 
-    /// Render a circle
-    void drawFilledCircle(vec2 center, float radius, Color color = Color.white, float alpha = 1f) {
-        Transform transform = Transform(vec3(center, 0), vec3(radius, radius, 0));
+    /// Render a sprite @TODO handle clip, transform, sprite
+    void drawTexture(Texture texture, vec2 position, vec2 size,
+                     vec4i clip = vec4i.zero, Flip flip = Flip.none, Blend blend = Blend.alpha,
+                     Color color = Color.white, float alpha = 1f) {
+        // Express position as ratio of position and screen size
+        position = _coordinates.origin + position / screenSize * 2 * _coordinates.axis;
+
+        // Express size as ratio of size and screen size
+        size = size / screenSize;
+
+        // Set transform
+        Transform transform = Transform(vec3(position, 0), vec3(size, 0));
+
+        // Default clip has x, y = 0 and w, h = 1
+        vec4 clipf = vec4(0f, 0f, 1f, 1f);
+
+        // Cut texture depending on clip parameters
+        if (clip != vec4i.zero) {
+            clipf.x = cast(float) clip.x / cast(float) texture.width;
+            clipf.y = cast(float) clip.y / cast(float) texture.height;
+            clipf.z = clipf.x + (cast(float) clip.z / cast(float) texture.width);
+            clipf.w = clipf.y + (cast(float) clip.w / cast(float) texture.height);
+        }
+
+        texture.bind();
+        _shader.uploadUniformInt("u_Texture", 0);
+        _shader.uploadUniformVec4("u_Clip", clipf);
+
+        // Set flip
+        vec2 flipf;
+        final switch (flip) with (Flip) {
+            case none:
+                flipf = vec2(0f, 0f);
+                break;
+            case horizontal:
+                flipf = vec2(1f, 0f);
+                break;
+            case vertical:
+                flipf = vec2(0f, 1f);
+                break;
+            case both:
+                flipf = vec2(1f, 1f);
+                break;
+        }
+
+        _shader.uploadUniformVec2("u_Flip", flipf);
+
         setupShader(transform.model, color, alpha);
         drawIndexed(_vertexArray);
     }
 
-    /// Render a sprite @TODO handle clip, transform, sprite
-    void drawSprite(Texture texture, vec2 position, vec2 size,
-                    vec4i clip = vec4i.zero, Flip flip = Flip.none, Blend blend = Blend.alpha,
-                    Color color = Color.white, float alpha = 1f) {
-        // Set transform
-        position = transformRenderSpace(position) / screenSize();
-        size = size * transformScale() / screenSize();
-        Transform transform = Transform(vec3(position, 0), vec3(size, 0));
-
-        // Cut texture depending on clip parameters
-        const float clipX = cast(float) clip.x / cast(float) texture.width;
-        const float clipY = cast(float) clip.y / cast(float) texture.height;
-        const float clipW = clipX + (cast(float) clip.z / cast(float) texture.width);
-        const float clipH = clipY + (cast(float) clip.w / cast(float) texture.height);
-
-        // Remap global clip
-        vec4 clipf = vec4(clipX, clipY, clipW, clipH);
-
-        setupShader(transform.model, color, alpha, texture, clipf, flip, blend);
-        drawIndexed(_vertexArray);
-    }
-
-    private void setupShader(mat4 transform = mat4.identity, Color color = Color.white, float alpha = 1f,
-                             Texture texture = null, vec4 clip = vec4.one, Flip flip = Flip.none, Blend blend = Blend.alpha) {
+    private void setupShader(mat4 transform = mat4.identity, Color color = Color.white, float alpha = 1f, Blend blend = Blend.alpha) {
         // Activate shader
         _shader.activate();
 
@@ -155,47 +200,8 @@ class Renderer {
         // Set transform
         _shader.uploadUniformMat4("u_Transform", transform);
 
-        // Set texture
-        if (texture) {
-            texture.bind();
-            _shader.uploadUniformInt("u_Texture", 0);
-        }
-
-        // Set resolution
-        /*vec2i resolution = getWindowSize();
-        glUniform2f(_resolutionUniform, resolution.x, resolution.y);
-
-        // Set model
-        mat4 local = mat4.identity;
-        local.scale(size.x, size.y, 1f);
-        local.translate(pos.x * 2f + size.x, pos.y * 2f + size.y, 0f);
-        transform = transform * local;
-        glUniformMatrix4fv(_modelUniform, 1, GL_TRUE, transform.value_ptr);
-
-        // Set clip
-        glUniform4f(_clipUniform, clip.x, clip.y, clip.z, clip.w);
-
-        // Set color
-        glUniform4f(_colorUniform, color.r, color.g, color.b, alpha);
-
-        // Set flip
-        final switch (flip) with (Flip) {
-            case none:
-                glUniform2f(_flipUniform, 0f, 0f);
-                break;
-            case horizontal:
-                glUniform2f(_flipUniform, 1f, 0f);
-                break;
-            case vertical:
-                glUniform2f(_flipUniform, 0f, 1f);
-                break;
-            case both:
-                glUniform2f(_flipUniform, 1f, 1f);
-                break;
-        }
-
         // Set blend
-        final switch (blend) with (Blend) {
+        /*final switch (blend) with (Blend) {
             case none:
                 glBlendFuncSeparate(GL_SRC_COLOR, GL_ZERO, GL_ONE, GL_ZERO);
                 glBlendEquation(GL_FUNC_ADD);

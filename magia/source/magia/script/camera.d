@@ -1,7 +1,12 @@
 module magia.script.camera;
 
 import grimoire;
-import magia;
+
+import magia.common.application;
+import magia.core.vec;
+import magia.render.camera;
+import magia.render.renderer;
+import magia.render.window;
 
 package void loadMagiaLibCamera(GrLibrary library) {
     GrType cameraType = library.addNative("Camera");
@@ -32,7 +37,7 @@ private void _setCamera1(GrCall call) {
 }
 
 private void _getCamera(GrCall call) {
-    call.setNative(currentApplication.scene.renderer.camera);
+    call.setNative(renderer.camera);
 }
 
 private void _setCameraPosition(GrCall call) {

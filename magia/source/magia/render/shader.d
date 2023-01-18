@@ -82,13 +82,13 @@ class Shader {
     }
 
     /// Upload an uniform of type vec2 to the shader
-    void uploadUniformVec4(const char* label, vec2 data) {
+    void uploadUniformVec2(const char* label, vec2 data) {
         GLint labelId = glGetUniformLocation(id, label);
         glUniform2f(labelId, data.x, data.y);
     }
 
     /// Upload an uniform of type vec3 to the shader
-    void uploadUniformVec4(const char* label, vec3 data) {
+    void uploadUniformVec3(const char* label, vec3 data) {
         GLint labelId = glGetUniformLocation(id, label);
         glUniform3f(labelId, data.x, data.y, data.z);
     }

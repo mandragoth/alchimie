@@ -13,7 +13,10 @@ import magia.core.timer;
 import magia.core.timestep;
 import magia.render.camera;
 import magia.render.font;
+import magia.render.material;
+import magia.render.renderer;
 import magia.render.scene;
+import magia.render.sprite;
 import magia.render.texture;
 import magia.render.window;
 import magia.ui.manager;
@@ -85,6 +88,10 @@ class Application {
     void run() {
         Texture texture1 = new Texture("checkerboard.png");
         Texture texture2 = new Texture("yinyang.png");
+        Sprite shot = new Sprite("shot.png");
+        shot.clip = vec4i(0, 0, 64, 64);
+        shot.size = vec2(64, 64);
+        shot.flip = Flip.horizontal;
 
         while (processEvents()) {
             updateEvents(_timeStep);
@@ -94,16 +101,33 @@ class Application {
                 _scene.update(_timeStep);
                 _scene.draw();
 
-                // TEST: check
-                _scene.renderer.setup2DRender();
+                // BEING TEST
+                // BELOW DATA TO BE EXTRACTED TO SCENE?
 
-                texture1.bind();
-                _scene.renderer.drawSprite(texture1, vec2(0f, 0f), vec2(400f, 400f));
-                _scene.renderer.drawSprite(texture2, vec2(0f, 0f), vec2(400f, 400f));
+                renderer.setup2DRender();
 
-                //_scene.renderer.drawFilledRect(vec2(0f, 0f), vec2(400f, 400f), Color.green);
-                //_scene.renderer.drawFilledRect(vec2(-400f, -400f), vec2(400f, 400f), Color.blue);
-                //_scene.renderer.drawFilledRect(vec2(200f, 200f), vec2(50f, 20f), Color.red);
+                //renderer.drawTexture(texture1, vec2(0f, 0f), vec2(400f, 400f));
+                //renderer.drawTexture(texture2, vec2(0f, 0f), vec2(400f, 400f));
+
+                /*
+                renderer.coordinates = defaultCoordinates;
+                shot.draw(vec2(-400f, -400f));
+                shot.draw(vec2( 400f, -400f));
+                shot.draw(vec2( 400f,  400f));
+                shot.draw(vec2(-400f,  400f));
+                */
+
+                renderer.coordinates = topLeftCoordinates;
+                shot.draw(vec2(  0f,   0f));
+                shot.draw(vec2(800f,   0f));
+                shot.draw(vec2(800f, 800f));
+                shot.draw(vec2(  0f, 800f));
+                //renderer.drawTexture(shot.texture, vec2(-400f, 0f), shot.size, shot.clip, shot.flip);
+                //renderer.drawTexture(shot.texture, vec2(-800f, 0f), shot.size, shot.clip, shot.flip);
+
+                //renderer.drawFilledRect(vec2(0f, 0f), vec2(400f, 400f), Color.green);
+                //renderer.drawFilledRect(vec2(-400f, -400f), vec2(400f, 400f), Color.blue);
+                //renderer.drawFilledRect(vec2(200f, 200f), vec2(50f, 20f), Color.red);
 
                 /*Color color = Color(0.2f, 0.3f, 0.8f);
                 vec2 scale = vec2.one * 20f;
@@ -113,6 +137,8 @@ class Application {
                         _scene.renderer.drawFilledRect(position, scale, Color.blue);
                     }
                 }*/
+
+                // END TEST
             }
 
             renderWindow();
