@@ -4,9 +4,11 @@ import magia, grimoire;
 
 import sorcier.script.util;
 
-void loadMagiaLibPrimitive(GrLibrary library) {
-    rectPrototype = new RectPrototype();
-    circlePrototype = new CirclePrototype();
+void loadAlchimieLibPrimitive(GrLibDefinition library) {
+    // Erreur @Joe: Ces instanciations requièrent la création de la fenêtre au préalable.
+    // Or, on doit pouvoir charger les bibliothèques sans fenêtre.
+    //rectPrototype = new RectPrototype();
+    //circlePrototype = new CirclePrototype();
 
     GrType colorType = grGetClassType("Color");
     library.addFunction(&_rectangle1, "rectangle", [

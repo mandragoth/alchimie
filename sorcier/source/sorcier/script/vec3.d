@@ -7,7 +7,7 @@ import std.algorithm.comparison : min, max;
 import grimoire;
 import sorcier.script.util;
 
-package void loadMagiaLibVec3(GrLibrary library) {
+package void loadAlchimieLibVec3(GrLibDefinition library) {
     GrType vec3Type = library.addClass("vec3", ["x", "y", "z"], [
             grFloat, grFloat, grFloat
         ]);

@@ -3,7 +3,7 @@ module sorcier.script.common;
 import grimoire;
 import magia.core;
 
-package void loadMagiaLibCommon(GrLibrary library) {
+package void loadAlchimieLibCommon(GrLibDefinition library) {
     GrType splineType = library.addEnum("Spline", [
             "linear",
             "sineIn",

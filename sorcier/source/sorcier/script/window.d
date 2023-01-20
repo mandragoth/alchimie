@@ -4,7 +4,7 @@ import magia, grimoire;
 
 import sorcier.script.util;
 
-void loadMagiaLibWindow(GrLibrary library) {
+void loadAlchimieLibWindow(GrLibDefinition library) {
     GrType colorType = grGetClassType("color");
     library.addFunction(&_setColor1, "setColor", []);
     library.addFunction(&_setColor2, "setColor", [colorType]);

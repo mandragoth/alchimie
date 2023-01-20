@@ -4,7 +4,7 @@ import grimoire;
 
 import magia.core, magia.render;
 
-void loadMagiaLibSprite(GrLibrary library) {
+void loadAlchimieLibSprite(GrLibDefinition library) {
     /+GrType spriteType = library.addNative("Sprite", [], "Drawable");
     GrType textureType = grGetNativeType("Texture");
 

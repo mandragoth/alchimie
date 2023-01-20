@@ -5,7 +5,7 @@ import std.algorithm.comparison : clamp;
 import grimoire;
 import sorcier.script.util;
 
-package void loadMagiaLibColor(GrLibrary library) {
+package void loadAlchimieLibColor(GrLibDefinition library) {
     auto colorType = library.addClass("color", ["r", "g", "b"], [
             grFloat, grFloat, grFloat
         ]);

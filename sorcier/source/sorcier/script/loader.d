@@ -16,21 +16,24 @@ import sorcier.script.color;
 import sorcier.script.ui;
 import sorcier.script.input;
 
-/// Loads all sub libraries
-GrLibrary loadMagiaLibrary() {
+/// Charge la bibliothèque d’alchimie
+GrLibrary loadAlchimieLibrary() {
     GrLibrary library = new GrLibrary;
-    loadMagiaLibCommon(library);
-    loadMagiaLibWindow(library);
-    loadMagiaLibCamera(library);
-    loadMagiaLibDrawable(library);
-    loadMagiaLibTexture(library);
-    loadMagiaLibPrimitive(library);
-    loadMagiaLibSprite(library);
-    loadMagiaLibText(library);
-    loadMagiaLibVec2(library);
-    loadMagiaLibVec3(library);
-    loadMagiaLibColor(library);
-    loadMagiaLibUI(library);
-    loadMagiaLibInput(library);
+
+    foreach (loader; getAlchimieLibraryLoaders()) {
+        loader(library);
+    }
+
     return library;
+}
+
+/// Retourne les fonctions de chargement de la bibliothèque d’alchimie
+GrLibLoader[] getAlchimieLibraryLoaders() {
+    return [
+        &loadAlchimieLibCommon, &loadAlchimieLibWindow, &loadAlchimieLibCamera,
+        &loadAlchimieLibDrawable, &loadAlchimieLibTexture,
+        &loadAlchimieLibPrimitive, &loadAlchimieLibSprite,
+        &loadAlchimieLibText, &loadAlchimieLibVec2, &loadAlchimieLibVec3,
+        &loadAlchimieLibColor, &loadAlchimieLibUI, &loadAlchimieLibInput,
+    ];
 }

@@ -5,7 +5,7 @@ import grimoire;
 import magia.core.mat;
 import magia.render;
 
-void loadMagiaLibText(GrLibrary library) {
+void loadAlchimieLibText(GrLibDefinition library) {
     GrType fontType = library.addNative("Font");
     GrType trueTypeFontType = library.addNative("TrueTypeFont", [], "Font");
     GrType bitmapFontType = library.addNative("BitmapFont", [], "Font");

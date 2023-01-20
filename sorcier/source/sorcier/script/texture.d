@@ -4,7 +4,7 @@ import grimoire;
 
 import magia.render;
 
-void loadMagiaLibTexture(GrLibrary library) {
+void loadAlchimieLibTexture(GrLibDefinition library) {
     /+GrType textureType = library.addNative("Texture");
 
     library.addFunction(&_texture, "Texture", [grString], [textureType]);

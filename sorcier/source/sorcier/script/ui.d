@@ -11,7 +11,7 @@ import magia.ui;
 
 import sorcier.script.util;
 
-package void loadMagiaLibUI(GrLibrary library) {
+package void loadAlchimieLibUI(GrLibDefinition library) {
     GrType splineType = grGetEnumType("Spline");
     GrType alignXType = library.addEnum("AlignX", ["left", "center", "right"]);
     GrType alignYType = library.addEnum("AlignY", ["top", "center", "bottom"]);

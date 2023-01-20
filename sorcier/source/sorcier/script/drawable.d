@@ -17,7 +17,7 @@ class MatWrapper {
     }
 }
 
-void loadMagiaLibDrawable(GrLibrary library) {
+void loadAlchimieLibDrawable(GrLibDefinition library) {
     GrType vec3Type = grGetClassType("vec3");
     GrType quatType = library.addClass("quat", ["w", "x", "y", "z"], [
             grFloat, grFloat, grFloat, grFloat

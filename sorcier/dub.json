@@ -4,13 +4,13 @@
         "Jonath"
     ],
     "copyright": "Copyright © 2022, Enalye, Jonath",
-    "description": "Module d'exécution de Magia",
+    "description": "Environnement d'Exécution d’Alchimie",
     "license": "Zlib",
     "name": "sorcier",
     "targetType": "executable",
     "targetName": "sorcier",
-    "targetPath": "../bin$ARCH",
-	"workingDirectory": "..",
+    "targetPath": "../bin",
+    "workingDirectory": "..",
     "dependencies": {
         "magia": {
             "path": "../magia"
@@ -18,5 +18,27 @@
         "grimoire": {
             "path": "../grimoire"
         }
-    }
+    },
+    "configurations": [
+        {
+            "name": "debug",
+            "targetPath": "../bin"
+        },
+        {
+            "name": "export_dev",
+            "versions": [
+                "AlchimieDev"
+            ],
+            "targetPath": "../export",
+            "targetName": "alchimie"
+        },
+        {
+            "name": "export_dist",
+            "versions": [
+                "AlchimieDist"
+            ],
+            "targetPath": "../export",
+            "targetName": "alchimie-dist"
+        }
+    ]
 }

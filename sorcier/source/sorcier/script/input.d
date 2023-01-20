@@ -6,7 +6,7 @@ import magia, grimoire;
 
 import sorcier.script.util;
 
-void loadMagiaLibInput(GrLibrary library) {
+void loadAlchimieLibInput(GrLibDefinition library) {
     GrType keyButton = library.addEnum("KeyButton", [
             __traits(allMembers, InputEvent.KeyButton.Button)
         ], cast(GrInt[])[EnumMembers!(InputEvent.KeyButton.Button)]);

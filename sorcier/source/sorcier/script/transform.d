@@ -2,7 +2,7 @@ module sorcier.script.transform;
 
 import grimoire;
 
-void loadMagiaLibTransform(GrLibrary library) {
+void loadAlchimieLibTransform(GrLibDefinition library) {
     GrType transformType = library.addNative("Transform");
 
     library.addFunction(&_position, "position", [transformType], [grFloat, grFloat, grFloat]);

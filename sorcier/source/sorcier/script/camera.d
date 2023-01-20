@@ -4,7 +4,7 @@ import grimoire;
 
 import magia.core, magia.render;
 
-void loadMagiaLibCamera(GrLibrary library) {
+void loadAlchimieLibCamera(GrLibDefinition library) {
     GrType cameraType = library.addNative("Camera");
 
     library.addFunction(&_camera, "Camera", [], [cameraType]);
