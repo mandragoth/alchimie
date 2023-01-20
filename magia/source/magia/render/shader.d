@@ -1,9 +1,14 @@
 module magia.render.shader;
 
-import std.file, std.string, std.stdio;
+import std.file;
+import std.path;
+import std.stdio;
+import std.string;
 
 import bindbc.opengl;
 
+import magia.core.mat;
+import magia.core.vec;
 import magia.render.window;
 
 /// Class holding a shader
@@ -16,31 +21,46 @@ class Shader {
         GLuint _fragmentShader;
     }
 
-    /// Constructor
+    /// Constructor given 1 file
+    this(string shaderPath) {
+        File shaderFile = File(buildNormalizedPath("assets", "shader", shaderPath));
+
+        string vertexData;
+        string fragmentData;
+
+        bool readingVertex = false;
+        bool readingFragment = false;
+        foreach (string line; lines(shaderFile)) {
+            if (startsWith(line, "#type")) {
+                line = strip(line);
+
+                if (endsWith(line, "vert")) {
+                    readingVertex = true;
+                    readingFragment = false;
+                } else if (endsWith(line, "frag")) {
+                    readingVertex = false;
+                    readingFragment = true;
+                }
+            } else if (readingVertex) {
+                vertexData ~= line;
+            } else if (readingFragment) {
+                fragmentData ~= line;
+            }
+        }
+
+        setupShaders(shaderPath, shaderPath, vertexData, fragmentData);
+    }
+
+    /// Constructor given 2 files
     this(string vertexFile, string fragmentFile) {
-        const char* vertexSource = toStringz(readText("assets/shader/" ~ vertexFile));
-        const char* fragmentSource = toStringz(readText("assets/shader/" ~ fragmentFile));
-
-        // Setup shader program
-        _vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(_vertexShader, 1, &vertexSource, null);
-        glCompileShader(_vertexShader);
-        compileErrors(_vertexShader, vertexFile, "VERTEX");
-
-        _fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(_fragmentShader, 1, &fragmentSource, null);
-        glCompileShader(_fragmentShader);
-        compileErrors(_fragmentShader, fragmentFile, "FRAGMENT");
-
-        id = glCreateProgram();
-        glAttachShader(id, _vertexShader);
-        glAttachShader(id, _fragmentShader);
-        glLinkProgram(id);
+        string vertexData = readText("../assets/shader/" ~ vertexFile);
+        string fragmentData = readText("../assets/shader/" ~ fragmentFile);
+        setupShaders(vertexFile, fragmentFile, vertexData, fragmentData);
     }
 
     /// Shader turned on
     void activate() const {
-        setShaderProgram(id);
+        glUseProgram(id);
     }
 
     /// Shader turned off
@@ -50,25 +70,83 @@ class Shader {
         glDeleteShader(_fragmentShader);
     }
 
+    /// Upload an uniform of type int to the shader (also used for sampler2D)
+    void uploadUniformInt(const char* label, int data) {
+        GLint labelId = glGetUniformLocation(id, label);
+        glUniform1i(labelId, data);
+    }
+
+    /// Upload an uniform of type float to the shader
+    void uploadUniformFloat(const char* label, float data) {
+        GLint labelId = glGetUniformLocation(id, label);
+        glUniform1f(labelId, data);
+    }
+
+    /// Upload an uniform of type vec2 to the shader
+    void uploadUniformVec2(const char* label, vec2 data) {
+        GLint labelId = glGetUniformLocation(id, label);
+        glUniform2f(labelId, data.x, data.y);
+    }
+
+    /// Upload an uniform of type vec3 to the shader
+    void uploadUniformVec3(const char* label, vec3 data) {
+        GLint labelId = glGetUniformLocation(id, label);
+        glUniform3f(labelId, data.x, data.y, data.z);
+    }
+
+    /// Upload an uniform of type vec4 to the shader
+    void uploadUniformVec4(const char* label, vec4 data) {
+        GLint labelId = glGetUniformLocation(id, label);
+        glUniform4f(labelId, data.x, data.y, data.z, data.w);
+    }
+
+    /// Upload an uniform of type mat4 to the shader
+    void uploadUniformMat4(const char* label, mat4 data) {
+        GLint labelId = glGetUniformLocation(id, label);
+        glUniformMatrix4fv(labelId, 1, GL_TRUE, data.value_ptr);
+    }
+
     private {
-        void compileErrors(GLuint shaderId, string source, string type) {
+        void setupShaders(string vertexPath, string fragmentPath, string vertexData, string fragmentData) {
+            const char* vertexSource = toStringz(vertexData);
+            const char* fragmentSource = toStringz(fragmentData);
+
+            _vertexShader = glCreateShader(GL_VERTEX_SHADER);
+            glShaderSource(_vertexShader, 1, &vertexSource, null);
+            glCompileShader(_vertexShader);
+            compileErrors(_vertexShader, vertexPath, "Vertex");
+
+            _fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+            glShaderSource(_fragmentShader, 1, &fragmentSource, null);
+            glCompileShader(_fragmentShader);
+            compileErrors(_fragmentShader, fragmentPath, "Fragment");
+
+            id = glCreateProgram();
+            glAttachShader(id, _vertexShader);
+            glAttachShader(id, _fragmentShader);
+            glLinkProgram(id);
+        }
+
+        void compileErrors(GLuint shaderId, string path, string type) {
+            // Check if compilation OK
             GLint hasCompiled;
-            char[1024] infoLog;
+            glGetShaderiv(shaderId, GL_COMPILE_STATUS, &hasCompiled);
+                
+            if (hasCompiled == GL_FALSE) {
+                // Get log size
+                GLint maxSize = 0;
+                glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &maxSize);
 
-            if (type != "PROGRAM") {
-                glGetShaderiv(shaderId, GL_COMPILE_STATUS, &hasCompiled);
+                // Create dynamic array and set its length to include NULL character
+                GLchar[] infoLog;
+                infoLog.length = maxSize;
 
-                if (hasCompiled == GL_FALSE) {
-                    glGetShaderInfoLog(shaderId, 1024, null, infoLog.ptr);
-                    writeln("SHADER COMPILER ERROR FOR ", type, ": ", source);
-                }
-            } else {
-                glGetProgramiv(shaderId, GL_COMPILE_STATUS, &hasCompiled);
+                // Log type, source, error info
+                glGetShaderInfoLog(shaderId, maxSize, &maxSize, infoLog.ptr);
+                write(type, " shader error for ", path, ": ", infoLog);
 
-                if (hasCompiled == GL_FALSE) {
-                    glGetProgramInfoLog(shaderId, 1024, null, infoLog.ptr);
-                    writeln("SHADER LINKING ERROR FOR ", type, ": ", source);
-                }
+                // Delete shader as we don't need it anymore
+                glDeleteShader(shaderId);
             }
         }
     }

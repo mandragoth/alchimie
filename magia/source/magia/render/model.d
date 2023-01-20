@@ -56,7 +56,7 @@ final class Model : Renderable {
     /// Constructor
     this(string fileName, uint instances = 1, mat4[] instanceMatrices = [mat4.identity]) {
         auto split = fileName.findSplitAfter("/");
-        _fileDirectory = "assets/model/" ~ split[0];
+        _fileDirectory = "../assets/model/" ~ split[0];
         string filePath = _fileDirectory ~ split[1] ~ ".gltf";
 
         if (_trace) {
@@ -249,11 +249,11 @@ final class Model : Renderable {
                 _loadedTextureNames ~= path;
 
                 if (canFind(path, "baseColor") || canFind(path, "diffuse")) {
-                    Texture diffuse = new Texture(path, "diffuse", textureId);
+                    Texture diffuse = new Texture(path, TextureType.diffuse, textureId);
                     _loadedTextures ~= diffuse;
                     ++textureId;
                 } else if (canFind(path, "metallicRoughness") || canFind(path, "specular")) {
-                    Texture specular = new Texture(path, "specular", textureId);
+                    Texture specular = new Texture(path, TextureType.specular, textureId);
                     _loadedTextures ~= specular;
                     ++textureId;
                 } else if (_trace) {

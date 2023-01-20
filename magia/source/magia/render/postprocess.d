@@ -4,9 +4,9 @@ import std.math;
 import bindbc.opengl;
 
 import magia.core.color;
+import magia.render.buffer;
 import magia.render.shader;
-import magia.render.vao;
-import magia.render.vbo;
+import magia.render.array;
 import magia.render.fbo;
 import magia.render.rbo;
 
@@ -16,6 +16,9 @@ static float gamma = 2.2f;
 /// Background color
 static Color bgColor = Color(.08f, .10f, .13f);
 
+/// Background alpha
+static float bgAlpha = 1f;
+
 /// Number of samples
 static uint nbSamples = 8;
 
@@ -24,7 +27,7 @@ class PostProcess {
     private {
         uint _size;
 
-        VAO _VAO;
+        VertexArray _vertexArray;
         FBO _postProcessFBO;
         FBO _multiSampleFBO;
         Shader _shader;
@@ -50,13 +53,13 @@ class PostProcess {
         glUniform1i(glGetUniformLocation(_shader.id, "screenTexture"), 0);
         glUniform1f(glGetUniformLocation(_shader.id, "gamma"), gamma);
 
-        _VAO = new VAO();
-        _VAO.bind();
+        _vertexArray = new VertexArray();
+        _vertexArray.bind();
 
-        VBO VBO_ = new VBO(rectangleVertices);
+        VertexBuffer vertexBuffer = new VertexBuffer(rectangleVertices);
 
-        _VAO.linkAttributes(VBO_, 0, 2, GL_FLOAT, 4 * float.sizeof, null);
-        _VAO.linkAttributes(VBO_, 1, 2, GL_FLOAT, 4 * float.sizeof, cast(void*)(2 * float.sizeof));
+        _vertexArray.linkAttributes(vertexBuffer, 0, 2, GL_FLOAT, 4 * float.sizeof, null);
+        _vertexArray.linkAttributes(vertexBuffer, 1, 2, GL_FLOAT, 4 * float.sizeof, cast(void*)(2 * float.sizeof));
 
         _multiSampleFBO = new FBO(FBOType.Multisample, _size, nbSamples);
         RBO RBO_ = new RBO(_size, nbSamples);
@@ -68,9 +71,10 @@ class PostProcess {
 
         FBO.unbind();
         RBO.unbind();
-        VAO.unbind();
+        VertexArray.unbind();
     }
 
+    /// Prepare postprocess
     void prepare() {
         // Bind frame buffer
         _multiSampleFBO.bind();
@@ -85,6 +89,7 @@ class PostProcess {
         glEnable(GL_DEPTH_TEST);
     }
 
+    /// Draw postprocess
     void draw() {
         // Make it so the multisampling FBO is read while the post-processing FBO is drawn
         _multiSampleFBO.bindRead();
@@ -98,8 +103,12 @@ class PostProcess {
 
         // Draw the frame buffer rectangle
         _shader.activate();
-        _VAO.bind();
-        glDisable(GL_DEPTH_TEST); // Prevents the frame buffer from being discarded
+        _vertexArray.bind();
+
+        // Prevents the frame buffer from being discarded
+        glDisable(GL_DEPTH_TEST);
+
+        // Bind texture onto post process FBO and draw it onto the screen
         _postProcessFBO.bindTexture();
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }

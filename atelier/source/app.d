@@ -1,5 +1,17 @@
+module app;
+
 import std.stdio;
 
+import magia.core.vec;
+import magia.common.application;
+
 void main() {
-	writeln("Edit source/app.d to start your project.");
+	try {
+        currentApplication = new Application(vec2u(1280, 720), "Atelier");
+        //application.setIcon("logo.png");
+        currentApplication.run();
+    }
+    catch (Exception e) {
+        writeln(e.msg);
+    }
 }

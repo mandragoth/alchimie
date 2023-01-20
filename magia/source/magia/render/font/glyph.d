@@ -49,8 +49,8 @@ struct Glyph {
 
     /// Render glyph
     void draw(mat4 transform, float posX, float posY, float scale, Color color, float alpha) {
-        _sprite.draw(transform, posX, posY, _width * scale, _height * scale,
+        /*_sprite.draw(transform, posX, posY, _width * scale, _height * scale,
                      vec4i(_packX, _packY, _packWidth, _packHeight),
-                     Flip.none, Blend.alpha, color, alpha);
+                     Flip.none, Blend.alpha, color, alpha);*/
     }
 }

@@ -15,7 +15,7 @@ import std.stdio;
 import std.random;
 
 /// Instance of terrain
-final class Terrain : Entity3D {
+final class Terrain : Entity {
     private {
         Mesh _mesh;
         vec2 _gridPos;
@@ -35,14 +35,12 @@ final class Terrain : Entity3D {
         transform.position.x = gridPos.x * size.x;
         transform.position.z = gridPos.y * size.y;
 
-        string pathPrefix = "assets/texture/"; // @TODO factorize
-
         Texture[] textures;
-        textures ~= new Texture(pathPrefix ~ "grass.png", "backgroundTexture", 0);
-        textures ~= new Texture(pathPrefix ~ "sand.png", "rTexture", 1);
-        textures ~= new Texture(pathPrefix ~ "flowers.png", "gTexture", 2);
-        textures ~= new Texture(pathPrefix ~ "bricks.png", "bTexture", 3);
-        textures ~= new Texture(pathPrefix ~ "blendmap.png", "blendMap", 4);
+        textures ~= new Texture("grass.png", TextureType.diffuse, 0);
+        textures ~= new Texture("sand.png", TextureType.diffuse, 1);
+        textures ~= new Texture("flowers.png", TextureType.diffuse, 2);
+        textures ~= new Texture("bricks.png", TextureType.diffuse, 3);
+        textures ~= new Texture("blendmap.png", TextureType.diffuse, 4);
 
         int count = nbVertices * nbVertices;
         Vertex[] vertices = new Vertex[count];

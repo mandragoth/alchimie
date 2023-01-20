@@ -67,7 +67,7 @@ final class BitmapFont : Font {
     this(string name_, string texturePath, Metrics metrics) {
         _name = name_;
         _metrics = metrics;
-        _sprite = new Sprite(texturePath, true);
+        _sprite = new Sprite(texturePath);
     }
 
     /// Copy ctor
@@ -75,11 +75,6 @@ final class BitmapFont : Font {
         _name = font._name;
         _metrics = font._metrics;
         _sprite = new Sprite(font._sprite);
-    }
-
-    /// Call only after Renderer is created in main thread.
-    void postload() {
-        _sprite.postload();
     }
 
     @property {

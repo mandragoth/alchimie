@@ -13,24 +13,37 @@ import bindbc.opengl, bindbc.sdl, bindbc.sdl.image, bindbc.sdl.mixer, bindbc.sdl
 import magia.core, magia.render.postprocess;
 
 static {
-    /// SDL window
-    SDL_Window* _sdlWindow;
-
-    /// SDL context
-    SDL_GLContext _glContext;
-
     private {
-        SDL_Surface* _icon;
-        vec2u _windowSize;
-        vec2 _screenSize, _centerScreen;
-        DisplayMode _displayMode = DisplayMode.windowed;
-        GLuint _currentShaderProgram;
-        float _baseAlpha = 1f;
+        /// SDL window
+        SDL_Window* _sdlWindow;
 
+        /// SDL renderer
+        SDL_Renderer* _sdlRenderer;
+
+        /// SDL context
+        SDL_GLContext _glContext;
+
+        /// Window icon
+        SDL_Surface* _icon;
+
+        /// Dipslay mode
+        DisplayMode _displayMode = DisplayMode.windowed;
+
+        /// Window size as ints
+        vec2u _windowSize;
+
+        /// Screen size as floats
+        vec2 _screenSize;
+
+        /// Is VSync activates?
+        bool _vsync;
+
+        /// Timing details
         double previousTime = 0.0;
         double currentTime = 0.0;
         double deltaTime;
 
+        /// Frame counter
         uint counter = 0;
     }
 }
@@ -52,9 +65,9 @@ static {
     vec2 screenSize() {
         return _screenSize;
     }
-    /// Half of the size of the window in pixels.
-    vec2 centerScreen() {
-        return _centerScreen;
+    /// Set vsync
+    void vsync(bool vsync) {
+        _vsync = vsync;
     }
     /// SDL window
     SDL_Window* window() {
@@ -72,8 +85,8 @@ enum DisplayMode {
 /// Set to true to debug load
 const bool debugLoad = false;
 
-/// Loads all libraries and creates the application window
-void createWindow(const vec2u windowSize, string title) {
+/// Load SDL and OpenGL (@TODO move)
+void loadSDLOpenGL() {
     SDLSupport sdlSupport = loadSDL();
     SDLImageSupport imageSupport = loadSDLImage();
     SDLTTFSupport ttfSupport = loadSDLTTF();
@@ -86,60 +99,39 @@ void createWindow(const vec2u windowSize, string title) {
         writeln(mixerSupport);
     }
 
+    /// SDL load
     enforce(sdlSupport >= SDLSupport.sdl202, "Failed to load SDL");
     enforce(imageSupport >= SDLImageSupport.sdlImage200, "Failed to load SDLImage");
     enforce(ttfSupport >= SDLTTFSupport.sdlTTF2014, "Failed to load SDLTTF");
     enforce(mixerSupport >= SDLMixerSupport.sdlMixer200, "Failed to load SDLMixer");
 
-    enforce(SDL_Init(SDL_INIT_EVERYTHING) == 0,
-        "could not initialize SDL: " ~ fromStringz(SDL_GetError()));
+    /// Initilizations
+    enforce(SDL_Init(SDL_INIT_EVERYTHING) == 0, "Could not initialize SDL: " ~ fromStringz(SDL_GetError()));
+    enforce(TTF_Init() != -1, "Could not initialize TTF module");
+    enforce(Mix_OpenAudio(44_100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) != -1, "No audio device connected");
+    enforce(Mix_AllocateChannels(16) != -1, "Could not allocate audio channels");
+}
 
-    enforce(TTF_Init() != -1, "could not initialize TTF module");
-    enforce(Mix_OpenAudio(44_100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS,
-            1024) != -1, "no audio device connected");
-    enforce(Mix_AllocateChannels(16) != -1, "could not allocate audio channels");
-
+/// Loads all libraries and creates the application window
+void createWindow(const vec2u windowSize, string title) {
+    // Create SDL window
     _sdlWindow = SDL_CreateWindow(toStringz(title), SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED, windowSize.x, windowSize.y,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+                                            SDL_WINDOWPOS_CENTERED, windowSize.x, windowSize.y,
+                                            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     enforce(_sdlWindow, "failed to create the window");
+
+    // Create OpenGL context and load OpenGL
     _glContext = SDL_GL_CreateContext(_sdlWindow);
-    enforce(loadOpenGL() == GLSupport.gl41, "failed to load opengl");
+    enforce(loadOpenGL() == glSupport, "Failed to load opengl");
 
     SDL_GL_MakeCurrent(_sdlWindow, _glContext);
 
     glViewport(0, 0, windowSize.x, windowSize.y);
 
-    // Enable depth buffer
-    glEnable(GL_DEPTH_TEST);
-
-    // Enables multi-samples
-    glEnable(GL_MULTISAMPLE);
-
-    // Enable culling
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
-
     _windowSize = windowSize;
     _screenSize = cast(vec2)(windowSize);
-    _centerScreen = _screenSize / 2f;
 
     setWindowTitle(title);
-}
-
-/// Prepare to render 2D items
-void setup2DRender() {
-    glDisable(GL_DEPTH_TEST);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-    glDisable(GL_CULL_FACE);
-}
-
-/// Prepare to render 3D items
-void setup3DRender() {
-    glEnable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
-    glEnable(GL_CULL_FACE);
 }
 
 /// Cleanup the application window.
@@ -149,7 +141,8 @@ void destroyWindow() {
     }
 }
 
-/// Change the actual window title.
+/// Change the actual window title
+/// @TODO to script
 void setWindowTitle(string title) {
     SDL_SetWindowTitle(_sdlWindow, toStringz(title));
 }
@@ -158,7 +151,6 @@ void setWindowTitle(string title) {
 void resizeWindow(const vec2u windowSize) {
     _windowSize = windowSize;
     _screenSize = cast(vec2)(windowSize);
-    _centerScreen = _screenSize / 2f;
 
     glViewport(0, 0, windowSize.x, windowSize.y);
 }
@@ -257,29 +249,6 @@ void renderWindow() {
     SDL_GL_SwapWindow(_sdlWindow);
 }
 
-/// Change coordinate system from inside to outside the canvas.
-vec2 transformRenderSpace(const vec2 pos) {
-    vec2 size = cast(vec2)(_windowSize);
-    vec2 position = size / 2f;
-
-    // @TODO apply canvas scale ratio
-    return (pos - position) + size * 0.5f;
-}
-
-/// Change the scale from outside to inside the canvas.
-vec2 transformScale() {
-    // @TODO apply canvas scale ratio
-    return vec2.one;
-}
-
-/// Sets shader main entry point
-void setShaderProgram(GLuint shaderProgram) {
-    if (shaderProgram != _currentShaderProgram) {
-        _currentShaderProgram = shaderProgram;
-        glUseProgram(_currentShaderProgram);
-    }
-}
-
 void setBaseColor(Color color) {
     bgColor = color;
 }
@@ -289,9 +258,9 @@ Color getBaseColor() {
 }
 
 void setBaseAlpha(float alpha) {
-    _baseAlpha = alpha;
+    bgAlpha = alpha;
 }
 
 float getBaseAlpha() {
-    return _baseAlpha;
+    return bgAlpha;
 }

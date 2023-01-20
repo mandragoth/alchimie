@@ -8,9 +8,8 @@ import bindbc.opengl;
 import magia.core.mat;
 import magia.core.transform;
 import magia.core.vec;
-import magia.render.vao;
-import magia.render.vbo;
-import magia.render.ebo;
+import magia.render.array;
+import magia.render.buffer;
 import magia.render.camera;
 import magia.render.texture;
 import magia.render.scene;
@@ -27,21 +26,21 @@ interface Renderable {
 final class Mesh : Renderable {
     private {
         Vertex[] _vertices;
-        GLuint[] _indices;
+        uint[] _indices;
         Texture[] _textures;
 
-        VAO _VAO;
-        VBO _VBO;
-        EBO _EBO;
+        VertexArray _vertexArray;
+        VertexBuffer _vertexBuffer;
+        IndexBuffer _indexBuffer;
 
         uint _instances;
-        VBO _instanceVBO;
+        VertexBuffer _instanceVertexBuffer;
 
         bool _traceDeep = false;
     }
 
     /// Constructor
-    this(Vertex[] vertices, GLuint[] indices = null, Texture[] textures = null,
+    this(Vertex[] vertices, uint[] indices = null, Texture[] textures = null,
          uint instances = 1, mat4[] instanceMatrices = [mat4.identity]) {
         _vertices = vertices;
         _indices = indices;
@@ -52,8 +51,8 @@ final class Mesh : Renderable {
         }
 
         // Generate and bind VAO
-        _VAO = new VAO();
-        _VAO.bind();
+        _vertexArray = new VertexArray();
+        _vertexArray.bind();
 
         // Transpose all matrices to pass them onto the VAO properly
         for (int i = 0; i < instanceMatrices.length; ++i) {
@@ -61,55 +60,56 @@ final class Mesh : Renderable {
         }
 
         // Generate VBOs
-        _instanceVBO = new VBO(instanceMatrices);
-        _VBO = new VBO(_vertices);
+        _instanceVertexBuffer = new VertexBuffer(instanceMatrices);
+        _vertexBuffer = new VertexBuffer(_vertices);
 
         // Generate EBO
-        _EBO = new EBO(_indices);
+        _indexBuffer = new IndexBuffer(_indices);
 
         // Link main VBO attributes
-        _VAO.linkAttributes(_VBO, 0, 3, GL_FLOAT, Vertex.sizeof, null);
-        _VAO.linkAttributes(_VBO, 1, 3, GL_FLOAT, Vertex.sizeof, cast(void*)(3 * float.sizeof));
-        _VAO.linkAttributes(_VBO, 2, 3, GL_FLOAT, Vertex.sizeof, cast(void*)(6 * float.sizeof));
-        _VAO.linkAttributes(_VBO, 3, 2, GL_FLOAT, Vertex.sizeof, cast(void*)(9 * float.sizeof));
+        _vertexArray.linkAttributes(_vertexBuffer, 0, 3, GL_FLOAT, Vertex.sizeof, null);
+        _vertexArray.linkAttributes(_vertexBuffer, 1, 3, GL_FLOAT, Vertex.sizeof, cast(void*)(3 * float.sizeof));
+        _vertexArray.linkAttributes(_vertexBuffer, 2, 3, GL_FLOAT, Vertex.sizeof, cast(void*)(6 * float.sizeof));
+        _vertexArray.linkAttributes(_vertexBuffer, 3, 2, GL_FLOAT, Vertex.sizeof, cast(void*)(9 * float.sizeof));
 
         // Link instance VBO attributes
-        _VAO.linkAttributes(_instanceVBO, 4, 4, GL_FLOAT, mat4.sizeof, null);
-        _VAO.linkAttributes(_instanceVBO, 5, 4, GL_FLOAT, mat4.sizeof, cast(void*)(1 * vec4.sizeof));
-        _VAO.linkAttributes(_instanceVBO, 6, 4, GL_FLOAT, mat4.sizeof, cast(void*)(2 * vec4.sizeof));
-        _VAO.linkAttributes(_instanceVBO, 7, 4, GL_FLOAT, mat4.sizeof, cast(void*)(3 * vec4.sizeof));
+        _vertexArray.linkAttributes(_instanceVertexBuffer, 4, 4, GL_FLOAT, mat4.sizeof, null);
+        _vertexArray.linkAttributes(_instanceVertexBuffer, 5, 4, GL_FLOAT, mat4.sizeof, cast(void*)(1 * vec4.sizeof));
+        _vertexArray.linkAttributes(_instanceVertexBuffer, 6, 4, GL_FLOAT, mat4.sizeof, cast(void*)(2 * vec4.sizeof));
+        _vertexArray.linkAttributes(_instanceVertexBuffer, 7, 4, GL_FLOAT, mat4.sizeof, cast(void*)(3 * vec4.sizeof));
         glVertexAttribDivisor(4, 1);
         glVertexAttribDivisor(5, 1);
         glVertexAttribDivisor(6, 1);
         glVertexAttribDivisor(7, 1);
 
         // Unbind all objects
-        VAO.unbind();
-        VBO.unbind();
-        EBO.unbind();
+        VertexArray.unbind();
+        VertexBuffer.unbind();
+        IndexBuffer.unbind();
     }
 
     /// Bind shader, VAO
     void bindData(Shader shader) {
         shader.activate();
-        _VAO.bind();
+        _vertexArray.bind();
 
         uint nbDiffuseTextures = 0;
         uint nbSpecularTextures = 0;
 
+        /// @TODO rewrite shader forward
         uint textureId = 0;
         foreach (Texture texture; _textures) {
-            const string type = texture.type;
+            const TextureType type = texture.type;
 
             string name;
-            if (type == "diffuse") {
-                name = type ~ to!string(nbDiffuseTextures);
+            if (type == TextureType.diffuse) {
+                name = to!string(type) ~ to!string(nbDiffuseTextures);
                 ++nbDiffuseTextures;
-            } else if (type == "specular") {
-                name = type ~ to!string(nbSpecularTextures);
+            } else if (type == TextureType.specular) {
+                name = to!string(type) ~ to!string(nbSpecularTextures);
                 ++nbSpecularTextures;
             } else {
-                name = type;
+                name = to!string(type);
             }
 
             texture.forwardToShader(shader, name, textureId);

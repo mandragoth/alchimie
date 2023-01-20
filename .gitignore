@@ -13,3 +13,4 @@ docs/
 *.lst
 bin*/
 export/
+.vscode

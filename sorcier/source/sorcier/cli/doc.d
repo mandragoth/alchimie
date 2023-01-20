@@ -11,9 +11,10 @@ import grimoire;
 
 import sorcier.script;
 
+/// Generate documentation
 void generateDoc() {
     const GrLocale locale = GrLocale.fr_FR;
-    auto startTime = MonoTime.currTime();
+    const auto startTime = MonoTime.currTime();
     grLoadStdLibConstraint();
 
     generate(GrLocale.fr_FR);
@@ -24,6 +25,8 @@ void generateDoc() {
 }
 
 alias LibLoader = void function(GrLibDefinition);
+
+/// Generate documentation for a language
 void generate(GrLocale locale) {
     LibLoader[] libLoaders = grGetStdLibraryLoaders();
     libLoaders ~= getAlchimieLibraryLoaders();

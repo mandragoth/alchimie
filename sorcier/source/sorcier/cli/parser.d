@@ -2,9 +2,11 @@ module sorcier.cli.parser;
 
 import grimoire;
 
-import sorcier.common, sorcier.runtime;
+import sorcier.runtime;
 
-import sorcier.cli.doc, sorcier.cli.exporter, sorcier.cli.help;
+import sorcier.cli.doc;
+import sorcier.cli.exporter;
+import sorcier.cli.help;
 
 void parseArguments(string[] args) {
     version (AlchimieDev) {

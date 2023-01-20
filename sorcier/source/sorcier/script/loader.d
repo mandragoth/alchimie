@@ -1,20 +1,12 @@
 module sorcier.script.loader;
 
 import grimoire;
-
+import sorcier.script.camscript;
 import sorcier.script.common;
-import sorcier.script.window;
-import sorcier.script.camera;
 import sorcier.script.drawable;
-import sorcier.script.texture;
-import sorcier.script.primitive;
-import sorcier.script.sprite;
-import sorcier.script.text;
-import sorcier.script.vec2;
-import sorcier.script.vec3;
-import sorcier.script.color;
-import sorcier.script.ui;
 import sorcier.script.input;
+import sorcier.script.scriptutils;
+import sorcier.script.uiscript;
 
 /// Charge la bibliothèque d’alchimie
 GrLibrary loadAlchimieLibrary() {
@@ -30,10 +22,7 @@ GrLibrary loadAlchimieLibrary() {
 /// Retourne les fonctions de chargement de la bibliothèque d’alchimie
 GrLibLoader[] getAlchimieLibraryLoaders() {
     return [
-        &loadAlchimieLibCommon, &loadAlchimieLibWindow, &loadAlchimieLibCamera,
-        &loadAlchimieLibDrawable, &loadAlchimieLibTexture,
-        &loadAlchimieLibPrimitive, &loadAlchimieLibSprite,
-        &loadAlchimieLibText, &loadAlchimieLibVec2, &loadAlchimieLibVec3,
-        &loadAlchimieLibColor, &loadAlchimieLibUI, &loadAlchimieLibInput,
+        &loadAlchimieLibCamera, &loadAlchimieLibCommon, &loadAlchimieLibDrawable,
+        &loadAlchimieLibInput, &loadAlchimieLibUI
     ];
 }

@@ -12,5 +12,9 @@
 		{
 			"path": "../grimoire"
 		}
-	]
+    ],
+    "settings": {
+        "python.languageServer": "Pylance",
+        "dfmt.braceStyle": "otbs"
+    }
 }

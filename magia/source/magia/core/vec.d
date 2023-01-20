@@ -5,6 +5,7 @@ import magia.core.quat;
 import magia.core.tuple;
 import std.format;
 import std.math;
+import std.traits;
 
 /// Generic vector class
 struct Vector(type, uint dimension_) {
@@ -16,7 +17,7 @@ struct Vector(type, uint dimension_) {
     /// Vector data
     type[dimension] data;
 
-    /// All dimensions set to 0 (origin)
+    /// All dimensions set to 0
     enum zero = Vector(0);
 
     /// All dimensions set to 1
@@ -65,7 +66,7 @@ struct Vector(type, uint dimension_) {
             real toReturn = 0;
 
             foreach(i; TupleRange!(0, dimension)) {
-                toReturn += data[i]^^2;
+                toReturn += data[i] ^^ 2;
             }
 
             return toReturn;
@@ -85,6 +86,14 @@ struct Vector(type, uint dimension_) {
             toReturn.normalize();
             return toReturn;
         }
+    }
+
+    /// 2 vectors are compatible if and only if rvalue has a dimension equal or smaller to lvalue
+    static void isCompatibleVectorImpl(int d)(Vector!(type, d)) if(d <= dimension) {}
+
+    /// Are 2 vectors compatible?
+    template isCompatibleVector(T) {
+        enum isCompatibleVector = is(typeof(isCompatibleVectorImpl(T.init)));
     }
 
     /// Internal generic function in charge of building a vector
@@ -159,7 +168,7 @@ struct Vector(type, uint dimension_) {
         Vector toReturn;
 
         foreach(i; TupleRange!(0, dimension)) {
-            toReturn.data[i] = data[i] * scalar;
+            toReturn.data[i] = cast(type)(data[i] * scalar);
         }
 
         return toReturn;
@@ -242,6 +251,30 @@ struct Vector(type, uint dimension_) {
             x = x_;
             y = y_;
         }
+
+        /// Right is positive along X axis
+        enum right = Vector(1, 0);
+
+        /// Left is negative along X axis
+        enum left = Vector(-1, 0);
+
+        /// Up is positive along Y axis
+        enum up = Vector(0, 1);
+
+        /// Down is positive along Y axis
+        enum down = Vector(0, -1);
+
+        /// Bottom left is -x / -y
+        enum bottomLeft = down + left;
+
+        /// Bottom right is +x / -y
+        enum bottomRight = down + right;
+
+        /// Top right is +x, +y
+        enum topRight = up + right;
+
+        /// Top left is -x, +y
+        enum topLeft = up + left;
     }
 
     /// Vector of size 3
@@ -282,11 +315,30 @@ T.vectorType dot(T)(const T veca, const T vecb) @safe pure nothrow if(is_vector!
     return toReturn;
 }
 
+/// Returns the angle between two vectors
+T.vectorType angle(T)(const T veca, const T vecb) @safe pure nothrow if(is_vector!T) {
+    return acos(dot(veca.normalized, vecb.normalized));
+}
+
 /// Calculates the cross product of two 3-dimensional vectors
 T cross(T)(const T veca, const T vecb) @safe pure nothrow if(is_vector!T && (T.dimension == 3)) {
    return T(veca.y * vecb.z - vecb.y * veca.z,
             veca.z * vecb.x - vecb.z * veca.x,
             veca.x * vecb.y - vecb.x * veca.y);
+}
+
+/// Rotates p around axis r by angle
+T rotate(T)(const T p, const T r, float angle) @safe pure nothrow if(is_vector!T && (T.dimension == 3)) {
+    const float halfAngle = angle / 2;
+
+    const float cosRot = cos(halfAngle);
+    const float sinRot = sin(halfAngle);
+
+    const quat q1 = quat(0f, p.x, p.y, p.z);
+    const quat q2 = quat(cosRot, r.x * sinRot, r.y * sinRot, r.z * sinRot);
+    const quat q3 = q2 * q1 * q2.conjugated;
+
+    return vec3(q3.x, q3.y, q3.z);
 }
 
 alias vec2 = Vector!(float, 2);

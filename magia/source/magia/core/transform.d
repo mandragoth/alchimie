@@ -16,20 +16,32 @@ struct Transform {
     vec3 scale;
 
     /// Matrix model
-    mat4 model;
+    private mat4 _model;
 
-    /// Constructor
+    @property mat4 model() const {
+        return _model;
+    }
+
+    /// Constructor given position, scale
+    this(vec3 position_, vec3 scale_) {
+        position = position_;
+        rotation = quat.identity;
+        scale = scale_;
+        _model = combineModel(position, rotation, scale);
+    }
+
+    /// Constructor given position, rotation, scale
     this(vec3 position_, quat rotation_ = quat.identity, vec3 scale_ = vec3.one) {
         position = position_;
         rotation = rotation_;
         scale = scale_;
-        model = combineModel(position_, rotation_, scale_);
+        _model = combineModel(position, rotation, scale);
     }
 
     /// Constructor (given model)
     this(mat4 model_, vec3 position_ = vec3.zero,
          quat rotation_ = quat.identity, vec3 scale_ = vec3.one) {
-        model = model_;
+        _model = model_;
         position = position_;
         rotation = rotation_;
         scale = scale_;

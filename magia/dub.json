@@ -12,7 +12,9 @@
     "dependencies": {
         "bindbc-opengl": "~>0.17.1",
         "bindbc-sdl": "~>0.21.4",
-        "gl3n": "~>1.4.1"
+        "grimoire": {
+            "path": "../grimoire"
+        }
     },
     "versions": [
         "GL_41",
@@ -23,9 +25,6 @@
         "SDL_Mixer_204"
     ],
     "targetPath": "./bin$ARCH",
-    "subPackages": [
-        "./test/"
-    ],
     "buildTypes": {
         "debug": {
             "buildOptions": [

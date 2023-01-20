@@ -22,7 +22,7 @@ enum LightType {
 }
 
 /// Instance of light
-final class LightInstance : Entity3D {
+final class LightInstance : Entity {
     private {
         Mesh _mesh;
         vec4 _color;

@@ -16,15 +16,26 @@ import magia.render.scene;
 
 import std.stdio;
 
+/// Up axis @TODO extract to vec
 vec3 up      = vec3( 0,  1,  0);
+
+/// Down axis
 vec3 down    = vec3( 0, -1,  0);
+
+/// Left axis
 vec3 left    = vec3(-1,  0,  0);
+
+/// Right axis
 vec3 right   = vec3( 1,  0,  0);
+
+/// Forward axis
 vec3 forward = vec3( 0,  0,  1);
+
+/// Back axis
 vec3 back    = vec3( 0,  0, -1);
 
 /// Instance of sphere
-class Sphere : Entity3D {
+class Sphere : Entity {
     protected {
         Mesh[]    _meshes;
         Texture[] _textures;
@@ -37,15 +48,14 @@ class Sphere : Entity3D {
         bool _debug;
     }
 
+    /// Constructor
     this(int resolution, float radius) {
         transform = Transform.identity;
 
         _resolution = resolution;
         _radius = radius;
 
-        string pathPrefix = "assets/texture/"; // @TODO factorize
-
-        _textures ~= new Texture(pathPrefix ~ "pixel.png", "diffuse", 0);
+        _textures ~= new Texture("pixel.png", TextureType.diffuse, 0);
 
         vec3[] directions = [up, down, left, right, forward, back];
 
@@ -58,13 +68,13 @@ class Sphere : Entity3D {
         vec3 directionX = vec3(directionY.y, directionY.z, directionY.x);
         vec3 directionZ = directionX.cross(directionY);
 
-        int nbVertices = _resolution * _resolution;
+        const int nbVertices = _resolution * _resolution;
         Vertex[] vertices = new Vertex[nbVertices];
 
         int resolution2 = _resolution - 1;
         float fResolution2 = cast(float)(resolution2); 
 
-        int nbIndices = resolution2 * resolution2 * 6;
+        const int nbIndices = resolution2 * resolution2 * 6;
         GLuint[] indices = new uint[nbIndices];
 
         int indiceIdx = 0;
@@ -103,8 +113,9 @@ class Sphere : Entity3D {
     /// Generate a point on the sphere's surface
     protected vec3 generateSurfacePoint(vec3 directionX, vec3 directionY, vec3 directionZ,
                                         int x, int y, int resolution) {
-        vec2 ratio = vec2(x, y) / resolution;
-        vec2 ratioScale = (ratio - vec2(0.5f, 0.5f)) * 2;
+        const vec2 ratio = vec2(x, y) / resolution;
+        const vec2 ratioScale = (ratio - vec2(0.5f, 0.5f)) * 2;
+
         vec3 surfacePoint = directionY + ratioScale.x * directionX + ratioScale.y * directionZ;
         return surfacePoint.normalized;
     }
@@ -116,13 +127,14 @@ class Sphere : Entity3D {
 
     // Compute normals 
     private vec3 computeNormal(vec3 surfacePoint) {
-        vec3 center = transform.position;
+        const vec3 center = transform.position;
+
         vec3 normal = surfacePoint - center;
         normal.normalize();
 
-        if (_debug) {
+        /*if (_debug) {
             addLine(new Line(surfacePoint, surfacePoint + normal * _radius / 100, vec3(0., 1., 0.)));
-        }
+        }*/
 
         return normal;
     }

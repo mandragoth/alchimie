@@ -1,10 +1,9 @@
 module sorcier.script.drawable;
 
-import grimoire;
-
-import magia.core, magia.render, magia.shape;
-
 import std.stdio;
+
+import grimoire;
+import magia;
 
 /// Dirty
 class MatWrapper {
@@ -17,11 +16,11 @@ class MatWrapper {
     }
 }
 
-void loadAlchimieLibDrawable(GrLibDefinition library) {
+package void loadAlchimieLibDrawable(GrLibDefinition library) {
+    GrType vec2Type = grGetClassType("vec2");
     GrType vec3Type = grGetClassType("vec3");
-    GrType quatType = library.addClass("quat", ["w", "x", "y", "z"], [
-            grFloat, grFloat, grFloat, grFloat
-        ]);
+    GrType colorType = grGetClassType("color");
+    GrType quatType = library.addClass("quat", ["w", "x", "y", "z"], [grFloat, grFloat, grFloat, grFloat]);
     GrType mat4Type = library.addNative("mat4");
 
     GrType entityType = library.addNative("Entity");
@@ -33,40 +32,25 @@ void loadAlchimieLibDrawable(GrLibDefinition library) {
     GrType skyboxType = library.addNative("Skybox", [], "Entity");
     GrType terrainType = library.addNative("Terrain", [], "Entity");
 
-    GrType lightEnumType = library.addEnum("LightKind", [
-            "DIRECTIONAL", "POINT", "SPOT"
-        ]);
+    GrType lightEnumType = library.addEnum("LightKind", ["DIRECTIONAL", "POINT", "SPOT"]);
 
-    library.addFunction(&_quat, "quat", [grFloat, grFloat, grFloat, grFloat], [
-            quatType
-        ]);
-    library.addFunction(&_position1, "position", [
-            entityType, grFloat, grFloat, grFloat
-        ], []);
+    library.addFunction(&_quat, "quat", [grFloat, grFloat, grFloat, grFloat], [quatType]);
+    library.addFunction(&_position1, "position", [entityType, grFloat, grFloat, grFloat], []);
     library.addFunction(&_position2, "position", [entityType, vec3Type], []);
-    library.addFunction(&_scale1, "scale", [
-            entityType, grFloat, grFloat, grFloat
-        ], []);
+    library.addFunction(&_scale1, "scale", [entityType, grFloat, grFloat, grFloat], []);
     library.addFunction(&_scale2, "scale", [entityType, vec3Type], []);
-    library.addFunction(&_packInstanceMatrix, "packInstanceMatrix", [
-            vec3Type, quatType, vec3Type
-        ], [mat4Type]);
+    library.addFunction(&_packInstanceMatrix, "packInstanceMatrix", [vec3Type, quatType, vec3Type], [mat4Type]);
+
+    library.addFunction(&_drawFilledRect, "drawFilledRect", [vec2Type, vec2Type, colorType], []);
+
     library.addFunction(&_light, "loadLight", [lightEnumType], [lightType]);
     library.addFunction(&_model1, "loadModel", [grString], [modelType]);
-    library.addFunction(&_model2, "loadModel", [
-            grString, grInt, grList(mat4Type)
-        ], [modelType]);
+    library.addFunction(&_model2, "loadModel", [grString, grInt, grList(mat4Type)], [modelType]);
     library.addFunction(&_quad, "loadQuad", [], [quadType]);
-    library.addFunction(&_planet, "loadPlanet", [
-            grInt, grFloat, vec3Type, grInt, grFloat, grFloat, grFloat, grFloat
-        ], [planetType]);
-    library.addFunction(&_line, "loadLine", [vec3Type, vec3Type, vec3Type], [
-            lineType
-        ]);
+    library.addFunction(&_planet, "loadPlanet", [grInt, grFloat, vec3Type, grInt, grFloat, grFloat, grFloat, grFloat], [planetType]);
+    library.addFunction(&_line, "loadLine", [vec3Type, vec3Type, vec3Type], [lineType]);
     library.addFunction(&_skybox, "loadSkybox", [], [skyboxType]);
-    library.addFunction(&_terrain, "loadTerrain", [
-            grInt, grInt, grInt, grInt, grInt, grInt
-        ], [terrainType]);
+    library.addFunction(&_terrain, "loadTerrain", [grInt, grInt, grInt, grInt, grInt, grInt], [terrainType]);
 }
 
 private void _quat(GrCall call) {
@@ -79,24 +63,24 @@ private void _quat(GrCall call) {
 }
 
 private void _position1(GrCall call) {
-    Instance3D instance = call.getNative!Instance3D(0);
+    Instance instance = call.getNative!Instance(0);
     instance.transform.position = vec3(call.getFloat(1), call.getFloat(2), call.getFloat(3));
 }
 
 private void _position2(GrCall call) {
-    Instance3D instance = call.getNative!Instance3D(0);
+    Instance instance = call.getNative!Instance(0);
     GrObject position = call.getObject(1);
     instance.transform.position = vec3(position.getFloat("x"),
         position.getFloat("y"), position.getFloat("z"));
 }
 
 private void _scale1(GrCall call) {
-    Instance3D instance = call.getNative!Instance3D(0);
+    Instance instance = call.getNative!Instance(0);
     instance.transform.position = vec3(call.getFloat(1), call.getFloat(2), call.getFloat(3));
 }
 
 private void _scale2(GrCall call) {
-    Instance3D instance = call.getNative!Instance3D(0);
+    Instance instance = call.getNative!Instance(0);
     GrObject scale = call.getObject(1);
     instance.transform.scale = vec3(scale.getFloat("x"), scale.getFloat("y"), scale.getFloat("z"));
 }
@@ -117,16 +101,29 @@ private void _packInstanceMatrix(GrCall call) {
     call.setNative(wrapper);
 }
 
+private void _drawFilledRect(GrCall call) {
+    GrObject positionObj = call.getObject(0);
+    GrObject sizeObj = call.getObject(1);
+    GrObject colorObj = call.getObject(2);
+
+    vec2 position = vec2(positionObj.getFloat("x"), positionObj.getFloat("y"));
+    vec2 size = vec2(sizeObj.getFloat("x"), sizeObj.getFloat("y"));
+
+    Color color = Color(colorObj.getFloat("r"), colorObj.getFloat("g"), colorObj.getFloat("b"));
+
+    //renderer.drawFilledRect(position, size, color);
+}
+
 private void _light(GrCall call) {
     LightInstance lightInstance = new LightInstance(call.getEnum!LightType(0));
     call.setNative(lightInstance);
-    setGlobalLight(lightInstance);
+    //setGlobalLight(lightInstance);
 }
 
 private void _model1(GrCall call) {
     ModelInstance modelInstance = new ModelInstance(call.getString(0));
     call.setNative(modelInstance);
-    addEntity(modelInstance);
+    currentApplication.scene.addEntity(modelInstance);
 }
 
 private void _model2(GrCall call) {
@@ -139,7 +136,7 @@ private void _model2(GrCall call) {
 
     ModelInstance modelInstance = new ModelInstance(call.getString(0), call.getInt(1), matrices);
     call.setNative(modelInstance);
-    addEntity(modelInstance);
+    currentApplication.scene.addEntity(modelInstance);
 }
 
 private void _line(GrCall call) {
@@ -155,13 +152,13 @@ private void _line(GrCall call) {
 
     Line line = new Line(start, end, color);
     call.setNative(line);
-    addLine(line);
+    //addLine(line);
 }
 
 private void _quad(GrCall call) {
     QuadInstance quadInstance = new QuadInstance();
     call.setNative(quadInstance);
-    addEntity(quadInstance);
+    currentApplication.scene.addEntity(quadInstance);
 }
 
 private void _planet(GrCall call) {
@@ -180,15 +177,15 @@ private void _planet(GrCall call) {
 
     Planet planet = new Planet(resolution, radius, noiseOffset, nbLayers,
         strength, roughness, persistence, minHeight);
-    //Sphere planet = new Sphere(resolution, radius);
+
     call.setNative(planet);
-    addEntity(planet);
+    currentApplication.scene.addEntity(planet);
 }
 
 private void _skybox(GrCall call) {
-    Skybox skybox = new Skybox(getCamera());
+    Skybox skybox = new Skybox(renderer.camera);
     call.setNative(skybox);
-    setSkybox(skybox);
+    //setSkybox(skybox);
 }
 
 private void _terrain(GrCall call) {
@@ -201,5 +198,5 @@ private void _terrain(GrCall call) {
 
     Terrain terrain = new Terrain(vec2(gridX, gridZ), vec2(sizeX, sizeZ), nbVertices, tiling);
     call.setNative(terrain);
-    setTerrain(terrain);
+    //setTerrain(terrain);
 }

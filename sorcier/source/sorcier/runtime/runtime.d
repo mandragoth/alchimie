@@ -7,15 +7,17 @@ import std.conv : to;
 import std.path, std.file;
 import std.datetime, core.thread;
 
-import grimoire, magia;
-
-import sorcier.common, sorcier.script;
+import grimoire;
+import magia;
+import sorcier.common;
+import sorcier.script;
 
 void bootUp(string[] args) {
     string bootFile;
 
     if (args.length) {
         string exePath = args[0];
+
         string exeDir = dirName(exePath);
         string exeName = stripExtension(baseName(exePath));
 
@@ -98,21 +100,21 @@ final class Runtime {
 
         grSetOutputFunction(&print);
 
-        _magia = new Magia(vec2u(800, 800), "Alchimie");
+        currentApplication = new Application(vec2u(800, 800), "Alchimie");
     }
 
     void run() {
         _tickStartFrame = Clock.currStdTime();
 
-        while (_magia.isRunning()) {
+        while (currentApplication.isRunning()) {
             /*if (getButtonDown(KeyButton.f5)) {
             if (!loadScript()) {
                 destroyApplication();
                 return;
             }
-        }*/
+            }*/
 
-            InputEvent[] inputEvents = _magia.pollEvents();
+            InputEvent[] inputEvents = currentApplication.pollEvents();
 
             if (_engine) {
                 if (_inputEvent && inputEvents.length) {
@@ -138,7 +140,7 @@ final class Runtime {
                 }
             }
 
-            _magia.update(_deltatime);
+            currentApplication.update();
 
             if (_engine) {
                 if (_lateInputEvent && inputEvents.length) {
@@ -146,17 +148,7 @@ final class Runtime {
                 }
             }
 
-            _magia.render();
-
-            // IPS
-            /*long deltaTicks = Clock.currStdTime() - _tickStartFrame;
-            if (deltaTicks < (10_000_000 / getNominalFPS()))
-                Thread.sleep(dur!("hnsecs")((10_000_000 / getNominalFPS()) - deltaTicks));
-
-            deltaTicks = Clock.currStdTime() - _tickStartFrame;
-            _deltatime = (cast(float)(deltaTicks) / 10_000_000f) * getNominalFPS();
-            _currentFps = (_deltatime == .0f) ? .0f : (10_000_000f / cast(float)(deltaTicks));
-            _tickStartFrame = Clock.currStdTime();*/
+            currentApplication.render();
         }
     }
 }

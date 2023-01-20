@@ -2,9 +2,9 @@ module sorcier.script.input;
 
 import std.traits;
 
-import magia, grimoire;
-
-import sorcier.script.util;
+import magia;
+import grimoire;
+import sorcier.script.scriptutils;
 
 void loadAlchimieLibInput(GrLibDefinition library) {
     GrType keyButton = library.addEnum("KeyButton", [
@@ -397,47 +397,47 @@ private void _makeDropFile(GrCall call) {
 }
 
 private void _isPressed(T)(GrCall call) {
-    call.setBool(_magia.input.isPressed(call.getEnum!T(0)));
+    call.setBool(currentApplication.inputManager.isPressed(call.getEnum!T(0)));
 }
 
 private void _getAxis(GrCall call) {
-    call.setFloat(_magia.input.getAxis(call.getEnum!(InputEvent.ControllerAxis.Axis)(0)));
+    call.setFloat(currentApplication.inputManager.getAxis(call.getEnum!(InputEvent.ControllerAxis.Axis)(0)));
 }
 
 // Action
 
 private void _addAction(GrCall call) {
-    _magia.input.addAction(call.getString(0), call.getFloat(1));
+    currentApplication.inputManager.addAction(call.getString(0), call.getFloat(1));
 }
 
 private void _removeAction(GrCall call) {
-    _magia.input.removeAction(call.getString(0));
+    currentApplication.inputManager.removeAction(call.getString(0));
 }
 
 private void _hasAction(GrCall call) {
-    call.setBool(_magia.input.hasAction(call.getString(0)));
+    call.setBool(currentApplication.inputManager.hasAction(call.getString(0)));
 }
 
 private void _isAction(GrCall call) {
-    call.setBool(_magia.input.isAction(call.getString(1), call.getNative!InputEvent(0)));
+    call.setBool(currentApplication.inputManager.isAction(call.getString(1), call.getNative!InputEvent(0)));
 }
 
 private void _addActionEvent(GrCall call) {
-    _magia.input.addActionEvent(call.getString(0), call.getNative!InputEvent(1));
+    currentApplication.inputManager.addActionEvent(call.getString(0), call.getNative!InputEvent(1));
 }
 
 private void _removeActionEvents(GrCall call) {
-    _magia.input.removeActionEvents(call.getString(0));
+    currentApplication.inputManager.removeActionEvents(call.getString(0));
 }
 
 private void _isActionPressed(GrCall call) {
-    call.setBool(_magia.input.isPressed(call.getString(0)));
+    call.setBool(currentApplication.inputManager.isPressed(call.getString(0)));
 }
 
 private void _getActionStrength(GrCall call) {
-    call.setFloat(_magia.input.getActionStrength(call.getString(0)));
+    call.setFloat(currentApplication.inputManager.getActionStrength(call.getString(0)));
 }
 
 private void _getActionAxis(GrCall call) {
-    call.setFloat(_magia.input.getActionAxis(call.getString(0), call.getString(1)));
+    call.setFloat(currentApplication.inputManager.getActionAxis(call.getString(0), call.getString(1)));
 }

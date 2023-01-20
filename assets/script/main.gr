@@ -4,22 +4,24 @@ func randf() (float) {
 }
 
 event onLoad() {
-    var camera = Camera();
+    //var camera = Camera();
     //camera:position(0., .5, 2.);
     //camera:position(-22., 20., 11.);
     //camera:orientation(1., -0.25, 0.29);
 
-    var light: Light = loadLight(LightKind.SPOT);
-    light.position(0f, 5f, 0f);
+    //drawFilledRect(vec2(200f, 200f), vec2(50f, 20f), red());
 
-    var skybox: Skybox = loadSkybox();
-    var quad: Quad = loadQuad();
+    //var light: Light = loadLight(LightKind.SPOT);
+    //light.position(0f, 2f, 0f);
+
+    //var skybox: Skybox = loadSkybox();
+    //var quad: Quad = loadQuad();
     //Model tree = loadModel("tree/scene");
     //Model grass = loadModel("grass/scene");
     //Model ground = loadModel("ground/scene");
-    var bunny: Model = loadModel("bunny/scene");
+    //var bunny: Model = loadModel("bunny/scene");
     //bunny:position(vec3(1., 1., 1.));
-    //Model statue = loadModel("statue/scene");
+    //var statue: Model = loadModel("statue/scene");
     //Model jupiter = loadModel("jupiter/scene");
     //jupiter:position(vec3(1., 0., 1.));
     //jupiter:scale(vec3(0.05, 0.05, 0.05));
@@ -34,7 +36,7 @@ event onLoad() {
 
     //Model cubeBlender = loadModel("cube/cube");
 
-    var nbAsteroids: int = 500;
+    /*var nbAsteroids: int = 500;
 
     var instanceMatrices: list<mat4>;
 
@@ -63,10 +65,10 @@ event onLoad() {
 
         var instanceMatrix = packInstanceMatrix(position, rotation, scale);
         instanceMatrices ~= instanceMatrix;
-    }
+    }*/
     //Model asteroid = loadModel("asteroid/scene", nbAsteroids, instanceMatrices);
 
-    testUI();
+    //testUI();
 
     /*loop {
         print("HAAAAAAAA", 0., 50.);
