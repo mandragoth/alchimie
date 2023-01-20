@@ -59,7 +59,7 @@ class Shader {
 
     /// Shader turned on
     void activate() const {
-        setShaderProgram(id);
+        glUseProgram(id);
     }
 
     /// Shader turned off

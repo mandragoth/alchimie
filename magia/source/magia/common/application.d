@@ -86,12 +86,13 @@ class Application {
 
     /// Run application
     void run() {
-        Texture texture1 = new Texture("checkerboard.png");
-        Texture texture2 = new Texture("yinyang.png");
-        Sprite shot = new Sprite("shot.png");
+        //Texture texture1 = new Texture("checkerboard.png");
+        //Texture texture2 = new Texture("yinyang.png");
+        Texture remilia = new Texture("remilia.png");
+        /*Sprite shot = new Sprite("shot.png");
         shot.clip = vec4i(0, 0, 64, 64);
         shot.size = vec2(64, 64);
-        shot.flip = Flip.horizontal;
+        shot.flip = Flip.horizontal;*/
 
         while (processEvents()) {
             updateEvents(_timeStep);
@@ -108,6 +109,8 @@ class Application {
 
                 //renderer.drawTexture(texture1, vec2(0f, 0f), vec2(400f, 400f));
                 //renderer.drawTexture(texture2, vec2(0f, 0f), vec2(400f, 400f));
+                renderer.coordinates = defaultCoordinates;
+                renderer.drawTexture(remilia, vec2.zero, remilia.size);
 
                 /*
                 renderer.coordinates = defaultCoordinates;
@@ -117,11 +120,11 @@ class Application {
                 shot.draw(vec2(-400f,  400f));
                 */
 
-                renderer.coordinates = topLeftCoordinates;
+                /*renderer.coordinates = topLeftCoordinates;
                 shot.draw(vec2(  0f,   0f));
                 shot.draw(vec2(800f,   0f));
                 shot.draw(vec2(800f, 800f));
-                shot.draw(vec2(  0f, 800f));
+                shot.draw(vec2(  0f, 800f));*/
                 //renderer.drawTexture(shot.texture, vec2(-400f, 0f), shot.size, shot.clip, shot.flip);
                 //renderer.drawTexture(shot.texture, vec2(-800f, 0f), shot.size, shot.clip, shot.flip);
 

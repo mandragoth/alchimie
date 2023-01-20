@@ -13,25 +13,37 @@ import bindbc.opengl, bindbc.sdl, bindbc.sdl.image, bindbc.sdl.mixer, bindbc.sdl
 import magia.core, magia.common, magia.render.postprocess;
 
 static {
-    /// SDL window
-    SDL_Window* _sdlWindow;
-
-    /// SDL context
-    SDL_GLContext _glContext;
-
     private {
+        /// SDL window
+        SDL_Window* _sdlWindow;
+
+        /// SDL renderer
+        SDL_Renderer* _sdlRenderer;
+
+        /// SDL context
+        SDL_GLContext _glContext;
+
+        /// Window icon
         SDL_Surface* _icon;
-        vec2u _windowSize;
-        vec2 _screenSize, _centerScreen;
+
+        /// Dipslay mode
         DisplayMode _displayMode = DisplayMode.windowed;
-        GLuint _currentShaderProgram;
-        float _baseAlpha = 1f;
+
+        /// Window size as ints
+        vec2u _windowSize;
+
+        /// Screen size as floats
+        vec2 _screenSize;
+
+        /// Is VSync activates?
         bool _vsync;
 
+        /// Timing details
         double previousTime = 0.0;
         double currentTime = 0.0;
         double deltaTime;
 
+        /// Frame counter
         uint counter = 0;
     }
 }
@@ -52,10 +64,6 @@ static {
     /// Size of the window in pixels.
     vec2 screenSize() {
         return _screenSize;
-    }
-    /// Half of the size of the window in pixels.
-    vec2 centerScreen() {
-        return _centerScreen;
     }
     /// Set vsync
     void vsync(bool vsync) {
@@ -122,7 +130,6 @@ void createWindow(const vec2u windowSize, string title) {
 
     _windowSize = windowSize;
     _screenSize = cast(vec2)(windowSize);
-    _centerScreen = _screenSize / 2f;
 
     setWindowTitle(title);
 }
@@ -143,7 +150,6 @@ void setWindowTitle(string title) {
 void resizeWindow(const vec2u windowSize) {
     _windowSize = windowSize;
     _screenSize = cast(vec2)(windowSize);
-    _centerScreen = _screenSize / 2f;
 
     glViewport(0, 0, windowSize.x, windowSize.y);
 }
@@ -245,14 +251,6 @@ void renderWindow() {
     SDL_GL_SwapWindow(_sdlWindow);
 }
 
-/// Sets shader main entry point
-void setShaderProgram(GLuint shaderProgram) {
-    if (shaderProgram != _currentShaderProgram) {
-        _currentShaderProgram = shaderProgram;
-        glUseProgram(_currentShaderProgram);
-    }
-}
-
 void setBaseColor(Color color) {
     bgColor = color;
 }
@@ -262,9 +260,9 @@ Color getBaseColor() {
 }
 
 void setBaseAlpha(float alpha) {
-    _baseAlpha = alpha;
+    bgAlpha = alpha;
 }
 
 float getBaseAlpha() {
-    return _baseAlpha;
+    return bgAlpha;
 }

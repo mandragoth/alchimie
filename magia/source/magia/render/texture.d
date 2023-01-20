@@ -6,6 +6,8 @@ import bindbc.opengl;
 // @TODO remove dependency
 import magia.render.shader;
 
+import magia.core.vec;
+
 import std.exception;
 import std.conv;
 import std.stdio;
@@ -41,7 +43,7 @@ class Texture {
         GLenum _target;
 
         // Trace
-        bool _trace = false;
+        bool _trace = true;
 
         // Nb textures internally loaded
         uint _nbTextures = 0;
@@ -66,6 +68,11 @@ class Texture {
         /// Get texture height
         int height() const {
             return _height;
+        }
+
+        /// Get texture size
+        vec2 size() const {
+            return vec2(_width, _height);
         }
     }
 
@@ -133,7 +140,10 @@ class Texture {
             glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_REPEAT);
         }
 
-        const uint nbChannels = surface.format.BitsPerPixel / 8;
+        /*SDL_PixelFormat *tempFormat = SDL_AllocFormat();
+        SDL_Surface* tempSurface = SDL_ConvertSurface(surface, tempFormat, 0);*/
+
+        const uint nbChannels = surface.format.BytesPerPixel;
 
         if (_trace) {
             writeln("Loaded texture with ", nbChannels, " channels");
@@ -158,6 +168,9 @@ class Texture {
         // Generate texture image
         glTexImage2D(_target, 0, internalFormat, _width, _height, 0, format, GL_UNSIGNED_BYTE, surface.pixels);
         _nbTextures = 1;
+
+        /*SDL_FreeFormat(tempFormat);
+        SDL_FreeSurface(tempSurface);*/
 
         // Generate mipmaps
         glGenerateMipmap(_target);

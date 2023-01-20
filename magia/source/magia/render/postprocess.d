@@ -16,6 +16,9 @@ static float gamma = 2.2f;
 /// Background color
 static Color bgColor = Color(.08f, .10f, .13f);
 
+/// Background alpha
+static float bgAlpha = 1f;
+
 /// Number of samples
 static uint nbSamples = 8;
 
