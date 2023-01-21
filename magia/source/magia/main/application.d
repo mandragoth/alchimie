@@ -79,7 +79,7 @@ class Application {
 
         _tickStartFrame = Clock.currStdTime();
 
-        _remilia = new Texture("remilia2.png");
+        _remilia = new Texture("remilia.png");
 
         shot = new Sprite("shot.png");
         shot.clip = vec4i(0, 0, 64, 64);

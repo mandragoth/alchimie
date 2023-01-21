@@ -4,11 +4,8 @@ func randf() (float) {
 }
 
 event onLoad() {
-    testUI();
-
-    loop yield {
-        cameraControls();
-    }
+    cameraControls();
+    //testUI();
 }
 
 func testUI() {
@@ -30,22 +27,6 @@ func testUI() {
 
     sleep(2.seconds);
     label.runState("hidden");
-
-    addAction("move_up", 0.5);
-    addAction("move_down", 0.5);
-    addAction("jump", 0.5);
-
-    var jump = @InputEvent.keyButton(KeyButton.space, true, false);
-    addActionEvent("jump", jump);
-
-    var jump = @InputEvent.controllerButton(ControllerButton.a, true);
-    addActionEvent("jump", jump);
-
-    var move_up = @InputEvent.controllerAxis(ControllerAxis.leftY, -1f);
-    addActionEvent("move_up", move_up);
-
-    var move_down = @InputEvent.controllerAxis(ControllerAxis.leftY, 1f);
-    addActionEvent("move_down", move_down);
 
     loop yield {
         //if(isActionPressed("jump"))
@@ -78,7 +59,46 @@ event input(inputs: list<InputEvent>) {
     }
 }
 
-func cameraControls() {
+task cameraControls() {
+    addAction("move_up", 0.2);
+    addAction("move_down", 0.2);
+    addAction("move_left", 0.2);
+    addAction("move_right", 0.2);
+    addAction("roll_left", 0.2);
+    addAction("roll_right", 0.2);
+    addAction("zoom_in", 0.2);
+    addAction("zoom_out", 0.2);
+
+    addActionEvent("move_up", @InputEvent.controllerAxis(ControllerAxis.leftY, -1f));
+    addActionEvent("move_up", @InputEvent.controllerButton(ControllerButton.up, true));
+    addActionEvent("move_up", @InputEvent.keyButton(KeyButton.up, true, false));
+    addActionEvent("move_up", @InputEvent.keyButton(KeyButton.w, true, false));
+
+    addActionEvent("move_down", @InputEvent.controllerAxis(ControllerAxis.leftY, 1f));
+    addActionEvent("move_down", @InputEvent.controllerButton(ControllerButton.down, true));
+    addActionEvent("move_down", @InputEvent.keyButton(KeyButton.down, true, false));
+    addActionEvent("move_down", @InputEvent.keyButton(KeyButton.s, true, false));
+
+    addActionEvent("move_left", @InputEvent.controllerAxis(ControllerAxis.leftX, -1f));
+    addActionEvent("move_left", @InputEvent.controllerButton(ControllerButton.left, true));
+    addActionEvent("move_left", @InputEvent.keyButton(KeyButton.left, true, false));
+    addActionEvent("move_left", @InputEvent.keyButton(KeyButton.a, true, false));
+
+    addActionEvent("move_right", @InputEvent.controllerAxis(ControllerAxis.leftX, 1f));
+    addActionEvent("move_right", @InputEvent.controllerButton(ControllerButton.right, true));
+    addActionEvent("move_right", @InputEvent.keyButton(KeyButton.right, true, false));
+    addActionEvent("move_right", @InputEvent.keyButton(KeyButton.d, true, false));
+
+    addActionEvent("roll_left", @InputEvent.controllerButton(ControllerButton.leftShoulder, true));
+    addActionEvent("roll_left", @InputEvent.keyButton(KeyButton.q, true, false));
+
+    addActionEvent("roll_right", @InputEvent.controllerButton(ControllerButton.rightShoulder, true));
+    addActionEvent("roll_right", @InputEvent.keyButton(KeyButton.e, true, false));
+
+    addActionEvent("zoom_in", @InputEvent.keyButton(KeyButton.numPlus, true, false));
+
+    addActionEvent("zoom_out", @InputEvent.keyButton(KeyButton.numMinus, true, false));
+
     var camera = getCamera();
 
     var moveSpeed = 0.01f;
@@ -87,30 +107,18 @@ func cameraControls() {
     var x, y, z = camera:position();
     var zRotation = camera:rotation();
 
-    if (isPressed(KeyButton.left)) {
-        x -= moveSpeed;
-    } else if (isPressed(KeyButton.right)) {
-        x += moveSpeed;
-    }
+    loop yield {
+        x += getActionAxis("move_left", "move_right") * moveSpeed;
+        y += getActionAxis("move_down", "move_up") * moveSpeed;
+        zRotation += getActionAxis("roll_right", "roll_left") * zRotationSpeed;
 
-    if (isPressed(KeyButton.up)) {
-        y += moveSpeed;
-    } else if (isPressed(KeyButton.down)) {
-        y -= moveSpeed;
-    }
+        if (isActionPressed("zoom_in")) {
+            print("+");
+        } else if (isActionPressed("zoom_out")) {
+            print("-");
+        }
 
-    if (isPressed(KeyButton.a)) {
-        zRotation -= zRotationSpeed;
-    } else if (isPressed(KeyButton.d)) {
-        zRotation += zRotationSpeed;
+        camera:position(x, y, z);
+        camera:rotation(zRotation);
     }
-
-    if (isPressed(KeyButton.numPlus)) {
-        print("+");
-    } else if (isPressed(KeyButton.numMinus)) {
-        print("-");
-    }
-
-    camera:position(x, y, z);
-    camera:rotation(zRotation);
 }
