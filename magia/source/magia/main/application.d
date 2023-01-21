@@ -34,7 +34,8 @@ class Application {
         InputManager _inputManager;
 
         // @TODO remove
-        Texture remilia;
+        Texture _remilia;
+        Sprite shot;
     }
 
     @property {
@@ -78,7 +79,12 @@ class Application {
 
         _tickStartFrame = Clock.currStdTime();
 
-        remilia = new Texture("remilia.png");
+        _remilia = new Texture("remilia2.png");
+
+        shot = new Sprite("shot.png");
+        shot.clip = vec4i(0, 0, 64, 64);
+        shot.size = vec2(64, 64);
+        shot.flip = Flip.horizontal;
     }
 
     /// Récupère les événements (clavier/souris/manette/etc)
@@ -104,10 +110,17 @@ class Application {
         // BEING TEST
         // BELOW DATA TO BE EXTRACTED TO SCENE?
 
+        renderer.clear();
         renderer.setup2DRender();
 
         renderer.coordinates = defaultCoordinates;
-        renderer.drawTexture(remilia, vec2.zero, remilia.size);
+        renderer.drawTexture(_remilia, vec2.zero, _remilia.size);
+
+        renderer.coordinates = defaultCoordinates;
+        shot.draw(vec2(-400f, -400f));
+        shot.draw(vec2( 400f, -400f));
+        shot.draw(vec2( 400f,  400f));
+        shot.draw(vec2(-400f,  400f));
     
         // END TEST
 

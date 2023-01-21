@@ -116,8 +116,8 @@ void loadSDLOpenGL() {
 void createWindow(const vec2u windowSize, string title) {
     // Create SDL window
     _sdlWindow = SDL_CreateWindow(toStringz(title), SDL_WINDOWPOS_CENTERED,
-                                            SDL_WINDOWPOS_CENTERED, windowSize.x, windowSize.y,
-                                            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+                                  SDL_WINDOWPOS_CENTERED, windowSize.x, windowSize.y,
+                                  SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     enforce(_sdlWindow, "failed to create the window");
 
     // Create OpenGL context and load OpenGL

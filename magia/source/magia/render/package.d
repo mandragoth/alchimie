@@ -4,6 +4,7 @@ public {
     import magia.render.camera;
     import magia.render.entity;
     import magia.render.font;
+    import magia.render.material;
     import magia.render.model;
     import magia.render.postprocess;
     import magia.render.renderer;

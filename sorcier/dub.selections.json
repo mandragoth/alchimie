@@ -5,6 +5,7 @@
 		"bindbc-opengl": "0.17.1",
 		"bindbc-sdl": "0.21.4",
 		"grimoire": {"path":"../grimoire"},
-		"magia": {"path":"../magia"}
+		"magia": {"path":"../magia"},
+		"stb": "2.0.1"
 	}
 }

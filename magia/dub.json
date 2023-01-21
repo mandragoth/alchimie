@@ -19,7 +19,7 @@
     "versions": [
         "GL_41",
         "GL_ARB",
-        "SDL_202",
+        "SDL_209",
         "SDL_Image_204",
         "SDL_TTF_2014",
         "SDL_Mixer_204"

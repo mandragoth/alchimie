@@ -48,6 +48,11 @@ abstract class Camera {
         void zRotation(float zRotation_) {
             _zRotation = zRotation_;
         }
+
+        /// Get position
+        float zRotation() const {
+            return _zRotation;
+        }
     }
 
     /// Update
@@ -93,38 +98,6 @@ class OrthographicCamera : Camera {
         mat4 transform = mat4.translation(_position) * mat4.zrotation(_zRotation);
         _view = transform.inverse();
         _matrix = _projection * _view;
-    }
-
-    /// Update camera
-    override void update(TimeStep timeStep) {
-        // @TODO rewrite (in scripts?)
-        /*const float deltaTime = timeStep.time;
-        const float moveDelta = _moveSpeed * deltaTime;
-        const float zRotationDelta = _zRotationSpeed * degToRad * deltaTime;
-
-        vec3 newPosition = _position;
-        float newZRotation = _zRotation;
-
-        if (isButtonDown(KeyButton.left)) {
-            newPosition.x -= moveDelta;
-        } else if (isButtonDown(KeyButton.right)) {
-            newPosition.x += moveDelta;
-        }
-
-        if (isButtonDown(KeyButton.down)) {
-            newPosition.y -= moveDelta;
-        } else if (isButtonDown(KeyButton.up)) {
-            newPosition.y += moveDelta;
-        }
-
-        if (isButtonDown(KeyButton.a)) {
-            newZRotation += zRotationDelta;
-        } else if (isButtonDown(KeyButton.d)) {
-            newZRotation -= zRotationDelta;
-        }
-
-        position = newPosition;
-        zRotation = newZRotation;*/
     }
 }
 

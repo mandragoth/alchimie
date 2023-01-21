@@ -107,13 +107,6 @@ final class Runtime {
         _tickStartFrame = Clock.currStdTime();
 
         while (currentApplication.isRunning()) {
-            /*if (getButtonDown(KeyButton.f5)) {
-            if (!loadScript()) {
-                destroyApplication();
-                return;
-            }
-            }*/
-
             InputEvent[] inputEvents = currentApplication.pollEvents();
 
             if (_engine) {

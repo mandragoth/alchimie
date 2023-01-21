@@ -93,6 +93,7 @@ class Texture {
         // Get surface and process it
         SDL_Surface* surface = IMG_Load(toStringz(path));
         enforce(surface, "can't load image `" ~ path ~ "`");
+
         setupData(surface, type, slot);
 
         // Free surface
@@ -154,14 +155,15 @@ class Texture {
             glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_REPEAT);
         }
 
-        // @TODO figure out this vodoo texture SDL stuff
-        /*SDL_PixelFormat *tempFormat = SDL_AllocFormat();
-        SDL_Surface* tempSurface = SDL_ConvertSurface(surface, tempFormat, 0);*/
-
         const uint nbChannels = surface.format.BytesPerPixel;
 
         if (_trace) {
             writeln("Loaded texture with ", nbChannels, " channels");
+        }
+
+        const SDL_PixelFormat* pixelFormat = surface.format;
+        if (pixelFormat.format == SDL_PIXELFORMAT_INDEX8) {
+            writeln("Pixel format is INDEX8");
         }
 
         // For now, consider diffuses as RGBA, speculars as R
@@ -183,16 +185,27 @@ class Texture {
             new Exception("Unsupported texture format for " ~ to!string(type) ~ " texture type");
         }
 
-        // Generate texture image
-        glTexImage2D(_target, 0, internalFormat, _width, _height, 0, format,
-            GL_UNSIGNED_BYTE, surface.pixels);
-        _nbTextures = 1;
+        //displayPixelRGBA(surface, 8, 6);
 
-        /*SDL_FreeFormat(tempFormat);
-        SDL_FreeSurface(tempSurface);*/
+        // Generate texture image
+        glTexImage2D(_target, 0, internalFormat, _width, _height, 0, format, GL_UNSIGNED_BYTE, surface.pixels);
+        _nbTextures = 1;
 
         // Generate mipmaps
         glGenerateMipmap(_target);
+    }
+
+    private void displayPixelRGBA(SDL_Surface *surface, int x, int y) {
+        ubyte *pixelValue = cast(ubyte *)surface.pixels + y * surface.pitch + x * surface.format.BytesPerPixel;
+
+        SDL_Color rgb;
+        ubyte alpha;
+        SDL_GetRGBA(*cast(uint *)pixelValue, surface.format, &rgb.r, &rgb.g, &rgb.b, &alpha);
+
+        writeln("R: ", rgb.r);
+        writeln("G: ", rgb.g);
+        writeln("B: ", rgb.b);
+        writeln("A: ", rgb.a);
     }
 
     /// Constructor for cubemap texture

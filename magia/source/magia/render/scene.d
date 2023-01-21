@@ -51,8 +51,6 @@ class Scene {
 
     /// Draw scene
     void draw() {
-        renderer.clear();
-
         foreach(entity; _entities) {
             entity.draw();
         }

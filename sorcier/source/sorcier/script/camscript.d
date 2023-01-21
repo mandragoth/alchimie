@@ -7,11 +7,13 @@ void loadAlchimieLibCamera(GrLibDefinition library) {
     GrType cameraType = library.addNative("Camera");
 
     library.addFunction(&_camera, "Camera", [], [cameraType]);
+    library.addFunction(&_getCamera, "getCamera", [], [cameraType]);
     library.addFunction(&_setCamera0, "setCamera");
     library.addFunction(&_setCamera1, "setCamera", [cameraType]);
-    library.addFunction(&_getCamera, "getCamera", [], [cameraType]);
-    library.addFunction(&_setCameraPosition, "position", [cameraType, grFloat, grFloat, grFloat]);
     library.addFunction(&_getCameraPosition, "position", [cameraType], [grFloat, grFloat, grFloat]);
+    library.addFunction(&_setCameraPosition, "position", [cameraType, grFloat, grFloat, grFloat]);
+    library.addFunction(&_getCameraRotation, "rotation", [cameraType], [grFloat]);
+    library.addFunction(&_setCameraRotation, "rotation", [cameraType, grFloat]);
 }
 
 private void _camera(GrCall call) {
@@ -20,25 +22,16 @@ private void _camera(GrCall call) {
     call.setNative(camera_);
 }
 
+private void _getCamera(GrCall call) {
+    call.setNative(renderer.camera);
+}
+
 private void _setCamera0(GrCall) {
     currentApplication.scene.camera = null;
 }
 
 private void _setCamera1(GrCall call) {
     currentApplication.scene.camera = call.getNative!Camera(0);
-}
-
-private void _getCamera(GrCall call) {
-    call.setNative(renderer.camera);
-}
-
-private void _setCameraPosition(GrCall call) {
-    Camera camera = call.getNative!Camera(0);
-    if (!camera) {
-        call.raise("NullError");
-        return;
-    }
-    camera.position(vec3(call.getFloat(1), call.getFloat(2), call.getFloat(3)));
 }
 
 private void _getCameraPosition(GrCall call) {
@@ -50,4 +43,31 @@ private void _getCameraPosition(GrCall call) {
     call.setFloat(camera.position.x);
     call.setFloat(camera.position.y);
     call.setFloat(camera.position.z);
+}
+
+private void _setCameraPosition(GrCall call) {
+    Camera camera = call.getNative!Camera(0);
+    if (!camera) {
+        call.raise("NullError");
+        return;
+    }
+    camera.position(vec3(call.getFloat(1), call.getFloat(2), call.getFloat(3)));
+}
+
+private void _getCameraRotation(GrCall call) {
+    Camera camera = call.getNative!Camera(0);
+    if (!camera) {
+        call.raise("NullError");
+        return;
+    }
+    call.setFloat(camera.zRotation);
+}
+
+private void _setCameraRotation(GrCall call) {
+    Camera camera = call.getNative!Camera(0);
+    if (!camera) {
+        call.raise("NullError");
+        return;
+    }
+    camera.zRotation(call.getFloat(1));
 }
