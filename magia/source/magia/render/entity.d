@@ -1,13 +1,44 @@
 module magia.render.entity;
 
-import magia.core.timestep;
-import magia.core.transform;
+import magia.core;
 import magia.render.material;
 
 /// An instance is an item with a transform that can be updated
 abstract class Instance {
     /// Transform stating where the instance is located
     Transform transform;
+
+    @property {
+        /// Set position (2D)
+        void position(vec2 position_) {
+            transform.position = vec3(position_, 0f);
+        }
+
+        /// Set position (3D)
+        void position(vec3 position_) {
+            transform.position = position_;
+        }
+
+        /// Get position (2D)
+        vec2 position2D() {
+            return vec2(transform.position.x, transform.position.y);
+        }
+
+        /// Get position (3D)
+        vec3 position() {
+            return position;
+        }
+
+        /// Set scale (2D)
+        void scale(vec2 scale_) {
+            transform.scale = vec3(scale_, 0f);
+        }
+
+        /// Set scale (3D)
+        void scale(vec3 scale_) {
+            transform.scale = scale_;
+        }
+    }
 
     /// Update the object (given a deltaTime)
     void update(TimeStep) {}

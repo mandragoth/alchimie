@@ -17,10 +17,16 @@ import magia.render.window;
 abstract class Camera {
     protected {
         /// Position
-        vec3 _position;
+        vec3 _position = vec3.zero;
 
         /// Rotation around Z axis
-        float _zRotation;
+        float _zRotation = 0f;
+
+        /// Aspect ratio
+        float _aspectRatio = 1f;
+
+        /// Zoom level
+        float _zoomLevel = 1f;
 
         /// Camera matrices
         mat4 _matrix = mat4.identity;
@@ -34,14 +40,19 @@ abstract class Camera {
             return _matrix;
         }
 
+        /// Get position
+        vec3 position() const {
+            return _position;
+        }
+
         /// Set position
         void position(vec3 position_) {
             _position = position_;
         }
 
-        /// Get position
-        vec3 position() const {
-            return _position;
+        /// Get rotation along Z axis
+        float zRotation() {
+            return _zRotation;
         }
 
         /// Set rotation along Z axis
@@ -49,9 +60,19 @@ abstract class Camera {
             _zRotation = zRotation_;
         }
 
-        /// Get position
-        float zRotation() const {
-            return _zRotation;
+        /// Set aspect ratio
+        void aspectRatio(float aspectRatio_) {
+            _aspectRatio = aspectRatio_;
+        }
+
+        /// Get zoom level
+        float zoomLevel() {
+            return _zoomLevel;
+        }
+
+        /// Set zoom level
+        void zoomLevel(float zoomLevel_) {
+            _zoomLevel = zoomLevel_;
         }
     }
 
@@ -67,11 +88,6 @@ abstract class Camera {
 
 /// Orthographic camera class
 class OrthographicCamera : Camera {
-    protected {
-        float _moveSpeed = 0.01f;
-        float _zRotationSpeed = 2f;
-    }
-
     @property {
         override void position(vec3 position_) {
             _position = position_;
@@ -82,15 +98,36 @@ class OrthographicCamera : Camera {
             _zRotation = zRotation_;
             computeViewMatrix();
         }
+
+        override void aspectRatio(float aspectRatio_) {
+            _aspectRatio = aspectRatio_;
+            computeProjectionMatrix();
+        }
+
+        override void zoomLevel(float zoomLevel_) {
+            _zoomLevel = zoomLevel_;
+            computeProjectionMatrix();
+        }
     }
 
     /// Constructor
-    this(float left, float right, float bottom, float top) {
+    this() {
+        _aspectRatio = getAspectRatio();
+        computeProjectionMatrix();
+    }
+
+    /// Recompute projection and model matrices
+    void computeProjectionMatrix() {
+        computeProjectionMatrix(-_aspectRatio * _zoomLevel,
+                                 _aspectRatio * _zoomLevel,
+                                -_zoomLevel,
+                                 _zoomLevel);
+    } 
+
+    /// Recompute projection and model matrices
+    void computeProjectionMatrix(float left, float right, float bottom, float top) {
         _projection = mat4.orthographic(left, right, bottom, top, -1f, 1f);
-        _view = mat4.identity;
         _matrix = _projection * _view;
-        _position = vec3.zero;
-        _zRotation = 0f;
     }
 
     /// Recompute view and model matrices

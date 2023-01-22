@@ -2,7 +2,10 @@ module magia.ui.label;
 
 import std.algorithm.comparison : min;
 import std.conv : to;
-import magia.core, magia.render;
+import std.stdio;
+
+import magia.core;
+import magia.render;
 import magia.ui.element;
 
 /// Label

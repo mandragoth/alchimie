@@ -18,6 +18,7 @@ struct Transform {
     /// Matrix model
     private mat4 _model;
 
+    /// Model getter
     @property mat4 model() const {
         return _model;
     }
@@ -61,9 +62,7 @@ struct Transform {
 
     /// Default transform
     static @property Transform identity() {
-        return Transform(
-            vec3(0.0f, 0.0f, 0.0f)
-        );
+        return Transform(vec3.zero);
     }
 }
 

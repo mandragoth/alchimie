@@ -4,10 +4,10 @@ import std.math;
 import bindbc.opengl;
 
 import magia.core.color;
-import magia.render.buffer;
-import magia.render.shader;
 import magia.render.array;
-import magia.render.fbo;
+import magia.render.buffer;
+import magia.render.frame;
+import magia.render.shader;
 import magia.render.rbo;
 
 /// Controls the gamma function
@@ -28,8 +28,8 @@ class PostProcess {
         uint _size;
 
         VertexArray _vertexArray;
-        FBO _postProcessFBO;
-        FBO _multiSampleFBO;
+        FrameBuffer _postProcessFBO;
+        FrameBuffer _multiSampleFBO;
         Shader _shader;
     }
 
@@ -61,15 +61,15 @@ class PostProcess {
         _vertexArray.linkAttributes(vertexBuffer, 0, 2, GL_FLOAT, 4 * float.sizeof, null);
         _vertexArray.linkAttributes(vertexBuffer, 1, 2, GL_FLOAT, 4 * float.sizeof, cast(void*)(2 * float.sizeof));
 
-        _multiSampleFBO = new FBO(FBOType.Multisample, _size, nbSamples);
+        _multiSampleFBO = new FrameBuffer(FBOType.Multisample, _size, nbSamples);
         RBO RBO_ = new RBO(_size, nbSamples);
         RBO_.attachFBO();
-        FBO.check("multisample");
+        FrameBuffer.check("multisample");
 
-        _postProcessFBO = new FBO(FBOType.Postprocess, _size);
-        FBO.check("postprocess");
+        _postProcessFBO = new FrameBuffer(FBOType.Postprocess, _size);
+        FrameBuffer.check("postprocess");
 
-        FBO.unbind();
+        FrameBuffer.unbind();
         RBO.unbind();
         VertexArray.unbind();
     }
@@ -96,10 +96,10 @@ class PostProcess {
         _postProcessFBO.bindDraw();
 
         // Conclude the multisampling and copy it to the post-processing FBO
-        FBO.blit(_size, _size);
+        FrameBuffer.blit(_size, _size);
 
         // Unbind frame buffer
-        FBO.unbind();
+        FrameBuffer.unbind();
 
         // Draw the frame buffer rectangle
         _shader.activate();

@@ -21,6 +21,7 @@ void setDefaultFont(Font font) {
         _defaultFont = _veraFont;
         return;
     }
+
     _defaultFont = font;
 }
 

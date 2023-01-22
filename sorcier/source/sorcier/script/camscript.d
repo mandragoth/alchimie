@@ -14,6 +14,8 @@ void loadAlchimieLibCamera(GrLibDefinition library) {
     library.addFunction(&_setCameraPosition, "position", [cameraType, grFloat, grFloat, grFloat]);
     library.addFunction(&_getCameraRotation, "rotation", [cameraType], [grFloat]);
     library.addFunction(&_setCameraRotation, "rotation", [cameraType, grFloat]);
+    library.addFunction(&_getCameraZoom, "zoom", [cameraType], [grFloat]);
+    library.addFunction(&_setCameraZoom, "zoom", [cameraType, grFloat]);
 }
 
 private void _camera(GrCall call) {
@@ -70,4 +72,22 @@ private void _setCameraRotation(GrCall call) {
         return;
     }
     camera.zRotation(call.getFloat(1));
+}
+
+private void _getCameraZoom(GrCall call) {
+    Camera camera = call.getNative!Camera(0);
+    if (!camera) {
+        call.raise("NullError");
+        return;
+    }
+    call.setFloat(camera.zoomLevel);
+}
+
+private void _setCameraZoom(GrCall call) {
+    Camera camera = call.getNative!Camera(0);
+    if (!camera) {
+        call.raise("NullError");
+        return;
+    }
+    camera.zoomLevel(call.getFloat(1));
 }

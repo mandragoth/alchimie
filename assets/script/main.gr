@@ -4,8 +4,11 @@ func randf() (float) {
 }
 
 event onLoad() {
+    var remilia = @Sprite("remilia.png");
+    remilia:position(@vec2(-100f, -100f));
+
     cameraControls();
-    //testUI();
+    testUI();
 }
 
 func testUI() {
@@ -13,8 +16,6 @@ func testUI() {
     label.pos(200f, 200f);
     label.align(AlignX.right, AlignY.top);
     appendUI(label);
-
-    //label.hover? = true;
 
     var state = @UIState("hidden");
     state.time = .25;
@@ -27,13 +28,6 @@ func testUI() {
 
     sleep(2.seconds);
     label.runState("hidden");
-
-    loop yield {
-        //if(isActionPressed("jump"))
-        //  print("JUMP !");
-        //print(getActionStrength("move_up"));
-        //print(getActionAxis("move_down", "move_up"));
-    }
 }
 
 event input(inputs: list<InputEvent>) {
@@ -96,16 +90,17 @@ task cameraControls() {
     addActionEvent("roll_right", @InputEvent.keyButton(KeyButton.e, true, false));
 
     addActionEvent("zoom_in", @InputEvent.keyButton(KeyButton.numPlus, true, false));
-
     addActionEvent("zoom_out", @InputEvent.keyButton(KeyButton.numMinus, true, false));
 
     var camera = getCamera();
 
     var moveSpeed = 0.01f;
     var zRotationSpeed = rad(2f);
+    var zoomSpeed = 0.05f;
 
     var x, y, z = camera:position();
     var zRotation = camera:rotation();
+    var zoomLevel = camera:zoom();
 
     loop yield {
         x += getActionAxis("move_left", "move_right") * moveSpeed;
@@ -113,12 +108,15 @@ task cameraControls() {
         zRotation += getActionAxis("roll_right", "roll_left") * zRotationSpeed;
 
         if (isActionPressed("zoom_in")) {
-            print("+");
+            zoomLevel -= zoomSpeed;
         } else if (isActionPressed("zoom_out")) {
-            print("-");
+            zoomLevel += zoomSpeed;
         }
+
+        zoomLevel = clamp(zoomLevel, 0.25f, 1.5f);
 
         camera:position(x, y, z);
         camera:rotation(zRotation);
+        camera:zoom(zoomLevel);
     }
 }

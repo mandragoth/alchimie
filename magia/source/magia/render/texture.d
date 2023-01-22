@@ -25,6 +25,11 @@ enum TextureType {
     shadow
 }
 
+// Trace
+private {
+    static bool s_Trace = false;
+}
+
 /// Class holding texture data
 class Texture {
     /// Texture index
@@ -43,8 +48,8 @@ class Texture {
         // Target
         GLenum _target;
 
-        // Trace
-        bool _trace = true;
+        // Name
+        string _name;
 
         // Nb textures internally loaded
         uint _nbTextures = 0;
@@ -87,6 +92,9 @@ class Texture {
 
     /// Constructor for usual 2D texture from path
     this(string fileName, TextureType type = TextureType.sprite, GLuint slot = 0) {
+        // Set name as file name
+        _name = fileName;
+
         // Prefix path
         string path = buildNormalizedPath("assets", "img", fileName);
 
@@ -102,6 +110,7 @@ class Texture {
 
     /// Constructor for usual 2D texture from surface
     this(SDL_Surface *surface, TextureType type = TextureType.sprite, GLuint slot = 0) {
+        _name = to!string(type);
         setupData(surface, type, slot);
     }
 
@@ -113,7 +122,6 @@ class Texture {
         _height = texture_._height;
         _slot = texture_._slot;
         _target = texture_._target;
-        _trace = texture_._trace;
         _nbTextures = texture_._nbTextures;
     }
 
@@ -157,8 +165,8 @@ class Texture {
 
         const uint nbChannels = surface.format.BytesPerPixel;
 
-        if (_trace) {
-            writeln("Loaded texture with ", nbChannels, " channels");
+        if (s_Trace) {
+            writeln("Loaded texture ", _name, " with ", nbChannels, " channels");
         }
 
         const SDL_PixelFormat* pixelFormat = surface.format;
@@ -171,21 +179,19 @@ class Texture {
         GLenum internalFormat;
         if (nbChannels == 4) {
             format = GL_RGBA;
-            internalFormat = GL_SRGB_ALPHA;
+            internalFormat = GL_RGBA;
         }
         else if (nbChannels == 3) {
             format = GL_RGB;
-            internalFormat = GL_SRGB;
+            internalFormat = GL_RGB;
         }
         else if (nbChannels == 1) {
             format = GL_RED;
-            internalFormat = GL_SRGB;
+            internalFormat = GL_RED;
         }
         else {
             new Exception("Unsupported texture format for " ~ to!string(type) ~ " texture type");
         }
-
-        //displayPixelRGBA(surface, 8, 6);
 
         // Generate texture image
         glTexImage2D(_target, 0, internalFormat, _width, _height, 0, format, GL_UNSIGNED_BYTE, surface.pixels);
@@ -193,19 +199,6 @@ class Texture {
 
         // Generate mipmaps
         glGenerateMipmap(_target);
-    }
-
-    private void displayPixelRGBA(SDL_Surface *surface, int x, int y) {
-        ubyte *pixelValue = cast(ubyte *)surface.pixels + y * surface.pitch + x * surface.format.BytesPerPixel;
-
-        SDL_Color rgb;
-        ubyte alpha;
-        SDL_GetRGBA(*cast(uint *)pixelValue, surface.format, &rgb.r, &rgb.g, &rgb.b, &alpha);
-
-        writeln("R: ", rgb.r);
-        writeln("G: ", rgb.g);
-        writeln("B: ", rgb.b);
-        writeln("A: ", rgb.a);
     }
 
     /// Constructor for cubemap texture

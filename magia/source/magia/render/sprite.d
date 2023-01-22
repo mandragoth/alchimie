@@ -7,21 +7,16 @@ import bindbc.opengl;
 import bindbc.sdl;
 
 import magia.core;
+import magia.render.entity;
 import magia.render.material;
 import magia.render.renderer;
 import magia.render.scene;
 import magia.render.texture;
 
 /// Base rendering class.
-final class Sprite {
+final class Sprite : Entity {
     /// Mirroring property
     Flip flip = Flip.none;
-
-    /// Texture region being rendered
-    vec4i clip;
-
-    /// Size of texture region being rendered
-    vec2 size;
 
     /// Relative center of the sprite
     vec2 anchor; // @TODO
@@ -38,6 +33,12 @@ final class Sprite {
     private {
         // Texture reference
         Texture _texture;
+        
+        /// Texture region being rendered
+        vec4i _clip;
+
+        /// Size of texture region being rendered
+        vec2 _size;
 
         // Angle along Z axis
         float zAngle;
@@ -63,6 +64,16 @@ final class Sprite {
         uint height() const {
             return _texture.height;
         }
+
+        /// Size setter (@TODO remove?, used by glyph)
+        void size(vec2 size_) {
+            _size = size_;
+        }
+
+        /// Size setter (@TODO remove?, used by glyph)
+        void clip(vec4i clip_) {
+            _clip = clip_;
+        }
     }
 
     /// Constructor
@@ -76,13 +87,22 @@ final class Sprite {
     }
 
     /// Constructor given an image path
-    this(string path) {
+    this(string path, vec4i clip = vec4i.zero) {
+        transform = Transform.identity;
         _texture = new Texture(path);
+
+        /// @TODO remove
+        if (clip == vec4i.zero) {
+            clip = vec4i(0, 0, texture.width, texture.height);
+        }
+
+        _size = vec2(clip.z, clip.w);
+        _clip = clip;
     }
 
     /// Draw the sprite on the screen
-    void draw(vec2 position) {
-        renderer.drawTexture(texture, position, size, clip, flip);
+    override void draw() {
+        renderer.drawTexture(texture, position2D, _size, _clip, flip);
     }
 
     /// Free image data

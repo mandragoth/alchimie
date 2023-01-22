@@ -1,6 +1,7 @@
 module magia.render.font.glyph;
 
 import magia.core;
+import magia.render.material;
 import magia.render.sprite;
 import magia.render.window;
 
@@ -47,10 +48,14 @@ struct Glyph {
         Sprite _sprite;
     }
 
-    /// Render glyph
+    /// Render glyph (@TODO rewrite?)
     void draw(mat4 transform, float posX, float posY, float scale, Color color, float alpha) {
-        /*_sprite.draw(transform, posX, posY, _width * scale, _height * scale,
-                     vec4i(_packX, _packY, _packWidth, _packHeight),
-                     Flip.none, Blend.alpha, color, alpha);*/
+        _sprite.transform = Transform(transform);
+        _sprite.position = vec2(posX, posY);
+        _sprite.size = vec2(_width * scale, _height * scale);
+        _sprite.clip = vec4i(_packX, _packY, _packWidth, _packHeight);
+        _sprite.color = color;
+        _sprite.alpha = alpha;
+        _sprite.draw();
     }
 }

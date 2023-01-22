@@ -32,10 +32,6 @@ class Application {
 
         // @TODO move ?
         InputManager _inputManager;
-
-        // @TODO remove
-        Texture _remilia;
-        Sprite shot;
     }
 
     @property {
@@ -78,13 +74,6 @@ class Application {
         _inputManager = new InputManager;
 
         _tickStartFrame = Clock.currStdTime();
-
-        _remilia = new Texture("remilia.png");
-
-        shot = new Sprite("shot.png");
-        shot.clip = vec4i(0, 0, 64, 64);
-        shot.size = vec2(64, 64);
-        shot.flip = Flip.horizontal;
     }
 
     /// Récupère les événements (clavier/souris/manette/etc)
@@ -97,34 +86,17 @@ class Application {
     /// Run application
     void update() {
         _uiManager.update(_timeStep.delta);
-
-        if (_scene) {
-            _scene.update(_timeStep);
-        }
-
+        _scene.update(_timeStep);
         updateFPS();
     }
 
     /// Render application
     void render() {
-        // BEING TEST
-        // BELOW DATA TO BE EXTRACTED TO SCENE?
-
         renderer.clear();
         renderer.setup2DRender();
 
-        renderer.coordinates = defaultCoordinates;
-        renderer.drawTexture(_remilia, vec2.zero, _remilia.size);
-
-        renderer.coordinates = defaultCoordinates;
-        shot.draw(vec2(-400f, -400f));
-        shot.draw(vec2( 400f, -400f));
-        shot.draw(vec2( 400f,  400f));
-        shot.draw(vec2(-400f,  400f));
-    
-        // END TEST
-
         _scene.draw();
+        _uiManager.draw();
         renderWindow();
     }
 

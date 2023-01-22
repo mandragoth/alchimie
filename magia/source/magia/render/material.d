@@ -14,13 +14,13 @@ enum Flip {
 }
 
 /// Blending algorithm
+// - alpha: Paste everything with transparency (Default one)
 // - none: Paste everything without transparency
 // - additive: Add color value with the destination
-// - alpha: Paste everything with transparency (Default one)
 enum Blend {
+    alpha,
     none,
-    additive,
-    alpha
+    additive
 }
 
 alias Clip = vec4;

@@ -9,8 +9,13 @@ import std.conv;
 import std.stdio;
 import std.string;
 import std.exception;
-import bindbc.opengl, bindbc.sdl, bindbc.sdl.image, bindbc.sdl.mixer, bindbc.sdl.ttf;
-import magia.core, magia.render.postprocess;
+
+import bindbc.opengl;
+import bindbc.sdl;
+
+import magia.core;
+import magia.render.postprocess;
+import magia.render.renderer;
 
 static {
     private {
@@ -153,6 +158,7 @@ void resizeWindow(const vec2u windowSize) {
     _screenSize = cast(vec2)(windowSize);
 
     glViewport(0, 0, windowSize.x, windowSize.y);
+    renderer.camera.aspectRatio = getAspectRatio();
 }
 
 /// Reset viewport
@@ -166,6 +172,11 @@ vec2i getWindowSize() {
     int height;
     SDL_GetWindowSize(_sdlWindow, &width, &height);
     return vec2i(width, height);
+}
+
+/// Aspect ratio
+float getAspectRatio() {
+    return _screenSize.x / _screenSize.y;
 }
 
 /// The window cannot be resized less than this.

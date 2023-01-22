@@ -27,7 +27,7 @@ class Scene {
 
     /// Constructor
     this() {
-        renderer = new Renderer(new OrthographicCamera(-1f, 1f, -1f, 1f));
+        renderer = new Renderer(new OrthographicCamera());
     }
 
     /// Add an entity
