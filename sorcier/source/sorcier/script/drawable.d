@@ -19,6 +19,7 @@ class MatWrapper {
 package void loadAlchimieLibDrawable(GrLibDefinition library) {
     GrType vec2Type = library.addClass("vec2", ["x", "y"], [grFloat, grFloat]);
     GrType vec3Type = library.addClass("vec3", ["x", "y", "z"], [grFloat, grFloat, grFloat]);
+    GrType vec4iType = library.addClass("vec4i", ["x", "y", "z", "w"], [grInt, grInt, grInt, grInt]);
     GrType quatType = library.addClass("quat", ["w", "x", "y", "z"], [grFloat, grFloat, grFloat, grFloat]);
     GrType mat4Type = library.addNative("mat4");
 
@@ -27,6 +28,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
 
     library.addConstructor(&_vec2_new, vec2Type, [grFloat, grFloat]);
     library.addConstructor(&_vec3_new, vec3Type, [grFloat, grFloat, grFloat]);
+    library.addConstructor(&_vec4i_new, vec4iType, [grInt, grInt, grInt, grInt]);
     library.addConstructor(&_quat_new, quatType, [grFloat, grFloat, grFloat, grFloat]);
 
     library.addFunction(&_position2D, "position", [entityType, vec2Type], []);
@@ -35,6 +37,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addFunction(&_packInstanceMatrix, "packInstanceMatrix", [vec3Type, quatType, vec3Type], [mat4Type]);
 
     library.addConstructor(&_sprite_new, spriteType, [grString]);
+    library.addConstructor(&_sprite_new2, spriteType, [grString, vec4iType]);
 }
 
 private void _vec2_new(GrCall call) {
@@ -49,6 +52,15 @@ private void _vec3_new(GrCall call) {
     v.setFloat("x", call.getFloat(0));
     v.setFloat("y", call.getFloat(1));
     v.setFloat("z", call.getFloat(2));
+    call.setObject(v);
+}
+
+private void _vec4i_new(GrCall call) {
+    GrObject v = call.createObject("vec4i");
+    v.setFloat("x", call.getFloat(0));
+    v.setFloat("y", call.getFloat(1));
+    v.setFloat("z", call.getFloat(2));
+    v.setFloat("w", call.getFloat(3));
     call.setObject(v);
 }
 
@@ -102,6 +114,17 @@ private void _packInstanceMatrix(GrCall call) {
 
 private void _sprite_new(GrCall call) {
     Sprite sprite = new Sprite(call.getString(0));
+    currentApplication.scene.addEntity(sprite);
+    call.setNative(sprite);
+}
+
+private void _sprite_new2(GrCall call) {
+    GrObject clipObj = call.getObject(1);
+    Sprite sprite = new Sprite(call.getString(0),
+        vec4i(clipObj.getInt("x"),
+              clipObj.getInt("y"),
+              clipObj.getInt("z"),
+              clipObj.getInt("w")));
     currentApplication.scene.addEntity(sprite);
     call.setNative(sprite);
 }

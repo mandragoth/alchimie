@@ -4,7 +4,7 @@ func randf() (float) {
 }
 
 event onLoad() {
-    var remilia = @Sprite("remilia.png");
+    var remilia = @Sprite("remilia.png", @vec4i(0, 0, 32, 48));
     remilia:position(@vec2(-100f, -100f));
 
     cameraControls();

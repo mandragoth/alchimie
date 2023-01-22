@@ -90,12 +90,6 @@ final class Sprite : Entity {
     this(string path, vec4i clip = vec4i.zero) {
         transform = Transform.identity;
         _texture = new Texture(path);
-
-        /// @TODO remove
-        if (clip == vec4i.zero) {
-            clip = vec4i(0, 0, texture.width, texture.height);
-        }
-
         _size = vec2(clip.z, clip.w);
         _clip = clip;
     }

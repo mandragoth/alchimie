@@ -129,6 +129,10 @@ class Renderer {
         camera.update(timeStep);
     }
 
+    // @TODO create empty texture manually if texture not passed
+    // Also to be used if 3D model has no texture
+    // Use fetch!Resource pattern to avoid loading too many textures in memory
+
     /// Render the rectangle
     void drawFilledRect(vec2 origin, vec2 size, Color color = Color.white, float alpha = 1f) {
         Transform transform = Transform(vec3(origin, 0), vec3(size, 0));
@@ -136,15 +140,15 @@ class Renderer {
         drawIndexed(_vertexArray);
     }
 
-    /// Render a sprite @TODO handle clip, transform, sprite
+    /// Render a sprite @TODO handle rotation, alpha, color
     void drawTexture(Texture texture, vec2 position, vec2 size,
                      vec4i clip = vec4i.zero, Flip flip = Flip.none, Blend blend = Blend.alpha,
                      Color color = Color.white, float alpha = 1f) {
-        // Express position as ratio of position and screen size
-        position = _coordinates.origin + position / screenSize * 2 * _coordinates.axis;
-
         // Express size as ratio of size and screen size
         size = size / screenSize;
+
+        // Express position as ratio of position and screen size
+        position = _coordinates.origin + position / screenSize * 2 * _coordinates.axis + size * _coordinates.axis;
 
         // Set transform
         Transform transform = Transform(vec3(position, 0), vec3(size, 0));

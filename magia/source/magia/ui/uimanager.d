@@ -5,6 +5,8 @@ import bindbc.opengl, bindbc.sdl;
 import magia.core, magia.render;
 import magia.ui.element;
 
+import std.stdio;
+
 /// UI elements manager
 class UIManager {
     private {
