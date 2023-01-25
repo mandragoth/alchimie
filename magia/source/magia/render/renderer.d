@@ -110,15 +110,14 @@ class Renderer {
 
     /// Prepare to render 2D items
     void setup2DRender() {
-        glDisable(GL_DEPTH_TEST);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
     }
 
     /// Prepare to render 3D items
     void setup3DRender() {
-        glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
         glEnable(GL_CULL_FACE);
         glCullFace(GL_FRONT);
@@ -134,8 +133,14 @@ class Renderer {
     // Use fetch!Resource pattern to avoid loading too many textures in memory
 
     /// Render the rectangle
-    void drawFilledRect(vec2 origin, vec2 size, Color color = Color.white, float alpha = 1f) {
-        Transform transform = Transform(vec3(origin, 0), vec3(size, 0));
+    void drawFilledRect(vec2 position, vec2 size, Color color = Color.white, float alpha = 1f) {
+        // @TODO fetch texture dynamically
+        Texture texture = new Texture(1, 1, 0xffffffff);
+
+        texture.bind();
+        _shader.uploadUniformInt("u_Texture", 0);
+
+        Transform transform = toScreenSpace(position, size);
         setupShader(transform.model, color, alpha);
         drawIndexed(_vertexArray);
     }
@@ -144,14 +149,8 @@ class Renderer {
     void drawTexture(Texture texture, vec2 position, vec2 size,
                      vec4i clip = vec4i.zero, Flip flip = Flip.none, Blend blend = Blend.alpha,
                      Color color = Color.white, float alpha = 1f) {
-        // Express size as ratio of size and screen size
-        size = size / screenSize;
-
-        // Express position as ratio of position and screen size
-        position = _coordinates.origin + position / screenSize * 2 * _coordinates.axis + size * _coordinates.axis;
-
         // Set transform
-        Transform transform = Transform(vec3(position, 0), vec3(size, 0));
+        Transform transform = toScreenSpace(position, size);
 
         // Default clip has x, y = 0 and w, h = 1
         vec4 clipf = vec4(0f, 0f, 1f, 1f);
@@ -189,6 +188,17 @@ class Renderer {
 
         setupShader(transform.model, color, alpha);
         drawIndexed(_vertexArray);
+    }
+
+    private Transform toScreenSpace(vec2 position, vec2 size) {
+        // Express size as ratio of size and screen size
+        size = size / screenSize;
+
+        // Express position as ratio of position and screen size
+        position = _coordinates.origin + position / screenSize * 2 * _coordinates.axis + size * _coordinates.axis;
+
+        // Set transform
+        return Transform(vec3(position, 0), vec3(size, 0));
     }
 
     private void setupShader(mat4 transform = mat4.identity, Color color = Color.white, float alpha = 1f, Blend blend = Blend.alpha) {

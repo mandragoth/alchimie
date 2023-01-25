@@ -48,6 +48,12 @@ class Texture {
         // Target
         GLenum _target;
 
+        // Input image data format
+        GLenum _dataFormat;
+
+        // Internal texture format
+        GLenum _internalFormat;
+
         // Name
         string _name;
 
@@ -88,6 +94,31 @@ class Texture {
         _height = height;
         _target = target;
         _type = type;
+    }
+
+    /// Constructor for empty texture
+    this(uint width, uint height, uint data) {
+        _target = GL_TEXTURE_2D;
+        _width = width;
+        _height = height;
+
+        glGenTextures(1, &id);
+        glBindTexture(_target, id);
+
+        // Setup filters
+        glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        // Setup wrap
+        glTexParameteri(_target, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        _dataFormat = GL_RGBA;
+        _internalFormat = GL_RGBA;
+
+        assert(data.sizeof == width * height * 4);
+        glTexImage2D(_target, 0, _internalFormat, _width, _height, 0, _dataFormat, GL_UNSIGNED_BYTE, &data);
+        _nbTextures = 1;
     }
 
     /// Constructor for usual 2D texture from path
@@ -175,26 +206,24 @@ class Texture {
         }
 
         // For now, consider diffuses as RGBA, speculars as R
-        GLenum format;
-        GLenum internalFormat;
         if (nbChannels == 4) {
-            format = GL_RGBA;
-            internalFormat = GL_RGBA;
+            _dataFormat = GL_RGBA;
+            _internalFormat = GL_RGBA;
         }
         else if (nbChannels == 3) {
-            format = GL_RGB;
-            internalFormat = GL_RGB;
+            _dataFormat = GL_RGB;
+            _internalFormat = GL_RGB;
         }
         else if (nbChannels == 1) {
-            format = GL_RED;
-            internalFormat = GL_RED;
+            _dataFormat = GL_RED;
+            _internalFormat = GL_RED;
         }
         else {
             new Exception("Unsupported texture format for " ~ to!string(type) ~ " texture type");
         }
 
         // Generate texture image
-        glTexImage2D(_target, 0, internalFormat, _width, _height, 0, format, GL_UNSIGNED_BYTE, surface.pixels);
+        glTexImage2D(_target, 0, _internalFormat, _width, _height, 0, _dataFormat, GL_UNSIGNED_BYTE, surface.pixels);
         _nbTextures = 1;
 
         // Generate mipmaps

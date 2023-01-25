@@ -91,12 +91,25 @@ class Application {
     }
 
     /// Render application
-    void render() {
+    void draw() {
+        // Clear up screen
         renderer.clear();
+
+        // Setup 2D
         renderer.setup2DRender();
 
+        // Draw scene (so far only 2D)
         _scene.draw();
+
+        // Draw UI
         _uiManager.draw();
+
+        // Render all draw calls on window
+        renderWindow();
+    }
+
+    /// Render
+    void render() {
         renderWindow();
     }
 

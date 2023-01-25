@@ -7,6 +7,7 @@ event onLoad() {
     var remilia = @Sprite("remilia.png", @vec4i(0, 0, 32, 48));
     remilia:position(@vec2(-100f, -100f));
 
+    runtime();
     cameraControls();
     testUI();
 }
@@ -50,6 +51,18 @@ event input(inputs: list<InputEvent>) {
             var input = input.controllerButton?;
             print(input.button);
         }
+    }
+}
+
+task runtime() {
+    loop yield {
+        clear();
+        setup2D();
+
+        // We can now draw dynamically from script!
+        drawFilledRect(@vec2(0f, 0f), @vec2(50f, 50f), @color(1f, 0f, 0f));
+
+        render();
     }
 }
 

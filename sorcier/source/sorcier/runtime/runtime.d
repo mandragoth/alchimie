@@ -133,6 +133,7 @@ final class Runtime {
                 }
             }
 
+            // @TODO delegate to scripts events?
             currentApplication.update();
 
             if (_engine) {
@@ -141,7 +142,8 @@ final class Runtime {
                 }
             }
 
-            currentApplication.render();
+            // @TODO delegate to scripts events?
+            //currentApplication.draw();
         }
     }
 }
