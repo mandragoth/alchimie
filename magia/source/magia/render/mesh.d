@@ -2,12 +2,11 @@ module magia.render.mesh;
 
 import std.conv;
 import std.stdio;
+import std.string;
 
 import bindbc.opengl;
 
-import magia.core.mat;
-import magia.core.transform;
-import magia.core.vec;
+import magia.core;
 import magia.render.array;
 import magia.render.buffer;
 import magia.render.camera;
@@ -16,14 +15,8 @@ import magia.render.scene;
 import magia.render.shader;
 import magia.render.vertex;
 
-/// Interface for renderable objects
-interface Renderable {
-    /// Render on screen
-    void draw(Shader shader, Transform transform);
-}
-
 /// Class handling mesh data and draw call
-final class Mesh : Renderable {
+final class Mesh {
     private {
         Vertex[] _vertices;
         uint[] _indices;
@@ -112,7 +105,7 @@ final class Mesh : Renderable {
                 name = to!string(type);
             }
 
-            texture.forwardToShader(shader, name, textureId);
+            shader.uploadUniformInt(toStringz(name), textureId);
             texture.bind();
             ++textureId;
         }
@@ -123,12 +116,12 @@ final class Mesh : Renderable {
         bindData(shader);
 
         if (_instances == 1) {
-            glUniformMatrix4fv(glGetUniformLocation(shader.id, "model"), 1, GL_TRUE, transform.model.value_ptr);
+            shader.uploadUniformMat4("model", transform.model);
             //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glDrawElements(GL_TRIANGLES, cast(int) _indices.length, GL_UNSIGNED_INT, null);
             //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         } else {
-            glUniformMatrix4fv(glGetUniformLocation(shader.id, "model"), 1, GL_TRUE, mat4.identity.value_ptr);
+            shader.uploadUniformMat4("model", mat4.identity);
             //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glDrawElementsInstanced(GL_TRIANGLES, cast(int) _indices.length, GL_UNSIGNED_INT, null, _instances);
             //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

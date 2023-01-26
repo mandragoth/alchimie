@@ -228,7 +228,7 @@ class Texture {
     }
 
     /// Constructor for cubemap texture
-    this(string[6] paths) {
+    this(string[6] filePaths) {
         // Setup type
         _type = TextureType.cubemap;
 
@@ -251,11 +251,11 @@ class Texture {
         glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(_target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-        for (int i = 0; i < paths.length; ++i) {
-            string path = "../assets/skybox/" ~ paths[i];
+        for (int i = 0; i < filePaths.length; ++i) {
+            string filePath = buildNormalizedPath("assets", "skybox", filePaths[i]);
 
-            SDL_Surface* surface = IMG_Load(toStringz(path));
-            enforce(surface, "can't load image `" ~ path ~ "`");
+            SDL_Surface* surface = IMG_Load(toStringz(filePath));
+            enforce(surface, "can't load image `" ~ filePath ~ "`");
 
             // Read data from handler
             _width = surface.w;
@@ -267,14 +267,6 @@ class Texture {
 
             SDL_FreeSurface(surface);
         }
-    }
-
-    /// Pass texture onto shader (@TODO DELETE, DEPRECATED)
-    void forwardToShader(Shader shader, string uniform, GLuint unit) {
-        GLuint texUni = glGetUniformLocation(shader.id, toStringz(uniform));
-
-        shader.activate();
-        glUniform1i(texUni, unit);
     }
 
     /// Bind texture

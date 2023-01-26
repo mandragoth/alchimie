@@ -1,4 +1,4 @@
-module sorcier.script.common;
+module sorcier.script.scommon;
 
 import grimoire;
 

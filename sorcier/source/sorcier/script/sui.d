@@ -1,4 +1,4 @@
-module sorcier.script.uiscript;
+module sorcier.script.sui;
 
 import std.conv : to;
 import std.math;

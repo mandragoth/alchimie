@@ -18,7 +18,7 @@ import magia.render.texture;
 import magia.render.vertex;
 
 /// Class handling model data and draw call
-final class ModelPrototype : Renderable {
+final class ModelPrototype {
     private {
         // JSON data
         ubyte[] _data;
@@ -394,16 +394,18 @@ final class ModelPrototype : Renderable {
 final class Model : Entity {
     private {
         ModelPrototype _modelPrototype;
+        Shader _shader;
     }
 
     /// Constructor
     this(string fileName, uint instances = 1, mat4[] instanceMatrices = [mat4.identity]) {
         transform = Transform.identity;
+        _shader = new Shader("default.vert", "default.frag");
         _modelPrototype = new ModelPrototype(fileName, instances, instanceMatrices);
     }
     
     /// Render the model
-    void draw(Shader shader) {
-        _modelPrototype.draw(shader, transform);
+    override void draw() {
+        _modelPrototype.draw(_shader, transform);
     }
 }

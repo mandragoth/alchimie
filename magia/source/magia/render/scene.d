@@ -8,6 +8,7 @@ import magia.core.timestep;
 import magia.render.camera;
 import magia.render.entity;
 import magia.render.renderer;
+import magia.render.skybox;
 
 alias Entities = Entity[];
 
@@ -16,11 +17,14 @@ class Scene {
     private {
         /// @TODO replace entity array with hierarchy
         Entities _entities;
+
+        Skybox _skybox;
     }
 
     /// Constructor
     this() {
         renderer = new Renderer();
+        _skybox = new Skybox();
     }
 
     /// Add an entity
@@ -47,5 +51,7 @@ class Scene {
         foreach(entity; _entities) {
             entity.draw();
         }
+
+        _skybox.draw();
     }
 }

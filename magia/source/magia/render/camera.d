@@ -72,7 +72,7 @@ abstract class Camera : Instance {
 class OrthographicCamera : Camera {
     @property {
         override void position(vec3 position_) {
-            position = position_;
+            transform.position = position_;
             computeViewMatrix();
         }
 

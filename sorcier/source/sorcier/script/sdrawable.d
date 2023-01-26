@@ -1,4 +1,4 @@
-module sorcier.script.drawable;
+module sorcier.script.sdrawable;
 
 import std.stdio;
 

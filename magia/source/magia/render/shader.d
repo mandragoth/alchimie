@@ -53,8 +53,8 @@ class Shader {
 
     /// Constructor given 2 files
     this(string vertexFile, string fragmentFile) {
-        string vertexData = readText("../assets/shader/" ~ vertexFile);
-        string fragmentData = readText("../assets/shader/" ~ fragmentFile);
+        string vertexData = readText(buildNormalizedPath("assets", "shader", vertexFile));
+        string fragmentData = readText(buildNormalizedPath("assets", "shader", fragmentFile));
         setupShaders(vertexFile, fragmentFile, vertexData, fragmentData);
     }
 

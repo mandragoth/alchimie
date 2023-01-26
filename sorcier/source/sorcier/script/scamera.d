@@ -1,4 +1,4 @@
-module sorcier.script.camscript;
+module sorcier.script.scamera;
 
 import grimoire;
 import magia;
@@ -19,6 +19,10 @@ void loadAlchimieLibCamera(GrLibDefinition library) {
     library.addFunction(&_setRotation, "rotation", [cameraType, grFloat]);
     library.addFunction(&_getZoom, "zoom", [cameraType], [grFloat]);
     library.addFunction(&_setZoom, "zoom", [cameraType, grFloat]);
+
+    // @TODO delete
+    library.addFunction(&_getPosition, "position", [cameraType], [grFloat, grFloat, grFloat]);
+    library.addFunction(&_setPosition, "sposition", [cameraType, grFloat, grFloat, grFloat]);
 }
 
 private void _perspective_camera_new(GrCall call) {
@@ -71,4 +75,24 @@ private void _setZoom(GrCall call) {
         return;
     }
     camera.zoomLevel(call.getFloat(1));
+}
+
+private void _getPosition(GrCall call) {
+    Camera camera = call.getNative!Camera(0);
+    if (!camera) {
+        call.raise("NullError");
+        return;
+    }
+    call.setFloat(camera.position.x);
+    call.setFloat(camera.position.y);
+    call.setFloat(camera.position.z);
+}
+
+private void _setPosition(GrCall call) {
+    Camera camera = call.getNative!Camera(0);
+    if (!camera) {
+        call.raise("NullError");
+        return;
+    }
+    camera.position(vec3(call.getFloat(1), call.getFloat(2), call.getFloat(3)));
 }

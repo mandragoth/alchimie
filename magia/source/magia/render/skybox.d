@@ -1,13 +1,13 @@
 module magia.render.skybox;
 
 import std.stdio;
+import std.string;
 import std.conv;
 
 import bindbc.opengl;
 
 import magia.render.array;
 import magia.render.buffer;
-import magia.render.camera;
 import magia.render.postprocess;
 import magia.render.shader;
 import magia.render.texture;
@@ -53,7 +53,6 @@ final class Skybox {
         ];
         // dfmt on
 
-        Camera _camera;
         Shader _shader;
         Texture _texture;
         
@@ -69,8 +68,7 @@ final class Skybox {
     }
 
     /// Constructor
-    this(Camera camera) {
-        _camera = camera;
+    this() {
         _shader = new Shader("skybox.vert", "skybox.frag");
 
         string[6] faceCubemaps = [
@@ -79,8 +77,7 @@ final class Skybox {
         ];
 
         _texture = new Texture(faceCubemaps);
-        // @TODO rewrite shader forward
-        _texture.forwardToShader(_shader, to!string(_texture.type), 0);
+        _shader.uploadUniformInt(toStringz(to!string(_texture.type)), 0);
 
         // Generate and bind VAO
         _vertexArray = new VertexArray();
@@ -103,10 +100,10 @@ final class Skybox {
     void draw() {
         glDepthFunc(GL_LEQUAL);
 
-        glUniform1f(glGetUniformLocation(_shader.id, "gamma"), gamma);
-
         _vertexArray.bind();
         _texture.bind();
+        _shader.activate();
+        _shader.uploadUniformFloat("gamma", gamma);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, null);
 
         glDepthFunc(GL_LESS);
