@@ -10,6 +10,7 @@ import std.datetime, core.thread;
 import grimoire;
 import magia;
 import sorcier.common;
+import sorcier.loader;
 import sorcier.script;
 
 void bootUp(string[] args) {
@@ -100,7 +101,11 @@ final class Runtime {
 
         grSetOutputFunction(&print);
 
+        // Create the application
         currentApplication = new Application(vec2u(800, 800), "Alchimie");
+
+        // Load resources
+        loadResources();
     }
 
     void run() {

@@ -1,5 +1,6 @@
 module magia.shape.quad;
 
+import std.path;
 import std.string;
 import std.stdio;
 
@@ -19,6 +20,7 @@ import magia.shape.light;
 final class QuadInstance : Entity {
     private {
         Mesh _mesh;
+        Shader _shader;
     }
 
     /// Constructor
@@ -41,15 +43,16 @@ final class QuadInstance : Entity {
         ];
 
         Texture[] textures = [
-            new Texture("planks.png", TextureType.diffuse, 0),
-            new Texture("planksSpec.png", TextureType.specular, 1)
+            new Texture(buildNormalizedPath("assets", "texture", "planks.png"), TextureType.diffuse, 0),
+            new Texture(buildNormalizedPath("assets", "texture", "planksSpec.png"), TextureType.specular, 1)
         ];
 
         _mesh = new Mesh(vertices, indices, textures);
+        _shader = new Shader("default.vert", "default.frag");
     }
 
     /// Render the quad
-    void draw(Shader shader) {
-        _mesh.draw(shader, transform);
+    override void draw() {
+        _mesh.draw(_shader, transform);
     }
 }

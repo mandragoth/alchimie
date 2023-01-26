@@ -106,7 +106,7 @@ final class TrueTypeFont : Font {
 
             SDL_Surface* surface = TTF_RenderGlyph_Blended(_trueTypeFont, cast(wchar) ch, Color.white.toSDL());
             assert(surface);
-            Sprite sprite = new Sprite(surface);
+            Sprite sprite = new Sprite(to!string(ch), surface);
             assert(sprite);
             SDL_FreeSurface(surface);
 
@@ -136,7 +136,7 @@ final class TrueTypeFont : Font {
 
             SDL_BlitSurface(surface, &srcRect, surfaceOutline, &dstRect);
 
-            Sprite sprite = new Sprite(surfaceOutline);
+            Sprite sprite = new Sprite(to!string(ch), surfaceOutline);
             assert(sprite);
             SDL_FreeSurface(surface);
             SDL_FreeSurface(surfaceOutline);

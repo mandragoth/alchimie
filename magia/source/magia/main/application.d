@@ -68,6 +68,7 @@ class Application {
         loadSDLOpenGL();
         initFont();
 
+        // Create window, scene, UI and input managers
         createWindow(size, title);
         _scene = new Scene();
         _uiManager = new UIManager();

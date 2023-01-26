@@ -137,8 +137,8 @@ class Texture {
     }
 
     /// Constructor for usual 2D texture from surface
-    this(SDL_Surface *surface, TextureType type = TextureType.sprite, GLuint slot = 0) {
-        _name = to!string(type);
+    this(string name, SDL_Surface *surface, TextureType type = TextureType.sprite, GLuint slot = 0) {
+        _name = name;
         setupData(surface, type, slot);
     }
 
@@ -195,11 +195,6 @@ class Texture {
 
         if (s_Trace) {
             writeln("Loaded texture ", _name, " with ", nbChannels, " channels");
-        }
-
-        const SDL_PixelFormat* pixelFormat = surface.format;
-        if (pixelFormat.format == SDL_PIXELFORMAT_INDEX8) {
-            writeln("Pixel format is INDEX8");
         }
 
         // For now, consider diffuses as RGBA, speculars as R

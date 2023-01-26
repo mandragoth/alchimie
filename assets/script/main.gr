@@ -11,6 +11,37 @@ event onLoad() {
     testUI();
 }
 
+task runtime() {
+    var remilia = @Sprite("remilia.png", @vec4i(0, 0, 32, 48));
+    remilia:position(@vec2(12.5f, 0f));
+
+    var remilia2 = @Sprite("remilia.png", @vec4i(96, 48, 32, 48));
+    remilia2:position(@vec2(12.5f + 32f, 0f));
+
+    var jupiter = @Model("jupiter/scene");
+    jupiter:position(@vec3(1f, 0f, 1f));
+
+    var quad = loadQuad();
+
+    loop yield {
+        clear();
+
+        setup3D();
+        jupiter:draw();
+        quad:draw();
+
+        /*setup2D();
+
+        // We can now draw dynamically from script!
+        drawFilledRect(@vec2(0f, 0f), @vec2(50f, 50f), @color(1f, 0f, 0f));
+        //drawFilledCircle(@vec2(25f, 25f), 50f, @color(0f, 1f, 0f));
+        remilia:draw();
+        remilia2:draw();*/
+
+        render();
+    }
+}
+
 func testUI() {
     var label = @Label("Hello World !");
     label.pos(200f, 200f);
@@ -28,29 +59,4 @@ func testUI() {
 
     sleep(2.seconds);
     label.runState("hidden");
-}
-
-task runtime() {
-    var remilia = @Sprite("remilia.png", @vec4i(0, 0, 32, 48));
-    remilia:position(@vec2(12.5f, 0f));
-
-    var jupiter = @Model("jupiter/scene");
-    jupiter:position(@vec3(1f, 0f, 1f));
-
-    loop yield {
-        clear();
-
-        setup3D();
-
-        jupiter:draw();
-
-        setup2D();
-
-        // We can now draw dynamically from script!
-        drawFilledRect(@vec2(0f, 0f), @vec2(50f, 50f), @color(1f, 0f, 0f));
-        //drawFilledCircle(@vec2(25f, 25f), 50f, @color(0f, 1f, 0f));
-        remilia:draw();
-
-        render();
-    }
 }

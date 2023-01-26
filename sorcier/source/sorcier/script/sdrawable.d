@@ -40,11 +40,13 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     GrType entityType = library.addNative("Entity", [], "Instance");
     GrType spriteType = library.addNative("Sprite", [], "Entity");
     GrType modelType = library.addNative("Model", [], "Entity");
+    GrType quadType = library.addNative("Quad", [], "Entity");
 
     // Entity constructors
     library.addConstructor(&_sprite_new, spriteType, [grString]);
     library.addConstructor(&_sprite_new2, spriteType, [grString, vec4iType]);
     library.addConstructor(&_model_new, modelType, [grString]);
+    library.addFunction(&_quad_new, "loadQuad", [], [quadType]);
 
     // Entity operations
     library.addFunction(&_getPosition, "getPosition", [instanceType], [vec3Type]);
@@ -162,6 +164,11 @@ private void _sprite_new2(GrCall call) {
 private void _model_new(GrCall call) {
     Model model = new Model(call.getString(0));
     call.setNative(model);
+}
+
+private void _quad_new(GrCall call) {
+    QuadInstance quadInstance = new QuadInstance();
+    call.setNative(quadInstance);
 }
 
 private void _packInstanceMatrix(GrCall call) {
