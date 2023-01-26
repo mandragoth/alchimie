@@ -1,14 +1,13 @@
+import "cam.gr"
 
 func randf() (float) {
     return rand(-1f, 1f);
 }
 
 event onLoad() {
-    var remilia = @Sprite("remilia.png", @vec4i(0, 0, 32, 48));
-    remilia:position(@vec2(-100f, -100f));
-
+    setupCamera();
+    yield;
     runtime();
-    cameraControls();
     testUI();
 }
 
@@ -31,105 +30,27 @@ func testUI() {
     label.runState("hidden");
 }
 
-event input(inputs: list<InputEvent>) {
-    for(input, inputs) {
-        if (input.isAction("jump") and not input.isEcho()) {
-            if(input.isPressed()) {
-                print("ON SAUTE !");
-            } else {
-                print("on saute plus");
-            }
-        }
-
-        switch(input.type)
-        case(InputEventType.keyButton) {
-            var input = input.keyButton?;
-            if(input.button == KeyButton.w and input.pressed)
-                print("En avant ! ");
-        }
-        case(InputEventType.controllerButton) {
-            var input = input.controllerButton?;
-            print(input.button);
-        }
-    }
-}
-
 task runtime() {
+    var remilia = @Sprite("remilia.png", @vec4i(0, 0, 32, 48));
+    remilia:position(@vec2(12.5f, 0f));
+
+    var jupiter = @Model("jupiter/scene");
+    jupiter:position(@vec3(1f, 0f, 1f));
+
     loop yield {
         clear();
+
+        setup3D();
+
+        jupiter:draw();
+
         setup2D();
 
         // We can now draw dynamically from script!
         drawFilledRect(@vec2(0f, 0f), @vec2(50f, 50f), @color(1f, 0f, 0f));
+        //drawFilledCircle(@vec2(25f, 25f), 50f, @color(0f, 1f, 0f));
+        remilia:draw();
 
         render();
-    }
-}
-
-task cameraControls() {
-    addAction("move_up", 0.2);
-    addAction("move_down", 0.2);
-    addAction("move_left", 0.2);
-    addAction("move_right", 0.2);
-    addAction("roll_left", 0.2);
-    addAction("roll_right", 0.2);
-    addAction("zoom_in", 0.2);
-    addAction("zoom_out", 0.2);
-
-    addActionEvent("move_up", @InputEvent.controllerAxis(ControllerAxis.leftY, -1f));
-    addActionEvent("move_up", @InputEvent.controllerButton(ControllerButton.up, true));
-    addActionEvent("move_up", @InputEvent.keyButton(KeyButton.up, true, false));
-    addActionEvent("move_up", @InputEvent.keyButton(KeyButton.w, true, false));
-
-    addActionEvent("move_down", @InputEvent.controllerAxis(ControllerAxis.leftY, 1f));
-    addActionEvent("move_down", @InputEvent.controllerButton(ControllerButton.down, true));
-    addActionEvent("move_down", @InputEvent.keyButton(KeyButton.down, true, false));
-    addActionEvent("move_down", @InputEvent.keyButton(KeyButton.s, true, false));
-
-    addActionEvent("move_left", @InputEvent.controllerAxis(ControllerAxis.leftX, -1f));
-    addActionEvent("move_left", @InputEvent.controllerButton(ControllerButton.left, true));
-    addActionEvent("move_left", @InputEvent.keyButton(KeyButton.left, true, false));
-    addActionEvent("move_left", @InputEvent.keyButton(KeyButton.a, true, false));
-
-    addActionEvent("move_right", @InputEvent.controllerAxis(ControllerAxis.leftX, 1f));
-    addActionEvent("move_right", @InputEvent.controllerButton(ControllerButton.right, true));
-    addActionEvent("move_right", @InputEvent.keyButton(KeyButton.right, true, false));
-    addActionEvent("move_right", @InputEvent.keyButton(KeyButton.d, true, false));
-
-    addActionEvent("roll_left", @InputEvent.controllerButton(ControllerButton.leftShoulder, true));
-    addActionEvent("roll_left", @InputEvent.keyButton(KeyButton.q, true, false));
-
-    addActionEvent("roll_right", @InputEvent.controllerButton(ControllerButton.rightShoulder, true));
-    addActionEvent("roll_right", @InputEvent.keyButton(KeyButton.e, true, false));
-
-    addActionEvent("zoom_in", @InputEvent.keyButton(KeyButton.numPlus, true, false));
-    addActionEvent("zoom_out", @InputEvent.keyButton(KeyButton.numMinus, true, false));
-
-    var camera = getCamera();
-
-    var moveSpeed = 0.01f;
-    var zRotationSpeed = rad(2f);
-    var zoomSpeed = 0.05f;
-
-    var x, y, z = camera:position();
-    var zRotation = camera:rotation();
-    var zoomLevel = camera:zoom();
-
-    loop yield {
-        x += getActionAxis("move_left", "move_right") * moveSpeed;
-        y += getActionAxis("move_down", "move_up") * moveSpeed;
-        zRotation += getActionAxis("roll_right", "roll_left") * zRotationSpeed;
-
-        if (isActionPressed("zoom_in")) {
-            zoomLevel -= zoomSpeed;
-        } else if (isActionPressed("zoom_out")) {
-            zoomLevel += zoomSpeed;
-        }
-
-        zoomLevel = clamp(zoomLevel, 0.25f, 1.5f);
-
-        camera:position(x, y, z);
-        camera:rotation(zRotation);
-        camera:zoom(zoomLevel);
     }
 }

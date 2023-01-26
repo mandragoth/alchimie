@@ -58,6 +58,11 @@ struct Transform {
         vec3 rotationToEuler() const {
             return vec3(rotation.roll, rotation.pitch, rotation.yaw);
         }
+
+        /// Get 2D position
+        vec2 position2D() const {
+            return vec2(position.x, position.y);
+        }
     }
 
     /// Default transform

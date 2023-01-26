@@ -18,16 +18,9 @@ class Scene {
         Entities _entities;
     }
 
-    @property {
-        /// Set camera
-        void camera(Camera camera) {
-            renderer.camera = camera;
-        }
-    }
-
     /// Constructor
     this() {
-        renderer = new Renderer(new OrthographicCamera());
+        renderer = new Renderer();
     }
 
     /// Add an entity

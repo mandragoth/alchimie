@@ -175,10 +175,10 @@ class PerspectiveCamera : Camera {
     }
 
     /// Constructor
-    this(int width_, int height_, vec3 position_ = vec3(0f, 0f, 0f)) {
-        _width = width_;
-        _height = height_;
-        _position = position_;
+    this() {
+        _width = screenWidth;
+        _height = screenHeight;
+        _position = vec3.zero;
     }
 
     /// Setting up camera matrices operations

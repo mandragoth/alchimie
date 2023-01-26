@@ -1,6 +1,7 @@
 module magia.render.sprite;
 
 import std.exception;
+import std.path;
 import std.string;
 
 import bindbc.opengl;
@@ -87,9 +88,9 @@ final class Sprite : Entity {
     }
 
     /// Constructor given an image path
-    this(string path, vec4i clip = vec4i.zero) {
+    this(string fileName, vec4i clip = vec4i.zero) {
         transform = Transform.identity;
-        _texture = new Texture(path);
+        _texture = new Texture(buildNormalizedPath("assets", "img", fileName));
         _size = vec2(clip.z, clip.w);
         _clip = clip;
     }

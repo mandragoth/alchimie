@@ -45,8 +45,10 @@ class Renderer {
 
     private {
         Coordinates _coordinates;
-        VertexArray _vertexArray;
-        Shader _shader;
+        Texture _defaultTexture;
+        VertexArray _quadVertexArray;
+        Shader _quadShader;
+        Shader _circleShader;
     }
 
     @property {
@@ -63,12 +65,12 @@ class Renderer {
     }
 
     /// Constructor
-    this(Camera camera_) {
+    this() {
         // Set screen origin
         _coordinates = defaultCoordinates;
 
-        // Rectangle vertices
-        float[] vertices = [
+        // Quad vertices
+        float[] quadVertices = [
             -1f, -1f, 0f, 0f,
              1f, -1f, 1f, 0f,
              1f,  1f, 1f, 1f,
@@ -81,26 +83,28 @@ class Renderer {
             BufferElement("a_TexCoord", LayoutType.ltFloat2)
         ]);
 
-        // Create and bind vertex array
-        _vertexArray = new VertexArray();
-        _vertexArray.bind();
+        // Create and bind vertex array for quad rendering
+        _quadVertexArray = new VertexArray();
+        _quadVertexArray.bind();
 
         // Create vertex buffer and attach layout, set it in the vertex array
-        VertexBuffer vertexBuffer = new VertexBuffer(vertices);
-        vertexBuffer.layout = layout;
-        _vertexArray.addVertexBuffer(vertexBuffer);
+        VertexBuffer quadVertexBuffer = new VertexBuffer(quadVertices);
+        quadVertexBuffer.layout = layout;
+        _quadVertexArray.addVertexBuffer(quadVertexBuffer);
 
         // Create index buffer and set it into vertex buffer
         uint[] indices = [0, 1, 2, 2, 3, 0];
-        _vertexArray.setIndexBuffer(new IndexBuffer(indices));
+        _quadVertexArray.setIndexBuffer(new IndexBuffer(indices));
 
-        // Load global shader to render 2D textured/colored quads
-        _shader = new Shader("image.glsl");
+        // Load global shader to render 2D textured/colored quads/circles
+        _quadShader = new Shader("quad.glsl");
+        _circleShader = new Shader("circle.glsl");
+
+        // Default white pixel texture to be used if one is required and none provided
+        _defaultTexture = new Texture(1, 1, 0xffffffff);
 
         glEnable(GL_MULTISAMPLE);
         glClearColor(bgColor.r, bgColor.g, bgColor.b, 1f);
-
-        camera = camera_;
     }
 
     /// Clear rendered frame
@@ -112,7 +116,7 @@ class Renderer {
     void setup2DRender() {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
     }
 
@@ -125,24 +129,36 @@ class Renderer {
 
     /// Update
     void update(TimeStep timeStep) {
-        camera.update(timeStep);
+        if (camera) {
+            camera.update(timeStep);
+        }
     }
 
-    // @TODO create empty texture manually if texture not passed
     // Also to be used if 3D model has no texture
     // Use fetch!Resource pattern to avoid loading too many textures in memory
 
-    /// Render the rectangle
-    void drawFilledRect(vec2 position, vec2 size, Color color = Color.white, float alpha = 1f) {
-        // @TODO fetch texture dynamically
-        Texture texture = new Texture(1, 1, 0xffffffff);
+    /// Render filled circle
+    void drawFilledCircle(vec2 position, float size, Color color = Color.white, float alpha = 1f) {
+        _defaultTexture.bind();
 
-        texture.bind();
-        _shader.uploadUniformInt("u_Texture", 0);
+        _circleShader.activate();
+        _circleShader.uploadUniformInt("u_Texture", 0);
+
+        Transform transform = toScreenSpace(position, vec2(size, size));
+        setupCircleShader(transform.model, transform.position2D, transform.scale.x, color, alpha);
+        drawIndexed(_quadVertexArray);
+    }
+
+    /// Render filled rectangle
+    void drawFilledRect(vec2 position, vec2 size, Color color = Color.white, float alpha = 1f) {
+        _defaultTexture.bind();
+
+        _quadShader.activate();
+        _quadShader.uploadUniformInt("u_Texture", 0);
 
         Transform transform = toScreenSpace(position, size);
-        setupShader(transform.model, color, alpha);
-        drawIndexed(_vertexArray);
+        setupQuadShader(transform.model, color, alpha);
+        drawIndexed(_quadVertexArray);
     }
 
     /// Render a sprite @TODO handle rotation, alpha, color
@@ -163,9 +179,12 @@ class Renderer {
             clipf.w = clipf.y + (cast(float) clip.w / cast(float) texture.height);
         }
 
+        // Bind texture and shader
         texture.bind();
-        _shader.uploadUniformInt("u_Texture", 0);
-        _shader.uploadUniformVec4("u_Clip", clipf);
+        _quadShader.activate();
+
+        _quadShader.uploadUniformInt("u_Texture", 0);
+        _quadShader.uploadUniformVec4("u_Clip", clipf);
 
         // Set flip
         vec2 flipf;
@@ -184,10 +203,10 @@ class Renderer {
                 break;
         }
 
-        _shader.uploadUniformVec2("u_Flip", flipf);
+        _quadShader.uploadUniformVec2("u_Flip", flipf);
 
-        setupShader(transform.model, color, alpha);
-        drawIndexed(_vertexArray);
+        setupQuadShader(transform.model, color, alpha);
+        drawIndexed(_quadVertexArray);
     }
 
     private Transform toScreenSpace(vec2 position, vec2 size) {
@@ -201,21 +220,19 @@ class Renderer {
         return Transform(vec3(position, 0), vec3(size, 0));
     }
 
-    private void setupShader(mat4 transform = mat4.identity, Color color = Color.white, float alpha = 1f, Blend blend = Blend.alpha) {
-        // Activate shader
-        _shader.activate();
-
-        // Set color
-        _shader.uploadUniformVec4("u_Color", vec4(color.r, color.g, color.b, alpha));
-
+    private void setupQuadShader(mat4 transform = mat4.identity,
+                                 Color color = Color.white, float alpha = 1f, Blend blend = Blend.alpha) {
         // Set camera
-        _shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
+        _quadShader.uploadUniformMat4("u_CamMatrix", camera.matrix);
 
         // Set transform
-        _shader.uploadUniformMat4("u_Transform", transform);
+        _quadShader.uploadUniformMat4("u_Transform", transform);
+
+        // Set color
+        _quadShader.uploadUniformVec4("u_Color", vec4(color.r, color.g, color.b, alpha));
 
         // Set blend
-        /*final switch (blend) with (Blend) {
+        final switch (blend) with (Blend) {
             case none:
                 glBlendFuncSeparate(GL_SRC_COLOR, GL_ZERO, GL_ONE, GL_ZERO);
                 glBlendEquation(GL_FUNC_ADD);
@@ -228,16 +245,45 @@ class Renderer {
                 glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
                 glBlendEquation(GL_FUNC_ADD);
                 break;
-        }*/
+        }
     }
 
-    /// Submit a vertex array to the render queue
-    void submit(VertexArray vertexArray) {
+    private void setupCircleShader(mat4 transform = mat4.identity, vec2 position = vec2.zero, float size = 1f,
+                                   Color color = Color.white, float alpha = 1f, Blend blend = Blend.alpha) {
+        // Set camera
+        _circleShader.uploadUniformMat4("u_CamMatrix", camera.matrix);
 
+        // Set transform
+        _circleShader.uploadUniformMat4("u_Transform", transform);
+
+        // Set color
+        _circleShader.uploadUniformVec4("u_Color", vec4(color.r, color.g, color.b, alpha));
+
+        // Set position
+        _circleShader.uploadUniformVec2("u_Position", position);
+
+        // Set position
+        _circleShader.uploadUniformFloat("u_Size", size);
+
+        // Set blend
+        final switch (blend) with (Blend) {
+            case none:
+                glBlendFuncSeparate(GL_SRC_COLOR, GL_ZERO, GL_ONE, GL_ZERO);
+                glBlendEquation(GL_FUNC_ADD);
+                break;
+            case additive:
+                glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_COLOR, GL_ZERO, GL_ONE);
+                glBlendEquation(GL_FUNC_ADD);
+                break;
+            case alpha:
+                glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+                glBlendEquation(GL_FUNC_ADD);
+                break;
+        }
     }
 
     /// @TODO batching
-    void drawIndexed(const VertexArray vertexArray) {
+    private void drawIndexed(const ref VertexArray vertexArray) {
         vertexArray.bind();
         glDrawElements(GL_TRIANGLES, vertexArray.indexBuffer.count, GL_UNSIGNED_INT, null);
     }

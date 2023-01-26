@@ -35,24 +35,30 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     // Maths operations
     library.addFunction(&_packInstanceMatrix, "packInstanceMatrix", [vec3Type, quatType, vec3Type], [mat4Type]);
 
-    // Entities
-    GrType entityType = library.addNative("Entity");
+    // Entity types
+    GrType instanceType = library.addNative("Instance");
+    GrType entityType = library.addNative("Entity", [], "Instance");
     GrType spriteType = library.addNative("Sprite", [], "Entity");
+    GrType modelType = library.addNative("Model", [], "Entity");
 
-    // Entities operations
-    library.addFunction(&_position2D, "position", [entityType, vec2Type], []);
-    library.addFunction(&_position, "position", [entityType, vec3Type], []);
-    library.addFunction(&_scale, "scale", [entityType, vec3Type], []);
-
-    // Sprites constructors
+    // Entity constructors
     library.addConstructor(&_sprite_new, spriteType, [grString]);
     library.addConstructor(&_sprite_new2, spriteType, [grString, vec4iType]);
+    library.addConstructor(&_model_new, modelType, [grString]);
 
-    // Draw commands
+    // Entity operations
+    library.addFunction(&_position2D, "position", [instanceType, vec2Type]);
+    library.addFunction(&_position, "position", [instanceType, vec3Type]);
+    library.addFunction(&_scale, "scale", [instanceType, vec3Type]);
+    library.addFunction(&_draw, "draw", [entityType]);
+
+    // Entity draw commands
     library.addFunction(&_clear, "clear");
     library.addFunction(&_setup2D, "setup2D");
+    library.addFunction(&_setup3D, "setup3D");
     library.addFunction(&_render, "render");
     library.addFunction(&_drawFilledRect, "drawFilledRect", [vec2Type, vec2Type, colorType]);
+    library.addFunction(&_drawFilledCircle, "drawFilledCircle", [vec2Type, grFloat, colorType]);
 }
 
 private void _vec2_new(GrCall call) {
@@ -119,6 +125,11 @@ private void _scale(GrCall call) {
                           scale.getFloat("z"));
 }
 
+private void _draw(GrCall call) {
+    Entity entity = call.getNative!Entity(0);
+    entity.draw();
+}
+
 private void _sprite_new(GrCall call) {
     Sprite sprite = new Sprite(call.getString(0));
     currentApplication.scene.addEntity(sprite);
@@ -134,6 +145,11 @@ private void _sprite_new2(GrCall call) {
               clipObj.getInt("w")));
     currentApplication.scene.addEntity(sprite);
     call.setNative(sprite);
+}
+
+private void _model_new(GrCall call) {
+    Model model = new Model(call.getString(0));
+    call.setNative(model);
 }
 
 private void _packInstanceMatrix(GrCall call) {
@@ -159,6 +175,10 @@ private void _setup2D(GrCall) {
     renderer.setup2DRender();
 }
 
+private void _setup3D(GrCall) {
+    renderer.setup3DRender();
+} 
+
 private void _render(GrCall) {
     currentApplication.render();
 }
@@ -168,9 +188,16 @@ private void _drawFilledRect(GrCall call) {
     GrObject size = call.getObject(1);
     GrObject color = call.getObject(2);
 
-    /// @TODO stream to scene
-
     renderer.drawFilledRect(vec2(position.getFloat("x"), position.getFloat("y")),
                             vec2(size.getFloat("x"), size.getFloat("y")),
                             Color(color.getFloat("r"), color.getFloat("g"), color.getFloat("b")));
+}
+
+private void _drawFilledCircle(GrCall call) {
+    GrObject position = call.getObject(0);
+    GrObject color = call.getObject(2);
+
+    renderer.drawFilledCircle(vec2(position.getFloat("x"), position.getFloat("y")),
+                              call.getFloat(1),
+                              Color(color.getFloat("r"), color.getFloat("g"), color.getFloat("b")));
 }

@@ -126,12 +126,9 @@ class Texture {
         // Set name as file name
         _name = fileName;
 
-        // Prefix path
-        string path = buildNormalizedPath("assets", "img", fileName);
-
         // Get surface and process it
-        SDL_Surface* surface = IMG_Load(toStringz(path));
-        enforce(surface, "can't load image `" ~ path ~ "`");
+        SDL_Surface* surface = IMG_Load(toStringz(fileName));
+        enforce(surface, "can't load image `" ~ fileName ~ "`");
 
         setupData(surface, type, slot);
 

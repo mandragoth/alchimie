@@ -1,0 +1,80 @@
+public func setupCamera() {
+    setupControls2D();
+    camera2D();
+}
+
+func setupControls2D() {
+    addAction("move_up", 0.2);
+    addAction("move_down", 0.2);
+    addAction("move_left", 0.2);
+    addAction("move_right", 0.2);
+    addAction("roll_left", 0.2);
+    addAction("roll_right", 0.2);
+    addAction("zoom_in", 0.2);
+    addAction("zoom_out", 0.2);
+
+    addActionEvent("move_up", @InputEvent.controllerAxis(ControllerAxis.leftY, -1f));
+    addActionEvent("move_up", @InputEvent.controllerButton(ControllerButton.up, true));
+    addActionEvent("move_up", @InputEvent.keyButton(KeyButton.up, true, false));
+    addActionEvent("move_up", @InputEvent.keyButton(KeyButton.w, true, false));
+
+    addActionEvent("move_down", @InputEvent.controllerAxis(ControllerAxis.leftY, 1f));
+    addActionEvent("move_down", @InputEvent.controllerButton(ControllerButton.down, true));
+    addActionEvent("move_down", @InputEvent.keyButton(KeyButton.down, true, false));
+    addActionEvent("move_down", @InputEvent.keyButton(KeyButton.s, true, false));
+
+    addActionEvent("move_left", @InputEvent.controllerAxis(ControllerAxis.leftX, -1f));
+    addActionEvent("move_left", @InputEvent.controllerButton(ControllerButton.left, true));
+    addActionEvent("move_left", @InputEvent.keyButton(KeyButton.left, true, false));
+    addActionEvent("move_left", @InputEvent.keyButton(KeyButton.a, true, false));
+
+    addActionEvent("move_right", @InputEvent.controllerAxis(ControllerAxis.leftX, 1f));
+    addActionEvent("move_right", @InputEvent.controllerButton(ControllerButton.right, true));
+    addActionEvent("move_right", @InputEvent.keyButton(KeyButton.right, true, false));
+    addActionEvent("move_right", @InputEvent.keyButton(KeyButton.d, true, false));
+
+    addActionEvent("roll_left", @InputEvent.controllerButton(ControllerButton.leftShoulder, true));
+    addActionEvent("roll_left", @InputEvent.keyButton(KeyButton.q, true, false));
+
+    addActionEvent("roll_right", @InputEvent.controllerButton(ControllerButton.rightShoulder, true));
+    addActionEvent("roll_right", @InputEvent.keyButton(KeyButton.e, true, false));
+
+    addActionEvent("zoom_in", @InputEvent.keyButton(KeyButton.numPlus, true, false));
+    addActionEvent("zoom_out", @InputEvent.keyButton(KeyButton.numMinus, true, false));
+}
+
+task camera2D() {
+    var camera = @OrthographicCamera();
+
+    var moveSpeed = 0.01f;
+    var zRotationSpeed = rad(2f);
+    var zoomSpeed = 0.05f;
+
+    var x, y, z = camera:position();
+    var zRotation = camera:rotation();
+    var zoomLevel = camera:zoom();
+
+    loop yield {
+        x += getActionAxis("move_left", "move_right") * moveSpeed;
+        y += getActionAxis("move_down", "move_up") * moveSpeed;
+        zRotation += getActionAxis("roll_right", "roll_left") * zRotationSpeed;
+
+        if (isActionPressed("zoom_in")) {
+            zoomLevel -= zoomSpeed;
+        } else if (isActionPressed("zoom_out")) {
+            zoomLevel += zoomSpeed;
+        }
+
+        zoomLevel = clamp(zoomLevel, 0.25f, 1.5f);
+
+        camera:position(x, y, z);
+        camera:rotation(zRotation);
+        camera:zoom(zoomLevel);
+    }
+}
+
+task camera3D() {
+    var camera = @PerspectiveCamera();
+
+    
+}

@@ -4,12 +4,17 @@ import grimoire;
 import magia;
 
 void loadAlchimieLibCamera(GrLibDefinition library) {
+    // Camera types
     GrType cameraType = library.addNative("Camera");
+    GrType perspectiveCameraType = library.addNative("PerspectiveCamera", [], "Camera");
+    GrType orthographicCameraType = library.addNative("OrthographicCamera", [], "Camera");
 
-    library.addFunction(&_camera, "Camera", [], [cameraType]);
+    // Camera constructors
+    library.addConstructor(&_perspective_camera_new, perspectiveCameraType);
+    library.addConstructor(&_orthographic_camera_new, orthographicCameraType);
+
+    // Camera operations
     library.addFunction(&_getCamera, "getCamera", [], [cameraType]);
-    library.addFunction(&_setCamera0, "setCamera");
-    library.addFunction(&_setCamera1, "setCamera", [cameraType]);
     library.addFunction(&_getCameraPosition, "position", [cameraType], [grFloat, grFloat, grFloat]);
     library.addFunction(&_setCameraPosition, "position", [cameraType, grFloat, grFloat, grFloat]);
     library.addFunction(&_getCameraRotation, "rotation", [cameraType], [grFloat]);
@@ -18,22 +23,20 @@ void loadAlchimieLibCamera(GrLibDefinition library) {
     library.addFunction(&_setCameraZoom, "zoom", [cameraType, grFloat]);
 }
 
-private void _camera(GrCall call) {
-    Camera camera_ = new PerspectiveCamera(screenWidth, screenHeight);
-    currentApplication.scene.camera = camera_;
-    call.setNative(camera_);
+private void _perspective_camera_new(GrCall call) {
+    PerspectiveCamera camera = new PerspectiveCamera();
+    renderer.camera = camera;
+    call.setNative(camera);
+}
+
+private void _orthographic_camera_new(GrCall call) {
+    OrthographicCamera camera = new OrthographicCamera();
+    renderer.camera = camera;
+    call.setNative(camera);
 }
 
 private void _getCamera(GrCall call) {
     call.setNative(renderer.camera);
-}
-
-private void _setCamera0(GrCall) {
-    currentApplication.scene.camera = null;
-}
-
-private void _setCamera1(GrCall call) {
-    currentApplication.scene.camera = call.getNative!Camera(0);
 }
 
 private void _getCameraPosition(GrCall call) {
