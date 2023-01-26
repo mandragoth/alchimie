@@ -5,7 +5,7 @@ import magia;
 
 void loadAlchimieLibCamera(GrLibDefinition library) {
     // Camera types
-    GrType cameraType = library.addNative("Camera");
+    GrType cameraType = library.addNative("Camera", [], "Entity");
     GrType perspectiveCameraType = library.addNative("PerspectiveCamera", [], "Camera");
     GrType orthographicCameraType = library.addNative("OrthographicCamera", [], "Camera");
 
@@ -15,12 +15,10 @@ void loadAlchimieLibCamera(GrLibDefinition library) {
 
     // Camera operations
     library.addFunction(&_getCamera, "getCamera", [], [cameraType]);
-    library.addFunction(&_getCameraPosition, "position", [cameraType], [grFloat, grFloat, grFloat]);
-    library.addFunction(&_setCameraPosition, "position", [cameraType, grFloat, grFloat, grFloat]);
-    library.addFunction(&_getCameraRotation, "rotation", [cameraType], [grFloat]);
-    library.addFunction(&_setCameraRotation, "rotation", [cameraType, grFloat]);
-    library.addFunction(&_getCameraZoom, "zoom", [cameraType], [grFloat]);
-    library.addFunction(&_setCameraZoom, "zoom", [cameraType, grFloat]);
+    library.addFunction(&_getRotation, "rotation", [cameraType], [grFloat]);
+    library.addFunction(&_setRotation, "rotation", [cameraType, grFloat]);
+    library.addFunction(&_getZoom, "zoom", [cameraType], [grFloat]);
+    library.addFunction(&_setZoom, "zoom", [cameraType, grFloat]);
 }
 
 private void _perspective_camera_new(GrCall call) {
@@ -39,27 +37,7 @@ private void _getCamera(GrCall call) {
     call.setNative(renderer.camera);
 }
 
-private void _getCameraPosition(GrCall call) {
-    Camera camera = call.getNative!Camera(0);
-    if (!camera) {
-        call.raise("NullError");
-        return;
-    }
-    call.setFloat(camera.position.x);
-    call.setFloat(camera.position.y);
-    call.setFloat(camera.position.z);
-}
-
-private void _setCameraPosition(GrCall call) {
-    Camera camera = call.getNative!Camera(0);
-    if (!camera) {
-        call.raise("NullError");
-        return;
-    }
-    camera.position(vec3(call.getFloat(1), call.getFloat(2), call.getFloat(3)));
-}
-
-private void _getCameraRotation(GrCall call) {
+private void _getRotation(GrCall call) {
     Camera camera = call.getNative!Camera(0);
     if (!camera) {
         call.raise("NullError");
@@ -68,7 +46,7 @@ private void _getCameraRotation(GrCall call) {
     call.setFloat(camera.zRotation);
 }
 
-private void _setCameraRotation(GrCall call) {
+private void _setRotation(GrCall call) {
     Camera camera = call.getNative!Camera(0);
     if (!camera) {
         call.raise("NullError");
@@ -77,7 +55,7 @@ private void _setCameraRotation(GrCall call) {
     camera.zRotation(call.getFloat(1));
 }
 
-private void _getCameraZoom(GrCall call) {
+private void _getZoom(GrCall call) {
     Camera camera = call.getNative!Camera(0);
     if (!camera) {
         call.raise("NullError");
@@ -86,7 +64,7 @@ private void _getCameraZoom(GrCall call) {
     call.setFloat(camera.zoomLevel);
 }
 
-private void _setCameraZoom(GrCall call) {
+private void _setZoom(GrCall call) {
     Camera camera = call.getNative!Camera(0);
     if (!camera) {
         call.raise("NullError");

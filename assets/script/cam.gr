@@ -50,13 +50,14 @@ task camera2D() {
     var zRotationSpeed = rad(2f);
     var zoomSpeed = 0.05f;
 
-    var x, y, z = camera:position();
+    var position = camera:getPosition();
     var zRotation = camera:rotation();
     var zoomLevel = camera:zoom();
 
     loop yield {
-        x += getActionAxis("move_left", "move_right") * moveSpeed;
-        y += getActionAxis("move_down", "move_up") * moveSpeed;
+        //print(position.x);
+        //position.x += getActionAxis("move_left", "move_right") * moveSpeed;
+        //position.y += getActionAxis("move_down", "move_up") * moveSpeed;
         zRotation += getActionAxis("roll_right", "roll_left") * zRotationSpeed;
 
         if (isActionPressed("zoom_in")) {
@@ -67,7 +68,7 @@ task camera2D() {
 
         zoomLevel = clamp(zoomLevel, 0.25f, 1.5f);
 
-        camera:position(x, y, z);
+        //camera:position(position);
         camera:rotation(zRotation);
         camera:zoom(zoomLevel);
     }
@@ -76,5 +77,7 @@ task camera2D() {
 task camera3D() {
     var camera = @PerspectiveCamera();
 
-    
+    loop yield {
+
+    }
 }

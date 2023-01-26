@@ -26,7 +26,7 @@ abstract class Instance {
 
         /// Get position (3D)
         vec3 position() {
-            return position;
+            return transform.position;
         }
 
         /// Set scale (2D)

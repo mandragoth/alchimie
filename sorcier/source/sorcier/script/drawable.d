@@ -47,8 +47,9 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addConstructor(&_model_new, modelType, [grString]);
 
     // Entity operations
-    library.addFunction(&_position2D, "position", [instanceType, vec2Type]);
-    library.addFunction(&_position, "position", [instanceType, vec3Type]);
+    library.addFunction(&_getPosition, "getPosition", [instanceType], [vec3Type]);
+    library.addFunction(&_setPosition2D, "position", [instanceType, vec2Type]);
+    library.addFunction(&_setPosition, "position", [instanceType, vec3Type]);
     library.addFunction(&_scale, "scale", [instanceType, vec3Type]);
     library.addFunction(&_draw, "draw", [entityType]);
 
@@ -102,14 +103,25 @@ private void _quat_new(GrCall call) {
     call.setObject(quat);
 }
 
-private void _position2D(GrCall call) {
+private void _getPosition(GrCall call) {
+    Instance instance = call.getNative!Instance(0);
+
+    GrObject vector = call.createObject("vec3");
+    vector.setFloat("x", instance.position.x);
+    vector.setFloat("y", instance.position.y);
+    vector.setFloat("z", instance.position.z);
+
+    call.setObject(vector);
+}
+
+private void _setPosition2D(GrCall call) {
     Instance instance = call.getNative!Instance(0);
     GrObject position = call.getObject(1);
     instance.position = vec2(position.getFloat("x"),
                              position.getFloat("y"));
 }
 
-private void _position(GrCall call) {
+private void _setPosition(GrCall call) {
     Instance instance = call.getNative!Instance(0);
     GrObject position = call.getObject(1);
     instance.position = vec3(position.getFloat("x"),

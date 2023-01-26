@@ -22,7 +22,7 @@ GrLibrary loadAlchimieLibrary() {
 /// Retourne les fonctions de chargement de la bibliothèque d’alchimie
 GrLibLoader[] getAlchimieLibraryLoaders() {
     return [
-        &loadAlchimieLibCamera, &loadAlchimieLibCommon, &loadAlchimieLibDrawable,
+        &loadAlchimieLibCommon, &loadAlchimieLibDrawable, &loadAlchimieLibCamera,
         &loadAlchimieLibInput, &loadAlchimieLibUI
     ];
 }

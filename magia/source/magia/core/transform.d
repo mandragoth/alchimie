@@ -7,13 +7,13 @@ import magia.core.vec;
 /// Transform structure
 struct Transform {
     /// Object position
-    vec3 position;
+    vec3 position = vec3.zero;
 
     /// Object rotation
-    quat rotation;
+    quat rotation = quat.identity;
 
     /// Object scale
-    vec3 scale;
+    vec3 scale = vec3.one;
 
     /// Matrix model
     private mat4 _model;
@@ -26,7 +26,6 @@ struct Transform {
     /// Constructor given position, scale
     this(vec3 position_, vec3 scale_) {
         position = position_;
-        rotation = quat.identity;
         scale = scale_;
         _model = combineModel(position, rotation, scale);
     }
