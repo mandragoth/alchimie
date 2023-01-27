@@ -6,6 +6,7 @@ import magia.core;
 import magia.render.array;
 import magia.render.buffer;
 import magia.render.camera;
+import magia.render.light;
 import magia.render.material;
 import magia.render.postprocess;
 import magia.render.shader;
@@ -38,12 +39,23 @@ class Renderer {
     /// Renderer active camera
     Camera camera;
 
+    /// Lighting manager
+    LightingManager lightingManager;
+
     private {
+        // Coordinate system used for draws
         Coordinates _coordinates;
+
+        // Default texture
         Texture _defaultTexture;
+
+        // Cached meshs (geomerty)
         VertexArray _quadVertexArray;
+
+        // Shaders
         Shader _quadShader;
         Shader _circleShader;
+        Shader _modelShader;
     }
 
     @property {
@@ -91,9 +103,13 @@ class Renderer {
         uint[] indices = [0, 1, 2, 2, 3, 0];
         _quadVertexArray.setIndexBuffer(new IndexBuffer(indices));
 
-        // Load global shader to render 2D textured/colored quads/circles
+        // Setup lighing manager
+        lightingManager = new LightingManager();
+
+        // Load shaders for draw calls
         _quadShader = fetchPrototype!Shader("quad");
         _circleShader = fetchPrototype!Shader("circle");
+        _modelShader = fetchPrototype!Shader("model");
 
         // Default white pixel texture to be used if one is required and none provided
         _defaultTexture = new Texture(1, 1, 0xffffffff);
@@ -204,6 +220,11 @@ class Renderer {
         drawIndexed(_quadVertexArray);
     }
 
+    /// Setup lights for all shaders that use them
+    void setupLights() {
+        lightingManager.setupInShader(_modelShader);
+    }
+
     private Transform toScreenSpace(vec2 position, vec2 size) {
         // Express size as ratio of size and screen size
         size = size / screenSize;
@@ -224,7 +245,7 @@ class Renderer {
         _quadShader.uploadUniformMat4("u_Transform", transform);
 
         // Set color
-        _quadShader.uploadUniformVec4("u_Color", vec4(color.r, color.g, color.b, alpha));
+        _quadShader.uploadUniformVec4("u_Color", vec4(color.rgb, alpha));
 
         // Set blend
         final switch (blend) with (Blend) {

@@ -76,6 +76,8 @@ final class Skybox : Entity {
     /// Constructor
     this() {
         material.shaders ~= fetchPrototype!Shader("skybox");
+        shader.activate();
+        shader.uploadUniformInt("u_Skybox", 0);
 
         string[6] faceCubemaps = [
             "night/right.png", "night/left.png", "night/top.png",
@@ -83,7 +85,6 @@ final class Skybox : Entity {
         ];
 
         _texture = new Texture(faceCubemaps);
-        shader.uploadUniformInt("u_Skybox", 0);
 
         // Generate and bind VAO
         _vertexArray = new VertexArray();

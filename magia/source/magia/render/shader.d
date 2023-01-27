@@ -1,5 +1,6 @@
 module magia.render.shader;
 
+import std.conv;
 import std.file;
 import std.path;
 import std.stdio;
@@ -78,37 +79,37 @@ class Shader {
 
     /// Upload an uniform of type int to the shader (also used for sampler2D)
     void uploadUniformInt(const char* label, int data) {
-        GLint labelId = glGetUniformLocation(id, label);
+        GLint labelId = getShaderLocation(label);
         glUniform1i(labelId, data);
     }
 
     /// Upload an uniform of type float to the shader
     void uploadUniformFloat(const char* label, float data) {
-        GLint labelId = glGetUniformLocation(id, label);
+        GLint labelId = getShaderLocation(label);
         glUniform1f(labelId, data);
     }
 
     /// Upload an uniform of type vec2 to the shader
     void uploadUniformVec2(const char* label, vec2 data) {
-        GLint labelId = glGetUniformLocation(id, label);
+        GLint labelId = getShaderLocation(label);
         glUniform2f(labelId, data.x, data.y);
     }
 
     /// Upload an uniform of type vec3 to the shader
     void uploadUniformVec3(const char* label, vec3 data) {
-        GLint labelId = glGetUniformLocation(id, label);
+        GLint labelId = getShaderLocation(label);
         glUniform3f(labelId, data.x, data.y, data.z);
     }
 
     /// Upload an uniform of type vec4 to the shader
     void uploadUniformVec4(const char* label, vec4 data) {
-        GLint labelId = glGetUniformLocation(id, label);
+        GLint labelId = getShaderLocation(label);
         glUniform4f(labelId, data.x, data.y, data.z, data.w);
     }
 
     /// Upload an uniform of type mat4 to the shader
     void uploadUniformMat4(const char* label, mat4 data) {
-        GLint labelId = glGetUniformLocation(id, label);
+        GLint labelId = getShaderLocation(label);
         glUniformMatrix4fv(labelId, 1, GL_TRUE, data.value_ptr);
     }
 
@@ -154,6 +155,17 @@ class Shader {
                 // Delete shader as we don't need it anymore
                 glDeleteShader(shaderId);
             }
+        }
+
+        GLint getShaderLocation(const char* label) {
+            GLint labelId = glGetUniformLocation(id, label);
+
+            if (labelId == GL_INVALID_VALUE || labelId == GL_INVALID_OPERATION) {
+                throw new Exception("Error " ~ to!string(labelId, 16) ~
+                                    ": unable to get location of uniform " ~ to!string(label));
+            }
+
+            return labelId;
         }
     }
 }

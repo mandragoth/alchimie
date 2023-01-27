@@ -13,13 +13,6 @@ import magia.shape.sphere;
 
 import std.stdio;
 
-vec3 up      = vec3( 0,  1,  0);
-vec3 down    = vec3( 0, -1,  0);
-vec3 left    = vec3(-1,  0,  0);
-vec3 right   = vec3( 1,  0,  0);
-vec3 forward = vec3( 0,  0,  1);
-vec3 back    = vec3( 0,  0, -1);
-
 /// Instance of sphere
 final class Planet : Sphere {
     // Noise parameters
@@ -70,7 +63,7 @@ final class Planet : Sphere {
 
     // Sample random height given a sphere surface point for a single noise layer
     private float getNoiseHeight(vec3 point) {
-        float elevation = noise(point.x, point.y, point.z) * _strength;
+        const float elevation = noise(point.x, point.y, point.z) * _strength;
         return _radius * (1 + elevation);
     }
 }

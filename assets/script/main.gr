@@ -12,22 +12,22 @@ event onLoad() {
 }
 
 task runtime() {
-    var remilia = @Sprite("remilia", @vec4i(0, 0, 32, 48));
+    /*var remilia = @Sprite("remilia", @vec4i(0, 0, 32, 48));
     remilia:position2D(@vec2(12.5f, 0f));
 
     var remilia2 = @Sprite("remilia", @vec4i(96, 48, 32, 48));
-    remilia2:position2D(@vec2(12.5f + 32f, 0f));
+    remilia2:position2D(@vec2(12.5f + 32f, 0f));*/
 
     var skybox = @Skybox("");
+    var globalLight = @DirectionalLight(@vec3(0f, -10f, 0f), .01f, .1f);
+    var pointLight1 = @PointLight(@vec3(-1f, 0.5f, 0f), @color(1f, 0f, 0f), 0f, 0.3f);
+    var pointLight2 = @PointLight(@vec3(1f, 0.5f, 0f), @color(0f, 1f, 0f), 0f, 0.3f);
 
-    var light = @Light(LightType.spot);
-    light:position(@vec3(0f, 5f, 0f));
-
-    //var quad = @Quad();
+    var quad = @Quad();
 
     var jupiter = @Model("jupiter");
-    jupiter:position(@vec3(1f, 0f, 1f));
-    jupiter:scale(@vec3(0.05f, 0.05f, 0.05f));
+    jupiter:position(@vec3(0f, 0f, -2f));
+    jupiter:scale(@vec3(.05f, .05f, .05f));
 
     loop yield {
         clear();
@@ -35,17 +35,15 @@ task runtime() {
         setup3D();
 
         skybox:draw();
-        jupiter:applyLight(light);
         jupiter:draw();
-        light:draw();
-        //quad:draw();
+        quad:draw();
 
-        setup2D();
+        /*setup2D();
 
         drawFilledRect(@vec2(0f, 0f), @vec2(50f, 50f), @color(1f, 0f, 0f));
         //drawFilledCircle(@vec2(25f, 25f), 50f, @color(0f, 1f, 0f));
         remilia:draw();
-        remilia2:draw();
+        remilia2:draw();*/
 
         render();
     }
@@ -58,10 +56,10 @@ func testUI() {
     appendUI(label);
 
     var state = @UIState("hidden");
-    state.time = .25;
+    state.time = .25f;
     state.time += 2f;
     state.spline = Spline.sineInOut;
-    state.alpha = .0;
+    state.alpha = 0f;
     state.offsetX = -100f;
     state.angle = rad(45.0);
     label.addState(state);
