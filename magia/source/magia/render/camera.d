@@ -35,6 +35,16 @@ abstract class Camera : Instance {
             return _matrix;
         }
 
+        /// Get view matrix
+        mat4 view() const {
+            return _view;
+        }
+
+        /// Get projection matrix
+        mat4 projection() const {
+            return _projection;
+        }
+
         /// Get rotation along Z axis
         float zRotation() {
             return _zRotation;
@@ -60,12 +70,6 @@ abstract class Camera : Instance {
             _zoomLevel = zoomLevel_;
         }
     }
-
-    /// Pass camera to object rendering shader
-    void passToShader(Shader) {}
-
-    /// Pass camera to skybox shader
-    void passToSkyboxShader(Shader) {}
 }
 
 /// Orthographic camera class
@@ -124,10 +128,10 @@ class OrthographicCamera : Camera {
 class PerspectiveCamera : Camera {
     private {
         /// Where the camera looks (by default towards the Z axis away from the screen)
-        vec3 _orientation = vec3(0.0f, 0.0f, -1.0f);
+        vec3 _orientation = vec3.back;
 
         /// Where is up? (by default the Y axis)
-        vec3 _up = vec3(0.0f, 1.0f, 0.0f);
+        vec3 _up = vec3.up;
 
         /// Width of the camera viewport
         int _width;
@@ -169,21 +173,7 @@ class PerspectiveCamera : Camera {
         _matrix = _projection * _view;
     }
 
-    /// Sets camera matrix in shader
-    override void passToShader(Shader shader) {
-        shader.activate();
-        glUniform3f(glGetUniformLocation(shader.id, "camPos"), position.x, position.y, position.z);
-        glUniformMatrix4fv(glGetUniformLocation(shader.id, "camMatrix"), 1, GL_TRUE, _matrix.value_ptr);
-    }
-
-    /// Sets camera matrix in shader
-    override void passToSkyboxShader(Shader shader) {
-        mat4 view = mat4(mat3(_view));
-        glUniformMatrix4fv(glGetUniformLocation(shader.id, "view"), 1, GL_TRUE, view.value_ptr);
-        glUniformMatrix4fv(glGetUniformLocation(shader.id, "projection"), 1, GL_TRUE, _projection.value_ptr);
-    }
-
-    /// Update the camera
+    /// Update the camera @TODO only recomputed when needed
     override void update(TimeStep timeStep) {
         updateMatrix(45f, 0.1f, 1000f);
     }

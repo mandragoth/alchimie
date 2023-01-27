@@ -18,29 +18,34 @@ task runtime() {
     var remilia2 = @Sprite("remilia", @vec4i(96, 48, 32, 48));
     remilia2:position2D(@vec2(12.5f + 32f, 0f));
 
-    /*var light = @Light(LightType.spot);
-    light:position(0., 5., 0.);*/
+    var skybox = @Skybox("");
+
+    var light = @Light(LightType.spot);
+    light:position(@vec3(0f, 5f, 0f));
+
+    //var quad = @Quad();
 
     var jupiter = @Model("jupiter");
     jupiter:position(@vec3(1f, 0f, 1f));
     jupiter:scale(@vec3(0.05f, 0.05f, 0.05f));
 
-    //var quad = loadQuad();
-
     loop yield {
         clear();
 
         setup3D();
+
+        skybox:draw();
+        jupiter:applyLight(light);
         jupiter:draw();
+        light:draw();
         //quad:draw();
 
-        /*setup2D();
+        setup2D();
 
-        // We can now draw dynamically from script!
         drawFilledRect(@vec2(0f, 0f), @vec2(50f, 50f), @color(1f, 0f, 0f));
         //drawFilledCircle(@vec2(25f, 25f), 50f, @color(0f, 1f, 0f));
         remilia:draw();
-        remilia2:draw();*/
+        remilia2:draw();
 
         render();
     }

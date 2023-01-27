@@ -1,30 +1,30 @@
 #type vert
 #version 400 core
 
-layout (location = 0) in vec3 iPos;
-layout (location = 1) in vec3 iNormal;
-layout (location = 2) in vec3 iColor;
-layout (location = 3) in vec2 iTexCoords;
-layout (location = 4) in mat4 iInstanceMatrix;
+layout (location = 0) in vec3 a_Position;
+layout (location = 1) in vec3 a_Normal;
+layout (location = 2) in vec3 a_Color;
+layout (location = 3) in vec2 a_TexCoords;
+layout (location = 4) in mat4 a_InstanceTransform;
 
-out vec3 currentPos;
-out vec3 normal;
-out vec3 color;
-out vec2 texCoords;
-out vec4 fragLightPosition;
+out vec3 v_Position;
+out vec3 v_Normal;
+out vec3 v_Color;
+out vec2 v_TexCoords;
+out vec4 v_LightPosition; // Used for shadows
 
-uniform mat4 camMatrix;
-uniform mat4 model;
-uniform mat4 lightProjection;
+uniform mat4 u_CamMatrix;
+uniform mat4 u_Transform;
+uniform mat4 a_LightProjection; // Used for shadows
 
 void main() {
-    currentPos = vec3(iInstanceMatrix * model * vec4(iPos, 1.0));
-    normal = iNormal;
-    color = iColor;
-    texCoords = iTexCoords;
-    fragLightPosition = lightProjection * vec4(currentPos, 1.0);
+    v_Position = vec3(a_InstanceTransform * u_Transform * vec4(a_Position, 1.0));
+    v_Normal = a_Normal;
+    v_Color = a_Color;
+    v_TexCoords = a_TexCoords;
+    v_LightPosition = a_LightProjection * vec4(v_Position, 1.0);
 
-    gl_Position = camMatrix * vec4(currentPos, 1.0);
+    gl_Position = u_CamMatrix * vec4(v_Position, 1.0);
 }
 
 #type frag
@@ -32,11 +32,11 @@ void main() {
 
 out vec4 fragColor;
 
-in vec3 currentPos;
-in vec3 normal;
-in vec3 color;
-in vec2 texCoords;
-in vec4 fragLightPosition;
+in vec3 v_Position;
+in vec3 v_Normal;
+in vec3 v_Color;
+in vec2 v_TexCoords;
+in vec4 v_LightPosition;
 
 uniform sampler2D diffuse0;
 uniform sampler2D specular0;
@@ -45,11 +45,11 @@ uniform sampler2D shadowMap;
 uniform int lightType;
 uniform vec4 lightColor;
 uniform vec3 lightPos;
-uniform vec3 camPos;
+uniform vec3 u_CamPos;
 
 vec4 pointLight() {
     // Intensity
-    vec3 lightVector = lightPos - currentPos;
+    vec3 lightVector = lightPos - v_Position;
     float lightDistance = length(lightVector);
     float a = 3.0f;
     float b = 0.7f;
@@ -59,14 +59,14 @@ vec4 pointLight() {
     float ambient = 0.20f;
 
     // Diffuse lighting
-    vec3 normal = normalize(normal);
+    vec3 normal = normalize(v_Normal);
     vec3 lightDirection = normalize(lightVector);
     float diffuse = max(dot(normal, lightDirection), 0.0f);
 
     // Specular lighting
     float specular = 0.0f;
 	if (diffuse != 0.0f) {
-        vec3 viewDirection = normalize(camPos - currentPos);
+        vec3 viewDirection = normalize(u_CamPos - v_Position);
         vec3 halfwayVector = normalize(viewDirection + lightDirection);
 
         float specAmount = pow(max(dot(normal, halfwayVector), 0.0f), 16);
@@ -74,7 +74,7 @@ vec4 pointLight() {
     }
 
     // Combining lightings, keeping alpha
-    vec4 lightColor = (texture(diffuse0, texCoords) * (diffuse * intensity + ambient) + texture(specular0, texCoords).r * specular * intensity) * lightColor;
+    vec4 lightColor = (texture(diffuse0, v_TexCoords) * (diffuse * intensity + ambient) + texture(specular0, v_TexCoords).r * specular * intensity) * lightColor;
     lightColor.a = 1.0f;
 
     return lightColor;
@@ -85,14 +85,14 @@ vec4 directionalLight() {
     float ambient = 0.20f;
 
     // Diffuse lighting
-    vec3 normal = normalize(normal);
+    vec3 normal = normalize(v_Normal);
     vec3 lightDirection = normalize(lightPos);
     float diffuse = max(dot(normal, lightDirection), 0.0f);
 
     // Specular lighting
     float specular = 0.0f;
     if (diffuse != 0.0f) {
-        vec3 viewDirection = normalize(camPos - currentPos);
+        vec3 viewDirection = normalize(u_CamPos - v_Position);
         vec3 halfwayVector = normalize(viewDirection + lightDirection);
 
         float specAmount = pow(max(dot(normal, halfwayVector), 0.0f), 16);
@@ -100,12 +100,12 @@ vec4 directionalLight() {
     }
 
     // Discard alpha
-    if (texture(diffuse0, texCoords).a < 0.1f) {
+    if (texture(diffuse0, v_TexCoords).a < 0.1f) {
         discard;
     }
 
     float shadow = 0.0f;
-    vec3 lightCoords = fragLightPosition.xyz / fragLightPosition.w;
+    vec3 lightCoords = v_LightPosition.xyz / v_LightPosition.w;
 
     if (lightCoords.z <= 1.0f) {
         lightCoords = (lightCoords + 1.0f) / 2.0f;
@@ -132,8 +132,8 @@ vec4 directionalLight() {
     float noShadow = 1.0f - shadow;
 
     // Combining lightings, keeping alpha
-    vec4 baseColor = vec4(color, 1.0f);
-    vec4 lightColor = baseColor * (texture(diffuse0, texCoords) * (diffuse * noShadow + ambient) + texture(specular0, texCoords).r * specular * noShadow) * lightColor;
+    vec4 baseColor = vec4(v_Color, 1.0f);
+    vec4 lightColor = baseColor * (texture(diffuse0, v_TexCoords) * (diffuse * noShadow + ambient) + texture(specular0, v_TexCoords).r * specular * noShadow) * lightColor;
     lightColor.a = 1.0f;
 
     return lightColor;
@@ -144,14 +144,14 @@ vec4 spotLight() {
     float ambient = 0.20f;
 
     // Diffuse lighting
-    vec3 normal = normalize(normal);
-    vec3 lightDirection = normalize(lightPos - currentPos);
+    vec3 normal = normalize(v_Normal);
+    vec3 lightDirection = normalize(lightPos - v_Position);
     float diffuse = max(dot(normal, lightDirection), 0.0f);
 
     // Specular lighting
     float specular = 0.0f;
 	if (diffuse != 0.0f) {
-        vec3 viewDirection = normalize(camPos - currentPos);
+        vec3 viewDirection = normalize(u_CamPos - v_Position);
         vec3 halfwayVector = normalize(viewDirection + lightDirection);
 
         float specAmount = pow(max(dot(normal, halfwayVector), 0.0f), 16);
@@ -165,7 +165,7 @@ vec4 spotLight() {
     float intensity = clamp((angle - outerCone) / (innerCone - outerCone), 0.0f, 1.0f);
 
     // Combining lightings, keeping alpha
-    vec4 lightColor = (texture(diffuse0, texCoords) * (diffuse * intensity + ambient) + texture(specular0, texCoords).r * specular * intensity) * lightColor;
+    vec4 lightColor = (texture(diffuse0, v_TexCoords) * (diffuse * intensity + ambient) + texture(specular0, v_TexCoords).r * specular * intensity) * lightColor;
     lightColor.a = 1.0f;
 
     return lightColor;

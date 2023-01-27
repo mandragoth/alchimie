@@ -284,6 +284,24 @@ struct Vector(type, uint dimension_) {
             y = y_;
             z = z_;
         }
+
+        /// Right is positive along X axis
+        enum right = Vector(1, 0, 0);
+
+        /// Left is negative along X axis
+        enum left = Vector(-1, 0, 0);
+
+        /// Up is positive along Y axis
+        enum up = Vector(0, 1, 0);
+
+        /// Down is positive along Y axis
+        enum down = Vector(0, -1, 0);
+
+        /// Forward is positive along Z axis
+        enum forward = Vector(0, 0, 1);
+
+        /// Back is negative along Z axis
+        enum back = Vector(0, 0, -1);
     }
 
     /// Vector of size 4

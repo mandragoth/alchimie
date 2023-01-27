@@ -11,28 +11,9 @@ import magia.render.texture;
 import magia.render.vertex;
 
 // @TODO remove
-import magia.shape.line;
 import magia.render.scene;
 
 import std.stdio;
-
-/// Up axis @TODO extract to vec
-vec3 up      = vec3( 0,  1,  0);
-
-/// Down axis
-vec3 down    = vec3( 0, -1,  0);
-
-/// Left axis
-vec3 left    = vec3(-1,  0,  0);
-
-/// Right axis
-vec3 right   = vec3( 1,  0,  0);
-
-/// Forward axis
-vec3 forward = vec3( 0,  0,  1);
-
-/// Back axis
-vec3 back    = vec3( 0,  0, -1);
 
 /// Instance of sphere
 class Sphere : Entity {
@@ -57,7 +38,7 @@ class Sphere : Entity {
 
         _textures ~= new Texture("pixel.png", TextureType.diffuse, 0);
 
-        vec3[] directions = [up, down, left, right, forward, back];
+        vec3[] directions = [vec3.up, vec3.down, vec3.left, vec3.right, vec3.forward, vec3.back];
 
         for (int directionIdx = 0; directionIdx < directions.length; ++directionIdx) {
             generateFaceMesh(directions[directionIdx]);

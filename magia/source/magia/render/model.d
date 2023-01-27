@@ -408,24 +408,37 @@ final class Model {
 final class ModelInstance : Entity {
     private {
         Model _model;
-        Shader _shader;
+    }
+
+    @property {
+        /// Get shader
+        Shader shader() {
+            return material.shaders[0];
+        }
+
+        /// Set shader
+        void shader(Shader shader) {
+            if (material.shaders.length == 0) {
+                material.shaders ~= shader;
+            } else {
+                material.shaders[0] = shader;
+            }
+        }
     }
 
     /// Constructor
     this(string fileName, uint instances = 1, mat4[] instanceMatrices = [mat4.identity]) {
         transform = Transform.identity;
-        _shader = fetchPrototype!Shader("model");
+        shader = fetchPrototype!Shader("model");
         _model = fetchPrototype!Model(fileName);
     }
     
     /// Render the model
     override void draw() {
-        _shader.activate();
-        _shader.uploadUniformVec3("camPos", renderer.camera.position);
-        _shader.uploadUniformMat4("camMatrix", renderer.camera.matrix);
+        shader.activate();
+        shader.uploadUniformVec3("u_CamPos", renderer.camera.position);
+        shader.uploadUniformMat4("u_CamMatrix", renderer.camera.matrix);
 
-        // Fetch lights here?
-
-        _model.draw(_shader, transform);
+        _model.draw(shader, transform);
     }
 }

@@ -35,18 +35,25 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     // Maths operations
     library.addFunction(&_packInstanceMatrix, "packInstanceMatrix", [vec3Type, quatType, vec3Type], [mat4Type]);
 
+    // Entity enums
+    GrType lightEnumType = library.addEnum("LightType", ["directional", "point", "spot"]);
+
     // Entity types
     GrType instanceType = library.addNative("Instance");
     GrType entityType = library.addNative("Entity", [], "Instance");
     GrType spriteType = library.addNative("Sprite", [], "Entity");
+    GrType skyboxType = library.addNative("Skybox", [], "Entity");
+    GrType lightType = library.addNative("Light", [], "Entity");
     GrType modelType = library.addNative("Model", [], "Entity");
     GrType quadType = library.addNative("Quad", [], "Entity");
 
     // Entity constructors
     library.addConstructor(&_sprite_new, spriteType, [grString]);
     library.addConstructor(&_sprite_new2, spriteType, [grString, vec4iType]);
+    library.addConstructor(&_skybox_new, skyboxType, [grString]);
+    library.addConstructor(&_light_new, lightType, [lightEnumType]);
     library.addConstructor(&_model_new, modelType, [grString]);
-    library.addFunction(&_quad_new, "loadQuad", [], [quadType]);
+    library.addConstructor(&_quad_new, quadType);
 
     // Entity operations
     library.addFunction(&_getPosition, "position", [instanceType], [vec3Type]);
@@ -62,6 +69,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addFunction(&_render, "render");
     library.addFunction(&_drawFilledRect, "drawFilledRect", [vec2Type, vec2Type, colorType]);
     library.addFunction(&_drawFilledCircle, "drawFilledCircle", [vec2Type, grFloat, colorType]);
+    library.addFunction(&_applyLight, "applyLight", [entityType, lightType]);
 }
 
 private void _vec2_new(GrCall call) {
@@ -146,7 +154,6 @@ private void _draw(GrCall call) {
 
 private void _sprite_new(GrCall call) {
     Sprite sprite = new Sprite(call.getString(0));
-    currentApplication.scene.addEntity(sprite);
     call.setNative(sprite);
 }
 
@@ -157,8 +164,19 @@ private void _sprite_new2(GrCall call) {
               clipObj.getInt("y"),
               clipObj.getInt("z"),
               clipObj.getInt("w")));
-    currentApplication.scene.addEntity(sprite);
     call.setNative(sprite);
+}
+
+// @TODO handle currentApplication.scene.addEntity(sprite); and related callbacks
+
+private void _skybox_new(GrCall call) {
+    Skybox skybox = new Skybox(/*call.getString(0)*/);
+    call.setNative(skybox);
+}
+
+private void _light_new(GrCall call) {
+    Light light = new Light(call.getEnum!LightType(0));
+    call.setNative(light);
 }
 
 private void _model_new(GrCall call) {
@@ -212,6 +230,7 @@ private void _drawFilledRect(GrCall call) {
                             Color(color.getFloat("r"), color.getFloat("g"), color.getFloat("b")));
 }
 
+// @TODO fix this
 private void _drawFilledCircle(GrCall call) {
     GrObject position = call.getObject(0);
     GrObject color = call.getObject(2);
@@ -219,4 +238,13 @@ private void _drawFilledCircle(GrCall call) {
     renderer.drawFilledCircle(vec2(position.getFloat("x"), position.getFloat("y")),
                               call.getFloat(1),
                               Color(color.getFloat("r"), color.getFloat("g"), color.getFloat("b")));
+}
+
+private void _applyLight(GrCall call) {
+    Entity entity = call.getNative!Entity(0);
+    Light light = call.getNative!Light(1);
+
+    foreach (Shader shader; entity.material.shaders) {
+        light.setupShaders(shader);
+    }
 }

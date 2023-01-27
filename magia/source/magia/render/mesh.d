@@ -43,29 +43,35 @@ final class Mesh {
             _textures = textures;
         }
 
+        // Define shader layout
+        BufferLayout mainLayout = new BufferLayout([
+            BufferElement("a_Position", LayoutType.ltFloat3),
+            BufferElement("a_Normal", LayoutType.ltFloat3),
+            BufferElement("a_Color", LayoutType.ltFloat3), // @TODO maybe color should be an uniform instead
+            BufferElement("a_TexCoords", LayoutType.ltFloat2)
+        ]);
+
         // Generate and bind VAO
         _vertexArray = new VertexArray();
         _vertexArray.bind();
 
-        // Transpose all matrices to pass them onto the VAO properly
-        for (int i = 0; i < instanceMatrices.length; ++i) {
-            instanceMatrices[i].transpose();
+        // Transpose all matrices to pass them onto the VBO properly (costly?)
+        for (int instanceId = 0; instanceId < instanceMatrices.length; ++instanceId) {
+            instanceMatrices[instanceId].transpose();
         }
 
-        // Generate VBOs
-        _instanceVertexBuffer = new VertexBuffer(instanceMatrices);
+        // Generate vertex buffers
         _vertexBuffer = new VertexBuffer(_vertices);
+        _vertexBuffer.layout = mainLayout;
+        _instanceVertexBuffer = new VertexBuffer(instanceMatrices);
 
         // Generate EBO
         _indexBuffer = new IndexBuffer(_indices);
 
-        // Link main VBO attributes
-        _vertexArray.linkAttributes(_vertexBuffer, 0, 3, GL_FLOAT, Vertex.sizeof, null);
-        _vertexArray.linkAttributes(_vertexBuffer, 1, 3, GL_FLOAT, Vertex.sizeof, cast(void*)(3 * float.sizeof));
-        _vertexArray.linkAttributes(_vertexBuffer, 2, 3, GL_FLOAT, Vertex.sizeof, cast(void*)(6 * float.sizeof));
-        _vertexArray.linkAttributes(_vertexBuffer, 3, 2, GL_FLOAT, Vertex.sizeof, cast(void*)(9 * float.sizeof));
+        // Link main VBO attributes to VAO
+        _vertexArray.addVertexBuffer(_vertexBuffer);
 
-        // Link instance VBO attributes
+        // Link instance VBO attributes to VAO @TODO
         _vertexArray.linkAttributes(_instanceVertexBuffer, 4, 4, GL_FLOAT, mat4.sizeof, null);
         _vertexArray.linkAttributes(_instanceVertexBuffer, 5, 4, GL_FLOAT, mat4.sizeof, cast(void*)(1 * vec4.sizeof));
         _vertexArray.linkAttributes(_instanceVertexBuffer, 6, 4, GL_FLOAT, mat4.sizeof, cast(void*)(2 * vec4.sizeof));
@@ -116,12 +122,12 @@ final class Mesh {
         bindData(shader);
 
         if (_instances == 1) {
-            shader.uploadUniformMat4("model", transform.model);
+            shader.uploadUniformMat4("u_Transform", transform.model);
             //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glDrawElements(GL_TRIANGLES, cast(int) _indices.length, GL_UNSIGNED_INT, null);
             //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         } else {
-            shader.uploadUniformMat4("model", mat4.identity);
+            shader.uploadUniformMat4("u_Transform", mat4.identity);
             //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glDrawElementsInstanced(GL_TRIANGLES, cast(int) _indices.length, GL_UNSIGNED_INT, null, _instances);
             //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

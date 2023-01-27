@@ -6,15 +6,19 @@ import std.conv;
 
 import bindbc.opengl;
 
+import magia.core;
 import magia.render.array;
 import magia.render.buffer;
+import magia.render.camera;
+import magia.render.entity;
 import magia.render.postprocess;
+import magia.render.renderer;
 import magia.render.shader;
 import magia.render.texture;
 import magia.render.vertex;
 
 /// Class handling skybox data and draw call
-final class Skybox {
+final class Skybox : Entity {
     private {
         // dfmt off
         /// Vertices
@@ -53,7 +57,6 @@ final class Skybox {
         ];
         // dfmt on
 
-        Shader _shader;
         Texture _texture;
         
         VertexArray _vertexArray;
@@ -63,13 +66,16 @@ final class Skybox {
     @property {
         /// Get skybox shader
         Shader shader() {
-            return _shader;
+            return material.shaders[0];
         }
     }
 
+    // @TODO skybox resource cache?
+    // @TODO use new layout architecture
+
     /// Constructor
     this() {
-        _shader = new Shader("skybox.vert", "skybox.frag");
+        material.shaders ~= fetchPrototype!Shader("skybox");
 
         string[6] faceCubemaps = [
             "night/right.png", "night/left.png", "night/top.png",
@@ -77,7 +83,7 @@ final class Skybox {
         ];
 
         _texture = new Texture(faceCubemaps);
-        _shader.uploadUniformInt(toStringz(to!string(_texture.type)), 0);
+        shader.uploadUniformInt("u_Skybox", 0);
 
         // Generate and bind VAO
         _vertexArray = new VertexArray();
@@ -97,15 +103,24 @@ final class Skybox {
     }
 
     /// Draw call
-    void draw() {
+    override void draw() {
         glDepthFunc(GL_LEQUAL);
 
-        _vertexArray.bind();
-        _texture.bind();
-        _shader.activate();
-        _shader.uploadUniformFloat("gamma", gamma);
+        setupShader();
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, null);
 
         glDepthFunc(GL_LESS);
+    }
+
+    /// Setup shader for draw call
+    private void setupShader() {
+        _vertexArray.bind();
+        _texture.bind();
+        shader.activate();
+
+        Camera camera = renderer.camera;
+        shader.uploadUniformMat4("u_View", mat4(mat3(camera.view)));
+        shader.uploadUniformMat4("u_Projection", camera.projection);
+        shader.uploadUniformFloat("u_Gamma", gamma);
     }
 }

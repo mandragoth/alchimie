@@ -62,6 +62,9 @@ struct BufferElement {
     /// Offset in layout
     uint offset;
 
+    /// Divisor in layout
+    uint divisor;
+
     @property {
         /// Number of entries for this item
         uint count() const {
@@ -108,9 +111,10 @@ struct BufferElement {
     }
 
     /// Constructor
-    this(string name_, LayoutType type_) {
+    this(string name_, LayoutType type_, uint divisor_ = 0) {
         name = name_;
         type = type_;
+        divisor = divisor_;
         size = layoutTypeSize(type_);
     }
 }

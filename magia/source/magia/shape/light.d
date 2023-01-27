@@ -16,7 +16,7 @@ enum LightType {
 }
 
 /// Instance of light
-final class LightInstance : Instance {
+final class Light : Entity {
     private {
         Mesh _mesh;
         Shader _shader;
@@ -34,7 +34,6 @@ final class LightInstance : Instance {
     /// Constructor
     this(LightType lightType) {
         _lightType = lightType;
-        transform = Transform.identity;
 
         // Quad light vertices
         Vertex[] vertices = [
@@ -82,5 +81,10 @@ final class LightInstance : Instance {
         materialShader.uploadUniformInt("lightType", _lightType);
         materialShader.uploadUniformVec3("lightPos", position);
         materialShader.uploadUniformVec4("lightColor", lightColor);
+    }
+
+    /// Render the light object (for debug)
+    override void draw() {
+        _mesh.draw(_shader, transform);
     }
 }
