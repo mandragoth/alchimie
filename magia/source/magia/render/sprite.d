@@ -13,7 +13,6 @@ import magia.render.material;
 import magia.render.renderer;
 import magia.render.scene;
 import magia.render.texture;
-import magia.core.resource;
 
 /// Base rendering class.
 final class Sprite : Entity {
@@ -91,7 +90,7 @@ final class Sprite : Entity {
     /// Constructor given an image path
     this(string fileName, vec4i clip = vec4i.zero) {
         transform = Transform.identity;
-        _texture = fetchPrototype!Texture(stripExtension(fileName));
+        _texture = fetchPrototype!Texture(fileName);
         _size = vec2(clip.z, clip.w);
         _clip = clip;
     }

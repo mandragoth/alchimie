@@ -51,18 +51,13 @@ task camera2D() {
     var zRotationSpeed = rad(2f);
     var zoomSpeed = 0.05f;
 
-    var x, y, z = camera:position();
-    var position = camera:getPosition();
+    var cPosition = camera:position();
     var zRotation = camera:rotation();
     var zoomLevel = camera:zoom();
 
     loop yield {
-        x += getActionAxis("move_left", "move_right") * moveSpeed;
-        y += getActionAxis("move_down", "move_up") * moveSpeed;
-
-        //print(position.x);
-        //position.x += getActionAxis("move_left", "move_right") * moveSpeed;
-        //position.y += getActionAxis("move_down", "move_up") * moveSpeed;
+        cPosition.x += getActionAxis("move_left", "move_right") * moveSpeed;
+        cPosition.y += getActionAxis("move_down", "move_up") * moveSpeed;
         zRotation += getActionAxis("roll_right", "roll_left") * zRotationSpeed;
 
         if (isActionPressed("zoom_in")) {
@@ -73,7 +68,7 @@ task camera2D() {
 
         zoomLevel = clamp(zoomLevel, 0.25f, 1.5f);
 
-        camera:sposition(x, y, z);
+        camera:position(cPosition);
         camera:rotation(zRotation);
         camera:zoom(zoomLevel);
     }
@@ -81,15 +76,45 @@ task camera2D() {
 
 task camera3D() {
     var camera = @PerspectiveCamera();
+    camera:position(@vec3(0f, 0.5f, 2f));
 
-    var moveSpeed = 0.01f;
+    var moveSpeed = 0.05f;
+    var mouseSensitivity = .25f;
 
-    var x, y, z = camera:position();
+    var cPosition = camera:position();
+
+    // @TODO use axis once native vectors implemented
+    /*var xAxis = camera:right();
+    var yAxis = camera:up();
+    var zAxis = camera:forward();*/
 
     loop yield {
-        x += getActionAxis("move_left", "move_right") * moveSpeed;
-        y += getActionAxis("move_down", "move_up") * moveSpeed;
-    }
+        cPosition.x += getActionAxis("move_left", "move_right") * moveSpeed;
+        cPosition.y += getActionAxis("move_down", "move_up") * moveSpeed;
+        cPosition.z += getActionAxis("zoom_in", "zoom_out") * moveSpeed;
 
-    camera:sposition(x, y, z);
+        // @TODO Get mouse position, create a Ray from it (cached as private variable)
+        // @TODO Use ray to query entities in the scene, fetch the one closest to the camera near plane
+
+        // @TODO mouse lookup
+        /*const vec2 deltaPos = getRelativeMousePos(); // @TODO mouse pos here
+
+        const float rotX = sensitivity * deltaPos.y;
+        const float rotY = sensitivity * deltaPos.x;
+
+        const vec3 newOrientation = rotate(_camera.forward, -rotX * degToRad, _camera.right);
+
+        const float limitRotX = 5f * degToRad;
+
+        const float angleUp = angle(newOrientation, _camera.up);
+        const float angleDown = angle(newOrientation, -_camera.up);
+
+        if (!(angleUp <= limitRotX || angleDown <= limitRotX)) {
+            _camera.forward = newOrientation;
+        }
+
+        _camera.forward = rotate(_camera.forward, -rotY * degToRad, _camera.up);*/
+
+        camera:position(cPosition);
+    }
 }

@@ -7,14 +7,7 @@ import std.stdio;
 import bindbc.opengl;
 
 import magia.core;
-
-import magia.render.entity;
-import magia.render.mesh;
-import magia.render.shader;
-import magia.render.texture;
-import magia.render.vertex;
-import magia.render.window;
-import magia.shape.light;
+import magia.render;
 
 /// Instance of quad
 final class QuadInstance : Entity {
@@ -48,11 +41,15 @@ final class QuadInstance : Entity {
         ];
 
         _mesh = new Mesh(vertices, indices, textures);
-        _shader = new Shader("default.vert", "default.frag");
+        _shader = fetchPrototype!Shader("model");
     }
 
     /// Render the quad
     override void draw() {
+        _shader.activate();
+        _shader.uploadUniformVec3("camPos", renderer.camera.position);
+        _shader.uploadUniformMat4("camMatrix", renderer.camera.matrix);
+
         _mesh.draw(_shader, transform);
     }
 }

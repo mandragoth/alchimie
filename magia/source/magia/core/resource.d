@@ -21,37 +21,6 @@ private {
     string[string] _cachesSubFolder;
 }
 
-/// Ressource chargé depuis le disque
-/*private final class Resource(T) {
-    private {
-        string _name;
-        T _prototype;
-    }
-
-    @property {
-        /// Nom de la ressource
-        string name() const {
-            return _name;
-        }
-
-        /// Le prototype
-        T prototype() {
-            return _prototype;
-        }
-
-        /// Crée une nouvelle copie
-        T copy() {
-            return _prototype.copy();
-        }
-    }
-
-    /// Constructeur
-    this(string name_, T prototype_) {
-        _prototype = prototype_;
-        _name = name_;
-    }
-}*/
-
 /// Cache pour les ressources d’un type donné
 private final class ResourceCache(T) {
     private {

@@ -23,7 +23,7 @@ class Shader {
 
     /// Constructor given 1 file
     this(string shaderPath) {
-        File shaderFile = File(buildNormalizedPath("assets", "shader", shaderPath));
+        File shaderFile = File(shaderPath);
 
         string vertexData;
         string fragmentData;
@@ -56,6 +56,12 @@ class Shader {
         string vertexData = readText(buildNormalizedPath("assets", "shader", vertexFile));
         string fragmentData = readText(buildNormalizedPath("assets", "shader", fragmentFile));
         setupShaders(vertexFile, fragmentFile, vertexData, fragmentData);
+    }
+
+    /// Copy constructor
+    this(Shader other) {
+        _vertexShader = other._vertexShader;
+        _fragmentShader = other._fragmentShader;
     }
 
     /// Shader turned on

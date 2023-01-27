@@ -5,14 +5,8 @@ import std.stdio;
 
 import bindbc.opengl;
 
-import magia.core.transform;
-import magia.core.vec;
-import magia.render.entity;
-import magia.render.mesh;
-import magia.render.shader;
-import magia.render.texture;
-import magia.render.vertex;
-import magia.render.window;
+import magia.core;
+import magia.render;
 
 /// Type of instantiated light
 enum LightType {
@@ -22,16 +16,17 @@ enum LightType {
 }
 
 /// Instance of light
-final class LightInstance : Entity {
+final class LightInstance : Instance {
     private {
         Mesh _mesh;
-        vec4 _color;
+        Shader _shader;
+        Color _color;
         LightType _lightType;
     }
 
     @property {
         /// Gets color
-        vec4 color() {
+        Color color() {
             return _color;
         }
     }
@@ -70,28 +65,22 @@ final class LightInstance : Entity {
             4, 6, 7
         ];
 
+        // @TODO cache mesh (quad from resource cache)
         _mesh = new Mesh(vertices, indices);
-        _color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        _shader = fetchPrototype!Shader("light");
+        _color = Color.white;
     }
 
     /// Setup light casting and receiving shaders
-    void setupShaders(Shader lightShader, Shader materialShader) {
-        lightShader.activate();
-        glUniform4f(glGetUniformLocation(lightShader.id, "lightColor"),
-                                         _color.x, _color.y, _color.z, _color.w);
+    void setupShaders(Shader materialShader) {
+        vec4 lightColor = vec4(_color.r, color.g, color.b, 1.0f);
+
+        _shader.activate();
+        _shader.uploadUniformVec4("lightColor", lightColor);
 
         materialShader.activate();
-        glUniform1i(glGetUniformLocation(materialShader.id, "lightType"), cast(int)_lightType);
-        glUniform4f(glGetUniformLocation(materialShader.id, "lightColor"),
-                                         _color.x, _color.y, _color.z, _color.w);
-        glUniform3f(glGetUniformLocation(materialShader.id, "lightPos"),
-                                         transform.position.x, transform.position.y, transform.position.z);
-    }
-
-    /// Render the light object (for debug)
-    void draw(Shader shader) {
-        _mesh.draw(shader, transform);
+        materialShader.uploadUniformInt("lightType", _lightType);
+        materialShader.uploadUniformVec3("lightPos", position);
+        materialShader.uploadUniformVec4("lightColor", lightColor);
     }
 }
-
-/// @TODO decorate LightInstance with type (directional, cone, point)

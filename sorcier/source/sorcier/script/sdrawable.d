@@ -49,8 +49,8 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addFunction(&_quad_new, "loadQuad", [], [quadType]);
 
     // Entity operations
-    library.addFunction(&_getPosition, "getPosition", [instanceType], [vec3Type]);
-    library.addFunction(&_setPosition2D, "position", [instanceType, vec2Type]);
+    library.addFunction(&_getPosition, "position", [instanceType], [vec3Type]);
+    library.addFunction(&_setPosition2D, "position2D", [instanceType, vec2Type]);
     library.addFunction(&_setPosition, "position", [instanceType, vec3Type]);
     library.addFunction(&_scale, "scale", [instanceType, vec3Type]);
     library.addFunction(&_draw, "draw", [entityType]);
@@ -162,8 +162,8 @@ private void _sprite_new2(GrCall call) {
 }
 
 private void _model_new(GrCall call) {
-    Model model = new Model(call.getString(0));
-    call.setNative(model);
+    ModelInstance modelInstance = new ModelInstance(call.getString(0));
+    call.setNative(modelInstance);
 }
 
 private void _quad_new(GrCall call) {

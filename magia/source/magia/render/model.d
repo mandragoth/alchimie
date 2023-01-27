@@ -13,12 +13,19 @@ import bindbc.opengl;
 import magia.core;
 import magia.render.entity;
 import magia.render.mesh;
+import magia.render.renderer;
 import magia.render.shader;
 import magia.render.texture;
 import magia.render.vertex;
 
+private {
+    // Trace
+    bool s_Trace = false;
+    bool s_TraceDeep = false;
+}
+
 /// Class handling model data and draw call
-final class ModelPrototype {
+final class Model {
     private {
         // JSON data
         ubyte[] _data;
@@ -41,10 +48,6 @@ final class ModelPrototype {
         // Directory
         string _fileDirectory;
 
-        // Trace
-        bool _trace = false;
-        bool _traceDeep = false;
-
         static const uint uintType = 5125;
         static const uint ushortType = 5123;
         static const uint shortType = 5122;
@@ -61,6 +64,19 @@ final class ModelPrototype {
 
         // Traverse all nodes
         traverseNode(0);
+    }
+
+    /// Copy constructor
+    this(Model other) {
+        _data = other._data;
+        _json = other._json;
+        _loadedTextureNames = other._loadedTextureNames;
+        _loadedTextures = other._loadedTextures;
+        _meshes = other._meshes;
+        _transforms = other._transforms;
+        _instances = other._instances;
+        _instanceMatrices = other._instanceMatrices;
+        _fileDirectory = other._fileDirectory;
     }
 
     /// Draw the model
@@ -82,16 +98,14 @@ final class ModelPrototype {
     private {
         /// Get data
         ubyte[] getData(string fileName) {
-            auto split = fileName.findSplitAfter("/");
-            _fileDirectory = buildNormalizedPath("assets", "model", split[0]);
-            string filePath = buildNormalizedPath(_fileDirectory, split[1] ~ ".gltf");
+            _fileDirectory = dirName(fileName);
 
-            if (_trace) {
+            if (s_Trace) {
                 writeln("Model directory: ", _fileDirectory);
-                writeln("Model file path: ", filePath);
+                writeln("Model file path: ", fileName);
             }
 
-            _json = parseJSON(readText(filePath));
+            _json = parseJSON(readText(fileName));
             string uri = _json["buffers"][0]["uri"].get!string;
             return cast(ubyte[]) read(buildNormalizedPath(_fileDirectory, uri));
         }
@@ -142,7 +156,7 @@ final class ModelPrototype {
             const uint byteOffset = getJsonInt(accessor, "byteOffset", 0);
             const uint componentType = getJsonInt(accessor, "componentType");
 
-            if (_trace) {
+            if (s_Trace) {
                 writeln("Load indices with bufferViewId ", bufferViewId, " count ", count,
                         " byteOffset ", byteOffset, " componentType ", componentType);
             }
@@ -230,7 +244,7 @@ final class ModelPrototype {
 
         /// Assemble all vertices
         Vertex[] assembleVertices(vec3[] positions, vec3[] normals, vec2[] texUVs) {
-            if (_trace) {
+            if (s_Trace) {
                 writeln("Vertices size: ", positions.count);
                 writeln("Normals size: ", positions.count);
                 writeln("UVs size: ", positions.count);
@@ -238,7 +252,7 @@ final class ModelPrototype {
 
             Vertex[] vertices;
             for (uint i = 0; i < positions.length; ++i) {
-                if (_traceDeep) {
+                if (s_TraceDeep) {
                     writeln("Assembling vertex with",
                             " position ", positions[i],
                             " normal ", normals[i],
@@ -273,7 +287,7 @@ final class ModelPrototype {
                         Texture specular = new Texture(path, TextureType.specular, textureId);
                         _loadedTextures ~= specular;
                         ++textureId;
-                    } else if (_trace) {
+                    } else if (s_Trace) {
                         writeln("Warning: unknown texture type ", path ,", not loaded");
                     }
                 }
@@ -284,7 +298,7 @@ final class ModelPrototype {
 
         /// Load mesh (only supports one primitive and one texture per mesh for now)
         void loadMesh(uint meshId) {
-            if (_trace) {
+            if (s_Trace) {
                 writeln("Mesh load");
             }
 
@@ -321,7 +335,7 @@ final class ModelPrototype {
             if (translationArray.length == 3) {
                 translation = vec3(translationArray[0], translationArray[1], translationArray[2]);
 
-                if (_trace) {
+                if (s_Trace) {
                     writeln("Translation: ", translation);
                 }
             }
@@ -330,7 +344,7 @@ final class ModelPrototype {
             if (rotationArray.length == 4) {
                 rotation = quat(rotationArray[3], rotationArray[0], rotationArray[1], rotationArray[2]);
 
-                if (_trace) {
+                if (s_Trace) {
                     writeln("Rotation: ", rotation);
                 }
             }
@@ -339,7 +353,7 @@ final class ModelPrototype {
             if (scaleArray.length == 3) {
                 scale = vec3(scaleArray[0], scaleArray[1], scaleArray[2]);
 
-                if (_trace) {
+                if (s_Trace) {
                     writeln("Scale: ", scale);
                 }
             }
@@ -354,7 +368,7 @@ final class ModelPrototype {
                     }
                 }
 
-                if (_trace) {
+                if (s_Trace) {
                     writeln("Matrix: ", matNode);
                 }
             }
@@ -365,7 +379,7 @@ final class ModelPrototype {
 
             // Load current node mesh
             if (hasJson(node, "mesh")) {
-                if (_trace) {
+                if (s_Trace) {
                     writeln("Load current mesh");
                 }
 
@@ -377,7 +391,7 @@ final class ModelPrototype {
             if (hasJson(node, "children")) {
                 const JSONValue[] children = getJsonArray(node, "children");
 
-                if (_trace) {
+                if (s_Trace) {
                     writeln("Load children ", children);
                 }
 
@@ -391,21 +405,27 @@ final class ModelPrototype {
 }
 
 /// Instance of a **Model** to render
-final class Model : Entity {
+final class ModelInstance : Entity {
     private {
-        ModelPrototype _modelPrototype;
+        Model _model;
         Shader _shader;
     }
 
     /// Constructor
     this(string fileName, uint instances = 1, mat4[] instanceMatrices = [mat4.identity]) {
         transform = Transform.identity;
-        _shader = new Shader("default.vert", "default.frag");
-        _modelPrototype = new ModelPrototype(fileName, instances, instanceMatrices);
+        _shader = fetchPrototype!Shader("model");
+        _model = fetchPrototype!Model(fileName);
     }
     
     /// Render the model
     override void draw() {
-        _modelPrototype.draw(_shader, transform);
+        _shader.activate();
+        _shader.uploadUniformVec3("camPos", renderer.camera.position);
+        _shader.uploadUniformMat4("camMatrix", renderer.camera.matrix);
+
+        // Fetch lights here?
+
+        _model.draw(_shader, transform);
     }
 }

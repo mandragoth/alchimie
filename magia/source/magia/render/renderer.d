@@ -2,12 +2,7 @@ module magia.render.renderer;
 
 import bindbc.opengl; /// @TODO remove (encapsulation should fix this)
 
-import magia.core.color;
-import magia.core.mat;
-import magia.core.timestep;
-import magia.core.transform;
-import magia.core.vec;
-
+import magia.core;
 import magia.render.array;
 import magia.render.buffer;
 import magia.render.camera;
@@ -97,8 +92,8 @@ class Renderer {
         _quadVertexArray.setIndexBuffer(new IndexBuffer(indices));
 
         // Load global shader to render 2D textured/colored quads/circles
-        _quadShader = new Shader("quad.glsl");
-        _circleShader = new Shader("circle.glsl");
+        _quadShader = fetchPrototype!Shader("quad");
+        _circleShader = fetchPrototype!Shader("circle");
 
         // Default white pixel texture to be used if one is required and none provided
         _defaultTexture = new Texture(1, 1, 0xffffffff);

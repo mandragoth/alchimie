@@ -68,13 +68,16 @@ class Application {
         loadSDLOpenGL();
         initFont();
 
-        // Create window, scene, UI and input managers
+        // Create window
         createWindow(size, title);
+        _tickStartFrame = Clock.currStdTime();
+    }
+
+    /// scene, UI and input managers
+    void postLoad() {
         _scene = new Scene();
         _uiManager = new UIManager();
         _inputManager = new InputManager;
-
-        _tickStartFrame = Clock.currStdTime();
     }
 
     /// Récupère les événements (clavier/souris/manette/etc)

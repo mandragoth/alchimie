@@ -106,6 +106,9 @@ final class Runtime {
 
         // Load resources
         loadResources();
+
+        // Create scene and renderers once data loaded
+        currentApplication.postLoad();
     }
 
     void run() {
