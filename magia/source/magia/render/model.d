@@ -12,6 +12,7 @@ import bindbc.opengl;
 
 import magia.core;
 import magia.render.entity;
+import magia.render.material;
 import magia.render.mesh;
 import magia.render.renderer;
 import magia.render.shader;
@@ -31,9 +32,9 @@ final class Model {
         ubyte[] _data;
         JSONValue _json;
 
-        // Texture data
+        // Material data
         string[] _loadedTextureNames;
-        Texture[] _loadedTextures;
+        Material[] _materials;
 
         // Mesh data
         Mesh[] _meshes;
@@ -71,7 +72,6 @@ final class Model {
         _data = other._data;
         _json = other._json;
         _loadedTextureNames = other._loadedTextureNames;
-        _loadedTextures = other._loadedTextures;
         _meshes = other._meshes;
         _transforms = other._transforms;
         _instances = other._instances;
@@ -86,9 +86,9 @@ final class Model {
 
         mat4 transformModel = combineModel(transform);
 
-        for (uint i = 0; i < _meshes.length; ++i) {
-            Transform finalTransform = Transform(_transforms[i].model * transformModel);
-            _meshes[i].draw(shader, finalTransform);
+        for (uint meshId = 0; meshId < _meshes.length; ++meshId) {
+            Transform finalTransform = Transform(_transforms[meshId].model * transformModel);
+            _meshes[meshId].draw(shader, _materials[meshId], finalTransform);
         }
 
         // Revert to usual culling
@@ -266,37 +266,43 @@ final class Model {
         }
 
         /// Load textures
-        Texture[] getTextures() {
+        void getTextures() {
             uint textureId = 0;
+            uint meshId = cast(uint)_meshes.length;
 
+            // Create a new material entry
+            _materials ~= Material();
+
+            // Load through textures references
             const JSONValue[] jsonTextures = getJsonArray(_json, "images");
-
-            // @TODO handle case where the jsonTextures array is empty by using default texture
-
             foreach (const JSONValue jsonTexture; jsonTextures) {
                 const string path = buildNormalizedPath(_fileDirectory, getJsonStr(jsonTexture, "uri"));
 
+                // Avoid loading twice the same texture @TODO replace with cache?
                 if (!canFind(_loadedTextureNames, path)) {
                     _loadedTextureNames ~= path;
 
                     if (canFind(path, "baseColor") || canFind(path, "diffuse")) {
                         Texture diffuse = new Texture(path, TextureType.diffuse, textureId);
-                        _loadedTextures ~= diffuse;
+                        _materials[meshId].textures ~= diffuse;
                         ++textureId;
                     } else if (canFind(path, "metallicRoughness") || canFind(path, "specular")) {
                         Texture specular = new Texture(path, TextureType.specular, textureId);
-                        _loadedTextures ~= specular;
+                        _materials[meshId].textures ~= specular;
                         ++textureId;
                     } else if (s_Trace) {
                         writeln("Warning: unknown texture type ", path ,", not loaded");
                     }
                 }
-            }
 
-            return _loadedTextures;
+                // If we haven't found any texture, fetch the default one
+                if (_materials[meshId].textures.length == 0) {
+                    _materials[meshId].textures ~= renderer.defaultTexture;
+                }
+            }
         }
 
-        /// Load mesh (only supports one primitive and one texture per mesh for now)
+        /// Load mesh
         void loadMesh(uint meshId) {
             if (s_Trace) {
                 writeln("Mesh load");
@@ -317,9 +323,9 @@ final class Model {
             
             Vertex[] vertices = assembleVertices(positions, normals, texUVs);
             GLuint[] indices = getIndices(_json["accessors"][indicesId]);
-            Texture[] textures = getTextures();
+            getTextures();
 
-            _meshes ~= new Mesh(vertices, indices, textures, _instances, _instanceMatrices);
+            _meshes ~= new Mesh(vertices, indices, _instances, _instanceMatrices);
         }
 
         /// Traverse given node
@@ -408,37 +414,21 @@ final class Model {
 final class ModelInstance : Entity {
     private {
         Model _model;
+        Shader _shader;
     }
-
-    @property {
-        /// Get shader
-        Shader shader() {
-            return material.shaders[0];
-        }
-
-        /// Set shader
-        void shader(Shader shader) {
-            if (material.shaders.length == 0) {
-                material.shaders ~= shader;
-            } else {
-                material.shaders[0] = shader;
-            }
-        }
-    }
-
     /// Constructor
     this(string fileName, uint instances = 1, mat4[] instanceMatrices = [mat4.identity]) {
         transform = Transform.identity;
-        shader = fetchPrototype!Shader("model");
+        _shader = fetchPrototype!Shader("model");
         _model = fetchPrototype!Model(fileName);
     }
     
     /// Render the model
     override void draw() {
-        shader.activate();
-        shader.uploadUniformVec3("u_CamPos", renderer.camera.position);
-        shader.uploadUniformMat4("u_CamMatrix", renderer.camera.matrix);
+        _shader.activate();
+        _shader.uploadUniformVec3("u_CamPos", renderer.camera.position);
+        _shader.uploadUniformMat4("u_CamMatrix", renderer.camera.matrix);
 
-        _model.draw(shader, transform);
+        _model.draw(_shader, transform);
     }
 }

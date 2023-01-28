@@ -30,9 +30,6 @@ struct Material {
     /// How should we texture the rendered item?
     Texture[] textures;
 
-    /// Shaders referenced by the material
-    Shader[] shaders;
-
     /// How should we color the rendered item?
     Color color;
 

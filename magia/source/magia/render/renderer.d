@@ -69,6 +69,11 @@ class Renderer {
         void coordinates(Coordinates coord) {
             _coordinates = coord;
         }
+
+        /// Get default texture
+        Texture defaultTexture() {
+            return _defaultTexture;
+        }
     }
 
     /// Constructor

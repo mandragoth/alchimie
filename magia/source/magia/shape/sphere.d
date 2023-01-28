@@ -3,12 +3,7 @@ module magia.shape.sphere;
 import bindbc.opengl;
 
 import magia.core;
-
-import magia.render.entity;
-import magia.render.mesh;
-import magia.render.shader;
-import magia.render.texture;
-import magia.render.vertex;
+import magia.render;
 
 // @TODO remove
 import magia.render.scene;
@@ -18,8 +13,8 @@ import std.stdio;
 /// Instance of sphere
 class Sphere : Entity {
     protected {
-        Mesh[]    _meshes;
-        Texture[] _textures;
+        Mesh[] _meshes;
+        Material _material;
 
         // Sphere parameters
         int   _resolution;
@@ -36,7 +31,7 @@ class Sphere : Entity {
         _resolution = resolution;
         _radius = radius;
 
-        _textures ~= new Texture("pixel.png", TextureType.diffuse, 0);
+        _material.textures ~= renderer.defaultTexture;
 
         vec3[] directions = [vec3.up, vec3.down, vec3.left, vec3.right, vec3.forward, vec3.back];
 
@@ -88,7 +83,7 @@ class Sphere : Entity {
             }
         }
 
-        _meshes ~= new Mesh(vertices, indices, _textures);
+        _meshes ~= new Mesh(vertices, indices);
     }
 
     /// Generate a point on the sphere's surface
@@ -123,7 +118,7 @@ class Sphere : Entity {
     /// Render the sphere
     void draw(Shader shader) {
         foreach(Mesh mesh; _meshes) {
-            mesh.draw(shader, transform);
+            mesh.draw(shader, _material, transform);
         }
     }
 }

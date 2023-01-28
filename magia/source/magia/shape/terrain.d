@@ -3,12 +3,7 @@ module magia.shape.terrain;
 import bindbc.opengl;
 
 import magia.core;
-
-import magia.render.entity;
-import magia.render.mesh;
-import magia.render.shader;
-import magia.render.texture;
-import magia.render.vertex;
+import magia.render;
 
 import std.math;
 import std.stdio;
@@ -18,9 +13,10 @@ import std.random;
 final class Terrain : Entity {
     private {
         Mesh _mesh;
-        vec2 _gridPos;
+        Shader _shader;
+        Material _material;
 
-        int   _nbOctaves;
+        int _nbOctaves;
         float _amplitude;
         float _roughness;
     }
@@ -36,12 +32,16 @@ final class Terrain : Entity {
         transform.position.x = gridPos.x * size.x;
         transform.position.z = gridPos.y * size.y;
 
-        Texture[] textures;
-        textures ~= new Texture("grass.png", TextureType.diffuse, 0);
-        textures ~= new Texture("sand.png", TextureType.diffuse, 1);
-        textures ~= new Texture("flowers.png", TextureType.diffuse, 2);
-        textures ~= new Texture("bricks.png", TextureType.diffuse, 3);
-        textures ~= new Texture("blendmap.png", TextureType.diffuse, 4);
+        // @TODO load shader
+
+        // @TODO assets are now missing
+        _material.textures ~= [
+            new Texture("grass.png", TextureType.diffuse, 0),
+            new Texture("sand.png", TextureType.diffuse, 1),
+            new Texture("flowers.png", TextureType.diffuse, 2),
+            new Texture("bricks.png", TextureType.diffuse, 3),
+            new Texture("blendmap.png", TextureType.diffuse, 4)
+        ];
 
         const int count = nbVertices * nbVertices;
         Vertex[] vertices = new Vertex[count];
@@ -94,7 +94,7 @@ final class Terrain : Entity {
             }
         }
 
-        _mesh = new Mesh(vertices, indices, textures);
+        _mesh = new Mesh(vertices, indices);
     }
 
     private vec3 computeNormals(int x, int z) {
@@ -155,7 +155,7 @@ final class Terrain : Entity {
     }
 
     /// Render the terrain
-    void draw(Shader shader) {
-        _mesh.draw(shader, transform);
+    override void draw() {
+        _mesh.draw(_shader, _material, transform);
     }
 }

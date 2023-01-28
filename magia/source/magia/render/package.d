@@ -11,6 +11,7 @@ public {
     import magia.render.postprocess;
     import magia.render.renderer;
     import magia.render.shader;
+    import magia.render.shapes;
     import magia.render.skybox;
     import magia.render.scene;
     import magia.render.sprite;

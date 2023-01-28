@@ -98,6 +98,7 @@ class Texture {
 
     /// Constructor for empty texture
     this(uint width, uint height, uint data) {
+        _type = TextureType.diffuse;
         _target = GL_TEXTURE_2D;
         _width = width;
         _height = height;

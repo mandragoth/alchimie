@@ -10,6 +10,7 @@ import magia.core;
 import magia.render.array;
 import magia.render.buffer;
 import magia.render.camera;
+import magia.render.material;
 import magia.render.texture;
 import magia.render.scene;
 import magia.render.shader;
@@ -20,7 +21,6 @@ final class Mesh {
     private {
         Vertex[] _vertices;
         uint[] _indices;
-        Texture[] _textures;
 
         VertexArray _vertexArray;
         VertexBuffer _vertexBuffer;
@@ -33,15 +33,11 @@ final class Mesh {
     }
 
     /// Constructor
-    this(Vertex[] vertices, uint[] indices = null, Texture[] textures = null,
+    this(Vertex[] vertices, uint[] indices = null,
          uint instances = 1, mat4[] instanceMatrices = [mat4.identity]) {
         _vertices = vertices;
         _indices = indices;
         _instances = instances;
-
-        if (textures) {
-            _textures = textures;
-        }
 
         // Define shader layout
         BufferLayout mainLayout = new BufferLayout([
@@ -88,16 +84,16 @@ final class Mesh {
     }
 
     /// Bind shader, VAO
-    void bindData(Shader shader) {
+    void bindData(Shader shader, Material material) {
         shader.activate();
         _vertexArray.bind();
 
         uint nbDiffuseTextures = 0;
         uint nbSpecularTextures = 0;
 
-        /// @TODO rewrite shader forward
+        // Forward material textures to shader
         uint textureId = 0;
-        foreach (Texture texture; _textures) {
+        foreach (Texture texture; material.textures) {
             const TextureType type = texture.type;
 
             string name;
@@ -118,19 +114,15 @@ final class Mesh {
     }
 
     /// Draw call
-    void draw(Shader shader, Transform transform = Transform.identity) {
-        bindData(shader);
+    void draw(Shader shader, Material material, Transform transform = Transform.identity) {
+        bindData(shader, material);
 
         if (_instances == 1) {
             shader.uploadUniformMat4("u_Transform", transform.model);
-            //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glDrawElements(GL_TRIANGLES, cast(int) _indices.length, GL_UNSIGNED_INT, null);
-            //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         } else {
             shader.uploadUniformMat4("u_Transform", mat4.identity);
-            //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glDrawElementsInstanced(GL_TRIANGLES, cast(int) _indices.length, GL_UNSIGNED_INT, null, _instances);
-            //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
     }
 }

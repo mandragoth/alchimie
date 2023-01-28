@@ -14,6 +14,7 @@ void loadResources() {
     loadImages();
     loadShaders();
     loadModels();
+    loadShapes();
 }
 
 // Load images (sprite textures)

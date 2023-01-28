@@ -14,6 +14,7 @@ final class QuadInstance : Entity {
     private {
         Mesh _mesh;
         Shader _shader;
+        Material _material;
     }
 
     /// Constructor
@@ -35,12 +36,12 @@ final class QuadInstance : Entity {
             0, 2, 3
         ];
 
-        Texture[] textures = [
+        _material.textures ~= [
             new Texture(buildNormalizedPath("assets", "texture", "planks.png"), TextureType.diffuse, 0),
             new Texture(buildNormalizedPath("assets", "texture", "planksSpec.png"), TextureType.specular, 1)
         ];
 
-        _mesh = new Mesh(vertices, indices, textures);
+        _mesh = new Mesh(vertices, indices);
         _shader = fetchPrototype!Shader("model");
     }
 
@@ -50,6 +51,6 @@ final class QuadInstance : Entity {
         _shader.uploadUniformVec3("camPos", renderer.camera.position);
         _shader.uploadUniformMat4("camMatrix", renderer.camera.matrix);
 
-        _mesh.draw(_shader, transform);
+        _mesh.draw(_shader, _material, transform);
     }
 }
