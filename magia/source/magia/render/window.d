@@ -14,6 +14,7 @@ import bindbc.opengl;
 import bindbc.sdl;
 
 import magia.core;
+import magia.render.camera;
 import magia.render.postprocess;
 import magia.render.renderer;
 
@@ -158,12 +159,10 @@ void resizeWindow(const vec2u windowSize) {
     _screenSize = cast(vec2)(windowSize);
 
     glViewport(0, 0, windowSize.x, windowSize.y);
-    renderer.camera.aspectRatio = getAspectRatio();
-}
 
-/// Reset viewport
-void resetViewport() {
-    glViewport(0, 0, _windowSize.x, _windowSize.y);
+    foreach (Camera camera; renderer.cameras) {
+        camera.aspectRatio = getAspectRatio();
+    }
 }
 
 /// Current window size.

@@ -253,7 +253,7 @@ struct Matrix(type, uint rows_, uint columns_) {
 
             /// Invert mat4
             private Matrix invert(ref Matrix mat) const {
-                type d = 1 / det;
+                const type d = 1 / det;
 
                 mat.data = [[(data[1][1] * data[2][2] * data[3][3] + data[1][2] * data[2][3] * data[3][1] + data[1][3] * data[2][1] * data[3][2]
                             - data[1][1] * data[2][3] * data[3][2] - data[1][2] * data[2][1] * data[3][3] - data[1][3] * data[2][2] * data[3][1]) * d,

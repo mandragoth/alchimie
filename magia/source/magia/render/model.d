@@ -11,6 +11,7 @@ import std.typecons;
 import bindbc.opengl;
 
 import magia.core;
+import magia.render.camera;
 import magia.render.entity;
 import magia.render.material;
 import magia.render.mesh;
@@ -426,9 +427,12 @@ final class ModelInstance : Entity {
     /// Render the model
     override void draw() {
         _shader.activate();
-        _shader.uploadUniformVec3("u_CamPos", renderer.camera.position);
-        _shader.uploadUniformMat4("u_CamMatrix", renderer.camera.matrix);
 
-        _model.draw(_shader, transform);
+        foreach (Camera camera; renderer.cameras) {
+            glViewport(camera.viewport.x, camera.viewport.y, camera.viewport.z, camera.viewport.w);
+            _shader.uploadUniformVec3("u_CamPos", camera.position);
+            _shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
+            _model.draw(_shader, transform);
+        }
     }
 }

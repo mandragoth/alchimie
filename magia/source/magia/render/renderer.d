@@ -36,8 +36,8 @@ Coordinates topLeftCoordinates = Coordinates(vec2.topLeft, vec2.bottomRight);
 
 /// 2D renderer
 class Renderer {
-    /// Renderer active camera
-    Camera camera;
+    /// Active cameras
+    Camera[] cameras;
 
     /// Lighting manager
     LightingManager lightingManager;
@@ -145,7 +145,7 @@ class Renderer {
 
     /// Update
     void update(TimeStep timeStep) {
-        if (camera) {
+        foreach (Camera camera; cameras) {
             camera.update(timeStep);
         }
     }
@@ -162,7 +162,7 @@ class Renderer {
 
         Transform transform = toScreenSpace(position, vec2(size, size));
         setupCircleShader(transform.model, transform.position2D, transform.scale.x, color, alpha);
-        drawIndexed(_quadVertexArray);
+        drawIndexed(_circleShader, _quadVertexArray);
     }
 
     /// Render filled rectangle
@@ -174,7 +174,7 @@ class Renderer {
 
         Transform transform = toScreenSpace(position, size);
         setupQuadShader(transform.model, color, alpha);
-        drawIndexed(_quadVertexArray);
+        drawIndexed(_quadShader, _quadVertexArray);
     }
 
     /// Render a sprite @TODO handle rotation, alpha, color
@@ -222,7 +222,7 @@ class Renderer {
         _quadShader.uploadUniformVec2("u_Flip", flipf);
 
         setupQuadShader(transform.model, color, alpha);
-        drawIndexed(_quadVertexArray);
+        drawIndexed(_quadShader, _quadVertexArray);
     }
 
     /// Setup lights for all shaders that use them
@@ -243,9 +243,6 @@ class Renderer {
 
     private void setupQuadShader(mat4 transform = mat4.identity,
                                  Color color = Color.white, float alpha = 1f, Blend blend = Blend.alpha) {
-        // Set camera
-        _quadShader.uploadUniformMat4("u_CamMatrix", camera.matrix);
-
         // Set transform
         _quadShader.uploadUniformMat4("u_Transform", transform);
 
@@ -271,9 +268,6 @@ class Renderer {
 
     private void setupCircleShader(mat4 transform = mat4.identity, vec2 position = vec2.zero, float size = 1f,
                                    Color color = Color.white, float alpha = 1f, Blend blend = Blend.alpha) {
-        // Set camera
-        _circleShader.uploadUniformMat4("u_CamMatrix", camera.matrix);
-
         // Set transform
         _circleShader.uploadUniformMat4("u_Transform", transform);
 
@@ -304,8 +298,13 @@ class Renderer {
     }
 
     /// @TODO batching
-    private void drawIndexed(const ref VertexArray vertexArray) {
+    private void drawIndexed(Shader shader, const ref VertexArray vertexArray) {
         vertexArray.bind();
-        glDrawElements(GL_TRIANGLES, vertexArray.indexBuffer.count, GL_UNSIGNED_INT, null);
+
+        // One draw call per camera
+        foreach (Camera camera; cameras) {
+            shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
+            glDrawElements(GL_TRIANGLES, vertexArray.indexBuffer.count, GL_UNSIGNED_INT, null);
+        }
     }
 }

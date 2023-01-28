@@ -27,6 +27,9 @@ abstract class Camera : Instance {
         mat4 _matrix = mat4.identity;
         mat4 _projection = mat4.identity;
         mat4 _view = mat4.identity;
+
+        /// Zone on screen for camera draw
+        vec4i _viewport;
     }
 
     @property {
@@ -68,6 +71,16 @@ abstract class Camera : Instance {
         /// Set zoom level
         void zoomLevel(float zoomLevel_) {
             _zoomLevel = zoomLevel_;
+        }
+
+        /// Get viewport
+        vec4i viewport() const {
+            return _viewport;
+        }
+
+        /// Set viewport
+        void viewport(vec4i viewport_) {
+            _viewport = viewport_;
         }
     }
 }
@@ -127,11 +140,11 @@ class OrthographicCamera : Camera {
 /// Perspective camera class
 class PerspectiveCamera : Camera {
     private {
-        /// Where the camera looks (by default towards the Z axis away from the screen)
-        vec3 _orientation = vec3.back;
+        /// Where the camera looks
+        vec3 _target = vec3.back;
 
-        /// Where is up? (by default the Y axis)
-        vec3 _up = vec3.up;
+        /// Where is up?
+        vec3 _up;
 
         /// Width of the camera viewport
         int _width;
@@ -143,7 +156,7 @@ class PerspectiveCamera : Camera {
     @property {
         /// Direction to the right of the camera
         vec3 right() const {
-            return cross(_orientation, _up).normalized;
+            return cross(_target, _up).normalized;
         }
         /// Direction to the left of the camera
         vec3 up() const {
@@ -152,23 +165,32 @@ class PerspectiveCamera : Camera {
 
         /// Direction the camera is facing towards
         vec3 forward() const {
-            return _orientation;
+            return _target;
         }
         /// Ditto
         vec3 forward(vec3 forward_) {
-            return _orientation = forward_;
+            return _target = forward_;
         }
     }
 
-    /// Constructor
-    this() {
+    /// Default constructor (by default looks aways from screen along Z, and up is positive along Y axis)
+    this(uint width = screenWidth, uint height = screenHeight,
+         vec3 position = vec3.zero, vec3 target = vec3.back, vec3 up = vec3.up) {
+        // Setup position
+        transform.position = position;
+
+        // Dimensions
         _width = screenWidth;
         _height = screenHeight;
+
+        // Main axis for VP matrix
+        _target = target;
+        _up = up;
     }
 
     /// Setting up camera matrices operations
     void updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
-        _view = mat4.look_at(position, position + _orientation, _up);
+        _view = mat4.look_at(position, position + _target, _up);
         _projection = mat4.perspective(_width, _height, FOVdeg, nearPlane, farPlane);
         _matrix = _projection * _view;
     }

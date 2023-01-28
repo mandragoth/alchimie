@@ -31,9 +31,14 @@ final class QuadInstance : Entity {
     /// Render the quad
     override void draw() {
         _shader.activate();
-        _shader.uploadUniformVec3("u_CamPos", renderer.camera.position);
-        _shader.uploadUniformMat4("u_CamMatrix", renderer.camera.matrix);
 
-        quadMesh.draw(_shader, _material, transform);
+        // @TODO handle generically?
+        foreach (Camera camera; renderer.cameras) {
+            glViewport(camera.viewport.x, camera.viewport.y, camera.viewport.z, camera.viewport.w);
+            _shader.uploadUniformVec3("u_CamPos", camera.position);
+            _shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
+
+            quadMesh.draw(_shader, _material, transform);
+        }
     }
 }

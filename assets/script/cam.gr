@@ -1,7 +1,8 @@
 public func setupCamera() {
     setupControls();
     //camera2D();
-    camera3D();
+    //camera3D();
+    splitScreen();
 }
 
 func setupControls() {
@@ -117,4 +118,24 @@ task camera3D() {
 
         camera:position(cPosition);
     }
+}
+
+task splitScreen() {
+    var width = screenWidth();
+    var height = screenHeight();
+
+    var halfWidth = width / 2;
+    var halfHeight = height / 2;
+
+    var cam1 = @PerspectiveCamera(width, height, @vec3(0f, 0.5f, 2f), @vec3(0f, 0f, -1f), @vec3(0f, 1f, 0f));
+    cam1:viewport(@vec4i(0, 0, halfWidth, halfHeight));
+
+    var cam2 = @PerspectiveCamera(width, height, @vec3(0f, 0.5f, 2f), @vec3(0f, 0f, -1f), @vec3(0f, 1f, 0f));
+    cam2:viewport(@vec4i(0, halfHeight, halfWidth, halfHeight));
+
+    var cam3 = @PerspectiveCamera(width, height, @vec3(0f, 0.5f, 2f), @vec3(0f, 0f, -1f), @vec3(0f, 1f, 0f));
+    cam3:viewport(@vec4i(halfWidth, 0, halfWidth, halfHeight));
+
+    var cam4 = @PerspectiveCamera(width, height, @vec3(0f, 0.5f, 2f), @vec3(0f, 0f, -1f), @vec3(0f, 1f, 0f));
+    cam4:viewport(@vec4i(halfWidth, halfHeight, halfWidth, halfHeight));
 }

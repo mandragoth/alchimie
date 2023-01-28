@@ -3,9 +3,7 @@ module sorcier.script.scommon;
 import grimoire;
 
 package void loadAlchimieLibCommon(GrLibDefinition library) {
-    GrType quatType = library.addClass("quat", ["w", "x", "y", "z"], [grFloat, grFloat, grFloat, grFloat]);
-    GrType mat4Type = library.addNative("mat4");
-    GrType splineType = library.addEnum("Spline", [
+    library.addEnum("Spline", [
             "linear",
             "sineIn",
             "sineOut",

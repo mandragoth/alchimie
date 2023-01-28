@@ -58,9 +58,12 @@ final class Skybox : Entity {
         cubeMesh.bindData(_shader, _material);
         _shader.activate();
 
-        Camera camera = renderer.camera;
-        _shader.uploadUniformMat4("u_View", mat4(mat3(camera.view)));
-        _shader.uploadUniformMat4("u_Projection", camera.projection);
-        _shader.uploadUniformFloat("u_Gamma", gamma);
+        // @TODO handle generically?
+        foreach (Camera camera; renderer.cameras) {
+            glViewport(camera.viewport.x, camera.viewport.y, camera.viewport.z, camera.viewport.w);
+            _shader.uploadUniformMat4("u_View", mat4(mat3(camera.view)));
+            _shader.uploadUniformMat4("u_Projection", camera.projection);
+            _shader.uploadUniformFloat("u_Gamma", gamma);
+        }
     }
 }
