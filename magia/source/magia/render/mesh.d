@@ -98,13 +98,11 @@ final class Mesh {
 
             string name;
             if (type == TextureType.diffuse) {
-                name = to!string(type) ~ to!string(nbDiffuseTextures);
+                name = "u_Diffuse" ~ to!string(nbDiffuseTextures);
                 ++nbDiffuseTextures;
             } else if (type == TextureType.specular) {
-                name = to!string(type) ~ to!string(nbSpecularTextures);
+                name = "u_Specular" ~ to!string(nbSpecularTextures);
                 ++nbSpecularTextures;
-            } else {
-                name = to!string(type);
             }
 
             shader.uploadUniformInt(toStringz(name), textureId);

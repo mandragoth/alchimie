@@ -150,13 +150,26 @@ class PointLight : Instance {
     }
 }
 
+/// Spot light representation
+class SpotLight : PointLight {
+    /// Direction of the light
+    vec3 direction;
+
+    /// Angle of the cone
+    float angle;
+}
+
 /// Lighting manager (handles all lights)
 class LightingManager {
     private {
+        /// @TODO find a way to bind that to the shader constant during runtime?
+        /// To that effect the lexer I already wrote in shader.d might be useful!
         static const uint kMaxPointLights = 10;
+        static const uint kMaxSpotLights = 10;
 
         DirectionalLight _directionalLight;
         PointLight[] _pointLights;
+        SpotLight[] _spotLights;
     }
 
     @property {
@@ -169,9 +182,18 @@ class LightingManager {
     /// Add a point light to the scene
     void addPointLight(PointLight pointLight) {
         if(_pointLights.length < kMaxPointLights) {
-            _pointLights = _pointLights ~ pointLight;
+            _pointLights ~= pointLight;
         } else {
             throw new Exception("Cannot add any more point light, maximum internally set to " ~ kMaxPointLights);
+        }
+    }
+
+    /// Add a point light to the scene
+    void addSpotLight(SpotLight spotLight) {
+        if(_spotLights.length < kMaxSpotLights) {
+            _spotLights ~= spotLight;
+        } else {
+            throw new Exception("Cannot add any more point light, maximum internally set to " ~ kMaxSpotLights);
         }
     }
 
@@ -205,6 +227,30 @@ class LightingManager {
             shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".constant"), pointLight.constant);
             shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".linear"), pointLight.linear);
             shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".exp"), pointLight.exp);
+        }
+
+        // Setup spot light data
+        const int nbSpotLights = cast(int)_spotLights.length;
+        shader.uploadUniformInt("u_NbSpotLights", nbSpotLights);
+        for (int spotLightId = 0; spotLightId < nbSpotLights; ++spotLightId) {
+            SpotLight spotLight = _spotLights[spotLightId];
+
+            string uniformName = "u_SpotLights[" ~ to!string(spotLightId) ~ "]";
+            shader.uploadUniformVec3(toStringz(uniformName ~ ".direction"), spotLight.direction);
+            shader.uploadUniformFloat(toStringz(uniformName ~ ".cutoff"), cos(spotLight.angle * degToRad));
+
+            string baseUniformName = uniformName ~ ".base";
+            shader.uploadUniformVec3(toStringz(baseUniformName ~ ".position"), spotLight.position);
+
+            string base2UniformName = baseUniformName ~ ".base";
+            shader.uploadUniformVec3(toStringz(base2UniformName ~ ".color"), spotLight.color.rgb);
+            shader.uploadUniformFloat(toStringz(base2UniformName ~ ".ambientIntensity"), spotLight.ambientIntensity);
+            shader.uploadUniformFloat(toStringz(base2UniformName ~ ".diffuseIntensity"), spotLight.diffuseIntensity);
+
+            string attenuationUniformName = baseUniformName ~ ".attenuation";
+            shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".constant"), spotLight.constant);
+            shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".linear"), spotLight.linear);
+            shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".exp"), spotLight.exp);
         }
     }
 }

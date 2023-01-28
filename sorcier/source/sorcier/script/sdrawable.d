@@ -5,17 +5,6 @@ import std.stdio;
 import grimoire;
 import magia;
 
-/// Dirty
-class MatWrapper {
-    /// As heck
-    mat4 matrix;
-
-    /// Constructor
-    this(mat4 matrix_) {
-        matrix = matrix_;
-    }
-}
-
 package void loadAlchimieLibDrawable(GrLibDefinition library) {
     // Maths types
     GrType vec2Type = library.addClass("vec2", ["x", "y"], [grFloat, grFloat]);
@@ -68,12 +57,12 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     // Light types
     GrType directionalLightType = library.addNative("DirectionalLight");
     GrType pointLightType = library.addNative("PointLight", [], "Entity");
-    GrType spotLightType = library.addNative("PointLight", [], "Entity");
+    GrType spotLightType = library.addNative("SpotLight", [], "Entity");
 
     // Light types constructors
     library.addConstructor(&_newDirectionalLight, directionalLightType, [vec3Type, grFloat, grFloat]);
     library.addConstructor(&_newPointLight, pointLightType, [vec3Type, colorType, grFloat, grFloat]);
-    //library.addConstructor(&_newSpotLight, spotLightType, [vec3Type]);
+    library.addConstructor(&_newSpotLight, spotLightType, [vec3Type, vec3Type, colorType, grFloat, grFloat, grFloat]);
 }
 
 private void _newVec2(GrCall call) {
@@ -259,10 +248,10 @@ private void _newDirectionalLight(GrCall call) {
 private void _newPointLight(GrCall call) {
     PointLight pointLight = new PointLight();
 
-    GrObject direction = call.getObject(0);
-    pointLight.position = vec3(direction.getFloat("x"),
-                                      direction.getFloat("y"),
-                                      direction.getFloat("z"));
+    GrObject position = call.getObject(0);
+    pointLight.position = vec3(position.getFloat("x"),
+                               position.getFloat("y"),
+                               position.getFloat("z"));
     GrObject color = call.getObject(1);
     pointLight.color = Color(color.getFloat("r"), color.getFloat("g"), color.getFloat("b"));
     pointLight.ambientIntensity = call.getFloat(2);
@@ -272,4 +261,29 @@ private void _newPointLight(GrCall call) {
     renderer.lightingManager.addPointLight(pointLight);
 
     call.setNative(pointLight);
+}
+
+private void _newSpotLight(GrCall call) {
+    SpotLight spotLight = new SpotLight();
+
+    GrObject position = call.getObject(0);
+    spotLight.position = vec3(position.getFloat("x"),
+                              position.getFloat("y"),
+                              position.getFloat("z"));
+
+    GrObject direction = call.getObject(1);
+    spotLight.direction = vec3(direction.getFloat("x"),
+                               direction.getFloat("y"),
+                               direction.getFloat("z"));
+
+    GrObject color = call.getObject(2);
+    spotLight.color = Color(color.getFloat("r"), color.getFloat("g"), color.getFloat("b"));
+    spotLight.angle = call.getFloat(3);
+    spotLight.ambientIntensity = call.getFloat(4);
+    spotLight.diffuseIntensity = call.getFloat(5);
+
+    // Register light in the renderer
+    renderer.lightingManager.addSpotLight(spotLight);
+
+    call.setNative(spotLight);
 }
