@@ -127,13 +127,6 @@ struct Vector(type, uint dimension_) {
         construct!(0)(args);
     }
 
-    /// Copy constructor
-    this(T)(T other) if(is_vector!T && is(T.type : type) && (T.dimension >= dimension)) {
-        foreach(i; TupleRange!(0, dimension)) {
-            data[i] = other.data[i];
-        }
-    }
-
     /// Scalar constructor
     this()(type scalar) {
         foreach(i; TupleRange!(0, dimension)) {

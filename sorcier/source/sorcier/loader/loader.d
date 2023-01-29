@@ -13,8 +13,8 @@ private {
 void loadResources() {
     loadImages();
     loadShaders();
-    loadModels();
     loadShapes();
+    loadModels();
 }
 
 // Load images (sprite textures)

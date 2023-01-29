@@ -5,11 +5,9 @@ import bindbc.opengl;
 import magia.core;
 import magia.render;
 
-// @TODO remove
-import magia.render.scene;
-
 import std.stdio;
 
+// @TODO move to shape
 /// Instance of sphere
 class Sphere : Entity {
     protected {
@@ -63,7 +61,7 @@ class Sphere : Entity {
 
                 vertices[vertexIdx].position = generateSurfacePoint(directionX, directionY, directionZ, x, y, resolution2);
                 vertices[vertexIdx].texUV = vec2(fx / fResolution2, fy / fResolution2);
-                vertices[vertexIdx].color = vec3(1, 0, 0);
+                vertices[vertexIdx].color = Color.red;
                 vertices[vertexIdx].normal = computeNormal(vertices[vertexIdx].position);
 
                 if (x != resolution2 && y != resolution2) {
@@ -83,7 +81,7 @@ class Sphere : Entity {
             }
         }
 
-        _meshes ~= new Mesh(vertices, indices);
+        _meshes ~= new Mesh(new VertexBuffer(vertices, layout3D), indices);
     }
 
     /// Generate a point on the sphere's surface

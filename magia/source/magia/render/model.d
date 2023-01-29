@@ -11,12 +11,14 @@ import std.typecons;
 import bindbc.opengl;
 
 import magia.core;
+import magia.render.buffer;
 import magia.render.camera;
 import magia.render.entity;
 import magia.render.material;
 import magia.render.mesh;
 import magia.render.renderer;
 import magia.render.shader;
+import magia.render.shapes;
 import magia.render.texture;
 import magia.render.vertex;
 
@@ -260,8 +262,7 @@ final class Model {
                             " texture UV ", texUVs[i]);
                 }
 
-                Vertex vertex = { positions[i], normals[i], vec3(1.0f, 1.0f, 1.0f), texUVs[i] };
-                vertices ~= vertex;
+                vertices ~= Vertex(positions[i], texUVs[i], normals[i]);
             }
             return vertices;
         }
@@ -326,7 +327,7 @@ final class Model {
             GLuint[] indices = getIndices(_json["accessors"][indicesId]);
             getTextures();
 
-            _meshes ~= new Mesh(vertices, indices, _instances, _instanceMatrices);
+            _meshes ~= new Mesh(new VertexBuffer(vertices, layout3D), indices, _instances, _instanceMatrices);
         }
 
         /// Traverse given node

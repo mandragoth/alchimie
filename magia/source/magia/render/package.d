@@ -1,6 +1,7 @@
 module magia.render;
 
 public {
+    import magia.render.buffer; // @TODO remove
     import magia.render.camera;
     import magia.render.entity;
     import magia.render.font;

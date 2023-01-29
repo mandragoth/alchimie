@@ -133,6 +133,7 @@ void createWindow(const vec2u windowSize, string title) {
     SDL_GL_MakeCurrent(_sdlWindow, _glContext);
 
     glViewport(0, 0, windowSize.x, windowSize.y);
+    glClipControl(GL_LOWER_LEFT, GL_NEGATIVE_ONE_TO_ONE);
 
     _windowSize = windowSize;
     _screenSize = cast(vec2)(windowSize);

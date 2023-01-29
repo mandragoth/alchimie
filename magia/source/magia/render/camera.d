@@ -186,6 +186,9 @@ class PerspectiveCamera : Camera {
         // Main axis for VP matrix
         _target = target;
         _up = up;
+
+        // Default viewport covers their dimensions
+        _viewport = vec4i(0, 0, screenWidth, screenHeight);
     }
 
     /// Setting up camera matrices operations

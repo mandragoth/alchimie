@@ -47,14 +47,6 @@ final class Skybox : Entity {
     override void draw() {
         glDepthFunc(GL_LEQUAL);
 
-        setupShader();
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, null);
-
-        glDepthFunc(GL_LESS);
-    }
-
-    /// Setup shader for draw call
-    private void setupShader() {
         cubeMesh.bindData(_shader, _material);
         _shader.activate();
 
@@ -64,6 +56,10 @@ final class Skybox : Entity {
             _shader.uploadUniformMat4("u_View", mat4(mat3(camera.view)));
             _shader.uploadUniformMat4("u_Projection", camera.projection);
             _shader.uploadUniformFloat("u_Gamma", gamma);
+
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, null);
         }
+
+        glDepthFunc(GL_LESS);
     }
 }

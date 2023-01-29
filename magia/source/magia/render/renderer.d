@@ -10,6 +10,7 @@ import magia.render.light;
 import magia.render.material;
 import magia.render.postprocess;
 import magia.render.shader;
+import magia.render.shapes;
 import magia.render.texture;
 import magia.render.window;
 
@@ -46,11 +47,8 @@ class Renderer {
         // Coordinate system used for draws
         Coordinates _coordinates;
 
-        // Default texture
-        Texture _defaultTexture;
-
-        // Cached meshs (geomerty)
-        VertexArray _quadVertexArray;
+        // Default material
+        Material _defaultMaterial;
 
         // Shaders
         Shader _quadShader;
@@ -72,7 +70,7 @@ class Renderer {
 
         /// Get default texture
         Texture defaultTexture() {
-            return _defaultTexture;
+            return _defaultMaterial.textures[0];
         }
     }
 
@@ -80,33 +78,6 @@ class Renderer {
     this() {
         // Set screen origin
         _coordinates = defaultCoordinates;
-
-        // Quad vertices
-        float[] quadVertices = [
-            -1f, -1f, 0f, 0f,
-             1f, -1f, 1f, 0f,
-             1f,  1f, 1f, 1f,
-            -1f,  1f, 0f, 1f
-        ];
-
-        // Define shader layout
-        BufferLayout layout = new BufferLayout([
-            BufferElement("a_Position", LayoutType.ltFloat2),
-            BufferElement("a_TexCoord", LayoutType.ltFloat2)
-        ]);
-
-        // Create and bind vertex array for quad rendering
-        _quadVertexArray = new VertexArray();
-        _quadVertexArray.bind();
-
-        // Create vertex buffer and attach layout, set it in the vertex array
-        VertexBuffer quadVertexBuffer = new VertexBuffer(quadVertices);
-        quadVertexBuffer.layout = layout;
-        _quadVertexArray.addVertexBuffer(quadVertexBuffer);
-
-        // Create index buffer and set it into vertex buffer
-        uint[] indices = [0, 1, 2, 2, 3, 0];
-        _quadVertexArray.setIndexBuffer(new IndexBuffer(indices));
 
         // Setup lighing manager
         lightingManager = new LightingManager();
@@ -117,7 +88,7 @@ class Renderer {
         _modelShader = fetchPrototype!Shader("model");
 
         // Default white pixel texture to be used if one is required and none provided
-        _defaultTexture = new Texture(1, 1, 0xffffffff);
+        _defaultMaterial.textures ~= new Texture(1, 1, 0xffffffff);
 
         glEnable(GL_MULTISAMPLE);
         glClearColor(bgColor.r, bgColor.g, bgColor.b, 1f);
@@ -155,32 +126,26 @@ class Renderer {
 
     /// Render filled circle
     void drawFilledCircle(vec2 position, float size, Color color = Color.white, float alpha = 1f) {
-        _defaultTexture.bind();
-
-        _circleShader.activate();
-        _circleShader.uploadUniformInt("u_Texture", 0);
-
         Transform transform = toScreenSpace(position, vec2(size, size));
-        setupCircleShader(transform.model, transform.position2D, transform.scale.x, color, alpha);
-        drawIndexed(_circleShader, _quadVertexArray);
+        setupCircleShader(transform.position2D, transform.scale.x, color, alpha);
+        drawIndexed(_circleShader, _defaultMaterial, transform);
     }
 
     /// Render filled rectangle
     void drawFilledRect(vec2 position, vec2 size, Color color = Color.white, float alpha = 1f) {
-        _defaultTexture.bind();
-
-        _quadShader.activate();
-        _quadShader.uploadUniformInt("u_Texture", 0);
-
         Transform transform = toScreenSpace(position, size);
-        setupQuadShader(transform.model, color, alpha);
-        drawIndexed(_quadShader, _quadVertexArray);
+        setupQuadShader(color, alpha);
+        drawIndexed(_quadShader, _defaultMaterial, transform);
     }
 
     /// Render a sprite @TODO handle rotation, alpha, color
     void drawTexture(Texture texture, vec2 position, vec2 size,
                      vec4i clip = vec4i.zero, Flip flip = Flip.none, Blend blend = Blend.alpha,
                      Color color = Color.white, float alpha = 1f) {
+        // Create material
+        Material material;
+        material.textures ~= texture;
+
         // Set transform
         Transform transform = toScreenSpace(position, size);
 
@@ -188,6 +153,7 @@ class Renderer {
         vec4 clipf = vec4(0f, 0f, 1f, 1f);
 
         // Cut texture depending on clip parameters
+        // @TODO set in material instead
         if (clip != vec4i.zero) {
             clipf.x = cast(float) clip.x / cast(float) texture.width;
             clipf.y = cast(float) clip.y / cast(float) texture.height;
@@ -195,11 +161,8 @@ class Renderer {
             clipf.w = clipf.y + (cast(float) clip.w / cast(float) texture.height);
         }
 
-        // Bind texture and shader
-        texture.bind();
+        // Bind shader and uploaded dedicated uniforms
         _quadShader.activate();
-
-        _quadShader.uploadUniformInt("u_Texture", 0);
         _quadShader.uploadUniformVec4("u_Clip", clipf);
 
         // Set flip
@@ -221,8 +184,8 @@ class Renderer {
 
         _quadShader.uploadUniformVec2("u_Flip", flipf);
 
-        setupQuadShader(transform.model, color, alpha);
-        drawIndexed(_quadShader, _quadVertexArray);
+        setupQuadShader(color, alpha);
+        drawIndexed(_quadShader, material, transform);
     }
 
     /// Setup lights for all shaders that use them
@@ -241,15 +204,16 @@ class Renderer {
         return Transform(vec3(position, 0), vec3(size, 0));
     }
 
-    private void setupQuadShader(mat4 transform = mat4.identity,
-                                 Color color = Color.white, float alpha = 1f, Blend blend = Blend.alpha) {
-        // Set transform
-        _quadShader.uploadUniformMat4("u_Transform", transform);
+    private void setupQuadShader(Color color = Color.white, float alpha = 1f, Blend blend = Blend.alpha) {
+        // Activate shader
+        _quadShader.activate();
 
         // Set color
+        // @TODO set in material instead
         _quadShader.uploadUniformVec4("u_Color", vec4(color.rgb, alpha));
 
         // Set blend
+        // @TODO set in material instead
         final switch (blend) with (Blend) {
             case none:
                 glBlendFuncSeparate(GL_SRC_COLOR, GL_ZERO, GL_ONE, GL_ZERO);
@@ -266,11 +230,8 @@ class Renderer {
         }
     }
 
-    private void setupCircleShader(mat4 transform = mat4.identity, vec2 position = vec2.zero, float size = 1f,
+    private void setupCircleShader(vec2 position = vec2.zero, float size = 1f,
                                    Color color = Color.white, float alpha = 1f, Blend blend = Blend.alpha) {
-        // Set transform
-        _circleShader.uploadUniformMat4("u_Transform", transform);
-
         // Set color
         _circleShader.uploadUniformVec4("u_Color", vec4(color.r, color.g, color.b, alpha));
 
@@ -298,13 +259,11 @@ class Renderer {
     }
 
     /// @TODO batching
-    private void drawIndexed(Shader shader, const ref VertexArray vertexArray) {
-        vertexArray.bind();
-
+    private void drawIndexed(Shader shader, Material material, Transform transform) {
         // One draw call per camera
         foreach (Camera camera; cameras) {
             shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
-            glDrawElements(GL_TRIANGLES, vertexArray.indexBuffer.count, GL_UNSIGNED_INT, null);
+            rectMesh.draw(shader, material, transform);
         }
     }
 }

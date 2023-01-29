@@ -173,35 +173,40 @@ class VertexBuffer {
     BufferLayout layout;
 
     /// Constructor given vertex buffer
-    this(float[] vertices) {
+    this(float[] vertices, BufferLayout layout_ = null) {
+        layout = layout_;
         glCreateBuffers(1, &id);
         glBindBuffer(GL_ARRAY_BUFFER, id);
         glBufferData(GL_ARRAY_BUFFER, vertices.length * float.sizeof, vertices.ptr, GL_STATIC_DRAW);
     }
 
     /// Constructor given 3D vertices
-    this(vec3[] vertices) {
+    this(vec3[] vertices, BufferLayout layout_ = null) {
+        layout = layout_;
         glCreateBuffers(1, &id);
         glBindBuffer(GL_ARRAY_BUFFER, id);
         glBufferData(GL_ARRAY_BUFFER, vertices.length * vec3.sizeof, vertices.ptr, GL_STATIC_DRAW);
     }
 
     /// Constructor given 2D vertices
-    this(vec2[] vertices) {
+    this(vec2[] vertices, BufferLayout layout_ = null) {
+        layout = layout_;
         glCreateBuffers(1, &id);
         glBindBuffer(GL_ARRAY_BUFFER, id);
         glBufferData(GL_ARRAY_BUFFER, vertices.length * vec2.sizeof, vertices.ptr, GL_STATIC_DRAW);
     }
 
     /// Constructor given vertex buffer
-    this(Vertex[] vertices) {
+    this(Vertex[] vertices, BufferLayout layout_ = null) {
+        layout = layout_;
         glCreateBuffers(1, &id);
         glBindBuffer(GL_ARRAY_BUFFER, id);
         glBufferData(GL_ARRAY_BUFFER, vertices.length * Vertex.sizeof, vertices.ptr, GL_STATIC_DRAW);
     }
 
     /// Constructor given mat4 array
-    this(mat4[] mat4s) {
+    this(mat4[] mat4s, BufferLayout layout_ = null) {
+        layout = layout_;
         glCreateBuffers(1, &id);
         glBindBuffer(GL_ARRAY_BUFFER, id);
         glBufferData(GL_ARRAY_BUFFER, mat4s.length * mat4.sizeof, mat4s.ptr, GL_STATIC_DRAW);

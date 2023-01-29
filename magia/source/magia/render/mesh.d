@@ -19,68 +19,44 @@ import magia.render.vertex;
 /// Class handling mesh data and draw call
 final class Mesh {
     private {
-        Vertex[] _vertices;
-        uint[] _indices;
-
         VertexArray _vertexArray;
-        VertexBuffer _vertexBuffer;
-        IndexBuffer _indexBuffer;
 
         uint _instances;
-        VertexBuffer _instanceVertexBuffer;
-
         bool _traceDeep = false;
     }
 
-    /// Constructor
-    this(Vertex[] vertices, uint[] indices = null,
+    /// Constructor (@TODO pack instanceMatrices inside VBO on caller side)
+    this(VertexBuffer vertexBuffer, uint[] indices = null,
          uint instances = 1, mat4[] instanceMatrices = [mat4.identity]) {
-        _vertices = vertices;
-        _indices = indices;
         _instances = instances;
-
-        // Define shader layout
-        BufferLayout mainLayout = new BufferLayout([
-            BufferElement("a_Position", LayoutType.ltFloat3),
-            BufferElement("a_Normal", LayoutType.ltFloat3),
-            BufferElement("a_Color", LayoutType.ltFloat3), // @TODO maybe color should be an uniform instead
-            BufferElement("a_TexCoords", LayoutType.ltFloat2)
-        ]);
 
         // Generate and bind VAO
         _vertexArray = new VertexArray();
         _vertexArray.bind();
+
+        // Add vertex buffer to vertex array
+        _vertexArray.addVertexBuffer(vertexBuffer);
 
         // Transpose all matrices to pass them onto the VBO properly (costly?)
         for (int instanceId = 0; instanceId < instanceMatrices.length; ++instanceId) {
             instanceMatrices[instanceId].transpose();
         }
 
-        // Generate vertex buffers
-        _vertexBuffer = new VertexBuffer(_vertices);
-        _vertexBuffer.layout = mainLayout;
-        _instanceVertexBuffer = new VertexBuffer(instanceMatrices);
+        // Generate instancing vertex buffer
+        VertexBuffer instanceVertexBuffer = new VertexBuffer(instanceMatrices);
 
         // Generate EBO
-        _indexBuffer = new IndexBuffer(_indices);
-
-        // Link main VBO attributes to VAO
-        _vertexArray.addVertexBuffer(_vertexBuffer);
+        _vertexArray.setIndexBuffer(new IndexBuffer(indices));
 
         // Link instance VBO attributes to VAO @TODO
-        _vertexArray.linkAttributes(_instanceVertexBuffer, 4, 4, GL_FLOAT, mat4.sizeof, null);
-        _vertexArray.linkAttributes(_instanceVertexBuffer, 5, 4, GL_FLOAT, mat4.sizeof, cast(void*)(1 * vec4.sizeof));
-        _vertexArray.linkAttributes(_instanceVertexBuffer, 6, 4, GL_FLOAT, mat4.sizeof, cast(void*)(2 * vec4.sizeof));
-        _vertexArray.linkAttributes(_instanceVertexBuffer, 7, 4, GL_FLOAT, mat4.sizeof, cast(void*)(3 * vec4.sizeof));
+        _vertexArray.linkAttributes(instanceVertexBuffer, 4, 4, GL_FLOAT, mat4.sizeof, null);
+        _vertexArray.linkAttributes(instanceVertexBuffer, 5, 4, GL_FLOAT, mat4.sizeof, cast(void*)(1 * vec4.sizeof));
+        _vertexArray.linkAttributes(instanceVertexBuffer, 6, 4, GL_FLOAT, mat4.sizeof, cast(void*)(2 * vec4.sizeof));
+        _vertexArray.linkAttributes(instanceVertexBuffer, 7, 4, GL_FLOAT, mat4.sizeof, cast(void*)(3 * vec4.sizeof));
         glVertexAttribDivisor(4, 1);
         glVertexAttribDivisor(5, 1);
         glVertexAttribDivisor(6, 1);
         glVertexAttribDivisor(7, 1);
-
-        // Unbind all objects
-        VertexArray.unbind();
-        VertexBuffer.unbind();
-        IndexBuffer.unbind();
     }
 
     /// Bind shader, VAO
@@ -88,6 +64,7 @@ final class Mesh {
         shader.activate();
         _vertexArray.bind();
 
+        uint nbSpriteTextures = 0;
         uint nbDiffuseTextures = 0;
         uint nbSpecularTextures = 0;
 
@@ -97,13 +74,16 @@ final class Mesh {
             const TextureType type = texture.type;
 
             string name;
-            if (type == TextureType.diffuse) {
+            if (type == TextureType.sprite) {
+                name = "u_Sprite" ~ to!string(nbSpriteTextures);
+                ++nbSpriteTextures;
+            } else if (type == TextureType.diffuse) {
                 name = "u_Diffuse" ~ to!string(nbDiffuseTextures);
                 ++nbDiffuseTextures;
             } else if (type == TextureType.specular) {
                 name = "u_Specular" ~ to!string(nbSpecularTextures);
                 ++nbSpecularTextures;
-            }
+            } 
 
             shader.uploadUniformInt(toStringz(name), textureId);
             texture.bind();
@@ -117,10 +97,10 @@ final class Mesh {
 
         if (_instances == 1) {
             shader.uploadUniformMat4("u_Transform", transform.model);
-            glDrawElements(GL_TRIANGLES, cast(int) _indices.length, GL_UNSIGNED_INT, null);
+            glDrawElements(GL_TRIANGLES, _vertexArray.indexBuffer.count, GL_UNSIGNED_INT, null);
         } else {
             shader.uploadUniformMat4("u_Transform", mat4.identity);
-            glDrawElementsInstanced(GL_TRIANGLES, cast(int) _indices.length, GL_UNSIGNED_INT, null, _instances);
+            glDrawElementsInstanced(GL_TRIANGLES, _vertexArray.indexBuffer.count, GL_UNSIGNED_INT, null, _instances);
         }
     }
 }
