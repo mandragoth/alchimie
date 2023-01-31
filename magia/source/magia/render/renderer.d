@@ -47,9 +47,6 @@ class Renderer {
         // Coordinate system used for draws
         Coordinates _coordinates;
 
-        // Default material
-        Material _defaultMaterial;
-
         // Shaders
         Shader _quadShader;
         Shader _circleShader;
@@ -67,11 +64,6 @@ class Renderer {
         void coordinates(Coordinates coord) {
             _coordinates = coord;
         }
-
-        /// Get default texture
-        Texture defaultTexture() {
-            return _defaultMaterial.textures[0];
-        }
     }
 
     /// Constructor
@@ -86,9 +78,6 @@ class Renderer {
         _quadShader = fetchPrototype!Shader("quad");
         _circleShader = fetchPrototype!Shader("circle");
         _modelShader = fetchPrototype!Shader("model");
-
-        // Default white pixel texture to be used if one is required and none provided
-        _defaultMaterial.textures ~= new Texture(1, 1, 0xffffffff);
 
         glEnable(GL_MULTISAMPLE);
         glClearColor(bgColor.r, bgColor.g, bgColor.b, 1f);
@@ -128,14 +117,14 @@ class Renderer {
     void drawFilledCircle(vec2 position, float size, Color color = Color.white, float alpha = 1f) {
         Transform transform = toScreenSpace(position, vec2(size, size));
         setupCircleShader(transform.position2D, transform.scale.x, color, alpha);
-        drawIndexed(_circleShader, _defaultMaterial, transform);
+        drawIndexed(_circleShader, defaultMaterial, transform);
     }
 
     /// Render filled rectangle
     void drawFilledRect(vec2 position, vec2 size, Color color = Color.white, float alpha = 1f) {
         Transform transform = toScreenSpace(position, size);
         setupQuadShader(color, alpha);
-        drawIndexed(_quadShader, _defaultMaterial, transform);
+        drawIndexed(_quadShader, defaultMaterial, transform);
     }
 
     /// Render a sprite @TODO handle rotation, alpha, color

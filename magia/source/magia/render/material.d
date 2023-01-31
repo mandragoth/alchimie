@@ -26,7 +26,7 @@ enum Blend {
 alias Clip = vec4;
 
 /// Material structure
-struct Material {
+class Material {
     /// How should we texture the rendered item?
     Texture[] textures;
 
@@ -43,12 +43,15 @@ struct Material {
     Clip clip;
 
     /// Constructor
-    this(Texture texture_, Color color_ = Color.white, Blend blend_ = Blend.alpha,
+    this(Texture texture_ = null, Color color_ = Color.white, Blend blend_ = Blend.alpha,
          Flip flip_ = Flip.none, Clip clip_ = vec4.one) {
         color = color_;
         blend = blend_;
         flip = flip_;
         clip = clip_;
-        textures ~= texture_;
+
+        if (texture_) {
+            textures ~= texture_;
+        }
     }
 }

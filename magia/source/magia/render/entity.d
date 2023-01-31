@@ -2,6 +2,7 @@ module magia.render.entity;
 
 import magia.core;
 import magia.render.material;
+import magia.render.texture;
 
 /// An instance is an item with a transform that can be updated
 abstract class Instance {

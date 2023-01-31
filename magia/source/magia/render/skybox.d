@@ -40,7 +40,7 @@ final class Skybox : Entity {
             "night/bottom.png", "night/front.png", "night/back.png"
         ];
 
-        _material.textures ~= new Texture(faceCubemaps);
+        _material = new Material(new Texture(faceCubemaps));
     }
 
     /// Draw call

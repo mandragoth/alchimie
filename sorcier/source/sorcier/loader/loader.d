@@ -12,6 +12,7 @@ private {
 
 void loadResources() {
     loadImages();
+    loadTextures();
     loadShaders();
     loadShapes();
     loadModels();
@@ -25,10 +26,25 @@ private void loadImages() {
         string name = baseName(file, ".png");
 
         if (s_Trace) {
-            writeln("Loading texture: ", name);
+            writeln("Loading image: ", name);
         }
 
         storePrototype!Texture(name, new Texture(file, TextureType.sprite));
+    }
+}
+
+// Load textures (diffuse/specular textures)
+private void loadTextures() {
+    auto files = dirEntries(buildNormalizedPath("assets", "texture"), "{*.png}", SpanMode.depth);
+
+    foreach (file; files) {
+        string name = baseName(file, ".png");
+
+        if (s_Trace) {
+            writeln("Loading texture: ", name);
+        }
+
+        storePrototype!Texture(name, new Texture(file, TextureType.diffuse));
     }
 }
 

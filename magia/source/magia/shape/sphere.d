@@ -12,7 +12,6 @@ import std.stdio;
 class Sphere : Entity {
     protected {
         Mesh[] _meshes;
-        Material _material;
 
         // Sphere parameters
         int   _resolution;
@@ -28,8 +27,6 @@ class Sphere : Entity {
 
         _resolution = resolution;
         _radius = radius;
-
-        _material.textures ~= renderer.defaultTexture;
 
         vec3[] directions = [vec3.up, vec3.down, vec3.left, vec3.right, vec3.forward, vec3.back];
 
@@ -116,7 +113,7 @@ class Sphere : Entity {
     /// Render the sphere
     void draw(Shader shader) {
         foreach(Mesh mesh; _meshes) {
-            mesh.draw(shader, _material, transform);
+            mesh.draw(shader, defaultMaterial, transform);
         }
     }
 }

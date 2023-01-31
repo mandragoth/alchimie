@@ -36,8 +36,7 @@ final class Model {
         JSONValue _json;
 
         // Material data
-        string[] _loadedTextureNames;
-        Material[] _materials;
+        Material _material;
 
         // Mesh data
         Mesh[] _meshes;
@@ -56,9 +55,11 @@ final class Model {
         static const uint ushortType = 5123;
         static const uint shortType = 5122;
     }
-
     /// Constructor
     this(string fileName, uint instances = 1, mat4[] instanceMatrices = [mat4.identity]) {
+        // Initialize material
+        _material = new Material();
+
         // Fetch data
         _data = getData(fileName);
 
@@ -66,15 +67,20 @@ final class Model {
         _instances = instances;
         _instanceMatrices = instanceMatrices;
 
+        // Fetch root nodes from scenes
+        JSONValue scenes = _json["scenes"][0];
+        int[] nodes = getJsonArrayInt(scenes, "nodes", []);
+
         // Traverse all nodes
-        traverseNode(0);
+        foreach (int nodeId; nodes) {
+            traverseNode(nodeId);
+        }
     }
 
     /// Copy constructor
     this(Model other) {
         _data = other._data;
         _json = other._json;
-        _loadedTextureNames = other._loadedTextureNames;
         _meshes = other._meshes;
         _transforms = other._transforms;
         _instances = other._instances;
@@ -82,8 +88,8 @@ final class Model {
         _fileDirectory = other._fileDirectory;
     }
 
-    /// Draw the model
-    void draw(Shader shader, Transform transform) {
+    /// Draw the model (by default with its preloaded material)
+    void draw(Shader shader, Material material, Transform transform) {
         // Model culling is the opposite of usual objects
         glCullFace(GL_BACK);
 
@@ -91,11 +97,16 @@ final class Model {
 
         for (uint meshId = 0; meshId < _meshes.length; ++meshId) {
             Transform finalTransform = Transform(_transforms[meshId].model * transformModel);
-            _meshes[meshId].draw(shader, _materials[meshId], finalTransform);
+            _meshes[meshId].draw(shader, material, finalTransform);
         }
 
         // Revert to usual culling
         glCullFace(GL_FRONT);
+    }
+
+    /// Draw the model (with its preloaded material)
+    void draw(Shader shader, Transform transform) {
+        draw(shader, _material, transform);
     }
 
     private {
@@ -270,37 +281,26 @@ final class Model {
         /// Load textures
         void getTextures() {
             uint textureId = 0;
-            uint meshId = cast(uint)_meshes.length;
-
-            // Create a new material entry
-            _materials ~= Material();
 
             // Load through textures references
             const JSONValue[] jsonTextures = getJsonArray(_json, "images");
             foreach (const JSONValue jsonTexture; jsonTextures) {
                 const string path = buildNormalizedPath(_fileDirectory, getJsonStr(jsonTexture, "uri"));
 
-                // Avoid loading twice the same texture @TODO replace with cache?
-                if (!canFind(_loadedTextureNames, path)) {
-                    _loadedTextureNames ~= path;
-
-                    if (canFind(path, "baseColor") || canFind(path, "diffuse")) {
-                        Texture diffuse = new Texture(path, TextureType.diffuse, textureId);
-                        _materials[meshId].textures ~= diffuse;
-                        ++textureId;
-                    } else if (canFind(path, "metallicRoughness") || canFind(path, "specular")) {
-                        Texture specular = new Texture(path, TextureType.specular, textureId);
-                        _materials[meshId].textures ~= specular;
-                        ++textureId;
-                    } else if (s_Trace) {
-                        writeln("Warning: unknown texture type ", path ,", not loaded");
-                    }
+                if (canFind(path, "baseColor") || canFind(path, "diffuse")) {
+                    _material.textures ~= new Texture(path, TextureType.diffuse, textureId);
+                    ++textureId;
+                } else if (canFind(path, "metallicRoughness") || canFind(path, "specular")) {
+                    _material.textures ~= new Texture(path, TextureType.specular, textureId);
+                    ++textureId;
+                } else if (s_Trace) {
+                    writeln("Warning: unknown texture type ", path ,", not loaded");
                 }
+            }
 
-                // If we haven't found any texture, fetch the default one
-                if (_materials[meshId].textures.length == 0) {
-                    _materials[meshId].textures ~= renderer.defaultTexture;
-                }
+            // If we haven't found any texture, fetch the default one
+            if (textureId == 0) {
+                _material.textures ~= defaultTexture;
             }
         }
 
@@ -418,6 +418,7 @@ final class ModelInstance : Entity {
         Model _model;
         Shader _shader;
     }
+
     /// Constructor
     this(string fileName, uint instances = 1, mat4[] instanceMatrices = [mat4.identity]) {
         transform = Transform.identity;
@@ -433,7 +434,12 @@ final class ModelInstance : Entity {
             glViewport(camera.viewport.x, camera.viewport.y, camera.viewport.z, camera.viewport.w);
             _shader.uploadUniformVec3("u_CamPos", camera.position);
             _shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
-            _model.draw(_shader, transform);
+
+            if (material) {
+                _model.draw(_shader, material, transform);
+            } else {
+                _model.draw(_shader, transform);
+            }
         }
     }
 }

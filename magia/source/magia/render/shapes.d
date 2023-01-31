@@ -1,8 +1,10 @@
-module magia.render.shapes;
+    module magia.render.shapes;
 
 import magia.core;
 import magia.render.buffer;
+import magia.render.material;
 import magia.render.mesh;
+import magia.render.texture;
 import magia.render.vertex;
 
 /// 2D sprite layout
@@ -20,8 +22,18 @@ Mesh quadMesh;
 /// Cube mesh
 Mesh cubeMesh;
 
+/// Default texture
+Texture defaultTexture;
+
+/// Default material
+Material defaultMaterial;
+
 /// Load all shapes at runtime
 void loadShapes() {
+    // Default white pixel texture to be used if one is required and none provided
+    defaultTexture = new Texture(1, 1, 0xffffffff);
+    defaultMaterial = new Material(defaultTexture);
+
     layout2D = new BufferLayout([
         BufferElement("a_Position", LayoutType.ltFloat2),
         BufferElement("a_TexCoords", LayoutType.ltFloat2)

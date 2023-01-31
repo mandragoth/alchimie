@@ -22,29 +22,34 @@ task runtime() {
     //var globalLight = @DirectionalLight(@vec3(0f, -10f, 0f), .01f, .1f);
     //var pointLight1 = @PointLight(@vec3(-1f, 0.5f, 0f), @color(1f, 0f, 0f), 0f, 0.3f);
     //var pointLight2 = @PointLight(@vec3(1f, 0.5f, 0f), @color(0f, 1f, 0f), 0f, 0.3f);
-    var spotLight = @SpotLight(@vec3(0f, 5f, 0f), @vec3(0f, -1f, 0f), @color(1f, 1f, 1f), 20f, 0f, 0.3f);
+    var spotLight = @SpotLight(@vec3(0f, 5f, 0f), @vec3(0f, -1f, 0f), @color(1f, 1f, 1f), 20f, 0.5f, 0.3f);
 
-    var quad = @Quad();
+    //var quad = @Quad();
 
-    var jupiter = @Model("jupiter");
+    //var cube = @Model("cube");
+
+    /*var jupiter = @Model("jupiter");
     jupiter:position(@vec3(0f, 0f, -2f));
-    jupiter:scale(@vec3(.05f, .05f, .05f));
+    jupiter:scale(@vec3(.05f, .05f, .05f));*/
+
+    var reimu = @Model("reimu");
+    reimu.addTexture("reimu_body");
 
     loop yield {
         clear();
 
         setup3D();
 
-        skybox:draw();
-        jupiter:draw();
-        quad:draw();
+        //skybox:draw();
+
+        reimu:draw();
 
         setup2D();
 
-        drawFilledRect(@vec2(0f, 0f), @vec2(50f, 50f), @color(1f, 0f, 0f));
+        /*drawFilledRect(@vec2(0f, 0f), @vec2(50f, 50f), @color(1f, 0f, 0f));
         //drawFilledCircle(@vec2(25f, 25f), 50f, @color(0f, 1f, 0f));
         remilia:draw();
-        remilia2:draw();
+        remilia2:draw();*/
 
         render();
     }
