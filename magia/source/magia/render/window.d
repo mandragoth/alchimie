@@ -135,6 +135,10 @@ void createWindow(const vec2u windowSize, string title) {
     glViewport(0, 0, windowSize.x, windowSize.y);
     glClipControl(GL_LOWER_LEFT, GL_NEGATIVE_ONE_TO_ONE);
 
+    // @TODO toggle
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+    SDL_ShowCursor(SDL_DISABLE);
+
     _windowSize = windowSize;
     _screenSize = cast(vec2)(windowSize);
 

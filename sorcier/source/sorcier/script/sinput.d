@@ -75,14 +75,14 @@ void loadAlchimieLibInput(GrLibDefinition library) {
     library.addProperty(&_MouseButton_clicks, null, "clicks", inputEventMouseButton, grInt);
     library.addProperty(&_MouseButton_globalX, null, "globalX", inputEventMouseButton, grInt);
     library.addProperty(&_MouseButton_globalY, null, "globalY", inputEventMouseButton, grInt);
-    library.addProperty(&_MouseButton_x, null, "x", inputEventMouseButton, grInt);
-    library.addProperty(&_MouseButton_y, null, "y", inputEventMouseButton, grInt);
+    library.addProperty(&_MouseButton_relativeX, null, "relativeX", inputEventMouseButton, grInt);
+    library.addProperty(&_MouseButton_relativeY, null, "relativeY", inputEventMouseButton, grInt);
 
     // MouseMotion
     library.addProperty(&_MouseMotion_globalX, null, "globalX", inputEventMouseMotion, grInt);
     library.addProperty(&_MouseMotion_globalY, null, "globalY", inputEventMouseMotion, grInt);
-    library.addProperty(&_MouseMotion_x, null, "x", inputEventMouseMotion, grInt);
-    library.addProperty(&_MouseMotion_y, null, "y", inputEventMouseMotion, grInt);
+    library.addProperty(&_MouseMotion_relativeX, null, "relativeX", inputEventMouseMotion, grInt);
+    library.addProperty(&_MouseMotion_relativeY, null, "relativeY", inputEventMouseMotion, grInt);
 
     // MouseWheel
     library.addProperty(&_MouseWheel_x, null, "x", inputEventMouseWheel, grInt);
@@ -289,12 +289,12 @@ private void _MouseButton_globalY(GrCall call) {
     call.setInt(call.getNative!(InputEvent.MouseButton)(0).globalPosition.y);
 }
 
-private void _MouseButton_x(GrCall call) {
-    call.setInt(call.getNative!(InputEvent.MouseButton)(0).position.x);
+private void _MouseButton_relativeX(GrCall call) {
+    call.setInt(call.getNative!(InputEvent.MouseButton)(0).relativePosition.x);
 }
 
-private void _MouseButton_y(GrCall call) {
-    call.setInt(call.getNative!(InputEvent.MouseButton)(0).position.y);
+private void _MouseButton_relativeY(GrCall call) {
+    call.setInt(call.getNative!(InputEvent.MouseButton)(0).relativePosition.y);
 }
 
 // MouseMotion
@@ -307,12 +307,12 @@ private void _MouseMotion_globalY(GrCall call) {
     call.setInt(call.getNative!(InputEvent.MouseMotion)(0).globalPosition.y);
 }
 
-private void _MouseMotion_x(GrCall call) {
-    call.setInt(call.getNative!(InputEvent.MouseMotion)(0).position.x);
+private void _MouseMotion_relativeX(GrCall call) {
+    call.setInt(call.getNative!(InputEvent.MouseMotion)(0).relativePosition.x);
 }
 
-private void _MouseMotion_y(GrCall call) {
-    call.setInt(call.getNative!(InputEvent.MouseMotion)(0).position.y);
+private void _MouseMotion_relativeY(GrCall call) {
+    call.setInt(call.getNative!(InputEvent.MouseMotion)(0).relativePosition.y);
 }
 
 // MouseWheel

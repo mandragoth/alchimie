@@ -118,7 +118,7 @@ final class Runtime {
             InputEvent[] inputEvents = currentApplication.pollEvents();
 
             if (_engine) {
-                if (_inputEvent && inputEvents.length) {
+                if (_inputEvent) {
                     _engine.callEvent(_inputEvent, [GrValue(inputEvents)]);
                     remove!(a => a.isAccepted)(inputEvents);
                 }

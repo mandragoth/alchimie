@@ -96,7 +96,7 @@ final class Model {
         mat4 transformModel = combineModel(transform);
 
         for (uint meshId = 0; meshId < _meshes.length; ++meshId) {
-            Transform finalTransform = Transform(_transforms[meshId].model * transformModel);
+            Transform finalTransform = Transform(/*_transforms[meshId].model **/ transformModel);
             _meshes[meshId].draw(shader, material, finalTransform);
         }
 

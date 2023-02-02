@@ -7,22 +7,10 @@ import magia;
 
 package void loadAlchimieLibDrawable(GrLibDefinition library) {
     // Maths types
-    GrType vec2Type = library.addClass("vec2", ["x", "y"], [grFloat, grFloat]);
-    GrType vec3Type = library.addClass("vec3", ["x", "y", "z"], [grFloat, grFloat, grFloat]);
-    GrType colorType = library.addClass("color", ["r", "g", "b"], [grFloat, grFloat, grFloat]);
-    GrType vec4iType = library.addClass("vec4i", ["x", "y", "z", "w"], [grInt, grInt, grInt, grInt]);
-    GrType quatType = library.addClass("quat", ["w", "x", "y", "z"], [grFloat, grFloat, grFloat, grFloat]);
-    GrType mat4Type = library.addNative("mat4");
-
-    // Maths types contructors
-    library.addConstructor(&_newVec2, vec2Type, [grFloat, grFloat]);
-    library.addConstructor(&_newVec3, vec3Type, [grFloat, grFloat, grFloat]);
-    library.addConstructor(&_newColor, colorType, [grFloat, grFloat, grFloat]);
-    library.addConstructor(&_newVec4i, vec4iType, [grInt, grInt, grInt, grInt]);
-    library.addConstructor(&_newQuat, quatType, [grFloat, grFloat, grFloat, grFloat]);
-
-    // Maths operations
-    library.addFunction(&_packInstanceMatrix, "packInstanceMatrix", [vec3Type, quatType, vec3Type], [mat4Type]);
+    GrType vec2Type = grGetClassType("vec2");
+    GrType vec3Type = grGetClassType("vec3");
+    GrType colorType = grGetClassType("color");
+    GrType vec4iType = grGetClassType("vec4i");
 
     // Entity types
     GrType instanceType = library.addNative("Instance");
@@ -43,6 +31,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addFunction(&_getPosition, "position", [instanceType], [vec3Type]);
     library.addFunction(&_setPosition2D, "position2D", [instanceType, vec2Type]);
     library.addFunction(&_setPosition, "position", [instanceType, vec3Type]);
+    library.addFunction(&_setScale, "scale", [instanceType, vec3Type]);
     library.addFunction(&_addTexture, "addTexture", [entityType, grString]);
     library.addFunction(&_scale, "scale", [instanceType, vec3Type]);
     library.addFunction(&_draw, "draw", [entityType]);
@@ -64,47 +53,6 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addConstructor(&_newDirectionalLight, directionalLightType, [vec3Type, grFloat, grFloat]);
     library.addConstructor(&_newPointLight, pointLightType, [vec3Type, colorType, grFloat, grFloat]);
     library.addConstructor(&_newSpotLight, spotLightType, [vec3Type, vec3Type, colorType, grFloat, grFloat, grFloat]);
-}
-
-private void _newVec2(GrCall call) {
-    GrObject vector = call.createObject("vec2");
-    vector.setFloat("x", call.getFloat(0));
-    vector.setFloat("y", call.getFloat(1));
-    call.setObject(vector);
-}
-
-private void _newVec3(GrCall call) {
-    GrObject vector = call.createObject("vec3");
-    vector.setFloat("x", call.getFloat(0));
-    vector.setFloat("y", call.getFloat(1));
-    vector.setFloat("z", call.getFloat(2));
-    call.setObject(vector);
-}
-
-private void _newColor(GrCall call) {
-    GrObject color = call.createObject("color");
-    color.setFloat("r", call.getFloat(0));
-    color.setFloat("g", call.getFloat(1));
-    color.setFloat("b", call.getFloat(2));
-    call.setObject(color);
-}
-
-private void _newVec4i(GrCall call) {
-    GrObject vector = call.createObject("vec4i");
-    vector.setFloat("x", call.getFloat(0));
-    vector.setFloat("y", call.getFloat(1));
-    vector.setFloat("z", call.getFloat(2));
-    vector.setFloat("w", call.getFloat(3));
-    call.setObject(vector);
-}
-
-private void _newQuat(GrCall call) {
-    GrObject quat = call.createObject("quat");
-    quat.setFloat("w", call.getFloat(0));
-    quat.setFloat("x", call.getFloat(1));
-    quat.setFloat("y", call.getFloat(2));
-    quat.setFloat("z", call.getFloat(3));
-    call.setObject(quat);
 }
 
 private void _getPosition(GrCall call) {
@@ -131,6 +79,14 @@ private void _setPosition(GrCall call) {
     instance.position = vec3(position.getFloat("x"),
                              position.getFloat("y"),
                              position.getFloat("z"));
+}
+
+private void _setScale(GrCall call) {
+    Instance instance = call.getNative!Instance(0);
+    GrObject scale = call.getObject(1);
+    instance.scale = vec3(scale.getFloat("x"),
+                          scale.getFloat("y"),
+                          scale.getFloat("z"));
 }
 
 private void _addTexture(GrCall call) {

@@ -18,16 +18,19 @@ void loadAlchimieLibCamera(GrLibDefinition library) {
     library.addConstructor(&_newPerspectiveCamera2, pCameraType, [grInt, grInt, vec3Type, vec3Type, vec3Type]);
     library.addConstructor(&_newOrthographicCamera, oCameraType);
 
+    // Camera properties
+    library.addProperty(&_getRotation, null, "rotation", cameraType, grFloat);
+    library.addProperty(&_getZoom, null, "zoom", cameraType, grFloat);
+    library.addProperty(&_getUp, null, "up", pCameraType, vec3Type);
+    library.addProperty(&_getRight, null, "right", pCameraType, vec3Type);
+    library.addProperty(&_getForward, null, "forward", pCameraType, vec3Type);
+
     // Camera operations
     library.addFunction(&_getCamera, "getCamera", [grInt], [cameraType]);
-    library.addFunction(&_getRotation, "rotation", [cameraType], [grFloat]);
     library.addFunction(&_setRotation, "rotation", [cameraType, grFloat]);
-    library.addFunction(&_getZoom, "zoom", [cameraType], [grFloat]);
     library.addFunction(&_setZoom, "zoom", [cameraType, grFloat]);
-    library.addFunction(&_getUp, "up", [pCameraType], [vec3Type]);
-    library.addFunction(&_getRight, "right", [pCameraType], [vec3Type]);
-    library.addFunction(&_getForward, "forward", [pCameraType], [vec3Type]);
     library.addFunction(&_setViewport, "viewport", [pCameraType, vec4iType]);
+    library.addFunction(&_setForward, "forward", [pCameraType, vec3Type]);
 
     // Screen operations
     library.addFunction(&_getScreenWidth, "screenWidth", [], [grInt]);
@@ -84,15 +87,6 @@ private void _getRotation(GrCall call) {
     call.setFloat(camera.zRotation);
 }
 
-private void _setRotation(GrCall call) {
-    Camera camera = call.getNative!Camera(0);
-    if (!camera) {
-        call.raise("NullError");
-        return;
-    }
-    camera.zRotation(call.getFloat(1));
-}
-
 private void _getZoom(GrCall call) {
     Camera camera = call.getNative!Camera(0);
     if (!camera) {
@@ -100,15 +94,6 @@ private void _getZoom(GrCall call) {
         return;
     }
     call.setFloat(camera.zoomLevel);
-}
-
-private void _setZoom(GrCall call) {
-    Camera camera = call.getNative!Camera(0);
-    if (!camera) {
-        call.raise("NullError");
-        return;
-    }
-    camera.zoomLevel(call.getFloat(1));
 }
 
 private void _getUp(GrCall call) {
@@ -153,6 +138,24 @@ private void _getForward(GrCall call) {
     call.setObject(vector);
 }
 
+private void _setRotation(GrCall call) {
+    Camera camera = call.getNative!Camera(0);
+    if (!camera) {
+        call.raise("NullError");
+        return;
+    }
+    camera.zRotation(call.getFloat(1));
+}
+
+private void _setZoom(GrCall call) {
+    Camera camera = call.getNative!Camera(0);
+    if (!camera) {
+        call.raise("NullError");
+        return;
+    }
+    camera.zoomLevel(call.getFloat(1));
+}
+
 private void _setViewport(GrCall call) {
     PerspectiveCamera camera = call.getNative!PerspectiveCamera(0);
     if (!camera) {
@@ -165,6 +168,19 @@ private void _setViewport(GrCall call) {
                             vector.getInt("y"),
                             vector.getInt("z"),
                             vector.getInt("w"));
+}
+
+private void _setForward(GrCall call) {
+    PerspectiveCamera camera = call.getNative!PerspectiveCamera(0);
+    if (!camera) {
+        call.raise("NullError");
+        return;
+    }
+    
+    GrObject vector = call.getObject(1);
+    camera.forward = vec3(vector.getFloat("x"),
+                          vector.getFloat("y"),
+                          vector.getFloat("z"));
 }
 
 private void _getScreenWidth(GrCall call) {

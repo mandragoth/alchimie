@@ -18,11 +18,11 @@ task runtime() {
     var remilia2 = @Sprite("remilia", @vec4i(96, 48, 32, 48));
     remilia2:position2D(@vec2(12.5f + 32f, 0f));
 
-    var skybox = @Skybox("");
-    //var globalLight = @DirectionalLight(@vec3(0f, -10f, 0f), .01f, .1f);
+    //var skybox = @Skybox("");
+    var globalLight = @DirectionalLight(@vec3(0f, -10f, 0f), .2f, .01f);
     //var pointLight1 = @PointLight(@vec3(-1f, 0.5f, 0f), @color(1f, 0f, 0f), 0f, 0.3f);
     //var pointLight2 = @PointLight(@vec3(1f, 0.5f, 0f), @color(0f, 1f, 0f), 0f, 0.3f);
-    var spotLight = @SpotLight(@vec3(0f, 5f, 0f), @vec3(0f, -1f, 0f), @color(1f, 1f, 1f), 20f, 0.5f, 0.3f);
+    //var spotLight = @SpotLight(@vec3(0f, 5f, 0f), @vec3(0f, -1f, 0f), @color(1f, 1f, 1f), 20f, 0.5f, 0.3f);
 
     //var quad = @Quad();
 
@@ -33,7 +33,9 @@ task runtime() {
     jupiter:scale(@vec3(.05f, .05f, .05f));*/
 
     var reimu = @Model("reimu");
-    reimu.addTexture("reimu_body");
+    reimu:scale(@vec3(0.1f, 0.1f, 0.1f));
+    reimu:position(@vec3(0f, -1f, 0f));
+    reimu:addTexture("reimu_body");
 
     loop yield {
         clear();

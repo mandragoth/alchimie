@@ -32,7 +32,7 @@ final class InputManager {
 
         Controller[] _controllers;
 
-        vec2i _globalMousePosition, _mousePosition;
+        vec2i _globalMousePosition, _relativeMousePosition, _mouseWheel;
 
         bool[InputEvent.KeyButton.Button.max + 1] _keyButtonsPressed;
         bool[InputEvent.MouseButton.Button.max + 1] _mouseButtonsPressed;
@@ -68,7 +68,7 @@ final class InputManager {
     this() {
         signal(SIGINT, &_signalHandler);
         _globalMousePosition = vec2i.zero;
-        _mousePosition = vec2i.zero;
+        _relativeMousePosition = vec2i.zero;
 
         // Ouvre la base de donnée des manettes
         foreach (string line; _gameControllerDb.splitLines()) {
@@ -115,6 +115,9 @@ final class InputManager {
         InputEvent[] events;
         SDL_Event sdlEvent;
 
+        // Reset mouse wheel
+        _mouseWheel = vec2i.zero;
+
         while (SDL_PollEvent(&sdlEvent)) {
             switch (sdlEvent.type) {
             case SDL_QUIT:
@@ -151,10 +154,10 @@ final class InputManager {
                 break;
             case SDL_MOUSEMOTION:
                 _globalMousePosition = vec2i(sdlEvent.motion.x, sdlEvent.motion.y);
-                _mousePosition = _globalMousePosition;
+                _relativeMousePosition = vec2i(sdlEvent.motion.xrel, sdlEvent.motion.yrel);
                 InputEvent event = InputEvent.mouseMotion( //
                     _globalMousePosition, //
-                    _mousePosition);
+                    _relativeMousePosition);
 
                 events ~= event;
                 break;
@@ -166,12 +169,10 @@ final class InputManager {
                     break;
 
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
-                _mousePosition = _globalMousePosition;
-
                 _mouseButtonsPressed[button] = true;
 
                 events ~= InputEvent.mouseButton(button, true,
-                    sdlEvent.button.clicks, _globalMousePosition, _mousePosition);
+                    sdlEvent.button.clicks, _globalMousePosition, _relativeMousePosition);
                 break;
             case SDL_MOUSEBUTTONUP:
                 InputEvent.MouseButton.Button button = cast(
@@ -181,17 +182,14 @@ final class InputManager {
                     break;
 
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
-                _mousePosition = _globalMousePosition;
-
                 _mouseButtonsPressed[button] = false;
 
                 events ~= InputEvent.mouseButton(button, false,
-                    sdlEvent.button.clicks, _globalMousePosition, _mousePosition);
+                    sdlEvent.button.clicks, _globalMousePosition, _relativeMousePosition);
                 break;
             case SDL_MOUSEWHEEL:
-                InputEvent event = InputEvent.mouseWheel( //
-                    vec2i(sdlEvent.wheel.x, sdlEvent.wheel.y));
-
+                _mouseWheel = vec2i(sdlEvent.wheel.x, sdlEvent.wheel.y);
+                InputEvent event = InputEvent.mouseWheel(_mouseWheel);
                 events ~= event;
                 break;
             case SDL_CONTROLLERDEVICEADDED:
@@ -384,6 +382,10 @@ final class InputManager {
                     isEventPressed = isPressed(event.asMouseButton().button);
                     eventStrength = isEventPressed ? 1.0 : 0.0;
                     break;
+                case mouseWheel:
+                    isEventPressed = isPressed(event.asMouseWheel().wheel);
+                    eventStrength = isEventPressed ? 1.0 : 0.0;
+                    break;
                 case controllerButton:
                     isEventPressed = isPressed(event.asControllerButton().button);
                     eventStrength = isEventPressed ? 1.0 : 0.0;
@@ -416,6 +418,11 @@ final class InputManager {
     /// Ditto
     bool isPressed(InputEvent.MouseButton.Button button) const {
         return _mouseButtonsPressed[button];
+    }
+
+    /// Ditto
+    bool isPressed(vec2i wheel) const {
+        return _mouseWheel == wheel;
     }
 
     /// Ditto

@@ -317,15 +317,15 @@ final class InputEvent {
         vec2i globalPosition;
 
         /// Position relative au nœud actuel
-        vec2i position;
+        vec2i relativePosition;
 
         /// Init
-        this(Button button_, bool pressed_, uint clicks_, vec2i globalPosition_, vec2i position_) {
+        this(Button button_, bool pressed_, uint clicks_, vec2i globalPosition_, vec2i relativePosition_) {
             button = button_;
             pressed = pressed_;
             clicks = clicks_;
             globalPosition = globalPosition_;
-            position = position_;
+            relativePosition = relativePosition_;
         }
 
         /// Copie
@@ -334,7 +334,7 @@ final class InputEvent {
             pressed = event.pressed;
             clicks = event.clicks;
             globalPosition = event.globalPosition;
-            position = event.position;
+            relativePosition = event.relativePosition;
         }
     }
 
@@ -344,18 +344,18 @@ final class InputEvent {
         vec2i globalPosition;
 
         /// Position relative au nœud actuel
-        vec2i position;
+        vec2i relativePosition;
 
         /// Init
-        this(vec2i globalPosition_, vec2i position_) {
+        this(vec2i globalPosition_, vec2i relativePosition_) {
             globalPosition = globalPosition_;
-            position = position_;
+            relativePosition = relativePosition_;
         }
 
         /// Copie
         this(const MouseMotion event) {
             globalPosition = event.globalPosition;
-            position = event.position;
+            relativePosition = event.relativePosition;
         }
     }
 
@@ -621,11 +621,11 @@ final class InputEvent {
                 info ~= _mouseButton.pressed ? "pressed" : "released";
                 info ~= "clicks: " ~ to!string(_mouseButton.clicks);
                 info ~= "globalPosition: " ~ to!string(_mouseButton.globalPosition);
-                info ~= "position: " ~ to!string(_mouseButton.position);
+                info ~= "relativePosition: " ~ to!string(_mouseButton.relativePosition);
                 break;
             case mouseMotion:
                 info ~= "globalPosition: " ~ to!string(_mouseMotion.globalPosition);
-                info ~= "position: " ~ to!string(_mouseMotion.position);
+                info ~= "relativePosition: " ~ to!string(_mouseMotion.relativePosition);
                 break;
             case mouseWheel:
                 info ~= "wheel: " ~ to!string(_mouseWheel.wheel);
@@ -700,12 +700,12 @@ final class InputEvent {
         }
 
         void _makeMouseButton(MouseButton.Button button, bool pressed,
-            uint clicks, vec2i globalPosition, vec2i position) {
-            _mouseButton = new MouseButton(button, pressed, clicks, globalPosition, position);
+            uint clicks, vec2i globalPosition, vec2i relativePosition) {
+            _mouseButton = new MouseButton(button, pressed, clicks, globalPosition, relativePosition);
         }
 
-        void _makeMouseMotion(vec2i globalPosition, vec2i position) {
-            _mouseMotion = new MouseMotion(globalPosition, position);
+        void _makeMouseMotion(vec2i globalPosition, vec2i relativePosition) {
+            _mouseMotion = new MouseMotion(globalPosition, relativePosition);
         }
 
         void _makeMouseWheel(vec2i wheel) {
@@ -742,20 +742,20 @@ final class InputEvent {
 
         /// Retourne un événement correspondant à une touche de la souris
         InputEvent mouseButton(MouseButton.Button button, bool pressed,
-            uint clicks, vec2i globalPosition, vec2i position) {
+            uint clicks, vec2i globalPosition, vec2i relativePosition) {
             InputEvent event = new InputEvent;
             event._type = Type.mouseButton;
             event._isAccepted = false;
-            event._makeMouseButton(button, pressed, clicks, globalPosition, position);
+            event._makeMouseButton(button, pressed, clicks, globalPosition, relativePosition);
             return event;
         }
 
         /// Retourne un événement correspondant à un déplacement de la souris
-        InputEvent mouseMotion(vec2i globalPosition, vec2i position) {
+        InputEvent mouseMotion(vec2i globalPosition, vec2i relativePosition) {
             InputEvent event = new InputEvent;
             event._type = Type.mouseMotion;
             event._isAccepted = false;
-            event._makeMouseMotion(globalPosition, position);
+            event._makeMouseMotion(globalPosition, relativePosition);
             return event;
         }
 

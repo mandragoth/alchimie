@@ -43,6 +43,9 @@ func setupControls() {
 
     addActionEvent("zoom_in", @InputEvent.keyButton(KeyButton.numPlus, true, false));
     addActionEvent("zoom_out", @InputEvent.keyButton(KeyButton.numMinus, true, false));
+
+    addActionEvent("zoom_in", @InputEvent.mouseWheel(0, -1));
+    addActionEvent("zoom_out", @InputEvent.mouseWheel(0, 1));
 }
 
 task camera2D() {
@@ -51,6 +54,7 @@ task camera2D() {
     var moveSpeed = 0.01f;
     var zRotationSpeed = rad(2f);
     var zoomSpeed = 0.05f;
+    var wheelFrames = 5;
 
     var cPosition = camera:position();
     var zRotation = camera:rotation();
@@ -75,48 +79,64 @@ task camera2D() {
     }
 }
 
+var mouseX : int;
+var mouseY : int;
+
+event input(inputs: list<InputEvent>) {
+    mouseX = 0;
+    mouseY = 0;
+    for(input, inputs) {
+        switch(input.type)
+        case(InputEventType.mouseMotion) {
+            var input = input.mouseMotion?;
+            mouseX = input.relativeX;
+            mouseY = input.relativeY;
+        }
+    }
+}
+
 task camera3D() {
     var camera = @PerspectiveCamera();
-    camera:position(@vec3(0f, 0.5f, 2f));
+    camera.position = @vec3(0f, .5f, 2f);
 
-    var moveSpeed = 0.05f;
-    var mouseSensitivity = .25f;
+    var moveSpeed = .05f;
+    var zoomSpeed = .15f;
+    var mouseSensitivity = .5f;
+    var minRotX = 5f * degToRad();
 
-    var cPosition = camera:position();
-
-    // @TODO use axis once native vectors implemented
-    /*var xAxis = camera:right();
-    var yAxis = camera:up();
-    var zAxis = camera:forward();*/
+    var cPosition = camera.position;
 
     loop yield {
-        cPosition.x += getActionAxis("move_left", "move_right") * moveSpeed;
-        cPosition.y += getActionAxis("move_down", "move_up") * moveSpeed;
-        cPosition.z += getActionAxis("zoom_in", "zoom_out") * moveSpeed;
+        var xAxis = camera.right;
+        var yAxis = camera.up;
+        var zAxis = camera.forward;
+
+        cPosition += xAxis * getActionAxis("move_left", "move_right") * moveSpeed +
+                     yAxis * getActionAxis("move_down", "move_up") * moveSpeed +
+                     zAxis * getActionAxis("zoom_in", "zoom_out") * zoomSpeed;
+        camera:position(cPosition);
+
+        var deltaPos = @vec2i(mouseX, mouseY);
+        var rotX = mouseSensitivity * deltaPos.x;
+        var rotY = mouseSensitivity * deltaPos.y;
+
+        // Rotate Z around X
+        var newZAxis = rotate(zAxis, xAxis, -rotY * degToRad());
+
+        // New angle between (z, y)
+        var angleUp = angle(newZAxis, yAxis);
+        var angleDown = angle(newZAxis, -yAxis);
+
+        // Limit rotation around X
+        if (angleUp > minRotX && angleDown > minRotX) {
+            camera:forward(newZAxis);
+        }
+
+        // Rotate Z around Y
+        camera:forward(rotate(newZAxis, yAxis, -rotX * degToRad()));
 
         // @TODO Get mouse position, create a Ray from it (cached as private variable)
         // @TODO Use ray to query entities in the scene, fetch the one closest to the camera near plane
-
-        // @TODO mouse lookup
-        /*const vec2 deltaPos = getRelativeMousePos(); // @TODO mouse pos here
-
-        const float rotX = sensitivity * deltaPos.y;
-        const float rotY = sensitivity * deltaPos.x;
-
-        const vec3 newOrientation = rotate(_camera.forward, -rotX * degToRad, _camera.right);
-
-        const float limitRotX = 5f * degToRad;
-
-        const float angleUp = angle(newOrientation, _camera.up);
-        const float angleDown = angle(newOrientation, -_camera.up);
-
-        if (!(angleUp <= limitRotX || angleDown <= limitRotX)) {
-            _camera.forward = newOrientation;
-        }
-
-        _camera.forward = rotate(_camera.forward, -rotY * degToRad, _camera.up);*/
-
-        camera:position(cPosition);
     }
 }
 
