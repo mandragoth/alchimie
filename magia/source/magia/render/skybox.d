@@ -10,12 +10,12 @@ import magia.core;
 import magia.render.array;
 import magia.render.buffer;
 import magia.render.camera;
+import magia.render.data;
 import magia.render.entity;
 import magia.render.material;
 import magia.render.postprocess;
 import magia.render.renderer;
 import magia.render.shader;
-import magia.render.shapes;
 import magia.render.texture;
 import magia.render.vertex;
 

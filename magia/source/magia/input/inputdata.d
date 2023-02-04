@@ -1,4 +1,4 @@
-module magia.input.data;
+module magia.input.inputdata;
 
 package enum _gameControllerDb = "# Game Controller DB for SDL in 2.0.16 format
 # Source: https://github.com/gabomdq/SDL_GameControllerDB

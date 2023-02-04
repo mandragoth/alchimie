@@ -14,9 +14,12 @@ import std.path, std.string, std.utf;
 
 import bindbc.sdl;
 
-import magia.core, magia.render;
+import magia.core;
+import magia.render;
 
-import magia.input.inputevent, magia.input.inputmap, magia.input.data;
+import magia.input.inputevent;
+import magia.input.inputmap;
+import magia.input.inputdata;
 
 /// Gère les entrés et notifications de l’application
 final class InputManager {

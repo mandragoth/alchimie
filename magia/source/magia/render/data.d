@@ -1,4 +1,4 @@
-    module magia.render.shapes;
+module magia.render.data;
 
 import magia.core;
 import magia.render.buffer;
@@ -40,10 +40,10 @@ void loadShapes() {
     ]);
 
     rectMesh = new Mesh(new VertexBuffer([
-        -1f, -1f, 0f, 0f, // 3-----2
-         1f, -1f, 1f, 0f, // |     |
-         1f,  1f, 1f, 1f, // |     |
-        -1f,  1f, 0f, 1f  // 0-----1
+       -1f, -1f, 0f, 0f, // 3-----2
+        1f, -1f, 1f, 0f, // |     |
+        1f,  1f, 1f, 1f, // |     |
+       -1f,  1f, 0f, 1f  // 0-----1
     ], layout2D), [
         0, 1, 2,
         2, 3, 0

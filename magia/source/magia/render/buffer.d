@@ -129,9 +129,9 @@ class BufferLayout {
     }
 
     @property {
-        /// Elements
-        BufferElements elements() {
-            return _elements;
+        /// Elements count
+        ulong count() const {
+            return _elements.length;
         }
 
         /// Stride
@@ -152,6 +152,21 @@ class BufferLayout {
     this(BufferElements elements) {
         _elements = elements;
         computeOffsets();
+    }
+
+    /// Setup elements
+    void setupElements() {
+        uint layoutId = 0;
+        foreach(ref BufferElement element; _elements) {
+            glEnableVertexAttribArray(layoutId);
+            glVertexAttribPointer(layoutId,
+                                  element.count,
+                                  element.glType,
+                                  GL_FALSE, // @TODO normalization
+                                  stride,
+                                  cast(void *)element.offset);
+            ++layoutId;
+        }
     }
 
     private void computeOffsets() {
@@ -215,6 +230,13 @@ class VertexBuffer {
     /// Destructor
     ~this() {
         glDeleteBuffers(1, &id);
+    }
+
+    /// Setup elements
+    void setupElements() {
+        assert(layout, "No layout set for VertexBuffer");
+        assert(layout.count, "No elements in VertexBuffer layout");
+        layout.setupElements();
     }
 
     /// Bind for usage

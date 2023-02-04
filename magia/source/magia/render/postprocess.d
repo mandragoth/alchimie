@@ -22,8 +22,10 @@ static float bgAlpha = 1f;
 /// Number of samples
 static uint nbSamples = 8;
 
+// @TODO rewrite
+
 /// Post-processing handler
-class PostProcess {
+/*class PostProcess {
     private {
         uint _size;
 
@@ -112,4 +114,4 @@ class PostProcess {
         _postProcessFBO.bindTexture();
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
-}
+}*/

@@ -6,11 +6,13 @@ import magia.core;
 import magia.render.array;
 import magia.render.buffer;
 import magia.render.camera;
+import magia.render.data;
+import magia.render.frame;
 import magia.render.light;
 import magia.render.material;
+import magia.render.mesh;
 import magia.render.postprocess;
 import magia.render.shader;
-import magia.render.shapes;
 import magia.render.texture;
 import magia.render.window;
 
@@ -48,9 +50,13 @@ class Renderer {
         Coordinates _coordinates;
 
         // Shaders
+        Shader _lineShader;
         Shader _quadShader;
         Shader _circleShader;
         Shader _modelShader;
+
+        // Framebuffers for picking (@TODO pack?)
+        FrameBuffer _pickingFrameBuffer;
     }
 
     @property {
@@ -68,6 +74,11 @@ class Renderer {
 
     /// Constructor
     this() {
+        // Setup opengl debug
+        glDebugMessageCallback(&openGLLogMessage, null);
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
         // Set screen origin
         _coordinates = defaultCoordinates;
 
@@ -75,16 +86,23 @@ class Renderer {
         lightingManager = new LightingManager();
 
         // Load shaders for draw calls
+        _lineShader = fetchPrototype!Shader("line");
         _quadShader = fetchPrototype!Shader("quad");
         _circleShader = fetchPrototype!Shader("circle");
         _modelShader = fetchPrototype!Shader("model");
 
+        // Load frame buffers for post process effects
+        _pickingFrameBuffer = new FrameBuffer([TextureType.picking, TextureType.depth],
+                                              screenWidth, screenHeight);
+
+        // Enable multi sampling and setup clear color
         glEnable(GL_MULTISAMPLE);
         glClearColor(bgColor.r, bgColor.g, bgColor.b, 1f);
     }
 
     /// Clear rendered frame
     void clear() {
+        // @TODO clear frame buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
@@ -109,22 +127,29 @@ class Renderer {
             camera.update(timeStep);
         }
     }
-
-    // Also to be used if 3D model has no texture
-    // Use fetch!Resource pattern to avoid loading too many textures in memory
+    
+    /// Render line @TODO factorize mesh and use transform to parametrize line?
+    void drawLine(vec3 start, vec3 end, Color color = Color.white, float alpha = 1f) {
+        Mesh lineMesh = new Mesh(new VertexBuffer([
+            start.x, start.y, start.z,
+            end.x, end.y, end.z    
+        ], layout3D));
+        setupLineShader(color, alpha);
+        drawIndexed(lineMesh, _lineShader, defaultMaterial, Transform.identity);
+    }
 
     /// Render filled circle
     void drawFilledCircle(vec2 position, float size, Color color = Color.white, float alpha = 1f) {
         Transform transform = toScreenSpace(position, vec2(size, size));
         setupCircleShader(transform.position2D, transform.scale.x, color, alpha);
-        drawIndexed(_circleShader, defaultMaterial, transform);
+        drawIndexed(rectMesh, _circleShader, defaultMaterial, transform);
     }
 
     /// Render filled rectangle
     void drawFilledRect(vec2 position, vec2 size, Color color = Color.white, float alpha = 1f) {
         Transform transform = toScreenSpace(position, size);
         setupQuadShader(color, alpha);
-        drawIndexed(_quadShader, defaultMaterial, transform);
+        drawIndexed(rectMesh, _quadShader, defaultMaterial, transform);
     }
 
     /// Render a sprite @TODO handle rotation, alpha, color
@@ -174,7 +199,7 @@ class Renderer {
         _quadShader.uploadUniformVec2("u_Flip", flipf);
 
         setupQuadShader(color, alpha);
-        drawIndexed(_quadShader, material, transform);
+        drawIndexed(rectMesh, _quadShader, material, transform);
     }
 
     /// Setup lights for all shaders that use them
@@ -191,6 +216,15 @@ class Renderer {
 
         // Set transform
         return Transform(vec3(position, 0), vec3(size, 0));
+    }
+
+    private void setupLineShader(Color color = Color.white, float alpha = 1f) {
+        // Activate shader
+        _lineShader.activate();
+
+        // Set color
+        // @TODO set in material instead
+        _lineShader.uploadUniformVec4("u_Color", vec4(color.rgb, alpha));
     }
 
     private void setupQuadShader(Color color = Color.white, float alpha = 1f, Blend blend = Blend.alpha) {
@@ -248,11 +282,32 @@ class Renderer {
     }
 
     /// @TODO batching
-    private void drawIndexed(Shader shader, Material material, Transform transform) {
+    private void drawIndexed(Mesh mesh, Shader shader, Material material, Transform transform) {
         // One draw call per camera
         foreach (Camera camera; cameras) {
             shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
-            rectMesh.draw(shader, material, transform);
+            mesh.draw(shader, material, transform);
         }
     }
+}
+
+/// Debug messages thrown by openGL
+extern(C) {
+void openGLLogMessage(GLenum, GLenum, GLuint, GLenum severity, GLsizei, const GLchar* message, void *) nothrow {
+    switch(severity) {
+        case GL_DEBUG_SEVERITY_HIGH:
+            printf("[OPENGL][FATAL] %s", message);
+            break;
+        case GL_DEBUG_SEVERITY_MEDIUM:
+            printf("[OPENGL][MEDIUM] %s", message);
+            break;
+        case GL_DEBUG_SEVERITY_LOW:
+            printf("[OPENGL][MINOR] %s", message);
+            break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION:
+        default:
+            //printf("[OPENGL][INFO] %s", message);
+            break;
+    }
+}
 }

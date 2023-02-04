@@ -3,10 +3,7 @@ module magia.render.texture;
 import bindbc.sdl;
 import bindbc.opengl;
 
-// @TODO remove dependency
-import magia.render.shader;
-
-import magia.core.vec;
+import magia.core;
 
 import std.exception;
 import std.conv;
@@ -20,9 +17,11 @@ enum TextureType {
     diffuse,
     specular,
     cubemap,
-    multisample,
     postprocess,
-    shadow
+    multisample,
+    shadowmap,
+    picking,
+    depth
 }
 
 // Trace
@@ -53,6 +52,9 @@ class Texture {
 
         // Internal texture format
         GLenum _internalFormat;
+
+        // Internal texture type
+        GLenum _memoryType;
 
         // Name
         string _name;
@@ -200,23 +202,24 @@ class Texture {
 
         // For now, consider diffuses as RGBA, speculars as R
         if (nbChannels == 4) {
-            _dataFormat = GL_RGBA;
             _internalFormat = GL_RGBA;
+            _dataFormat = GL_RGBA;
         }
         else if (nbChannels == 3) {
-            _dataFormat = GL_RGB;
             _internalFormat = GL_RGB;
+            _dataFormat = GL_RGB;
         }
         else if (nbChannels == 1) {
-            _dataFormat = GL_RED;
             _internalFormat = GL_RED;
+            _dataFormat = GL_RED;
         }
         else {
             new Exception("Unsupported texture format for " ~ to!string(type) ~ " texture type");
         }
 
         // Generate texture image
-        glTexImage2D(_target, 0, _internalFormat, _width, _height, 0, _dataFormat, GL_UNSIGNED_BYTE, surface.pixels);
+        _memoryType = GL_UNSIGNED_BYTE;
+        glTexImage2D(_target, 0, _internalFormat, _width, _height, 0, _dataFormat, _memoryType, surface.pixels);
         _nbTextures = 1;
 
         // Generate mipmaps
@@ -247,8 +250,13 @@ class Texture {
         glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(_target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-        for (int i = 0; i < filePaths.length; ++i) {
-            string filePath = buildNormalizedPath("assets", "skybox", filePaths[i]);
+        // Setup formats
+        _internalFormat = GL_RGB;
+        _dataFormat = GL_RGB;
+        _memoryType = GL_UNSIGNED_BYTE;
+
+        for (int cubeMapId = 0; cubeMapId < filePaths.length; ++cubeMapId) {
+            string filePath = buildNormalizedPath("assets", "skybox", filePaths[cubeMapId]);
 
             SDL_Surface* surface = IMG_Load(toStringz(filePath));
             enforce(surface, "can't load image `" ~ filePath ~ "`");
@@ -257,8 +265,8 @@ class Texture {
             _width = surface.w;
             _height = surface.h;
 
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, _width,
-                _height, 0, GL_RGB, GL_UNSIGNED_BYTE, surface.pixels);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cubeMapId, 0, _internalFormat, _width,
+                         _height, 0, _dataFormat, _memoryType, surface.pixels);
             ++_nbTextures;
 
             SDL_FreeSurface(surface);
@@ -288,85 +296,90 @@ class Texture {
     }
 }
 
-/// Texture for multi sample FBOs
-class MultiSampleTexture : Texture {
-    /// Constructor for FBO multisample texture
-    this(uint width, uint height, uint nbSamples) {
-        super(width, height, GL_TEXTURE_2D_MULTISAMPLE, TextureType.multisample);
-
-        // Generate and bind texture
-        glGenTextures(1, &id);
-        glBindTexture(_target, id);
-
-        // Create texture
-        glTexImage2DMultisample(_target, nbSamples, GL_RGB16F, _width, _height, GL_TRUE);
-
-        // Setup filters
-        glTextureParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTextureParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        // Setup wrap
-        glTextureParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTextureParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        // Bind to FBO
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _target, id, 0);
+/// Frame buffer texture
+class FrameBufferTexture : Texture {
+    // @TODO extract to parent class fully?
+    protected {
+        GLenum _attachment;
+        GLint _wrapMode;
     }
-}
 
-/// Texture for post process FBOs
-class PostProcessTexture : Texture {
-    /// Constructor for FBO postprocess texture
-    this(uint width, uint height) {
-        super(width, height, GL_TEXTURE_2D, TextureType.postprocess);
+    /// Constructor given frame buffer type
+    this(TextureType type, uint width, uint height, uint nbSamples = 0) {
+        GLenum target = GL_TEXTURE_2D;
+        if (type == TextureType.multisample) {
+            target = GL_TEXTURE_2D_MULTISAMPLE;
+        }
 
-        // Generate and bind texture
-        glGenTextures(1, &id);
-        glBindTexture(_target, id);
-
-        // Create texture
-        glTexImage2D(_target, 0, GL_RGB16F, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, null);
-
-        // Setup filters
-        glTextureParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTextureParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        // Setup wrap
-        glTextureParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTextureParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        // Bind to FBO
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _target, id, 0);
-    }
-}
-
-/// Texture for shadow FBOs
-class ShadowmapTexture : Texture {
-    /// Constructor for FBO shadow
-    this(uint width, uint height) {
-        super(width, height, GL_TEXTURE_2D, TextureType.shadow);
+        super(width, height, target, type);
 
         // Generate and bind texture
         glGenTextures(1, &id);
         glBindTexture(_target, id);
 
-        // Create texture
-        glTexImage2D(_target, 0, GL_DEPTH_COMPONENT, _width, _height, 0,
-            GL_DEPTH_COMPONENT, GL_FLOAT, null);
+        _memoryType = GL_UNSIGNED_BYTE;
+        _attachment = GL_COLOR_ATTACHMENT0;
+        _wrapMode = GL_CLAMP_TO_EDGE;
+
+        switch(type) {
+            case TextureType.postprocess:
+                _internalFormat = GL_RGB16F;
+                _dataFormat = GL_RGB;
+            break;
+            // Data format/memory type not used for multi sample texture
+            case TextureType.multisample:
+                _internalFormat = GL_RGB16F;
+            break;
+            // A shadow map uses a depth texture
+            case TextureType.shadowmap:
+            case TextureType.depth:
+                _internalFormat = GL_DEPTH_COMPONENT;
+                _dataFormat = GL_DEPTH_COMPONENT;
+                _memoryType = GL_FLOAT;
+                _attachment = GL_DEPTH_ATTACHMENT;
+                _wrapMode = GL_CLAMP_TO_BORDER;
+            break;
+            case TextureType.picking:
+                _internalFormat = GL_RGB32UI;
+                _dataFormat = GL_RGB_INTEGER;
+                _memoryType = GL_UNSIGNED_INT;
+            break;
+            default:
+                throw new Exception("Unsupported frame buffer type");
+        }
+
+        // Generate parametrized texture
+        if (type == TextureType.multisample) {
+            glTexImage2DMultisample(_target, nbSamples, _internalFormat, _width, _height, GL_TRUE);
+        } else {
+            glTexImage2D(_target, 0, _internalFormat, _width, _height, 0, _dataFormat, _memoryType, null);
+        }
 
         // Setup filters
-        glTextureParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTextureParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         // Setup wrap
-        glTextureParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        glTextureParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        glTexParameteri(_target, GL_TEXTURE_WRAP_S, _wrapMode);
+        glTexParameteri(_target, GL_TEXTURE_WRAP_T, _wrapMode);
 
         // Setup shadow color (black)
-        float[] clampColor = [1.0, 1.0, 1.0, 1.0];
-        glTexParameterfv(_target, GL_TEXTURE_BORDER_COLOR, clampColor.ptr);
+        if (type == TextureType.shadowmap) {
+            float[] clampColor = [1.0, 1.0, 1.0, 1.0];
+            glTexParameterfv(_target, GL_TEXTURE_BORDER_COLOR, clampColor.ptr);
+        }
 
-        // Bind to FBO
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _target, id, 0);
+        // Bind to frame buffer
+        bindToFrameBuffer();
+    }
+
+    /// Bind to frame buffer
+    void bindToFrameBuffer() {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, _attachment, _target, id, 0);
+    }
+
+    /// Unbind from frame buffer
+    void unbindFromFrameBuffer() {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, _attachment, target, 0, 0);
     }
 }

@@ -13,12 +13,12 @@ import bindbc.opengl;
 import magia.core;
 import magia.render.buffer;
 import magia.render.camera;
+import magia.render.data;
 import magia.render.entity;
 import magia.render.material;
 import magia.render.mesh;
 import magia.render.renderer;
 import magia.render.shader;
-import magia.render.shapes;
 import magia.render.texture;
 import magia.render.vertex;
 
@@ -26,6 +26,9 @@ private {
     // Trace
     bool s_Trace = false;
     bool s_TraceDeep = false;
+
+    // Debug model
+    bool s_DebugModel = true;
 }
 
 /// Class handling model data and draw call
@@ -41,12 +44,11 @@ final class Model {
         // Mesh data
         Mesh[] _meshes;
 
+        // Raw vertex data
+        Vertex[] _vertices;
+
         // Transformations
         Transform[] _transforms;
-
-        // Instancing
-        mat4[] _instanceMatrices;
-        uint _instances;
 
         // Directory
         string _fileDirectory;
@@ -56,16 +58,12 @@ final class Model {
         static const uint shortType = 5122;
     }
     /// Constructor
-    this(string fileName, uint instances = 1, mat4[] instanceMatrices = [mat4.identity]) {
+    this(string fileName) {
         // Initialize material
         _material = new Material();
 
         // Fetch data
         _data = getData(fileName);
-
-        // Setup instancing if requested
-        _instances = instances;
-        _instanceMatrices = instanceMatrices;
 
         // Fetch root nodes from scenes
         JSONValue scenes = _json["scenes"][0];
@@ -82,9 +80,8 @@ final class Model {
         _data = other._data;
         _json = other._json;
         _meshes = other._meshes;
+        _vertices = other._vertices;
         _transforms = other._transforms;
-        _instances = other._instances;
-        _instanceMatrices = other._instanceMatrices;
         _fileDirectory = other._fileDirectory;
     }
 
@@ -98,6 +95,10 @@ final class Model {
         for (uint meshId = 0; meshId < _meshes.length; ++meshId) {
             Transform finalTransform = Transform(/*_transforms[meshId].model **/ transformModel);
             _meshes[meshId].draw(shader, material, finalTransform);
+
+            if (s_DebugModel) {
+                _vertices[meshId].drawNormal();
+            }
         }
 
         // Revert to usual culling
@@ -327,7 +328,8 @@ final class Model {
             GLuint[] indices = getIndices(_json["accessors"][indicesId]);
             getTextures();
 
-            _meshes ~= new Mesh(new VertexBuffer(vertices, layout3D), indices, _instances, _instanceMatrices);
+            _meshes ~= new Mesh(new VertexBuffer(vertices, layout3D), indices);
+            _vertices ~= vertices;
         }
 
         /// Traverse given node

@@ -3,70 +3,59 @@ module magia.render.frame;
 import std.stdio;
 
 import bindbc.opengl;
+import magia.render.material;
 import magia.render.texture;
 
-/// Frame Buffer Object type
-enum FBOType {
-    Multisample,
-    Postprocess,
-    Shadowmap,
-}
+alias FrameBufferLayout = TextureType[];
 
 /// Class holding a Frame Buffer Object
 class FrameBuffer {
     /// Index
     GLuint id;
 
-    private {
-        Texture _texture;
+    protected {
+        Material _material;
     }
 
     /// Constructor
-    this(FBOType type, uint size, uint nbSamples = 0) {
+    this(FrameBufferLayout layout, uint width, uint height, uint nbSamples = 0) {
+        // Generate frame buffer and bind it
         glGenFramebuffers(1, &id);
         glBindFramebuffer(GL_FRAMEBUFFER, id);
 
-        if (type == FBOType.Postprocess) {
-            _texture = new PostProcessTexture(size, size);
-        } else if(type == FBOType.Multisample) {
-            _texture = new MultiSampleTexture(size, size, nbSamples);
-        } else {
-            _texture = new ShadowmapTexture(size, size);
+        // Create a frame buffer texture for each part of its layout and bind it
+        _material = new Material();
+        foreach (TextureType type; layout) {
+            _material.textures ~= new FrameBufferTexture(type, width, height, nbSamples);
         }
+
+        // Unbind frame buffer (as it may be only used later)
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    /// Bind FBO
+    /// Bind frame buffer
     void bind() {
         glBindFramebuffer(GL_FRAMEBUFFER, id);
     }
 
-    /// Bind FBO in read mode
+    /// Bind frame buffer in read mode
     void bindRead() {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, id);
     }
 
-    /// Bind FBO in draw mode
+    /// Bind frame buffer in draw mode
     void bindDraw() {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, id);
     }
 
-    /// Clear FBO binding
-    void clear() {
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _texture.target, 0, 0);
+    /// Unbind texture from frame buffer
+    void unbindTexture(uint textureId) {
+        // @TODO correct when generic Texture class ready once again
+        //_material.textures[textureId].unbindFromFrameBuffer();
     }
 
-    /// Unbind FBO (bind to default FBO)
+    /// Unbind frame buffer globally
     static void unbind() {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
-
-    /// Unbind FBO (bind to default FBO)
-    static void unbindRead() {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
-
-    /// Unbind FBO (bind to default FBO)
-    static void unbindDraw() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
@@ -75,17 +64,17 @@ class FrameBuffer {
         glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
 
-    /// Delete FBO
+    /// Delete frame buffer
     void remove() {
         glDeleteFramebuffers(1, &id);
     }
 
     /// Bind attached texture
-    void bindTexture(GLuint slot = 0) {
-        _texture.bind(slot);
+    void bindTexture(uint textureId, GLuint slot = 0) {
+        _material.textures[textureId].bind(slot);
     }
 
-    /// Check FBO status
+    /// Check frame buffer status
     static void check(string name) {
         GLenum FBOStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (FBOStatus != GL_FRAMEBUFFER_COMPLETE) {

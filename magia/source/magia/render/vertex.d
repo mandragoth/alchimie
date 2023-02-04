@@ -1,7 +1,7 @@
 module magia.render.vertex;
 
-import magia.core.vec;
-import magia.core.color;
+import magia.core;
+import magia.render.renderer;
 
 /// Class holding a Vertex
 struct Vertex {
@@ -20,5 +20,10 @@ struct Vertex {
         normal = normal_;
         color = color_;
         texUV = texUV_;
+    }
+
+    /// Draw normals for debug
+    void drawNormal() {
+        renderer.drawLine(position, position + normal, Color.blue);
     }
 }
