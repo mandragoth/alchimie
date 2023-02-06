@@ -3,7 +3,8 @@ module magia.render.text;
 import std.conv : to;
 
 import magia.core;
-import magia.render.font, magia.render.window;
+import magia.render.font;
+import magia.render.postprocess;
 
 /// Render text on screen
 void drawText(mat4 transform, string text, float x, float y, Font font = null) {
@@ -12,8 +13,6 @@ void drawText(mat4 transform, string text, float x, float y, Font font = null) {
     }
 
     const _charScale = 1;
-    Color color = getBaseColor();
-    const alpha = getBaseAlpha();
     const _charSpacing = 0;
 
     vec2 pos = vec2(x, y);
@@ -34,7 +33,7 @@ void drawText(mat4 transform, string text, float x, float y, Font font = null) {
             
             const float drawPosX = pos.x + metrics.offsetX * _charScale;
             const float drawPosY = pos.y - metrics.offsetY * _charScale;
-            metrics.draw(transform, drawPosX, drawPosY, _charScale, color, alpha);
+            metrics.draw(transform, drawPosX, drawPosY, _charScale, bgColor, bgAlpha);
 
             // Update char position
             pos.x += (metrics.advance + _charSpacing) * _charScale;

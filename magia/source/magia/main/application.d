@@ -69,7 +69,7 @@ class Application {
         initFont();
 
         // Create window
-        createWindow(size, title);
+        window = new Window(size, title);
         _tickStartFrame = Clock.currStdTime();
     }
 
@@ -91,7 +91,7 @@ class Application {
     void update() {
         _uiManager.update(_timeStep.delta);
         _scene.update(_timeStep);
-        updateFPS();
+        window.update();
     }
 
     /// Render application
@@ -109,12 +109,12 @@ class Application {
         _uiManager.draw();
 
         // Render all draw calls on window
-        renderWindow();
+        window.render();
     }
 
     /// Render
     void render() {
-        renderWindow();
+        window.render();
     }
 
     /// Set application icon
@@ -125,14 +125,5 @@ class Application {
     /// Append UI element at root level
     void appendUIRootElement(UIElement ui) {
         _uiManager.appendRoot(ui);
-    }
-
-    /// Update delta time, tick, FPS
-    private void updateFPS() {
-        const long deltaTicks = Clock.currStdTime() - _tickStartFrame;
-        float deltatime = (cast(float)(deltaTicks) / 10_000_000f) * getNominalFPS();
-        _timeStep = TimeStep(deltatime);
-        _currentFps = (deltatime == .0f) ? .0f : (10_000_000f / cast(float)(deltaTicks));
-        _tickStartFrame = Clock.currStdTime();
     }
 }

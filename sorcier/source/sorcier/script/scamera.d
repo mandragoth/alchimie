@@ -38,7 +38,7 @@ void loadAlchimieLibCamera(GrLibDefinition library) {
 }
 
 private void _newPerspectiveCamera(GrCall call) {
-    PerspectiveCamera camera = new PerspectiveCamera();
+    PerspectiveCamera camera = new PerspectiveCamera(window.screenWidth, window.screenHeight);
     renderer.cameras ~= camera;
     call.setNative(camera);
 }
@@ -184,9 +184,9 @@ private void _setForward(GrCall call) {
 }
 
 private void _getScreenWidth(GrCall call) {
-    call.setInt(cast(int)screenWidth);
+    call.setInt(cast(int)window.screenWidth);
 }
 
 private void _getScreenHeight(GrCall call) {
-    call.setInt(cast(int)screenHeight);
+    call.setInt(cast(int)window.screenHeight);
 }

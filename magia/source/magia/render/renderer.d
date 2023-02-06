@@ -93,7 +93,7 @@ class Renderer {
 
         // Load frame buffers for post process effects
         _pickingFrameBuffer = new FrameBuffer([TextureType.picking, TextureType.depth],
-                                              screenWidth, screenHeight);
+                                              window.screenWidth, window.screenHeight);
 
         // Enable multi sampling and setup clear color
         glEnable(GL_MULTISAMPLE);
@@ -210,10 +210,10 @@ class Renderer {
 
     private Transform toScreenSpace(vec2 position, vec2 size) {
         // Express size as ratio of size and screen size
-        size = size / screenSize;
+        size = size / window.screenSize;
 
         // Express position as ratio of position and screen size
-        position = _coordinates.origin + position / screenSize * 2 * _coordinates.axis + size * _coordinates.axis;
+        position = _coordinates.origin + position / window.screenSize * 2 * _coordinates.axis + size * _coordinates.axis;
 
         // Set transform
         return Transform(vec3(position, 0), vec3(size, 0));

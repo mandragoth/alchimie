@@ -136,7 +136,7 @@ final class Runtime {
                     _engine = null;
                     writeln(err);
 
-                    destroyWindow();
+                    destroy(window);
                     return;
                 }
             }

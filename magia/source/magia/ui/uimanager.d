@@ -49,7 +49,7 @@ class UIManager {
         mat4 position = mat4.identity;
         mat4 size = mat4.identity;
         position.translate(-1f, -1f, 0.0f);
-        size.scale(1f / screenSize().x, 1f / screenSize().y, 1.0f);
+        size.scale(1f / window.screenSize().x, 1f / window.screenSize().y, 1.0f);
 
         mat4 transform = position * size;
         foreach (UIElement element; _roots) {
@@ -81,8 +81,8 @@ class UIManager {
         float x = element.posX + element.offsetX;
         float y = element.posY + element.offsetY;
         
-        const float parentW = parent ? parent.sizeX : screenWidth();
-        const float parentH = parent ? parent.sizeY : screenHeight();
+        const float parentW = parent ? parent.sizeX : window.screenWidth();
+        const float parentH = parent ? parent.sizeY : window.screenHeight();
 
         final switch (element.alignX) with (UIElement.AlignX) {
             case left:

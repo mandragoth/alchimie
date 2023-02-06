@@ -241,7 +241,7 @@ final class InputManager {
             case SDL_WINDOWEVENT:
                 switch (sdlEvent.window.event) {
                 case SDL_WINDOWEVENT_RESIZED:
-                    resizeWindow(vec2u(sdlEvent.window.data1, sdlEvent.window.data2));
+                    window.resizeWindow(vec2u(sdlEvent.window.data1, sdlEvent.window.data2));
                     break;
                 case SDL_WINDOWEVENT_SIZE_CHANGED:
                     break;

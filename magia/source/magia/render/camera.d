@@ -111,7 +111,7 @@ class OrthographicCamera : Camera {
 
     /// Constructor
     this() {
-        _aspectRatio = getAspectRatio();
+        _aspectRatio = window.getAspectRatio();
         computeProjectionMatrix();
     }
 
@@ -174,21 +174,20 @@ class PerspectiveCamera : Camera {
     }
 
     /// Default constructor (by default looks aways from screen along Z, and up is positive along Y axis)
-    this(uint width = screenWidth, uint height = screenHeight,
-         vec3 position = vec3.zero, vec3 target = vec3.back, vec3 up = vec3.up) {
+    this(uint width, uint height, vec3 position = vec3.zero, vec3 target = vec3.back, vec3 up = vec3.up) {
         // Setup position
         transform.position = position;
 
         // Dimensions
-        _width = screenWidth;
-        _height = screenHeight;
+        _width = width;
+        _height = height;
 
         // Main axis for VP matrix
         _target = target;
         _up = up;
 
         // Default viewport covers their dimensions
-        _viewport = vec4i(0, 0, screenWidth, screenHeight);
+        _viewport = vec4i(0, 0, width, height);
     }
 
     /// Setting up camera matrices operations
