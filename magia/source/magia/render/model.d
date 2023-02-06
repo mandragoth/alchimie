@@ -28,7 +28,7 @@ private {
     bool s_TraceDeep = false;
 
     // Debug model
-    bool s_DebugModel = true;
+    bool s_DebugModel = false;
 }
 
 /// Class handling model data and draw call
