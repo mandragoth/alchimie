@@ -7,9 +7,6 @@ import magia.render.mesh;
 import magia.render.texture;
 import magia.render.vertex;
 
-/// 2D sprite layout
-BufferLayout layout2D;
-
 /// 3D model layout
 BufferLayout layout3D;
 
@@ -19,8 +16,8 @@ Mesh rectMesh;
 /// Quad mesh
 Mesh quadMesh;
 
-/// Cube mesh
-Mesh cubeMesh;
+/// Skybox mesh
+Mesh skyboxMesh;
 
 /// Default texture
 Texture defaultTexture;
@@ -34,7 +31,7 @@ void loadShapes() {
     defaultTexture = new Texture(1, 1, 0xffffffff);
     defaultMaterial = new Material(defaultTexture);
 
-    layout2D = new BufferLayout([
+    BufferLayout layout2D = new BufferLayout([
         BufferElement("a_Position", LayoutType.ltFloat2),
         BufferElement("a_TexCoords", LayoutType.ltFloat2)
     ]);
@@ -44,10 +41,10 @@ void loadShapes() {
         1f, -1f, 1f, 0f, // |     |
         1f,  1f, 1f, 1f, // |     |
        -1f,  1f, 0f, 1f  // 0-----1
-    ], layout2D), [
+    ], layout2D), new IndexBuffer([
         0, 1, 2,
         2, 3, 0
-    ]);
+    ]));
 
     layout3D = new BufferLayout([
         BufferElement("a_Position", LayoutType.ltFloat3),
@@ -62,22 +59,26 @@ void loadShapes() {
         Vertex(vec3(-1f, 0f, -1f), vec2(0f, 1f), vec3.up), // |     |
         Vertex(vec3( 1f, 0f, -1f), vec2(1f, 1f), vec3.up), // |     |
         Vertex(vec3( 1f, 0f,  1f), vec2(1f, 0f), vec3.up)  // 1-----2
-    ], layout3D), [      
+    ], layout3D), new IndexBuffer([
         0, 1, 2,
         0, 2, 3
+    ]));
+
+    BufferLayout layoutSkybox = new BufferLayout([
+        BufferElement("a_Position", LayoutType.ltFloat3)
     ]);
 
-    cubeMesh = new Mesh(new VertexBuffer([
+    skyboxMesh = new Mesh(new VertexBuffer([
         // Coordinates (x, y, z)
-        Vertex(vec3(-1f, -1f,  1f)),   //      7---------6
-        Vertex(vec3( 1f, -1f,  1f)),   //     /|        /|
-        Vertex(vec3( 1f, -1f, -1f)),   //    4---------5 |
-        Vertex(vec3(-1f, -1f, -1f)),   //    | |       | |
-        Vertex(vec3(-1f,  1f,  1f)),   //    | 3-------|-2
-        Vertex(vec3( 1f,  1f,  1f)),   //    |/        |/
-        Vertex(vec3( 1f,  1f, -1f)),   //    0---------1
-        Vertex(vec3(-1f,  1f, -1f))    //
-    ], layout3D), [      
+       -1f, -1f,  1f,   //      7---------6
+        1f, -1f,  1f,   //     /|        /|
+        1f, -1f, -1f,   //    4---------5 |
+       -1f, -1f, -1f,   //    | |       | |
+       -1f,  1f,  1f,   //    | 3-------|-2
+        1f,  1f,  1f,   //    |/        |/
+        1f,  1f, -1f,   //    0---------1
+       -1f,  1f, -1f    //
+    ], layoutSkybox), new IndexBuffer([
         // Right
         6, 5, 1,
         1, 2, 6,
@@ -96,5 +97,5 @@ void loadShapes() {
         // Front
         3, 7, 6,
         6, 2, 3 
-    ]);
+    ]));
 }

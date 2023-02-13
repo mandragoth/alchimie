@@ -27,20 +27,15 @@ final class Mesh {
     }
 
     /// Constructor (@TODO pack instanceMatrices inside vertex buffer on caller side)
-    this(VertexBuffer vertexBuffer, uint[] indices = null, GLenum drawMode = GL_TRIANGLES,
+    this(VertexBuffer vertexBuffer, IndexBuffer indexBuffer = null, GLenum drawMode = GL_TRIANGLES,
          uint instances = 1, mat4[] instanceMatrices = [mat4.identity]) {
         // Setup draw mode and instances
         _drawMode = drawMode;
         _instances = instances;
 
         // Generate and bind vertex array
-        _vertexArray = new VertexArray(vertexBuffer);
+        _vertexArray = new VertexArray(vertexBuffer, indexBuffer);
         _vertexArray.bind();
-
-        // Link indices if necessary
-        if (indices) {
-            _vertexArray.setIndexBuffer(new IndexBuffer(indices));
-        }
 
         // Transpose all matrices to pass them onto the Vertex Buffer properly (costly?)
         /*for (int instanceId = 0; instanceId < instanceMatrices.length; ++instanceId) {
@@ -72,7 +67,7 @@ final class Mesh {
 
         // Forward material textures to shader
         uint textureId = 0;
-        foreach (Texture texture; material.textures) {
+        foreach (ref Texture texture; material.textures) {
             const TextureType type = texture.type;
 
             string name;
@@ -85,8 +80,9 @@ final class Mesh {
             } else if (type == TextureType.specular) {
                 name = "u_Specular" ~ to!string(nbSpecularTextures);
                 ++nbSpecularTextures;
-            } 
+            }
 
+            // @TODO Likely wrong, we want to update the id of the matching type
             shader.uploadUniformInt(toStringz(name), textureId);
             texture.bind();
             ++textureId;

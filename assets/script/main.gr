@@ -18,7 +18,7 @@ task runtime() {
     var remilia2 = @Sprite("remilia", @vec4i(96, 48, 32, 48));
     remilia2:position2D(@vec2(12.5f + 32f, 0f));
 
-    //var skybox = @Skybox("");
+    var skybox = @Skybox(""); // @TODO fix
     var globalLight = @DirectionalLight(@vec3(0f, -10f, 0f), .2f, .01f);
     //var pointLight1 = @PointLight(@vec3(-1f, 0.5f, 0f), @color(1f, 0f, 0f), 0f, 0.3f);
     //var pointLight2 = @PointLight(@vec3(1f, 0.5f, 0f), @color(0f, 1f, 0f), 0f, 0.3f);
@@ -28,23 +28,29 @@ task runtime() {
 
     //var cube = @Model("cube");
 
-    /*var jupiter = @Model("jupiter");
+    var jupiter = @Model("jupiter");
     jupiter:position(@vec3(0f, 0f, -2f));
-    jupiter:scale(@vec3(.05f, .05f, .05f));*/
+    jupiter:scale(@vec3(.05f, .05f, .05f));
 
     var reimu = @Model("reimu");
     reimu:scale(@vec3(0.1f, 0.1f, 0.1f));
     reimu:position(@vec3(0f, -1f, 0f));
     reimu:addTexture("reimu_body");
 
+    var reimuHair = @Model("reimu_hair");
+    // @TODO add as child
+    // @TODO texture
+
     loop yield {
         clear();
 
         setup3D();
 
-        //skybox:draw();
+        skybox:draw();
 
+        jupiter:draw();
         reimu:draw();
+        reimuHair:draw();
 
         setup2D();
 

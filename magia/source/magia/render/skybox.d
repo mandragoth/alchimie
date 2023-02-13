@@ -47,8 +47,7 @@ final class Skybox : Entity {
     override void draw() {
         glDepthFunc(GL_LEQUAL);
 
-        cubeMesh.bindData(_shader, _material);
-        _shader.activate();
+        skyboxMesh.bindData(_shader, _material);
 
         // @TODO handle generically?
         foreach (Camera camera; renderer.cameras) {

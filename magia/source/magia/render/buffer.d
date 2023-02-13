@@ -240,7 +240,7 @@ class VertexBuffer {
     }
 
     /// Bind for usage
-    void bind() {
+    void bind() const {
         glBindBuffer(GL_ARRAY_BUFFER, id);
     }
 
@@ -280,7 +280,7 @@ class IndexBuffer {
     }
 
     /// Bind for usage
-    void bind() {
+    void bind() const {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
     }
 

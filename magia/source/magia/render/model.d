@@ -90,11 +90,11 @@ final class Model {
         // Model culling is the opposite of usual objects
         glCullFace(GL_BACK);
 
-        mat4 transformModel = combineModel(transform);
+        // @TODO optimize this step
+        transform.recomputeModel();
 
         for (uint meshId = 0; meshId < _meshes.length; ++meshId) {
-            Transform finalTransform = Transform(/*_transforms[meshId].model **/ transformModel);
-            _meshes[meshId].draw(shader, material, finalTransform);
+            _meshes[meshId].draw(shader, material, _transforms[meshId] * transform);
 
             if (s_DebugModel) {
                 _vertices[meshId].drawNormal();
@@ -328,7 +328,7 @@ final class Model {
             GLuint[] indices = getIndices(_json["accessors"][indicesId]);
             getTextures();
 
-            _meshes ~= new Mesh(new VertexBuffer(vertices, layout3D), indices);
+            _meshes ~= new Mesh(new VertexBuffer(vertices, layout3D), new IndexBuffer(indices));
             _vertices ~= vertices;
         }
 
@@ -383,9 +383,8 @@ final class Model {
                 }
             }
 
-            const mat4 combinedTransform = combineModel(translation, rotation, scale);
-
-            mat4 matNextNode = matrix * matNode * combinedTransform;
+            // Combine parent and current transform matrices
+            mat4 matNextNode = matrix * matNode;
 
             // Load current node mesh
             if (hasJson(node, "mesh")) {

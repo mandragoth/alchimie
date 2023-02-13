@@ -11,11 +11,20 @@ class VertexArray {
     /// Index
     uint id;
 
+    @property {
+        /// Return index buffer element count if any
+        uint elementCount() {
+            return _indexBuffer ? _indexBuffer.count : 0;
+        }
+    }
+
     /// Element count
-    uint elementCount;
+    private {
+        IndexBuffer _indexBuffer;
+    }
 
     /// Constructor
-    this(VertexBuffer vertexBuffer) {
+    this(VertexBuffer vertexBuffer, IndexBuffer indexBuffer) {
         // Create vertex array and bind it
         glCreateVertexArrays(1, &id);
         glBindVertexArray(id);
@@ -24,6 +33,9 @@ class VertexArray {
         vertexBuffer.bind();
         vertexBuffer.setupElements();
         vertexBuffer.unbind();
+
+        // Save index buffer set it up
+        _indexBuffer = indexBuffer;
     }
 
     /// Destructor
@@ -31,21 +43,19 @@ class VertexArray {
         glDeleteVertexArrays(1, &id);
     }
 
-    /// Add index buffer to context
-    void setIndexBuffer(IndexBuffer indexBuffer) {
-        // Bind vertex array
-        glBindVertexArray(id);
-        elementCount = indexBuffer.count;
-    }
-
     /// Bind VAO
     void bind() const {
         glBindVertexArray(id);
+
+        if (_indexBuffer) {
+            _indexBuffer.bind();
+        }
     }
 
     /// Unbind VAO
     static void unbind() {
         glBindVertexArray(0);
+        IndexBuffer.unbind();
     }
 
     /// Delete VAO

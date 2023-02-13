@@ -78,7 +78,7 @@ class Sphere : Entity {
             }
         }
 
-        _meshes ~= new Mesh(new VertexBuffer(vertices, layout3D), indices);
+        _meshes ~= new Mesh(new VertexBuffer(vertices, layout3D), new IndexBuffer(indices));
     }
 
     /// Generate a point on the sphere's surface

@@ -3,6 +3,7 @@ module magia.core.transform;
 import magia.core.mat;
 import magia.core.quat;
 import magia.core.vec;
+import magia.core.util;
 
 /// Transform structure
 struct Transform {
@@ -18,9 +19,31 @@ struct Transform {
     /// Matrix model
     private mat4 _model;
 
-    /// Model getter
-    @property mat4 model() const {
-        return _model;
+    @property {
+        /// Default transform
+        static @property Transform identity() {
+            return Transform(vec3.zero);
+        }
+
+        /// Get model
+        mat4 model() const {
+            return _model;
+        }
+
+        /// Get 2D position
+        vec2 position2D() const {
+            return vec2(position.x, position.y);
+        }
+
+        /// Setup internal quaternion given euler angles
+        void rotationFromEuler(vec3 eulerAngles) {
+            rotation = quat.euler_rotation(eulerAngles.x, eulerAngles.y, eulerAngles.z);
+        }
+
+        /// Get euler rotation given a quaternion
+        vec3 rotationToEuler() const {
+            return vec3(rotation.roll, rotation.pitch, rotation.yaw) * radToDeg;
+        }
     }
 
     /// Constructor given position, scale
@@ -47,26 +70,17 @@ struct Transform {
         scale = scale_;
     }
 
-    @property {
-        /// Setup internal quaternion given euler angles
-        void rotationFromEuler(vec3 eulerAngles) {
-            rotation = quat.euler_rotation(eulerAngles.x, eulerAngles.y, eulerAngles.z);
-        }
-
-        /// Get euler rotation given a quaternion
-        vec3 rotationToEuler() const {
-            return vec3(rotation.roll, rotation.pitch, rotation.yaw);
-        }
-
-        /// Get 2D position
-        vec2 position2D() const {
-            return vec2(position.x, position.y);
-        }
+    /// Compute transform model
+    void recomputeModel() {
+        _model = combineModel(position, rotation, scale);
     }
 
-    /// Default transform
-    static @property Transform identity() {
-        return Transform(vec3.zero);
+    /// Combine two transforms
+    Transform opBinary(string op : "*")(Transform other) const {
+        return Transform(_model * other._model,
+                         position + other.position,
+                         rotation * other.rotation,
+                         scale * other.scale);
     }
 }
 
