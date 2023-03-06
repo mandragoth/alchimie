@@ -293,22 +293,48 @@ class Renderer {
 }
 
 /// Debug messages thrown by openGL
-extern(C) {
-void openGLLogMessage(GLenum, GLenum, GLuint, GLenum severity, GLsizei, const GLchar* message, void *) nothrow {
-    switch(severity) {
-        case GL_DEBUG_SEVERITY_HIGH:
-            printf("[OPENGL][FATAL] %s", message);
-            break;
-        case GL_DEBUG_SEVERITY_MEDIUM:
-            printf("[OPENGL][MEDIUM] %s", message);
-            break;
-        case GL_DEBUG_SEVERITY_LOW:
-            printf("[OPENGL][MINOR] %s", message);
-            break;
-        case GL_DEBUG_SEVERITY_NOTIFICATION:
-        default:
-            //printf("[OPENGL][INFO] %s", message);
-            break;
+version (linux) {
+    extern (C) {
+        void openGLLogMessage(GLenum, GLenum, GLuint, GLenum severity, GLsizei,
+            const GLchar* message, void*) nothrow {
+            switch (severity) {
+            case GL_DEBUG_SEVERITY_HIGH:
+                printf("[OPENGL][FATAL] %s", message);
+                break;
+            case GL_DEBUG_SEVERITY_MEDIUM:
+                printf("[OPENGL][MEDIUM] %s", message);
+                break;
+            case GL_DEBUG_SEVERITY_LOW:
+                printf("[OPENGL][MINOR] %s", message);
+                break;
+            case GL_DEBUG_SEVERITY_NOTIFICATION:
+            default:
+                //printf("[OPENGL][INFO] %s", message);
+                break;
+            }
+        }
     }
 }
+/// Ditto
+version (Windows) {
+    extern (Windows) {
+        void openGLLogMessage(GLenum, GLenum, GLuint, GLenum severity, GLsizei,
+            const GLchar* message, void*) nothrow {
+            switch (severity) {
+            case GL_DEBUG_SEVERITY_HIGH:
+                printf("[OPENGL][FATAL] %s", message);
+                break;
+            case GL_DEBUG_SEVERITY_MEDIUM:
+                printf("[OPENGL][MEDIUM] %s", message);
+                break;
+            case GL_DEBUG_SEVERITY_LOW:
+                printf("[OPENGL][MINOR] %s", message);
+                break;
+            case GL_DEBUG_SEVERITY_NOTIFICATION:
+            default:
+                //printf("[OPENGL][INFO] %s", message);
+                break;
+            }
+        }
+    }
 }
