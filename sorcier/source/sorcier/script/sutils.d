@@ -5,7 +5,7 @@ import std.stdio;
 import magia;
 import grimoire;
 
-void print(GrStringValue message) {
+void print(string message) {
     writeln(message);
 }
 

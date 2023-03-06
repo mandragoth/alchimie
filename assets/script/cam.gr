@@ -1,4 +1,4 @@
-public func setupCamera() {
+export func setupCamera() {
     setupControls();
     //camera2D();
     camera3D();

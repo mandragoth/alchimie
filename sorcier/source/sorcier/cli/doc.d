@@ -15,7 +15,6 @@ import sorcier.script;
 void generateDoc() {
     const GrLocale locale = GrLocale.fr_FR;
     const auto startTime = MonoTime.currTime();
-    grLoadStdLibConstraint();
 
     generate(GrLocale.fr_FR);
     generate(GrLocale.en_US);
