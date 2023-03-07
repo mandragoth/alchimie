@@ -6,24 +6,37 @@ export func setupCamera() {
 }
 
 func setupControls() {
+    addAction("move_forward", 0.2);
+    addAction("move_backward", 0.2);
     addAction("move_up", 0.2);
     addAction("move_down", 0.2);
     addAction("move_left", 0.2);
     addAction("move_right", 0.2);
+    addAction("turn_up", 0.2);
+    addAction("turn_down", 0.2);
+    addAction("turn_left", 0.2);
+    addAction("turn_right", 0.2);
     addAction("roll_left", 0.2);
     addAction("roll_right", 0.2);
     addAction("zoom_in", 0.2);
     addAction("zoom_out", 0.2);
+    addAction("exit", 0.2);
+    
+    addActionEvent("move_forward", @InputEvent.controllerAxis(ControllerAxis.leftY, -1f));
+    addActionEvent("move_forward", @InputEvent.controllerButton(ControllerButton.up, true));
+    addActionEvent("move_forward", @InputEvent.keyButton(KeyButton.up, true, false));
+    addActionEvent("move_forward", @InputEvent.keyButton(KeyButton.w, true, false));
 
-    addActionEvent("move_up", @InputEvent.controllerAxis(ControllerAxis.leftY, -1f));
-    addActionEvent("move_up", @InputEvent.controllerButton(ControllerButton.up, true));
-    addActionEvent("move_up", @InputEvent.keyButton(KeyButton.up, true, false));
-    addActionEvent("move_up", @InputEvent.keyButton(KeyButton.w, true, false));
+    addActionEvent("move_backward", @InputEvent.controllerAxis(ControllerAxis.leftY, 1f));
+    addActionEvent("move_backward", @InputEvent.controllerButton(ControllerButton.down, true));
+    addActionEvent("move_backward", @InputEvent.keyButton(KeyButton.down, true, false));
+    addActionEvent("move_backward", @InputEvent.keyButton(KeyButton.s, true, false));
 
-    addActionEvent("move_down", @InputEvent.controllerAxis(ControllerAxis.leftY, 1f));
-    addActionEvent("move_down", @InputEvent.controllerButton(ControllerButton.down, true));
-    addActionEvent("move_down", @InputEvent.keyButton(KeyButton.down, true, false));
-    addActionEvent("move_down", @InputEvent.keyButton(KeyButton.s, true, false));
+    addActionEvent("move_up", @InputEvent.controllerAxis(ControllerAxis.rightTrigger, 1f));
+    addActionEvent("move_up", @InputEvent.keyButton(KeyButton.space, true, false));
+
+    addActionEvent("move_down", @InputEvent.controllerAxis(ControllerAxis.leftTrigger, 1f));
+    addActionEvent("move_down", @InputEvent.keyButton(KeyButton.leftShift, true, false));
 
     addActionEvent("move_left", @InputEvent.controllerAxis(ControllerAxis.leftX, -1f));
     addActionEvent("move_left", @InputEvent.controllerButton(ControllerButton.left, true));
@@ -34,6 +47,11 @@ func setupControls() {
     addActionEvent("move_right", @InputEvent.controllerButton(ControllerButton.right, true));
     addActionEvent("move_right", @InputEvent.keyButton(KeyButton.right, true, false));
     addActionEvent("move_right", @InputEvent.keyButton(KeyButton.d, true, false));
+
+    addActionEvent("turn_up", @InputEvent.controllerAxis(ControllerAxis.rightY, 1f));
+    addActionEvent("turn_down", @InputEvent.controllerAxis(ControllerAxis.rightY, -1f));
+    addActionEvent("turn_left", @InputEvent.controllerAxis(ControllerAxis.rightX, -1f));
+    addActionEvent("turn_right", @InputEvent.controllerAxis(ControllerAxis.rightX, 1f));
 
     addActionEvent("roll_left", @InputEvent.controllerButton(ControllerButton.leftShoulder, true));
     addActionEvent("roll_left", @InputEvent.keyButton(KeyButton.q, true, false));
@@ -46,6 +64,9 @@ func setupControls() {
 
     addActionEvent("zoom_in", @InputEvent.mouseWheel(0, -1));
     addActionEvent("zoom_out", @InputEvent.mouseWheel(0, 1));
+
+    addActionEvent("exit", @InputEvent.controllerButton(ControllerButton.start, true));
+    addActionEvent("exit", @InputEvent.keyButton(KeyButton.escape, true, false));
 }
 
 task camera2D() {
@@ -82,16 +103,16 @@ task camera2D() {
 var mouseX : int;
 var mouseY : int;
 
-event input(inputs: list<InputEvent>) {
-    mouseX = 0;
-    mouseY = 0;
-    for(input, inputs) {
-        switch(input.type)
-        case(InputEventType.mouseMotion) {
-            var input = input.mouseMotion?;
-            mouseX = input.relativeX;
-            mouseY = input.relativeY;
-        }
+event input(input: InputEvent) {
+    switch(input.type)
+    case(InputEventType.mouseMotion) {
+        var input = input.mouseMotion?;
+        mouseX = input.relativeX;
+        mouseY = input.relativeY;
+    }
+
+    if(input.isAction("exit")) {
+        exit;
     }
 }
 
@@ -102,6 +123,7 @@ task camera3D() {
     var moveSpeed = .05f;
     var zoomSpeed = .15f;
     var mouseSensitivity = .5f;
+    var controllerSensitivity = 2f;
     var minRotX = 5f * degToRad();
 
     var cPosition = camera.position;
@@ -113,15 +135,17 @@ task camera3D() {
 
         cPosition += xAxis * getActionAxis("move_left", "move_right") * moveSpeed +
                      yAxis * getActionAxis("move_down", "move_up") * moveSpeed +
-                     zAxis * getActionAxis("zoom_in", "zoom_out") * zoomSpeed;
+                     zAxis * getActionAxis("move_backward", "move_forward") * zoomSpeed;
         camera:position(cPosition);
 
         var deltaPos = @vec2i(mouseX, mouseY);
-        var rotX = mouseSensitivity * deltaPos.x;
-        var rotY = mouseSensitivity * deltaPos.y;
+        var rotX = mouseSensitivity * deltaPos.x + controllerSensitivity * getActionAxis("turn_left", "turn_right");
+        var rotY = mouseSensitivity * deltaPos.y + controllerSensitivity * getActionAxis("turn_down", "turn_up");
+
+        mouseX, mouseY = 0;
 
         // Rotate Z around X
-        var newZAxis = rotate(zAxis, xAxis, -rotY * degToRad());
+        var newZAxis = rotate(zAxis, xAxis, rad(-rotY));
 
         // New angle between (z, y)
         var angleUp = angle(newZAxis, yAxis);
@@ -133,7 +157,7 @@ task camera3D() {
         }
 
         // Rotate Z around Y
-        camera:forward(rotate(newZAxis, yAxis, -rotX * degToRad()));
+        camera:forward(rotate(newZAxis, yAxis, rad(-rotX)));
 
         // @TODO Get mouse position, create a Ray from it (cached as private variable)
         // @TODO Use ray to query entities in the scene, fetch the one closest to the camera near plane

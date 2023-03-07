@@ -23,8 +23,7 @@ void bootUp(string[] args) {
         string exeName = stripExtension(baseName(exePath));
 
         bootFile = buildNormalizedPath(exeDir, setExtension(exeName, Alchimie_BootExt));
-    }
-    else {
+    } else {
         bootFile = setExtension("boot", Alchimie_BootExt);
     }
 
@@ -71,8 +70,7 @@ final class Runtime {
 
         version (AlchimieDist) {
             _bytecode = new GrBytecode(_filePath);
-        }
-        else {
+        } else {
             GrCompiler compiler = new GrCompiler;
             compiler.addLibrary(_stdLib);
             compiler.addLibrary(_alchimieLib);
@@ -82,6 +80,7 @@ final class Runtime {
 
             if (!_bytecode) {
                 writeln(compiler.getError().prettify(GrLocale.fr_FR));
+                return;
             }
         }
 
@@ -93,10 +92,10 @@ final class Runtime {
         _engine.callEvent("onLoad");
 
         _inputEvent = _engine.getEvent("input", [
-                grList(grGetNativeType("InputEvent"))
+                grGetNativeType("InputEvent")
             ]);
         _lateInputEvent = _engine.getEvent("lateInput", [
-                grList(grGetNativeType("InputEvent"))
+                grGetNativeType("InputEvent")
             ]);
 
         grSetOutputFunction(&print);
@@ -112,6 +111,9 @@ final class Runtime {
     }
 
     void run() {
+        if (!_engine)
+            return;
+
         _tickStartFrame = Clock.currStdTime();
 
         while (currentApplication.isRunning()) {
@@ -119,12 +121,20 @@ final class Runtime {
 
             if (_engine) {
                 if (_inputEvent) {
-                    _engine.callEvent(_inputEvent, [GrValue(inputEvents)]);
-                    remove!(a => a.isAccepted)(inputEvents);
+                    foreach (InputEvent inputEvent; inputEvents) {
+                        _engine.callEvent(_inputEvent, [GrValue(inputEvent)]);
+                    }
                 }
 
                 if (_engine.hasTasks)
                     _engine.process();
+                else {
+                    _engine = null;
+                    destroy(window);
+                    return;
+                }
+
+                remove!(a => a.isAccepted)(inputEvents);
 
                 if (_engine.isPanicking) {
                     string err = "panique: " ~ _engine.panicMessage ~ "\n";
