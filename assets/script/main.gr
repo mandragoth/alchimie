@@ -13,10 +13,10 @@ event onLoad() {
 
 task runtime() {
     var remilia = @Sprite("remilia", @vec4i(0, 0, 32, 48));
-    remilia:position2D(@vec2(12.5f, 0f));
+    remilia:position2D(@vec2f(12.5f, 0f));
 
     var remilia2 = @Sprite("remilia", @vec4i(96, 48, 32, 48));
-    remilia2:position2D(@vec2(12.5f + 32f, 0f));
+    remilia2:position2D(@vec2f(12.5f + 32f, 0f));
 
     var skybox = @Skybox(""); // @TODO fix
     var globalLight = @DirectionalLight(@vec3(0f, -10f, 0f), .2f, .01f);

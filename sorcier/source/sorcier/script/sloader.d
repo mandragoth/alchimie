@@ -6,8 +6,9 @@ import sorcier.script.scommon;
 import sorcier.script.sdrawable;
 import sorcier.script.sinput;
 import sorcier.script.smath;
-import sorcier.script.sutils;
+import sorcier.script.common;
 import sorcier.script.sui;
+import sorcier.script.svec2;
 
 /// Charge la bibliothèque d’alchimie
 GrLibrary loadAlchimieLibrary() {
@@ -23,7 +24,7 @@ GrLibrary loadAlchimieLibrary() {
 /// Retourne les fonctions de chargement de la bibliothèque d’alchimie
 GrLibLoader[] getAlchimieLibraryLoaders() {
     return [
-        &loadAlchimieLibCommon, &loadAlchimieLibMath, &loadAlchimieLibDrawable, 
+        &loadAlchimieLibCommon, &loadAlchimieLibMath, &loadAlchimieLibVec2, &loadAlchimieLibDrawable, 
         &loadAlchimieLibCamera, &loadAlchimieLibInput, &loadAlchimieLibUI
     ];
 }

@@ -5,9 +5,11 @@ import std.stdio;
 import grimoire;
 import magia;
 
+import sorcier.script.common;
+
 package void loadAlchimieLibDrawable(GrLibDefinition library) {
     // Maths types
-    GrType vec2Type = grGetClassType("vec2");
+    GrType vec2Type = grGetNativeType("vec2", [grFloat]);
     GrType vec3Type = grGetClassType("vec3");
     GrType colorType = grGetClassType("color");
     GrType vec4iType = grGetClassType("vec4i");
@@ -41,8 +43,12 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addFunction(&_setup2D, "setup2D");
     library.addFunction(&_setup3D, "setup3D");
     library.addFunction(&_render, "render");
-    library.addFunction(&_drawFilledRect, "drawFilledRect", [vec2Type, vec2Type, colorType]);
-    library.addFunction(&_drawFilledCircle, "drawFilledCircle", [vec2Type, grFloat, colorType]);
+    library.addFunction(&_drawFilledRect, "drawFilledRect", [
+            vec2Type, vec2Type, colorType
+        ]);
+    library.addFunction(&_drawFilledCircle, "drawFilledCircle", [
+            vec2Type, grFloat, colorType
+        ]);
 
     // Light types
     GrType directionalLightType = library.addNative("DirectionalLight");
@@ -50,9 +56,14 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     GrType spotLightType = library.addNative("SpotLight", [], "Entity");
 
     // Light types constructors
-    library.addConstructor(&_newDirectionalLight, directionalLightType, [vec3Type, grFloat, grFloat]);
-    library.addConstructor(&_newPointLight, pointLightType, [vec3Type, colorType, grFloat, grFloat]);
-    library.addConstructor(&_newSpotLight, spotLightType, [vec3Type, vec3Type, colorType, grFloat, grFloat, grFloat]);
+    library.addConstructor(&_newDirectionalLight, directionalLightType,
+        [vec3Type, grFloat, grFloat]);
+    library.addConstructor(&_newPointLight, pointLightType, [
+            vec3Type, colorType, grFloat, grFloat
+        ]);
+    library.addConstructor(&_newSpotLight, spotLightType, [
+            vec3Type, vec3Type, colorType, grFloat, grFloat, grFloat
+        ]);
 }
 
 private void _getPosition(GrCall call) {
@@ -68,25 +79,20 @@ private void _getPosition(GrCall call) {
 
 private void _setPosition2D(GrCall call) {
     Instance instance = call.getNative!Instance(0);
-    GrObject position = call.getObject(1);
-    instance.position = vec2(position.getFloat("x"),
-                             position.getFloat("y"));
+    instance.position = cast(vec2) call.getNative!SVec2f(1);
 }
 
 private void _setPosition(GrCall call) {
     Instance instance = call.getNative!Instance(0);
     GrObject position = call.getObject(1);
-    instance.position = vec3(position.getFloat("x"),
-                             position.getFloat("y"),
-                             position.getFloat("z"));
+    instance.position = vec3(position.getFloat("x"), position.getFloat("y"),
+        position.getFloat("z"));
 }
 
 private void _setScale(GrCall call) {
     Instance instance = call.getNative!Instance(0);
     GrObject scale = call.getObject(1);
-    instance.scale = vec3(scale.getFloat("x"),
-                          scale.getFloat("y"),
-                          scale.getFloat("z"));
+    instance.scale = vec3(scale.getFloat("x"), scale.getFloat("y"), scale.getFloat("z"));
 }
 
 private void _addTexture(GrCall call) {
@@ -98,14 +104,12 @@ private void _addTexture(GrCall call) {
     } else {
         entity.material.textures ~= texture;
     }
-} 
+}
 
 private void _scale(GrCall call) {
     Instance instance = call.getNative!Instance(0);
     GrObject scale = call.getObject(1);
-    instance.scale = vec3(scale.getFloat("x"),
-                          scale.getFloat("y"),
-                          scale.getFloat("z"));
+    instance.scale = vec3(scale.getFloat("x"), scale.getFloat("y"), scale.getFloat("z"));
 }
 
 private void _draw(GrCall call) {
@@ -120,18 +124,15 @@ private void _newSprite(GrCall call) {
 
 private void _newSprite2(GrCall call) {
     GrObject clipObj = call.getObject(1);
-    Sprite sprite = new Sprite(call.getString(0),
-        vec4i(clipObj.getInt("x"),
-              clipObj.getInt("y"),
-              clipObj.getInt("z"),
-              clipObj.getInt("w")));
+    Sprite sprite = new Sprite(call.getString(0), vec4i(clipObj.getInt("x"),
+            clipObj.getInt("y"), clipObj.getInt("z"), clipObj.getInt("w")));
     call.setNative(sprite);
 }
 
 // @TODO handle currentApplication.scene.addEntity(sprite); and related callbacks
 
 private void _newSkybox(GrCall call) {
-    Skybox skybox = new Skybox(/*call.getString(0)*/);
+    Skybox skybox = new Skybox( /*call.getString(0)*/ );
     call.setNative(skybox);
 }
 
@@ -178,23 +179,21 @@ private void _render(GrCall) {
 }
 
 private void _drawFilledRect(GrCall call) {
-    GrObject position = call.getObject(0);
-    GrObject size = call.getObject(1);
+    SVec2f position = call.getNative!SVec2f(0);
+    SVec2f size = call.getNative!SVec2f(1);
     GrObject color = call.getObject(2);
 
-    renderer.drawFilledRect(vec2(position.getFloat("x"), position.getFloat("y")),
-                            vec2(size.getFloat("x"), size.getFloat("y")),
-                            Color(color.getFloat("r"), color.getFloat("g"), color.getFloat("b")));
+    renderer.drawFilledRect(cast(vec2) position, cast(vec2) size, Color(color.getFloat("r"),
+            color.getFloat("g"), color.getFloat("b")));
 }
 
 // @TODO fix this
 private void _drawFilledCircle(GrCall call) {
-    GrObject position = call.getObject(0);
+    SVec2f position = call.getNative!SVec2f(0);
     GrObject color = call.getObject(2);
 
-    renderer.drawFilledCircle(vec2(position.getFloat("x"), position.getFloat("y")),
-                              call.getFloat(1),
-                              Color(color.getFloat("r"), color.getFloat("g"), color.getFloat("b")));
+    renderer.drawFilledCircle(cast(vec2) position, call.getFloat(1), Color(color.getFloat("r"),
+            color.getFloat("g"), color.getFloat("b")));
 }
 
 private void _newDirectionalLight(GrCall call) {
@@ -202,8 +201,7 @@ private void _newDirectionalLight(GrCall call) {
 
     GrObject direction = call.getObject(0);
     directionalLight.direction = vec3(direction.getFloat("x"),
-                                      direction.getFloat("y"),
-                                      direction.getFloat("z"));
+        direction.getFloat("y"), direction.getFloat("z"));
     directionalLight.ambientIntensity = call.getFloat(1);
     directionalLight.diffuseIntensity = call.getFloat(2);
 
@@ -217,9 +215,8 @@ private void _newPointLight(GrCall call) {
     PointLight pointLight = new PointLight();
 
     GrObject position = call.getObject(0);
-    pointLight.position = vec3(position.getFloat("x"),
-                               position.getFloat("y"),
-                               position.getFloat("z"));
+    pointLight.position = vec3(position.getFloat("x"), position.getFloat("y"),
+        position.getFloat("z"));
     GrObject color = call.getObject(1);
     pointLight.color = Color(color.getFloat("r"), color.getFloat("g"), color.getFloat("b"));
     pointLight.ambientIntensity = call.getFloat(2);
@@ -235,14 +232,12 @@ private void _newSpotLight(GrCall call) {
     SpotLight spotLight = new SpotLight();
 
     GrObject position = call.getObject(0);
-    spotLight.position = vec3(position.getFloat("x"),
-                              position.getFloat("y"),
-                              position.getFloat("z"));
+    spotLight.position = vec3(position.getFloat("x"), position.getFloat("y"),
+        position.getFloat("z"));
 
     GrObject direction = call.getObject(1);
-    spotLight.direction = vec3(direction.getFloat("x"),
-                               direction.getFloat("y"),
-                               direction.getFloat("z"));
+    spotLight.direction = vec3(direction.getFloat("x"), direction.getFloat("y"),
+        direction.getFloat("z"));
 
     GrObject color = call.getObject(2);
     spotLight.color = Color(color.getFloat("r"), color.getFloat("g"), color.getFloat("b"));

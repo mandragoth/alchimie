@@ -1,4 +1,4 @@
-module sorcier.script.sutils;
+module sorcier.script.common.sutils;
 
 import std.stdio;
 

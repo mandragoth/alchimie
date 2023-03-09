@@ -2,5 +2,5 @@ module sorcier.script;
 
 public {
     import sorcier.script.sloader;
-    import sorcier.script.sutils;
+    import sorcier.script.common;
 }

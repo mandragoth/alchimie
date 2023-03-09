@@ -5,7 +5,7 @@ import std.traits;
 import magia;
 import grimoire;
 
-import sorcier.script.sutils;
+import sorcier.script.common;
 
 void loadAlchimieLibInput(GrLibDefinition library) {
     GrType keyButton = library.addEnum("KeyButton", [
