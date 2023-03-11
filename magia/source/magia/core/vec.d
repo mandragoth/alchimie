@@ -89,7 +89,7 @@ struct Vector(type, uint dimension_) {
     }
 
     /// 2 vectors are compatible if and only if rvalue has a dimension equal or smaller to lvalue
-    static void isCompatibleVectorImpl(int d)(Vector!(type, d)) if(d <= dimension) {}
+    static void isCompatibleVectorImpl(T, int d)(Vector!(T, d)) if(d <= dimension) {}
 
     /// Are 2 vectors compatible?
     template isCompatibleVector(T) {
@@ -110,8 +110,16 @@ struct Vector(type, uint dimension_) {
             data[i .. i + T.length] = head[];
             construct!(i + T.length)(tail);
         } else static if(isCompatibleVector!T) {
-            data[i .. i + T.dimension] = head.data[];
-            construct!(i + T.dimension)(tail);
+            static if(is(type == T)) {
+                data[i .. i + T.dimension] = head.data[];
+                construct!(i + T.dimension)(tail);
+            }
+            else {
+                static foreach (y; TupleRange!(0, T.dimension)) {
+                    data[i + y] = cast(type) head.data[y];
+                }
+                construct!(i + T.dimension)(tail);
+            }
         } else {
             static assert(false, "Vector constructor argument must be of type " ~ type.stringof ~ " or Vector, not " ~ T.stringof);
         }
@@ -129,7 +137,7 @@ struct Vector(type, uint dimension_) {
 
     /// Scalar constructor
     this()(type scalar) {
-        foreach(i; TupleRange!(0, dimension)) {
+        static foreach(i; TupleRange!(0, dimension)) {
             data[i] = scalar;
         }
     }
@@ -139,84 +147,44 @@ struct Vector(type, uint dimension_) {
         const real len = length;
 
         if(len != 0) {
-            foreach(i; TupleRange!(0, dimension)) {
+            static foreach(i; TupleRange!(0, dimension)) {
                 data[i] = cast(type)(data[i] / len);
             }
         }
     }
 
-    /// Vector minus sign
-    Vector opUnary(string op : "-")() const {
+    /// Vector unary operation
+    Vector opUnary(string op)() const {
+        static if(op == "+")
+            return this;
+        else {
+            Vector toReturn;
+
+            static foreach(i; TupleRange!(0, dimension)) {
+                mixin("toReturn.data[i] = ", op, "data[i];");
+            }
+
+            return toReturn;
+        }
+    }
+
+    /// Vector scalar binary operation
+    Vector opBinary(string op)(type scalar) const {
         Vector toReturn;
 
-        foreach(i; TupleRange!(0, dimension)) {
-            toReturn.data[i] = -data[i];
+        static foreach(i; TupleRange!(0, dimension)) {
+            mixin("toReturn.data[i] = cast(type)(data[i] ", op ," scalar);");
         }
 
         return toReturn;
     }
 
-    /// Vector scalar multiplication (v * s)
-    Vector opBinary(string op : "*")(type scalar) const {
+    /// Vector binary operation
+    Vector opBinary(string op)(Vector other) const {
         Vector toReturn;
 
-        foreach(i; TupleRange!(0, dimension)) {
-            toReturn.data[i] = cast(type)(data[i] * scalar);
-        }
-
-        return toReturn;
-    }
-
-    /// Vector scalar division
-    Vector opBinary(string op : "/")(type scalar) const {
-        Vector toReturn;
-
-        foreach(i; TupleRange!(0, dimension)) {
-            toReturn.data[i] = cast(type)(data[i] / scalar);
-        }
-
-        return toReturn;
-    }
-
-    /// Vector addition
-    Vector opBinary(string op : "+")(Vector other) const {
-        Vector toReturn;
-
-        foreach(i; TupleRange!(0, dimension)) {
-            toReturn.data[i] = cast(type)(data[i] + other.data[i]);
-        }
-
-        return toReturn;
-    }
-
-    /// Vector subtraction
-    Vector opBinary(string op : "-")(Vector other) const {
-        Vector toReturn;
-
-        foreach(i; TupleRange!(0, dimension)) {
-            toReturn.data[i] = cast(type)(data[i] - other.data[i]);
-        }
-
-        return toReturn;
-    }
-
-    /// Vector multiplication (each members)
-    Vector opBinary(string op : "*")(Vector other) const {
-        Vector toReturn;
-
-        foreach(i; TupleRange!(0, dimension)) {
-            toReturn.data[i] = cast(type)(data[i] * other.data[i]);
-        }
-
-        return toReturn;
-    }
-
-    /// Vector division (each members)
-    Vector opBinary(string op : "/")(Vector other) const {
-        Vector toReturn;
-
-        foreach(i; TupleRange!(0, dimension)) {
-            toReturn.data[i] = cast(type)(data[i] / other.data[i]);
+        static foreach(i; TupleRange!(0, dimension)) {
+            mixin("toReturn.data[i] = cast(type)(data[i] ", op ," other.data[i]);");
         }
 
         return toReturn;
@@ -231,11 +199,27 @@ struct Vector(type, uint dimension_) {
     Vector!(newType, dimension) opCast(V : Vector!(newType, dimension), newType)() const {
         Vector!(newType, dimension) toReturn;
 
-        foreach(i; TupleRange!(0, dimension)) {
+        static foreach(i; TupleRange!(0, dimension)) {
             toReturn.data[i] = cast(newType)(data[i]);
         }
 
         return toReturn;
+    }
+
+    Vector!(type, dimension) opAssign(T)(Vector!(T, dimension) other) {
+        static foreach(i; TupleRange!(0, dimension)) {
+            data[i] = cast(type) other.data[i];
+        }
+
+        return this;
+    }
+
+    Vector!(type, dimension) opOpAssign(string op, T)(Vector!(T, dimension) other) {
+        static foreach(i; TupleRange!(0, dimension)) {
+            mixin("data[i] ", op, "= cast(type)(other.data[i]);");
+        }
+
+        return this;
     }
 
     /// Vector of size 2

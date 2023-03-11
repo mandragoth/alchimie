@@ -10,9 +10,9 @@ import sorcier.script.common;
 package void loadAlchimieLibDrawable(GrLibDefinition library) {
     // Maths types
     GrType vec2Type = grGetNativeType("vec2", [grFloat]);
-    GrType vec3Type = grGetClassType("vec3");
-    GrType colorType = grGetClassType("color");
-    GrType vec4iType = grGetClassType("vec4i");
+    GrType vec3Type = grGetNativeType("vec3", [grFloat]);
+    GrType colorType = grGetNativeType("color");
+    GrType vec4iType = grGetNativeType("vec4", [grInt]);
 
     // Entity types
     GrType instanceType = library.addNative("Instance");
@@ -68,31 +68,22 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
 
 private void _getPosition(GrCall call) {
     Instance instance = call.getNative!Instance(0);
-
-    GrObject vector = call.createObject("vec3");
-    vector.setFloat("x", instance.position.x);
-    vector.setFloat("y", instance.position.y);
-    vector.setFloat("z", instance.position.z);
-
-    call.setObject(vector);
+    call.setNative(grVec3(instance.position));
 }
 
 private void _setPosition2D(GrCall call) {
     Instance instance = call.getNative!Instance(0);
-    instance.position = cast(vec2) call.getNative!SVec2f(1);
+    instance.position = cast(vec2) call.getNative!GrVec2f(1);
 }
 
 private void _setPosition(GrCall call) {
     Instance instance = call.getNative!Instance(0);
-    GrObject position = call.getObject(1);
-    instance.position = vec3(position.getFloat("x"), position.getFloat("y"),
-        position.getFloat("z"));
+    instance.position = cast(vec3) call.getNative!GrVec3f(1);
 }
 
 private void _setScale(GrCall call) {
     Instance instance = call.getNative!Instance(0);
-    GrObject scale = call.getObject(1);
-    instance.scale = vec3(scale.getFloat("x"), scale.getFloat("y"), scale.getFloat("z"));
+    instance.scale = cast(vec3) call.getNative!GrVec3f(1);
 }
 
 private void _addTexture(GrCall call) {
@@ -108,8 +99,7 @@ private void _addTexture(GrCall call) {
 
 private void _scale(GrCall call) {
     Instance instance = call.getNative!Instance(0);
-    GrObject scale = call.getObject(1);
-    instance.scale = vec3(scale.getFloat("x"), scale.getFloat("y"), scale.getFloat("z"));
+    instance.scale = cast(vec3) call.getNative!GrVec3f(1);
 }
 
 private void _draw(GrCall call) {
@@ -123,9 +113,7 @@ private void _newSprite(GrCall call) {
 }
 
 private void _newSprite2(GrCall call) {
-    GrObject clipObj = call.getObject(1);
-    Sprite sprite = new Sprite(call.getString(0), vec4i(clipObj.getInt("x"),
-            clipObj.getInt("y"), clipObj.getInt("z"), clipObj.getInt("w")));
+    Sprite sprite = new Sprite(call.getString(0), call.getNative!GrVec4i(1));
     call.setNative(sprite);
 }
 
@@ -147,15 +135,11 @@ private void _newQuad(GrCall call) {
 }
 
 private void _packInstanceMatrix(GrCall call) {
-    GrObject positionObj = call.getObject(0);
-    GrObject rotationObj = call.getObject(1);
-    GrObject scaleObj = call.getObject(2);
+    GrVec4f rotationObj = call.getNative!GrVec4f(1);
 
-    vec3 position = vec3(positionObj.getFloat("x"), positionObj.getFloat("y"),
-        positionObj.getFloat("z"));
-    quat rotation = quat(rotationObj.getFloat("w"), rotationObj.getFloat("x"),
-        rotationObj.getFloat("y"), rotationObj.getFloat("z"));
-    vec3 scale = vec3(scaleObj.getFloat("x"), scaleObj.getFloat("y"), scaleObj.getFloat("z"));
+    vec3 position = cast(vec3) call.getNative!GrVec3f(0);
+    quat rotation = quat(rotationObj.w, rotationObj.x, rotationObj.y, rotationObj.z);
+    vec3 scale = cast(vec3) call.getNative!GrVec3f(2);
     mat4 instanceMatrix = combineModel(position, rotation, scale);
 
     call.setNative(instanceMatrix);
@@ -179,29 +163,25 @@ private void _render(GrCall) {
 }
 
 private void _drawFilledRect(GrCall call) {
-    SVec2f position = call.getNative!SVec2f(0);
-    SVec2f size = call.getNative!SVec2f(1);
-    GrObject color = call.getObject(2);
+    vec2 position = call.getNative!GrVec2f(0);
+    vec2 size = call.getNative!GrVec2f(1);
+    GrColor color = call.getNative!GrColor(2);
 
-    renderer.drawFilledRect(cast(vec2) position, cast(vec2) size, Color(color.getFloat("r"),
-            color.getFloat("g"), color.getFloat("b")));
+    renderer.drawFilledRect(position, size, color);
 }
 
 // @TODO fix this
 private void _drawFilledCircle(GrCall call) {
-    SVec2f position = call.getNative!SVec2f(0);
-    GrObject color = call.getObject(2);
+    vec2 position = call.getNative!GrVec2f(0);
+    GrColor color = call.getNative!GrColor(2);
 
-    renderer.drawFilledCircle(cast(vec2) position, call.getFloat(1), Color(color.getFloat("r"),
-            color.getFloat("g"), color.getFloat("b")));
+    renderer.drawFilledCircle(position, call.getFloat(1), color);
 }
 
 private void _newDirectionalLight(GrCall call) {
     DirectionalLight directionalLight = new DirectionalLight();
 
-    GrObject direction = call.getObject(0);
-    directionalLight.direction = vec3(direction.getFloat("x"),
-        direction.getFloat("y"), direction.getFloat("z"));
+    directionalLight.direction = call.getNative!GrVec3f(0);
     directionalLight.ambientIntensity = call.getFloat(1);
     directionalLight.diffuseIntensity = call.getFloat(2);
 
@@ -214,11 +194,8 @@ private void _newDirectionalLight(GrCall call) {
 private void _newPointLight(GrCall call) {
     PointLight pointLight = new PointLight();
 
-    GrObject position = call.getObject(0);
-    pointLight.position = vec3(position.getFloat("x"), position.getFloat("y"),
-        position.getFloat("z"));
-    GrObject color = call.getObject(1);
-    pointLight.color = Color(color.getFloat("r"), color.getFloat("g"), color.getFloat("b"));
+    pointLight.position = cast(vec3) call.getNative!GrVec3f(0);
+    pointLight.color = call.getNative!GrColor(1);
     pointLight.ambientIntensity = call.getFloat(2);
     pointLight.diffuseIntensity = call.getFloat(3);
 
@@ -231,16 +208,9 @@ private void _newPointLight(GrCall call) {
 private void _newSpotLight(GrCall call) {
     SpotLight spotLight = new SpotLight();
 
-    GrObject position = call.getObject(0);
-    spotLight.position = vec3(position.getFloat("x"), position.getFloat("y"),
-        position.getFloat("z"));
-
-    GrObject direction = call.getObject(1);
-    spotLight.direction = vec3(direction.getFloat("x"), direction.getFloat("y"),
-        direction.getFloat("z"));
-
-    GrObject color = call.getObject(2);
-    spotLight.color = Color(color.getFloat("r"), color.getFloat("g"), color.getFloat("b"));
+    spotLight.position = cast(vec3) call.getNative!GrVec3f(0);
+    spotLight.direction = cast(vec3) call.getNative!GrVec3f(1);
+    spotLight.color = call.getNative!GrColor(2);
     spotLight.angle = call.getFloat(3);
     spotLight.ambientIntensity = call.getFloat(4);
     spotLight.diffuseIntensity = call.getFloat(5);

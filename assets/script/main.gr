@@ -19,7 +19,7 @@ task runtime() {
     remilia2:position2D(@vec2f(12.5f + 32f, 0f));
 
     var skybox = @Skybox(""); // @TODO fix
-    var globalLight = @DirectionalLight(@vec3(0f, -10f, 0f), .2f, .01f);
+    var globalLight = @DirectionalLight(@vec3f(0f, -10f, 0f), .2f, .01f);
     //var pointLight1 = @PointLight(@vec3(-1f, 0.5f, 0f), @color(1f, 0f, 0f), 0f, 0.3f);
     //var pointLight2 = @PointLight(@vec3(1f, 0.5f, 0f), @color(0f, 1f, 0f), 0f, 0.3f);
     //var spotLight = @SpotLight(@vec3(0f, 5f, 0f), @vec3(0f, -1f, 0f), @color(1f, 1f, 1f), 20f, 0.5f, 0.3f);
@@ -28,13 +28,14 @@ task runtime() {
 
     //var cube = @Model("cube");
 
+
     var jupiter = @Model("jupiter");
-    jupiter:position(@vec3(0f, 0f, -2f));
-    jupiter:scale(@vec3(.05f, .05f, .05f));
+    jupiter:position(@vec3f(0f, 0f, -2f));
+    jupiter:scale(@vec3f(.05f, .05f, .05f));
 
     var reimu = @Model("reimu");
-    reimu:scale(@vec3(0.1f, 0.1f, 0.1f));
-    reimu:position(@vec3(0f, -1f, 0f));
+    reimu:scale(@vec3f(0.1f, 0.1f, 0.1f));
+    reimu:position(@vec3f(0f, -1f, 0f));
     reimu:addTexture("reimu_body");
 
     var reimuHair = @Model("reimu_hair");

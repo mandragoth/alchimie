@@ -118,7 +118,7 @@ event input(input: InputEvent) {
 
 task camera3D() {
     var camera = @PerspectiveCamera();
-    camera.position = @vec3(0f, .5f, 2f);
+    camera.position = @vec3f(0f, .5f, 2f);
 
     var moveSpeed = .05f;
     var zoomSpeed = .15f;

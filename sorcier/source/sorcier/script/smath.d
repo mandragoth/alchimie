@@ -5,36 +5,36 @@ import grimoire;
 
 package void loadAlchimieLibMath(GrLibDefinition library) {
     // Maths types
-    //GrType vec2Type = library.addClass("vec2", ["x", "y"], [grFloat, grFloat]);
+    /*GrType vec2Type = library.addClass("vec2", ["x", "y"], [grFloat, grFloat]);
     GrType vec3Type = library.addClass("vec3", ["x", "y", "z"], [grFloat, grFloat, grFloat]);
     GrType colorType = library.addClass("color", ["r", "g", "b"], [grFloat, grFloat, grFloat]);
     GrType vec2iType = library.addClass("vec2i", ["x", "y"], [grInt, grInt]);
-    GrType vec4iType = library.addClass("vec4i", ["x", "y", "z", "w"], [grInt, grInt, grInt, grInt]);
+    GrType vec4iType = library.addClass("vec4i", ["x", "y", "z", "w"], [grInt, grInt, grInt, grInt]);*/
     GrType quatType = library.addClass("quat", ["w", "x", "y", "z"], [grFloat, grFloat, grFloat, grFloat]);
     GrType mat4Type = library.addNative("mat4");
 
     // Maths types contructors
     //library.addConstructor(&_newVec2, vec2Type, [grFloat, grFloat]);
-    library.addConstructor(&_newVec3, vec3Type, [grFloat, grFloat, grFloat]);
-    library.addConstructor(&_newColor, colorType, [grFloat, grFloat, grFloat]);
-    library.addConstructor(&_newVec2i, vec2iType, [grInt, grInt]);
-    library.addConstructor(&_newVec4i, vec4iType, [grInt, grInt, grInt, grInt]);
+    //library.addConstructor(&_newVec3, vec3Type, [grFloat, grFloat, grFloat]);
+    //library.addConstructor(&_newColor, colorType, [grFloat, grFloat, grFloat]);
+    //library.addConstructor(&_newVec2i, vec2iType, [grInt, grInt]);
+    //library.addConstructor(&_newVec4i, vec4iType, [grInt, grInt, grInt, grInt]);
     library.addConstructor(&_newQuat, quatType, [grFloat, grFloat, grFloat, grFloat]);
 
     // Maths operators
-    library.addOperator(&_minusVec3, GrLibDefinition.Operator.minus, [vec3Type], vec3Type);
-    library.addOperator(&_addVec3, GrLibDefinition.Operator.add, [vec3Type, vec3Type], vec3Type);
-    library.addOperator(&_scalarVec3, GrLibDefinition.Operator.multiply, [vec3Type, grFloat], vec3Type);
+    //library.addOperator(&_minusVec3, GrLibDefinition.Operator.minus, [vec3Type], vec3Type);
+    //library.addOperator(&_addVec3, GrLibDefinition.Operator.add, [vec3Type, vec3Type], vec3Type);
+    //library.addOperator(&_scalarVec3, GrLibDefinition.Operator.multiply, [vec3Type, grFloat], vec3Type);
 
     // Maths operations
     library.addFunction(&_degToRad, "degToRad", [], [grFloat]);
     library.addFunction(&_radToDeg, "radToDeg", [], [grFloat]);
-    library.addFunction(&_angle, "angle", [vec3Type, vec3Type], [grFloat]);
-    library.addFunction(&_rotate, "rotate", [vec3Type, vec3Type, grFloat], [vec3Type]);
+    //library.addFunction(&_angle, "angle", [vec3Type, vec3Type], [grFloat]);
+    //library.addFunction(&_rotate, "rotate", [vec3Type, vec3Type, grFloat], [vec3Type]);
     //library.addFunction(&_vec2ToString, "toString", [vec2Type], [grString]);
-    library.addFunction(&_vec2iToString, "toString", [vec2iType], [grString]);
-    library.addFunction(&_vec3ToString, "toString", [vec3Type], [grString]);
-    library.addFunction(&_packInstanceMatrix, "packInstanceMatrix", [vec3Type, quatType, vec3Type], [mat4Type]);
+    //library.addFunction(&_vec2iToString, "toString", [vec2iType], [grString]);
+    //library.addFunction(&_vec3ToString, "toString", [vec3Type], [grString]);
+    //library.addFunction(&_packInstanceMatrix, "packInstanceMatrix", [vec3Type, quatType, vec3Type], [mat4Type]);
 }
 
 private void _newVec2(GrCall call) {
