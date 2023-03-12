@@ -11,7 +11,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     // Maths types
     GrType vec2Type = grGetNativeType("vec2", [grFloat]);
     GrType vec3Type = grGetNativeType("vec3", [grFloat]);
-    GrType colorType = grGetNativeType("color");
+    GrType colorType = grGetNativeType("Color");
     GrType vec4iType = grGetNativeType("vec4", [grInt]);
 
     // Entity types
