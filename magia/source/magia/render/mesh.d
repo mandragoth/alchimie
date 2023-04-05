@@ -20,6 +20,7 @@ import magia.render.vertex;
 final class Mesh {
     private {
         VertexArray _vertexArray;
+        VertexBuffer _vertexBuffer;
         GLenum _drawMode;
 
         uint _instances;
@@ -29,12 +30,13 @@ final class Mesh {
     /// Constructor (@TODO pack instanceMatrices inside vertex buffer on caller side)
     this(VertexBuffer vertexBuffer, IndexBuffer indexBuffer = null, GLenum drawMode = GL_TRIANGLES,
          uint instances = 1, mat4[] instanceMatrices = [mat4.identity]) {
-        // Setup draw mode and instances
+        // Setup members from ctr
         _drawMode = drawMode;
         _instances = instances;
+        _vertexBuffer = vertexBuffer;
 
         // Generate and bind vertex array
-        _vertexArray = new VertexArray(vertexBuffer, indexBuffer);
+        _vertexArray = new VertexArray(_vertexBuffer, indexBuffer);
         _vertexArray.bind();
 
         // Transpose all matrices to pass them onto the Vertex Buffer properly (costly?)
