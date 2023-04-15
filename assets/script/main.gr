@@ -28,18 +28,18 @@ task runtime() {
 
     //var cube = @Model("cube");
 
-    //var jupiter = @Model("jupiter");
-    //jupiter:position(@vec3f(0f, 0f, -2f));
-    //jupiter:scale(@vec3f(.05f, .05f, .05f));
+    var jupiter = @Model("jupiter");
+    jupiter:position(@vec3f(0f, 0f, -2f));
+    jupiter:scale(@vec3f(.05f, .05f, .05f));
 
     var reimu = @Model("reimu");
-    //reimu:scale(@vec3f(0.1f, 0.1f, 0.1f));
-    //reimu:position(@vec3f(0f, -1f, 0f));
+    reimu:scale(@vec3f(0.1f, 0.1f, 0.1f));
+    reimu:position(@vec3f(0f, -1f, 0f));
     reimu:addTexture("reimu_body");
 
     var reimuHair = @Model("reimu_hair");
-    //reimuHair:scale(@vec3f(0.1f, 0.1f, 0.1f));
-    //reimuHair:position(@vec3f(0f, -1f, 0f));
+    reimuHair:scale(@vec3f(0.1f, 0.1f, 0.1f));
+    reimuHair:position(@vec3f(0f, -1f, 0f));
     reimuHair:addTexture("reimu_hair");
     // @TODO add as child
 
@@ -50,7 +50,7 @@ task runtime() {
 
         skybox:draw();
 
-        //jupiter:draw();
+        jupiter:draw();
         reimu:draw();
         reimuHair:draw();
 

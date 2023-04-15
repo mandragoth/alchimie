@@ -75,9 +75,12 @@ struct Transform {
         _model = combineModel(position, rotation, scale);
     }
 
-    /// Compute 
-    mat4 applyTransform(Transform other) {
-        return _model * combineModel(other);
+    /// Combine two transforms
+    Transform opBinary(string op : "*")(Transform other) const {
+        return Transform(other._model * _model,
+                         other.position + position,
+                         other.rotation * rotation,
+                         other.scale * scale);
     }
 }
 

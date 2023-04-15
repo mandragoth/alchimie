@@ -23,8 +23,9 @@ import magia.render.texture;
 import magia.render.vertex;
 
 private {
-    // Trace
-    bool s_Trace = true;
+    // Trace (@TODO improve)
+    bool s_Trace = false;
+    bool s_TraceMesh = false;
     bool s_TraceDeep = false;
 
     // Debug model
@@ -90,9 +91,12 @@ final class Model {
         // Model culling is the opposite of usual objects
         glCullFace(GL_BACK);
 
+        // Recompute model of transform in case it is not yet done
+        transform.recomputeModel();
+
         for (uint meshId = 0; meshId < _meshes.length; ++meshId) {
-            // @TODO reapply draw transform here.
-            _meshes[meshId].draw(shader, material, _transforms[meshId]);
+            Transform meshTransform = _transforms[meshId] * transform;
+            _meshes[meshId].draw(shader, material, meshTransform);
 
             if (s_DebugModel) {
                 _vertices[meshId].drawNormal();
@@ -113,8 +117,7 @@ final class Model {
         ubyte[] getData(string fileName) {
             _fileDirectory = dirName(fileName);
 
-            if (s_Trace) {
-                writeln("Model directory: ", _fileDirectory);
+            if (s_Trace || s_TraceMesh || s_TraceDeep) {
                 writeln("Model file path: ", fileName);
             }
 
@@ -331,8 +334,8 @@ final class Model {
         }
 
         /// Traverse given node
-        void traverseNode(uint nextNode, mat4 matrix = mat4.identity) {
-            JSONValue node = _json["nodes"][nextNode];
+        void traverseNode(uint nodeId, mat4 matrix = mat4.identity) {
+            JSONValue node = _json["nodes"][nodeId];
 
             vec3 translation = vec3.zero;
             quat rotation = quat.identity;
@@ -350,7 +353,7 @@ final class Model {
 
             float[] rotationArray = getJsonArrayFloat(node, "rotation", []);
             if (rotationArray.length == 4) {
-                rotation = quat(rotationArray[3], rotationArray[0], rotationArray[1], rotationArray[2]);
+                rotation = quat(rotationArray[0], rotationArray[1], rotationArray[2], rotationArray[3]);
 
                 if (s_Trace) {
                     writeln("Rotation: ", rotation);
@@ -389,11 +392,14 @@ final class Model {
 
             // Load current node mesh
             if (hasJson(node, "mesh")) {
-                if (s_Trace) {
-                    writeln("Load current mesh");
+                if (s_TraceMesh) {
+                    writeln("Load current mesh # ", nodeId);
+
+                    writeln("Model: ", model);
+                    writeln("matNextNode: ", matNextNode);
                 }
 
-                _transforms ~= Transform(matNextNode, translation, rotation, scale);
+                _transforms ~= Transform(model, translation, rotation, scale);
                 loadMesh(getJsonInt(node, "mesh"));
             }
 
