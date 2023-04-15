@@ -24,7 +24,7 @@ import magia.render.vertex;
 
 private {
     // Trace
-    bool s_Trace = false;
+    bool s_Trace = true;
     bool s_TraceDeep = false;
 
     // Debug model
@@ -90,11 +90,9 @@ final class Model {
         // Model culling is the opposite of usual objects
         glCullFace(GL_BACK);
 
-        // @TODO optimize this step
-        transform.recomputeModel();
-
         for (uint meshId = 0; meshId < _meshes.length; ++meshId) {
-            _meshes[meshId].draw(shader, material, _transforms[meshId] * transform);
+            // @TODO reapply draw transform here.
+            _meshes[meshId].draw(shader, material, _transforms[meshId]);
 
             if (s_DebugModel) {
                 _vertices[meshId].drawNormal();
@@ -336,9 +334,9 @@ final class Model {
         void traverseNode(uint nextNode, mat4 matrix = mat4.identity) {
             JSONValue node = _json["nodes"][nextNode];
 
-            vec3 translation = vec3(0.0f, 0.0f, 0.0f);
+            vec3 translation = vec3.zero;
             quat rotation = quat.identity;
-            vec3 scale = vec3(1.0f, 1.0f, 1.0f);
+            vec3 scale = vec3.one;
             mat4 matNode = mat4.identity;
 
             float[] translationArray = getJsonArrayFloat(node, "translation", []);
@@ -383,8 +381,11 @@ final class Model {
                 }
             }
 
+            // Compute object model
+            mat4 model = combineModel(translation, quat.identity, scale);
+
             // Combine parent and current transform matrices
-            mat4 matNextNode = matrix * matNode;
+            mat4 matNextNode = matrix * matNode * model;
 
             // Load current node mesh
             if (hasJson(node, "mesh")) {

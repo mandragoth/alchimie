@@ -75,26 +75,17 @@ struct Transform {
         _model = combineModel(position, rotation, scale);
     }
 
-    /// Combine two transforms
-    Transform opBinary(string op : "*")(Transform other) const {
-        return Transform(_model * other._model,
-                         position + other.position,
-                         rotation * other.rotation,
-                         scale * other.scale);
+    /// Compute 
+    mat4 applyTransform(Transform other) {
+        return _model * combineModel(other);
     }
 }
 
 /// Combine position, rotation and scale into model matrix
 mat4 combineModel(vec3 position, quat rotation, vec3 scale) {
-    mat4 localTranslation = mat4.identity;
-    mat4 localRotation = mat4.identity;
-    mat4 localScale = mat4.identity;
-
-    localTranslation = localTranslation.translate(position);
-    localRotation = rotation.to_matrix!(4, 4);
-    localScale[0][0] = scale.x;
-    localScale[1][1] = scale.y;
-    localScale[2][2] = scale.z;
+    mat4 localTranslation = mat4.identity.translate(position);
+    mat4 localRotation = rotation.to_matrix!(4, 4);
+    mat4 localScale = mat4.identity.scale(scale);
 
     return localTranslation * localRotation * localScale;
 }

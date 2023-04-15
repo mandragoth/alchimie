@@ -224,6 +224,12 @@ struct Matrix(type, uint rows_, uint columns_) {
                 this = Matrix.scaling(x, y, z) * this;
                 return this;
             }
+
+            /// Override for vec3
+            Matrix scale(vec3 v) {
+                this = Matrix.scaling(v.x, v.y, v.z) * this;
+                return this;
+            }
         }
 
         /// 4x4 matrices
