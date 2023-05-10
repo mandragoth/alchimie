@@ -34,6 +34,15 @@ private {
 
 /// Class handling model data and draw call
 final class Model {
+    enum ComponentType {
+        byte_t = 5120,
+        ubyte_t = 5121,
+        short_t = 5122,
+        ushort_t = 5123,
+        uint_t = 5125,
+        float_t = 5126
+    }
+
     private {
         // JSON data
         ubyte[] _data;
@@ -53,11 +62,8 @@ final class Model {
 
         // Directory
         string _fileDirectory;
-
-        static const uint uintType = 5125;
-        static const uint ushortType = 5123;
-        static const uint shortType = 5122;
     }
+
     /// Constructor
     this(string fileName) {
         // Initialize material
@@ -73,6 +79,13 @@ final class Model {
         // Traverse all nodes
         foreach (int nodeId; nodes) {
             traverseNode(nodeId);
+        }
+
+        int[] animations = getJsonArrayInt(scenes, "animations", []);
+
+        // Traverse all animations
+        foreach (int animationId; animations) {
+            traverseAnimation(animationId);
         }
     }
 
@@ -183,7 +196,7 @@ final class Model {
             const uint dataStart = byteOffset + accessorByteOffset;
 
             GLuint[] values;
-            if (componentType == uintType) {
+            if (componentType == ComponentType.uint_t) {
                 const uint dataLength = count * 4;
 
                 for (uint dataId = dataStart; dataId < dataStart + dataLength; dataId) {
@@ -198,7 +211,7 @@ final class Model {
                     uint value = *cast(uint*)bytes.ptr;
                     values ~= cast(GLuint) value;
                 }
-            } else if (componentType == ushortType) {
+            } else if (componentType == ComponentType.ushort_t) {
                 const uint dataLength = count * 2;
 
                 for (uint dataId = dataStart; dataId < dataStart + dataLength; dataId) {
@@ -211,7 +224,7 @@ final class Model {
                     ushort value = *cast(ushort*)bytes.ptr;
                     values ~= cast(GLuint) value;
                 }
-            } else if (componentType == shortType) {
+            } else if (componentType == ComponentType.short_t) {
                 const uint dataLength = count * 2;
 
                 for (uint dataId = dataStart; dataId < dataStart + dataLength; dataId) {
@@ -415,6 +428,21 @@ final class Model {
                     const uint childrenId = children[i].get!uint;
                     traverseNode(childrenId, matNextNode);
                 }
+            }
+        }
+
+        /// Traverse given animation
+        void traverseAnimation(uint animationId) {
+            JSONValue animation = _json["animations"][animationId];
+
+            /// Fetch related target
+            if (hasJson(animation, "target")) {
+
+            }
+
+            /// Fetch related sampler
+            if (hasJson(animation, "mesh")) {
+
             }
         }
     }
