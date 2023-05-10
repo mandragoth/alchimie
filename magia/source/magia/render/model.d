@@ -164,7 +164,7 @@ final class Model {
             const uint dataLength = count * 4 * nbBytesPerVertex;
 
             float[] values;
-            for (uint dataId = dataStart; dataId < dataStart + dataLength; dataId) {
+            for (uint dataId = dataStart; dataId < dataStart + dataLength;) {
                 ubyte[] bytes = [
                     _data[dataId++],
                     _data[dataId++],
