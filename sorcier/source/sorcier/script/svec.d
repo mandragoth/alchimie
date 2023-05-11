@@ -89,7 +89,7 @@ private void _loadVec(int dimension)(GrLibDefinition library) {
 }
 
 private void _ctor(int dimension, string type, string[] fields)(GrCall call) {
-    mixin("GrVec", dimension, "!Gr", type, " vec = new GrVec", dimension, "!Gr", type, ";");
+    mixin("SVec", dimension, "!Gr", type, " vec = new SVec", dimension, "!Gr", type, ";");
     static foreach (idx, field; fields) {
         mixin("vec.", field, " = call.get", type, "(", idx, ");");
     }
@@ -97,7 +97,7 @@ private void _ctor(int dimension, string type, string[] fields)(GrCall call) {
 }
 
 private void _property(int dimension, string field, string op, string type)(GrCall call) {
-    mixin("GrVec", dimension, "!Gr", type, " vec = call.getNative!(GrVec",
+    mixin("SVec", dimension, "!Gr", type, " vec = call.getNative!(SVec",
         dimension, "!Gr", type, ")(0);");
     static if (op == "set") {
         mixin("vec.", field, " = call.get", type, "(1);");
@@ -106,51 +106,51 @@ private void _property(int dimension, string field, string op, string type)(GrCa
 }
 
 private void _unaryOp(int dimension, string op, string type)(GrCall call) {
-    mixin("GrVec", dimension, "!Gr", type, " veca = call.getNative!(GrVec",
+    mixin("SVec", dimension, "!Gr", type, " veca = call.getNative!(SVec",
         dimension, "!Gr", type, ")(0);");
-    mixin("GrVec", dimension, "!Gr", type, " vec = new GrVec", dimension, "!Gr", type, ";");
+    mixin("SVec", dimension, "!Gr", type, " vec = new SVec", dimension, "!Gr", type, ";");
     mixin("vec._vectorData = ", op, " veca._vectorData;");
     call.setNative(vec);
 }
 
 private void _binaryOp(int dimension, string op, string type)(GrCall call) {
-    mixin("GrVec", dimension, "!Gr", type, " veca = call.getNative!(GrVec",
+    mixin("SVec", dimension, "!Gr", type, " veca = call.getNative!(SVec",
         dimension, "!Gr", type, ")(0);");
-    mixin("GrVec", dimension, "!Gr", type, " vecb = call.getNative!(GrVec",
+    mixin("SVec", dimension, "!Gr", type, " vecb = call.getNative!(SVec",
         dimension, "!Gr", type, ")(1);");
-    mixin("GrVec", dimension, "!Gr", type, " vec = new GrVec", dimension, "!Gr", type, ";");
+    mixin("SVec", dimension, "!Gr", type, " vec = new SVec", dimension, "!Gr", type, ";");
     mixin("vec._vectorData = veca._vectorData ", op, " vecb._vectorData;");
     call.setNative(vec);
 }
 
 private void _scalarRightOp(int dimension, string op, string type)(GrCall call) {
-    mixin("GrVec", dimension, "!Gr", type, " veca = call.getNative!(GrVec",
+    mixin("SVec", dimension, "!Gr", type, " veca = call.getNative!(SVec",
         dimension, "!Gr", type, ")(0);");
     mixin("Gr", type, " scalar = call.get", type, "(1);");
-    mixin("GrVec", dimension, "!Gr", type, " vec = new GrVec", dimension, "!Gr", type, ";");
+    mixin("SVec", dimension, "!Gr", type, " vec = new SVec", dimension, "!Gr", type, ";");
     mixin("vec._vectorData = veca._vectorData ", op, " scalar;");
     call.setNative(vec);
 }
 
 private void _scalarLeftOp(int dimension, string op, string type)(GrCall call) {
     mixin("Gr", type, " scalar = call.get", type, "(0);");
-    mixin("GrVec", dimension, "!Gr", type, " veca = call.getNative!(GrVec",
+    mixin("SVec", dimension, "!Gr", type, " veca = call.getNative!(SVec",
         dimension, "!Gr", type, ")(1);");
-    mixin("GrVec", dimension, "!Gr", type, " vec = new GrVec", dimension, "!Gr", type, ";");
+    mixin("SVec", dimension, "!Gr", type, " vec = new SVec", dimension, "!Gr", type, ";");
     mixin("vec._vectorData = scalar ", op, " veca._vectorData;");
     call.setNative(vec);
 }
 
 private void _angle(int dimension, string type)(GrCall call) {
     mixin("vec", dimension, " v1 = cast(vec", dimension,
-        ") call.getNative!(GrVec", dimension, "!Gr", type, ")(0);");
+        ") call.getNative!(SVec", dimension, "!Gr", type, ")(0);");
     mixin("vec", dimension, " v2 = cast(vec", dimension,
-        ") call.getNative!(GrVec", dimension, "!Gr", type, ")(1);");
+        ") call.getNative!(SVec", dimension, "!Gr", type, ")(1);");
     call.setFloat(angle(v1, v2));
 }
 
 private void _rotate3(string type)(GrCall call) {
-    mixin("vec3 v1 = cast(vec3) call.getNative!(GrVec3!Gr", type, ")(0);");
-    mixin("vec3 v2 = cast(vec3) call.getNative!(GrVec3!Gr", type, ")(1);");
-    call.setNative(grVec3(rotate(v1, v2, call.getFloat(2))));
+    mixin("vec3 v1 = cast(vec3) call.getNative!(SVec3!Gr", type, ")(0);");
+    mixin("vec3 v2 = cast(vec3) call.getNative!(SVec3!Gr", type, ")(1);");
+    call.setNative(toSVec3f(rotate(v1, v2, call.getFloat(2))));
 }

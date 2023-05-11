@@ -17,7 +17,7 @@ package void loadAlchimieLibColor(GrLibDefinition library) {
 }
 
 private void _ctor(GrCall call) {
-    GrColor color = new GrColor;
+    SColor color = new SColor;
     static foreach (int idx, field; ["r", "g", "b"]) {
         mixin("color.", field, " = call.getFloat(", idx, ");");
     }
@@ -25,7 +25,7 @@ private void _ctor(GrCall call) {
 }
 
 private void _property(string field, string op)(GrCall call) {
-    GrColor color = call.getNative!(GrColor)(0);
+    SColor color = call.getNative!(SColor)(0);
     static if (op == "set") {
         mixin("color.", field, " = call.getFloat(1);");
     }

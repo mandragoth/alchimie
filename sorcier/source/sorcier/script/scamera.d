@@ -50,9 +50,9 @@ private void _newPerspectiveCamera(GrCall call) {
 private void _newPerspectiveCamera2(GrCall call) {
     uint width = call.getUInt(0);
     uint height = call.getUInt(1);
-    vec3 position = cast(vec3) call.getNative!GrVec3f(2);
-    vec3 target = cast(vec3) call.getNative!GrVec3f(3);
-    vec3 up = cast(vec3) call.getNative!GrVec3f(4);
+    vec3 position = cast(vec3) call.getNative!SVec3f(2);
+    vec3 target = cast(vec3) call.getNative!SVec3f(3);
+    vec3 up = cast(vec3) call.getNative!SVec3f(4);
 
     PerspectiveCamera camera = new PerspectiveCamera(width, height, position, target, up);
 
@@ -82,17 +82,17 @@ private void _getZoom(GrCall call) {
 
 private void _getUp(GrCall call) {
     PerspectiveCamera camera = call.getNative!PerspectiveCamera(0);
-    call.setNative(grVec3(camera.up));
+    call.setNative(toSVec3f(camera.up));
 }
 
 private void _getRight(GrCall call) {
     PerspectiveCamera camera = call.getNative!PerspectiveCamera(0);
-    call.setNative(grVec3(camera.right));
+    call.setNative(toSVec3f(camera.right));
 }
 
 private void _getForward(GrCall call) {
     PerspectiveCamera camera = call.getNative!PerspectiveCamera(0);
-    call.setNative(grVec3(camera.forward));
+    call.setNative(toSVec3f(camera.forward));
 }
 
 private void _setRotation(GrCall call) {
@@ -107,12 +107,12 @@ private void _setZoom(GrCall call) {
 
 private void _setViewport(GrCall call) {
     PerspectiveCamera camera = call.getNative!PerspectiveCamera(0);
-    camera.viewport = call.getNative!GrVec4i(1);
+    camera.viewport = call.getNative!SVec4i(1);
 }
 
 private void _setForward(GrCall call) {
     PerspectiveCamera camera = call.getNative!PerspectiveCamera(0);
-    camera.forward = cast(vec3) call.getNative!GrVec3f(1);
+    camera.forward = cast(vec3) call.getNative!SVec3f(1);
 }
 
 private void _getScreenWidth(GrCall call) {

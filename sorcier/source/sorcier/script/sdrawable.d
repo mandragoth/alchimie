@@ -67,22 +67,22 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
 
 private void _getPosition(GrCall call) {
     Instance instance = call.getNative!Instance(0);
-    call.setNative(grVec3(instance.position));
+    call.setNative(toSVec3f(instance.position));
 }
 
 private void _setPosition2D(GrCall call) {
     Instance instance = call.getNative!Instance(0);
-    instance.position = cast(vec2) call.getNative!GrVec2f(1);
+    instance.position = cast(vec2) call.getNative!SVec2f(1);
 }
 
 private void _setPosition(GrCall call) {
     Instance instance = call.getNative!Instance(0);
-    instance.position = cast(vec3) call.getNative!GrVec3f(1);
+    instance.position = cast(vec3) call.getNative!SVec3f(1);
 }
 
 private void _setScale(GrCall call) {
     Instance instance = call.getNative!Instance(0);
-    instance.scale = cast(vec3) call.getNative!GrVec3f(1);
+    instance.scale = cast(vec3) call.getNative!SVec3f(1);
 }
 
 private void _addTexture(GrCall call) {
@@ -107,7 +107,7 @@ private void _newSprite(GrCall call) {
 }
 
 private void _newSprite2(GrCall call) {
-    Sprite sprite = new Sprite(call.getString(0), call.getNative!GrVec4i(1));
+    Sprite sprite = new Sprite(call.getString(0), call.getNative!SVec4i(1));
     call.setNative(sprite);
 }
 
@@ -129,11 +129,11 @@ private void _newQuad(GrCall call) {
 }
 
 private void _packInstanceMatrix(GrCall call) {
-    GrVec4f rotationObj = call.getNative!GrVec4f(1);
+    SVec4f rotationObj = call.getNative!SVec4f(1);
 
-    vec3 position = cast(vec3) call.getNative!GrVec3f(0);
+    vec3 position = cast(vec3) call.getNative!SVec3f(0);
     quat rotation = quat(rotationObj.w, rotationObj.x, rotationObj.y, rotationObj.z);
-    vec3 scale = cast(vec3) call.getNative!GrVec3f(2);
+    vec3 scale = cast(vec3) call.getNative!SVec3f(2);
     mat4 instanceMatrix = combineModel(position, rotation, scale);
 
     call.setNative(instanceMatrix);
@@ -157,17 +157,17 @@ private void _render(GrCall) {
 }
 
 private void _drawFilledRect(GrCall call) {
-    vec2 position = call.getNative!GrVec2f(0);
-    vec2 size = call.getNative!GrVec2f(1);
-    GrColor color = call.getNative!GrColor(2);
+    vec2 position = call.getNative!SVec2f(0);
+    vec2 size = call.getNative!SVec2f(1);
+    SColor color = call.getNative!SColor(2);
 
     renderer.drawFilledRect(position, size, color);
 }
 
 // @TODO fix this
 private void _drawFilledCircle(GrCall call) {
-    vec2 position = call.getNative!GrVec2f(0);
-    GrColor color = call.getNative!GrColor(2);
+    vec2 position = call.getNative!SVec2f(0);
+    SColor color = call.getNative!SColor(2);
 
     renderer.drawFilledCircle(position, call.getFloat(1), color);
 }
@@ -175,7 +175,7 @@ private void _drawFilledCircle(GrCall call) {
 private void _newDirectionalLight(GrCall call) {
     DirectionalLight directionalLight = new DirectionalLight();
 
-    directionalLight.direction = call.getNative!GrVec3f(0);
+    directionalLight.direction = call.getNative!SVec3f(0);
     directionalLight.ambientIntensity = call.getFloat(1);
     directionalLight.diffuseIntensity = call.getFloat(2);
 
@@ -188,8 +188,8 @@ private void _newDirectionalLight(GrCall call) {
 private void _newPointLight(GrCall call) {
     PointLight pointLight = new PointLight();
 
-    pointLight.position = cast(vec3) call.getNative!GrVec3f(0);
-    pointLight.color = call.getNative!GrColor(1);
+    pointLight.position = cast(vec3) call.getNative!SVec3f(0);
+    pointLight.color = call.getNative!SColor(1);
     pointLight.ambientIntensity = call.getFloat(2);
     pointLight.diffuseIntensity = call.getFloat(3);
 
@@ -202,9 +202,9 @@ private void _newPointLight(GrCall call) {
 private void _newSpotLight(GrCall call) {
     SpotLight spotLight = new SpotLight();
 
-    spotLight.position = cast(vec3) call.getNative!GrVec3f(0);
-    spotLight.direction = cast(vec3) call.getNative!GrVec3f(1);
-    spotLight.color = call.getNative!GrColor(2);
+    spotLight.position = cast(vec3) call.getNative!SVec3f(0);
+    spotLight.direction = cast(vec3) call.getNative!SVec3f(1);
+    spotLight.color = call.getNative!SColor(2);
     spotLight.angle = call.getFloat(3);
     spotLight.ambientIntensity = call.getFloat(4);
     spotLight.diffuseIntensity = call.getFloat(5);
