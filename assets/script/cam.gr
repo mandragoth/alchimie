@@ -6,21 +6,21 @@ export func setupCamera() {
 }
 
 func setupControls() {
-    addAction("move_forward", 0.2);
-    addAction("move_backward", 0.2);
-    addAction("move_up", 0.2);
-    addAction("move_down", 0.2);
-    addAction("move_left", 0.2);
-    addAction("move_right", 0.2);
-    addAction("turn_up", 0.2);
-    addAction("turn_down", 0.2);
-    addAction("turn_left", 0.2);
-    addAction("turn_right", 0.2);
-    addAction("roll_left", 0.2);
-    addAction("roll_right", 0.2);
-    addAction("zoom_in", 0.2);
-    addAction("zoom_out", 0.2);
-    addAction("exit", 0.2);
+    addAction("move_forward", 0.2f);
+    addAction("move_backward", 0.2f);
+    addAction("move_up", 0.2f);
+    addAction("move_down", 0.2f);
+    addAction("move_left", 0.2f);
+    addAction("move_right", 0.2f);
+    addAction("turn_up", 0.2f);
+    addAction("turn_down", 0.2f);
+    addAction("turn_left", 0.2f);
+    addAction("turn_right", 0.2f);
+    addAction("roll_left", 0.2f);
+    addAction("roll_right", 0.2f);
+    addAction("zoom_in", 0.2f);
+    addAction("zoom_out", 0.2f);
+    addAction("exit", 0.2f);
     
     addActionEvent("move_forward", @InputEvent.controllerAxis(ControllerAxis.leftY, -1f));
     addActionEvent("move_forward", @InputEvent.controllerButton(ControllerButton.up, true));
@@ -124,7 +124,7 @@ task camera3D() {
     var zoomSpeed = .15f;
     var mouseSensitivity = .5f;
     var controllerSensitivity = 2f;
-    var minRotX = 5f * degToRad();
+    var minRotX = rad(5f);
 
     var cPosition = camera.position;
 

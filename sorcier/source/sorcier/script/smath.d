@@ -27,8 +27,8 @@ package void loadAlchimieLibMath(GrLibDefinition library) {
     //library.addOperator(&_scalarVec3, GrLibDefinition.Operator.multiply, [vec3Type, grFloat], vec3Type);
 
     // Maths operations
-    library.addFunction(&_degToRad, "degToRad", [], [grFloat]);
-    library.addFunction(&_radToDeg, "radToDeg", [], [grFloat]);
+    //library.addFunction(&_rad, "rad", [grFloat], [grFloat]);
+    //library.addFunction(&_deg, "deg", [grFloat], [grFloat]);
     //library.addFunction(&_angle, "angle", [vec3Type, vec3Type], [grFloat]);
     //library.addFunction(&_rotate, "rotate", [vec3Type, vec3Type, grFloat], [vec3Type]);
     //library.addFunction(&_vec2ToString, "toString", [vec2Type], [grString]);
@@ -124,12 +124,12 @@ private void _scalarVec3(GrCall call) {
     call.setObject(v2Obj);
 }
 
-private void _degToRad(GrCall call) {
-    call.setFloat(degToRad);
+private void _rad(GrCall call) {
+    call.setDouble(call.getDouble(0) * degToRad);
 }
 
-private void _radToDeg(GrCall call) {
-    call.setFloat(radToDeg);
+private void _deg(GrCall call) {
+    call.setDouble(call.getDouble(0) * radToDeg);
 }
 
 private void _angle(GrCall call) {

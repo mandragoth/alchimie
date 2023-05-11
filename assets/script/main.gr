@@ -77,7 +77,7 @@ func testUI() {
     state.spline = Spline.sineInOut;
     state.alpha = 0f;
     state.offsetX = -100f;
-    state.angle = rad(45.0);
+    state.angle = rad(45f);
     label.addState(state);
 
     sleep(2.seconds);

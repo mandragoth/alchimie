@@ -24,7 +24,9 @@ private void _compileScript(string path, string name, GrLocale locale) {
     compiler.addLibrary(stdLib);
     compiler.addLibrary(alchimieLib);
 
-    GrBytecode bytecode = compiler.compileFile(scriptFile, locale);
+    compiler.addFile(scriptFile);
+
+    GrBytecode bytecode = compiler.compile(GrOption.safe | GrOption.symbols, locale);
     enforce(bytecode, compiler.getError().prettify(locale));
 
     bytecode.save(bootFile);

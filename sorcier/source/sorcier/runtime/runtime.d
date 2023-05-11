@@ -75,13 +75,17 @@ final class Runtime {
             compiler.addLibrary(_stdLib);
             compiler.addLibrary(_alchimieLib);
 
-            _bytecode = compiler.compileFile(_filePath,
-                GrOption.profile | GrOption.symbols | GrOption.safe, GrLocale.fr_FR);
+            compiler.addFile(_filePath);
+
+            _bytecode = compiler.compile(GrOption.profile | GrOption.symbols | GrOption.safe,
+                GrLocale.fr_FR);
 
             if (!_bytecode) {
                 writeln(compiler.getError().prettify(GrLocale.fr_FR));
                 return;
             }
+
+            //writeln(_bytecode.prettify());
         }
 
         _engine = new GrEngine;
@@ -91,9 +95,7 @@ final class Runtime {
 
         _engine.callEvent("onLoad");
 
-        _inputEvent = _engine.getEvent("input", [
-                grGetNativeType("InputEvent")
-            ]);
+        _inputEvent = _engine.getEvent("input", [grGetNativeType("InputEvent")]);
         _lateInputEvent = _engine.getEvent("lateInput", [
                 grGetNativeType("InputEvent")
             ]);
