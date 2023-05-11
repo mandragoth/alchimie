@@ -22,10 +22,13 @@ import magia.render.shader;
 import magia.render.texture;
 import magia.render.vertex;
 
+enum uint uintDefault = -1;
+
 private {
     // Trace (@TODO improve)
     bool s_Trace = false;
     bool s_TraceMesh = false;
+    bool s_TraceAnim = false;
     bool s_TraceDeep = false;
 
     // Debug model
@@ -81,11 +84,11 @@ final class Model {
             traverseNode(nodeId);
         }
 
-        int[] animations = getJsonArrayInt(scenes, "animations", []);
+        JSONValue[] animations = getJsonArray(_json, "animations");
 
         // Traverse all animations
-        foreach (int animationId; animations) {
-            traverseAnimation(animationId);
+        foreach (JSONValue animation; animations) {
+            traverseAnimation(animation);
         }
     }
 
@@ -130,7 +133,7 @@ final class Model {
         ubyte[] getData(string fileName) {
             _fileDirectory = dirName(fileName);
 
-            if (s_Trace || s_TraceMesh || s_TraceDeep) {
+            if (s_Trace || s_TraceMesh || s_TraceAnim || s_TraceDeep) {
                 writeln("Model file path: ", fileName);
             }
 
@@ -237,6 +240,14 @@ final class Model {
                     short value = *cast(short*)bytes.ptr;
                     values ~= cast(GLuint) value;
                 }
+            } else if (componentType == ComponentType.ubyte_t) {
+                const uint dataLength = count;
+
+                for (uint dataId = dataStart; dataId < dataStart + dataLength; dataId) {
+                    // Cast data to GLuint
+                    ubyte value = _data[dataId++];
+                    values ~= cast(GLuint) value;
+                }
             } else {
                 throw new Exception("Unsupported indice data type " ~ to!string(componentType));
             }
@@ -293,8 +304,57 @@ final class Model {
             return vertices;
         }
 
+        /// Load mesh
+        void loadMesh(const uint meshId, const uint skinId = uintDefault) {
+            if (s_Trace) {
+                writeln("Mesh load");
+            }
+
+            const JSONValue[] jsonAccessors = getJsonArray(_json, "accessors");
+            const JSONValue[] jsonPrimitives = getJsonArray(_json["meshes"][meshId], "primitives");
+
+            foreach(JSONValue jsonPrimitive; jsonPrimitives) {
+                const JSONValue jsonAttributes = getJson(jsonPrimitive, "attributes");
+
+                // Load vertices
+                const uint positionId = getJsonInt(jsonAttributes, "POSITION");
+                const uint normalId = getJsonInt(jsonAttributes, "NORMAL");
+                const uint texUVId = getJsonInt(jsonAttributes, "TEXCOORD_0");
+
+                vec3[] positions = groupFloatsVec3(getFloats(_json["accessors"][positionId]));
+                vec3[] normals = groupFloatsVec3(getFloats(_json["accessors"][normalId]));
+                vec2[] texUVs = groupFloatsVec2(getFloats(_json["accessors"][texUVId]));
+
+                Vertex[] vertices = assembleVertices(positions, normals, texUVs);
+
+                // Load indices
+                const uint indicesId = getJsonInt(jsonPrimitive, "indices");
+                GLuint[] indices = getIndices(_json["accessors"][indicesId]);
+
+                // Load textures
+                loadTextures();
+
+                // Load skin details (joints and weights) if they exist
+                if (skinId != uintDefault) {
+                    JSONValue skin = _json["skins"][skinId];
+
+                    const uint jointId = getJsonInt(jsonAttributes, "JOINTS_0");
+                    const uint weightId = getJsonInt(jsonAttributes, "WEIGHTS_0");
+
+                    GLuint[] joints = getIndices(_json["accessors"][jointId]);
+                    vec4[] weights = groupFloatsVec4(getFloats(_json["accessors"][weightId]));
+
+                    //writeln("Joints: ", joints);
+                    //writeln("Weights: ", weights);
+                }
+
+                _meshes ~= new Mesh(new VertexBuffer(vertices, layout3D), new IndexBuffer(indices));
+                _vertices ~= vertices;
+            }
+        }
+
         /// Load textures
-        void getTextures() {
+        void loadTextures() {
             uint textureId = 0;
 
             // Load through textures references
@@ -317,33 +377,6 @@ final class Model {
             if (textureId == 0) {
                 _material.textures ~= defaultTexture;
             }
-        }
-
-        /// Load mesh
-        void loadMesh(uint meshId) {
-            if (s_Trace) {
-                writeln("Mesh load");
-            }
-
-            JSONValue jsonMesh = _json["meshes"][meshId];
-            JSONValue jsonPrimitive = jsonMesh["primitives"][0];
-            JSONValue jsonAttributes = jsonPrimitive["attributes"];
-
-            const uint positionId = getJsonInt(jsonAttributes, "POSITION");
-            const uint normalId = getJsonInt(jsonAttributes, "NORMAL");
-            const uint texUVId = getJsonInt(jsonAttributes, "TEXCOORD_0");
-            const uint indicesId = getJsonInt(jsonPrimitive, "indices");
-
-            vec3[] positions = groupFloatsVec3(getFloats(_json["accessors"][positionId]));
-            vec3[] normals = groupFloatsVec3(getFloats(_json["accessors"][normalId]));
-            vec2[] texUVs = groupFloatsVec2(getFloats(_json["accessors"][texUVId]));
-            
-            Vertex[] vertices = assembleVertices(positions, normals, texUVs);
-            GLuint[] indices = getIndices(_json["accessors"][indicesId]);
-            getTextures();
-
-            _meshes ~= new Mesh(new VertexBuffer(vertices, layout3D), new IndexBuffer(indices));
-            _vertices ~= vertices;
         }
 
         /// Traverse given node
@@ -407,13 +440,17 @@ final class Model {
             if (hasJson(node, "mesh")) {
                 if (s_TraceMesh) {
                     writeln("Load current mesh # ", nodeId);
-
-                    writeln("Model: ", model);
-                    writeln("matNextNode: ", matNextNode);
+                    writeln("Combined model: ", model);
                 }
 
+                // Record transform for new mesh
                 _transforms ~= Transform(model, translation, rotation, scale);
-                loadMesh(getJsonInt(node, "mesh"));
+
+                const uint meshId = getJsonInt(node, "mesh");
+                const uint skinId = getJsonInt(node, "skin", uintDefault);
+
+                // Load the new mesh
+                loadMesh(meshId, skinId);
             }
 
             // Traverse children recursively
@@ -422,6 +459,7 @@ final class Model {
 
                 if (s_Trace) {
                     writeln("Load children ", children);
+                    writeln("Combined next node model: ", matNextNode);
                 }
 
                 for (uint i = 0; i < children.length; ++i) {
@@ -432,17 +470,38 @@ final class Model {
         }
 
         /// Traverse given animation
-        void traverseAnimation(uint animationId) {
-            JSONValue animation = _json["animations"][animationId];
+        void traverseAnimation(JSONValue animation) {
+            string name = getJsonStr(animation, "name");
 
-            /// Fetch related target
-            if (hasJson(animation, "target")) {
-
+            if (s_TraceMesh) {
+                writeln("Animation name: ", name);
             }
 
-            /// Fetch related sampler
-            if (hasJson(animation, "mesh")) {
+            /// Fetch related samplers
+            JSONValue[] samplers = getJsonArray(animation, "samplers");
 
+            /// Fetch related channels
+            if (hasJson(animation, "channels")) {
+                JSONValue[] channels = getJsonArray(animation, "channels");
+
+                /// Loop on all channels
+                foreach(JSONValue channel; channels) {
+                    JSONValue target = getJson(channel, "target");
+
+                    const uint samplerId = getJsonInt(channel, "sampler");
+                    const uint nodeId = getJsonInt(target, "node");
+                    const string path = getJsonStr(target, "path");
+
+                    //writeln("SamplerId: ", samplerId, ", nodeId: ", nodeId, ", path: ", path);
+
+                    JSONValue sampler = samplers[samplerId];
+
+                    const uint inputId = getJsonInt(sampler, "input");
+                    const uint outputId = getJsonInt(sampler, "output");
+                    const string interpolation = getJsonStr(sampler, "interpolation");
+
+                    //writeln("InputId: ", inputId, ", outputId: ", outputId, " interpolation: ", interpolation);
+                }
             }
         }
     }

@@ -3,7 +3,7 @@ module magia.render.vertex;
 import magia.core;
 import magia.render.renderer;
 
-/// Class holding a Vertex
+/// Structure holding a Vertex
 struct Vertex {
     /// Where to place the vertex
     vec3 position;
