@@ -247,7 +247,7 @@ final class Model {
         /// Group given float array as a vec2
         vec2[] groupFloatsVec2(float[] floats) {
             vec2[] values;
-            for (uint i = 0; i < floats.length; i) {
+            for (uint i = 0; i < floats.length;) {
                 values ~= vec2(floats[i++], floats[i++]);
             }
             return values;
@@ -256,7 +256,7 @@ final class Model {
         /// Group given float array as a vec3
         vec3[] groupFloatsVec3(float[] floats) {
             vec3[] values;
-            for (uint i = 0; i < floats.length; i) {
+            for (uint i = 0; i < floats.length;) {
                 values ~= vec3(floats[i++], floats[i++], floats[i++]);
             }
             return values;
@@ -265,7 +265,7 @@ final class Model {
         /// Group given float array as a vec4
         vec4[] groupFloatsVec4(float[] floats) {
             vec4[] values;
-            for (uint i = 0; i < floats.length; i) {
+            for (uint i = 0; i < floats.length;) {
                 values ~= vec4(floats[i++], floats[i++], floats[i++], floats[i++]);
             }
             return values;
