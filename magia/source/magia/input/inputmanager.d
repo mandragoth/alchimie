@@ -21,6 +21,10 @@ import magia.input.inputevent;
 import magia.input.inputmap;
 import magia.input.inputdata;
 
+private shared {
+    bool _hasQuit;
+}
+
 /// Gère les entrés et notifications de l’application
 final class InputManager {
     private {
@@ -31,7 +35,6 @@ final class InputManager {
         }
 
         InputMap _map;
-        bool _hasQuit;
 
         Controller[] _controllers;
 
@@ -88,8 +91,6 @@ final class InputManager {
 
         //SDL_SetRelativeMouseMode(SDL_TRUE);
         //SDL_ShowCursor(SDL_DISABLE);
-
-        _input = this;
 
         _map = new InputMap;
     }
@@ -174,8 +175,8 @@ final class InputManager {
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
                 _mouseButtonsPressed[button] = true;
 
-                events ~= InputEvent.mouseButton(button, true,
-                    sdlEvent.button.clicks, _globalMousePosition, _relativeMousePosition);
+                events ~= InputEvent.mouseButton(button, true, sdlEvent.button.clicks,
+                    _globalMousePosition, _relativeMousePosition);
                 break;
             case SDL_MOUSEBUTTONUP:
                 InputEvent.MouseButton.Button button = cast(
@@ -187,8 +188,8 @@ final class InputManager {
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
                 _mouseButtonsPressed[button] = false;
 
-                events ~= InputEvent.mouseButton(button, false,
-                    sdlEvent.button.clicks, _globalMousePosition, _relativeMousePosition);
+                events ~= InputEvent.mouseButton(button, false, sdlEvent.button.clicks,
+                    _globalMousePosition, _relativeMousePosition);
                 break;
             case SDL_MOUSEWHEEL:
                 _mouseWheel = vec2i(sdlEvent.wheel.x, sdlEvent.wheel.y);
@@ -491,13 +492,8 @@ final class InputManager {
     }*/
 }
 
-/// Ditto
-private InputManager _input;
-
 /// Capture les interruptions
 private extern (C) void _signalHandler(int sig) nothrow @nogc @system {
     cast(void) sig;
-
-    if (_input)
-        _input._hasQuit = true;
+    _hasQuit = true;
 }
