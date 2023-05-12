@@ -36,6 +36,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addFunction(&_setScale, "scale", [instanceType, vec3Type]);
     library.addFunction(&_addTexture, "addTexture", [entityType, grString]);
     library.addFunction(&_draw, "draw", [entityType]);
+    library.addFunction(&_update, "update", [entityType]);
 
     // Entity draw commands
     library.addFunction(&_clear, "clear");
@@ -99,6 +100,11 @@ private void _addTexture(GrCall call) {
 private void _draw(GrCall call) {
     Entity entity = call.getNative!Entity(0);
     entity.draw();
+}
+
+private void _update(GrCall call) {
+    Entity entity = call.getNative!Entity(0);
+    entity.update(TimeStep());
 }
 
 private void _newSprite(GrCall call) {

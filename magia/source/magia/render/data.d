@@ -7,8 +7,11 @@ import magia.render.mesh;
 import magia.render.texture;
 import magia.render.vertex;
 
-/// 3D model layout
+/// Static 3D model layout
 BufferLayout layout3D;
+
+/// Animated 3D model layout
+BufferLayout layout3DAnimated;
 
 /// Rect mesh
 Mesh rectMesh;
@@ -51,6 +54,15 @@ void loadShapes() {
         BufferElement("a_Normal", LayoutType.ltFloat3),
         BufferElement("a_Color", LayoutType.ltFloat3),
         BufferElement("a_TexCoords", LayoutType.ltFloat2)
+    ]);
+
+    layout3DAnimated = new BufferLayout([
+        BufferElement("a_Position", LayoutType.ltFloat3),
+        BufferElement("a_Normal", LayoutType.ltFloat3),
+        BufferElement("a_Color", LayoutType.ltFloat3),
+        BufferElement("a_TexCoords", LayoutType.ltFloat2),
+        BufferElement("a_BoneIDs", LayoutType.ltInt4),
+        BufferElement("a_Weights", LayoutType.ltFloat4)
     ]);
 
     quadMesh = new Mesh(new VertexBuffer([

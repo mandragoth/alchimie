@@ -5,6 +5,8 @@ layout (location = 0) in vec3 a_Position;
 layout (location = 1) in vec3 a_Normal;
 layout (location = 2) in vec3 a_Color;
 layout (location = 3) in vec2 a_TexCoords;
+layout (location = 4) in ivec4 a_BoneIDs;
+layout (location = 5) in vec4 a_Weights;
 
 // @TODO add a_InstanceTransform back (to layout)
 // layout (location = 4) in mat4 a_InstanceTransform;
@@ -14,6 +16,9 @@ out vec3 v_Position;
 out vec3 v_Normal;
 out vec3 v_Color;
 out vec2 v_TexCoords;
+// Flat = No rasterizer interpolation
+flat out ivec4 v_BoneIDs;
+out vec4 v_Weights;
 
 uniform mat4 u_CamMatrix;
 uniform mat4 u_Transform;
@@ -23,6 +28,8 @@ void main() {
     v_Normal = a_Normal;
     v_Color = a_Color;
     v_TexCoords = a_TexCoords;
+    v_BoneIDs = a_BoneIDs;
+    v_Weights = a_Weights;
 
     gl_Position = u_CamMatrix * vec4(v_Position, 1.0);
 }
@@ -37,6 +44,9 @@ in vec3 v_Normal;
 in vec3 v_Color;
 in vec2 v_TexCoords;
 in vec4 v_LightPosition;
+// Flat = No rasterizer interpolation
+flat in ivec4 v_BoneIDs;
+in vec4 v_Weights;
 
 struct BaseLight {
     vec3 color;
@@ -81,6 +91,8 @@ uniform int u_NbPointLights;
 
 uniform SpotLight u_SpotLights[kMaxSpotLights];
 uniform int u_NbSpotLights;
+
+uniform int u_DisplayBoneId;
 
 vec4 calcLightInternal(BaseLight light, vec3 lightDirection, vec3 normal) {
     // @TODO apply material ambient color
@@ -157,5 +169,21 @@ void main() {
         totalLight += calcSpotLight(u_SpotLights[spotLightId], normal);
     }
 
-    fragColor = texture(u_Diffuse0, v_TexCoords) * totalLight;
+    /*vec4 boneColor = vec4(0.0, 0.0, 1.0, 0.0);
+    for (int boneId = 0; boneId < 4; ++boneId) {
+        if (v_BoneIDs[boneId] == u_DisplayBoneId) {
+            float weight = v_Weights[boneId];
+            if (weight >= 0.7) {
+                boneColor = vec4(1.0, 0.0, 0.0, 0.0) * weight;
+            } else if (weight >= 0.4) {
+                boneColor = vec4(0.0, 1.0, 0.0, 0.0) * weight;
+            } else if (weight >= 0.1) {
+                boneColor = vec4(1.0, 1.0, 0.0, 0.0) * weight;
+            }
+
+            break;
+        }
+    }*/
+
+    fragColor = texture(u_Diffuse0, v_TexCoords) * totalLight; // * vec4(0.0001) + boneColor;
 }

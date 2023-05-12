@@ -51,6 +51,11 @@ task runtime() {
         skybox:draw();
 
         jupiter:draw();
+
+        if (isActionPressed("nextBone")) {
+            reimu:update();
+        }
+
         reimu:draw();
         reimuHair:draw();
 
