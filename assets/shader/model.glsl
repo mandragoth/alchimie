@@ -169,7 +169,7 @@ void main() {
         totalLight += calcSpotLight(u_SpotLights[spotLightId], normal);
     }
 
-    /*vec4 boneColor = vec4(0.0, 0.0, 1.0, 0.0);
+    vec4 boneColor = vec4(0.0, 0.0, 1.0, 0.0);
     for (int boneId = 0; boneId < 4; ++boneId) {
         if (v_BoneIDs[boneId] == u_DisplayBoneId) {
             float weight = v_Weights[boneId];
@@ -183,7 +183,7 @@ void main() {
 
             break;
         }
-    }*/
+    }
 
-    fragColor = texture(u_Diffuse0, v_TexCoords) * totalLight; // * vec4(0.0001) + boneColor;
+    fragColor = texture(u_Diffuse0, v_TexCoords) * totalLight * vec4(0.0001) + boneColor;
 }

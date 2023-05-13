@@ -43,12 +43,8 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addFunction(&_setup2D, "setup2D");
     library.addFunction(&_setup3D, "setup3D");
     library.addFunction(&_render, "render");
-    library.addFunction(&_drawFilledRect, "drawFilledRect", [
-            vec2Type, vec2Type, colorType
-        ]);
-    library.addFunction(&_drawFilledCircle, "drawFilledCircle", [
-            vec2Type, grFloat, colorType
-        ]);
+    library.addFunction(&_drawFilledRect, "drawFilledRect", [vec2Type, vec2Type, colorType]);
+    library.addFunction(&_drawFilledCircle, "drawFilledCircle", [vec2Type, grFloat, colorType]);
 
     // Light types
     GrType directionalLightType = library.addNative("DirectionalLight");
@@ -56,14 +52,14 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     GrType spotLightType = library.addNative("SpotLight", [], "Entity");
 
     // Light types constructors
-    library.addConstructor(&_newDirectionalLight, directionalLightType,
-        [vec3Type, grFloat, grFloat]);
-    library.addConstructor(&_newPointLight, pointLightType, [
-            vec3Type, colorType, grFloat, grFloat
-        ]);
-    library.addConstructor(&_newSpotLight, spotLightType, [
-            vec3Type, vec3Type, colorType, grFloat, grFloat, grFloat
-        ]);
+    library.addConstructor(&_newDirectionalLight, directionalLightType, [vec3Type, grFloat, grFloat]);
+    library.addConstructor(&_newPointLight, pointLightType, [vec3Type, colorType, grFloat, grFloat]);
+    library.addConstructor(&_newSpotLight, spotLightType, [vec3Type, vec3Type, colorType, grFloat, grFloat, grFloat]);
+
+    // Model instances operations
+    library.addFunction(&_nbBones, "nbBones", [modelType], [grInt]);
+    library.addFunction(&_getDisplayBoneId, "displayBoneId", [modelType], [grInt]);
+    library.addFunction(&_setDisplayBoneId, "displayBoneId", [modelType, grInt], []);
 }
 
 private void _getPosition(GrCall call) {
@@ -219,4 +215,19 @@ private void _newSpotLight(GrCall call) {
     renderer.lightingManager.addSpotLight(spotLight);
 
     call.setNative(spotLight);
+}
+
+private void _nbBones(GrCall call) {
+    ModelInstance modelInstance = call.getNative!ModelInstance(0);
+    call.setInt(modelInstance.nbBones);
+}
+
+private void _getDisplayBoneId(GrCall call) {
+    ModelInstance modelInstance = call.getNative!ModelInstance(0);
+    call.setInt(modelInstance.displayBoneId);
+}
+
+private void _setDisplayBoneId(GrCall call) {
+    ModelInstance modelInstance = call.getNative!ModelInstance(0);
+    modelInstance.displayBoneId = call.getInt(1);
 }

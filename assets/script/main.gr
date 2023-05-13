@@ -1,10 +1,12 @@
 import "cam.gr"
+import "input.gr"
 
 func randf() (float) {
     return rand(-1f, 1f);
 }
 
 event onLoad() {
+    setupControls();
     setupCamera();
     yield;
     runtime();
@@ -48,14 +50,21 @@ task runtime() {
 
         setup3D();
 
-        skybox:draw();
-
-        jupiter:draw();
+        var reimuBoneId = reimu:displayBoneId;
+        var reimuNbBones = reimu:nbBones;
 
         if (isActionPressed("nextBone")) {
-            reimu:update();
+            reimuBoneId = (reimuBoneId + 1) % reimuNbBones;
+            print("Selected bone: " ~ reimuBoneId);
+        } else if (isActionPressed("previousBone") && reimuBoneId > 0) {
+            reimuBoneId = (reimuBoneId - 1) % reimuNbBones;
+            print("Selected bone: " ~ reimuBoneId);
         }
 
+        reimu:displayBoneId(reimuBoneId);
+
+        skybox:draw();
+        jupiter:draw();
         reimu:draw();
         reimuHair:draw();
 

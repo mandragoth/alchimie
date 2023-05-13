@@ -364,8 +364,6 @@ final class Model {
                 writeln("Weights size: ", weights.count);
             }
 
-            nbBones = cast(int)boneIds.length;
-
             Joint[] joints;
             for (uint i = 0; i < boneIds.length; ++i) {
                 if (s_TraceDeep) {
@@ -426,6 +424,7 @@ final class Model {
                     // Fetch interpolation data
                     JSONValue skin = _json["skins"][skinId];
                     int[] jointIds = getJsonArrayInt(skin, "joints");
+                    nbBones += jointIds.length;
 
                     foreach(int jointId; jointIds) {
                         traverseNode(jointId);
@@ -609,10 +608,15 @@ final class ModelInstance : Entity {
     private {
         Model _model;
         Shader _shader;
-
-        // Debug bone display index
-        int _displayBoneId = -1;
     }
+
+    @property {
+        int nbBones() {
+            return _model.nbBones;
+        }
+    }
+
+    int displayBoneId = -1;
 
     /// Constructor
     this(string fileName, uint instances = 1, mat4[] instanceMatrices = [mat4.identity]) {
@@ -621,10 +625,6 @@ final class ModelInstance : Entity {
         _model = fetchPrototype!Model(fileName);
     }
 
-    override void update(TimeStep) {
-        _displayBoneId = (_displayBoneId + 1) % _model.nbBones;
-    }
-    
     /// Render the model
     override void draw() {
         _shader.activate();
@@ -633,7 +633,7 @@ final class ModelInstance : Entity {
             glViewport(camera.viewport.x, camera.viewport.y, camera.viewport.z, camera.viewport.w);
             _shader.uploadUniformVec3("u_CamPos", camera.position);
             _shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
-            _shader.uploadUniformInt("u_DisplayBoneId", _displayBoneId);
+            _shader.uploadUniformInt("u_DisplayBoneId", displayBoneId);
 
             if (material) {
                 _model.draw(_shader, material, transform);
