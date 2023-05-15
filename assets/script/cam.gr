@@ -23,9 +23,9 @@ task camera2D() {
         cPosition.y += getActionAxis("move_down", "move_up") * moveSpeed;
         zRotation += getActionAxis("roll_right", "roll_left") * zRotationSpeed;
 
-        if (isActionPressed("zoom_in")) {
+        if (isActionActivated("zoom_in")) {
             zoomLevel -= zoomSpeed;
-        } else if (isActionPressed("zoom_out")) {
+        } else if (isActionActivated("zoom_out")) {
             zoomLevel += zoomSpeed;
         }
 

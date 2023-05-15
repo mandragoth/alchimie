@@ -8,6 +8,10 @@ import grimoire;
 import sorcier.script.common;
 
 void loadAlchimieLibInput(GrLibDefinition library) {
+    GrType keyState = library.addEnum("InputState", [
+            __traits(allMembers, KeyState)
+        ], cast(GrInt[])[EnumMembers!(KeyState)]);
+
     GrType keyButton = library.addEnum("KeyButton", [
             __traits(allMembers, InputEvent.KeyButton.Button)
         ], cast(GrInt[])[EnumMembers!(InputEvent.KeyButton.Button)]);
@@ -43,7 +47,7 @@ void loadAlchimieLibInput(GrLibDefinition library) {
     library.addFunction(&_inputEvent_isPressed, "isPressed", [inputEvent], [
             grBool
         ]);
-    library.addFunction(&_inputEvent_isEcho, "isEcho", [inputEvent], [grBool]);
+    library.addFunction(&_inputEvent_echo, "echo", [inputEvent], [grBool]);
 
     library.addProperty(&_keyButton, null, "keyButton", inputEvent,
         grOptional(inputEventKeyButton));
@@ -66,12 +70,12 @@ void loadAlchimieLibInput(GrLibDefinition library) {
 
     // KeyButton
     library.addProperty(&_KeyButton_button, null, "button", inputEventKeyButton, keyButton);
-    library.addProperty(&_KeyButton_pressed, null, "pressed", inputEventKeyButton, grBool);
-    library.addProperty(&_KeyButton_isEcho, null, "isEcho", inputEventKeyButton, grBool);
+    library.addProperty(&_KeyButton_state, null, "state", inputEventKeyButton, keyState);
+    library.addProperty(&_KeyButton_echo, null, "echo", inputEventKeyButton, grBool);
 
     // MouseButton
     library.addProperty(&_MouseButton_button, null, "button", inputEventMouseButton, keyButton);
-    library.addProperty(&_MouseButton_pressed, null, "pressed", inputEventMouseButton, grBool);
+    library.addProperty(&_MouseButton_state, null, "state", inputEventMouseButton, keyState);
     library.addProperty(&_MouseButton_clicks, null, "clicks", inputEventMouseButton, grInt);
     library.addProperty(&_MouseButton_globalX, null, "globalX", inputEventMouseButton, grInt);
     library.addProperty(&_MouseButton_globalY, null, "globalY", inputEventMouseButton, grInt);
@@ -91,8 +95,8 @@ void loadAlchimieLibInput(GrLibDefinition library) {
     // ControllerButton
     library.addProperty(&_ControllerButton_button, null, "button",
         inputEventControllerButton, controllerButton);
-    library.addProperty(&_ControllerButton_pressed, null, "pressed",
-        inputEventControllerButton, grBool);
+    library.addProperty(&_ControllerButton_state, null, "state",
+        inputEventControllerButton, keyState);
 
     // ControllerAxis
     library.addProperty(&_ControllerAxis_axis, null, "axis",
@@ -108,11 +112,11 @@ void loadAlchimieLibInput(GrLibDefinition library) {
     // Input
 
     library.addStatic(&_makeKeyButton, inputEvent, "keyButton", [
-            keyButton, grBool, grBool
+            keyButton, keyState, grBool
         ], [inputEvent]);
 
     library.addStatic(&_makeMouseButton, inputEvent, "mouseButton",
-        [mouseButton, grBool, grInt, grInt, grInt, grInt, grInt], [inputEvent]);
+        [mouseButton, keyState, grInt, grInt, grInt, grInt, grInt], [inputEvent]);
 
     library.addStatic(&_makeMouseMotion, inputEvent, "mouseMotion", [
             grInt, grInt, grInt, grInt
@@ -123,7 +127,7 @@ void loadAlchimieLibInput(GrLibDefinition library) {
         ]);
 
     library.addStatic(&_makeControllerButton, inputEvent, "controllerButton",
-        [controllerButton, grBool], [inputEvent]);
+        [controllerButton, keyState], [inputEvent]);
 
     library.addStatic(&_makeControllerAxis, inputEvent, "controllerAxis",
         [controllerAxis, grFloat], [inputEvent]);
@@ -153,7 +157,7 @@ void loadAlchimieLibInput(GrLibDefinition library) {
             grString, inputEvent
         ]);
     library.addFunction(&_removeActionEvents, "removeActionEvents", [grString]);
-    library.addFunction(&_isActionPressed, "isActionPressed", [grString], [
+    library.addFunction(&_isActionActivated, "isActionActivated", [grString], [
             grBool
         ]);
     library.addFunction(&_getActionStrength, "getActionStrength", [grString], [
@@ -174,11 +178,11 @@ private void _type(GrCall call) {
 }
 
 private void _inputEvent_isPressed(GrCall call) {
-    call.setBool(call.getNative!InputEvent(0).isPressed());
+    call.setBool(call.getNative!InputEvent(0).pressed);
 }
 
-private void _inputEvent_isEcho(GrCall call) {
-    call.setBool(call.getNative!InputEvent(0).isEcho());
+private void _inputEvent_echo(GrCall call) {
+    call.setBool(call.getNative!InputEvent(0).echo);
 }
 
 private void _keyButton(GrCall call) {
@@ -259,12 +263,12 @@ private void _KeyButton_button(GrCall call) {
     call.setEnum(call.getNative!(InputEvent.KeyButton)(0).button);
 }
 
-private void _KeyButton_pressed(GrCall call) {
-    call.setBool(call.getNative!(InputEvent.KeyButton)(0).pressed);
+private void _KeyButton_state(GrCall call) {
+    call.setEnum(call.getNative!(InputEvent.KeyButton)(0).state);
 }
 
-private void _KeyButton_isEcho(GrCall call) {
-    call.setBool(call.getNative!(InputEvent.KeyButton)(0).isEcho);
+private void _KeyButton_echo(GrCall call) {
+    call.setBool(call.getNative!(InputEvent.KeyButton)(0).echo);
 }
 
 // MouseButton
@@ -273,8 +277,8 @@ private void _MouseButton_button(GrCall call) {
     call.setEnum(call.getNative!(InputEvent.MouseButton)(0).button);
 }
 
-private void _MouseButton_pressed(GrCall call) {
-    call.setBool(call.getNative!(InputEvent.MouseButton)(0).pressed);
+private void _MouseButton_state(GrCall call) {
+    call.setEnum(call.getNative!(InputEvent.MouseButton)(0).state);
 }
 
 private void _MouseButton_clicks(GrCall call) {
@@ -331,8 +335,8 @@ private void _ControllerButton_button(GrCall call) {
     call.setEnum(call.getNative!(InputEvent.ControllerButton)(0).button);
 }
 
-private void _ControllerButton_pressed(GrCall call) {
-    call.setBool(call.getNative!(InputEvent.ControllerButton)(0).pressed);
+private void _ControllerButton_state(GrCall call) {
+    call.setEnum(call.getNative!(InputEvent.ControllerButton)(0).state);
 }
 
 // ControllerButton
@@ -361,12 +365,12 @@ private void _DropFile_path(GrCall call) {
 
 private void _makeKeyButton(GrCall call) {
     call.setNative(InputEvent.keyButton(call.getEnum!(InputEvent.KeyButton.Button)(0),
-            call.getBool(1), call.getBool(2)));
+            call.getEnum!KeyState(1), call.getBool(2)));
 }
 
 private void _makeMouseButton(GrCall call) {
     call.setNative(InputEvent.mouseButton(call.getEnum!(InputEvent.MouseButton.Button)(0),
-            call.getBool(1), call.getInt(2), vec2i(call.getInt(3),
+            call.getEnum!KeyState(1), call.getInt(2), vec2i(call.getInt(3),
             call.getInt(4)), vec2i(call.getInt(5), call.getInt(6))));
 }
 
@@ -381,7 +385,7 @@ private void _makeMouseWheel(GrCall call) {
 
 private void _makeControllerButton(GrCall call) {
     call.setNative(InputEvent.controllerButton(
-            call.getEnum!(InputEvent.ControllerButton.Button)(0), call.getBool(1)));
+            call.getEnum!(InputEvent.ControllerButton.Button)(0), call.getEnum!KeyState(1)));
 }
 
 private void _makeControllerAxis(GrCall call) {
@@ -431,8 +435,8 @@ private void _removeActionEvents(GrCall call) {
     currentApplication.inputManager.removeActionEvents(call.getString(0));
 }
 
-private void _isActionPressed(GrCall call) {
-    call.setBool(currentApplication.inputManager.isPressed(call.getString(0)));
+private void _isActionActivated(GrCall call) {
+    call.setBool(currentApplication.inputManager.activated(call.getString(0)));
 }
 
 private void _getActionStrength(GrCall call) {

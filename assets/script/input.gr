@@ -1,8 +1,8 @@
 export var mouseX : int;
 export var mouseY : int;
 
-// @TODO make deadzone optional here
 export func setupControls() {
+    // @TODO make deadzone optional here
     addAction("move_forward", 0.2f);
     addAction("move_backward", 0.2f);
     addAction("move_up", 0.2f);
@@ -21,6 +21,7 @@ export func setupControls() {
     addAction("nextBone", 0.2f);
     addAction("previousBone", 0.2f);
     
+    // @TODO make true and false parameters optional / dependent on better parameters
     addActionEvent("move_forward", @InputEvent.controllerAxis(ControllerAxis.leftY, -1f));
     addActionEvent("move_forward", @InputEvent.controllerButton(ControllerButton.up, true));
     addActionEvent("move_forward", @InputEvent.keyButton(KeyButton.up, true, false));
