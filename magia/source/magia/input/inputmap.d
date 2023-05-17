@@ -1,7 +1,6 @@
 module magia.input.inputmap;
 
 import std.algorithm.mutation : remove;
-import std.typecons : BitFlags;
 
 import magia.input.inputevent;
 
@@ -15,32 +14,20 @@ final class InputMap {
         /// Événements activant l’action
         InputEvent[] events;
 
-        /// Etats attendus pour qu'un evenement active l'action
-        BitFlags!KeyState expectedStates;
-
-        /// Seuil d’activation de l’action
-        double deadzone;
-
         /// Init
-        this(string id_, double deadzone_) {
+        this(string id_) {
             id = id_;
-            deadzone = deadzone_;
         }
 
         /// L’événement active-t’il cette action ?
         bool match(InputEvent event_) {
             foreach (InputEvent event; events) {
-                // @TODO handle deadzone for axis here
-                if (event_.match(event) && stateMatches(event_.state))
+                if (event_.matchInput(event) && event_.matchExpectedState(event)) {
                     return true;
+                }
             }
 
             return false;
-        }
-
-         /// L’état est-t'il attendu ?
-        private bool stateMatches(KeyState state) {
-            return cast(bool) expectedStates & state;
         }
     }
 
@@ -49,8 +36,8 @@ final class InputMap {
     }
 
     /// Ajoute une nouvelle action
-    void addAction(string id, double deadzone = .2f) {
-        _actions[id] = new Action(id, deadzone);
+    void addAction(string id) {
+        _actions[id] = new Action(id);
     }
 
     /// Retire une action existante
@@ -106,61 +93,6 @@ final class InputMap {
         }
 
         (*p).events.length = 0;
-    }
-
-    /// Associe un état attendu à une action existante
-    void addActionExpectedState(string id, KeyState expectedState) {
-        auto p = id in _actions;
-
-        if (!p) {
-            return;
-        }
-
-        (*p).expectedStates |= expectedState;
-    }
-
-    /// Associe un set d'états attendus à une action existante
-    void addActionExpectedStates(string id, BitFlags!KeyState expectedStates_) {
-        auto p = id in _actions;
-
-        if (!p) {
-            return;
-        }
-
-        (*p).expectedStates = expectedStates_;
-    }
-
-    /// Supprime un état attendu associé à une action
-    void removeActionExpectedState(string id, KeyState expectedState) {
-        auto p = id in _actions;
-
-        if (!p) {
-            return;
-        }
-
-        (*p).expectedStates = (*p).expectedStates & ~expectedState;
-    }
-
-    /// Supprime un set d'états attendus associés à une action
-    void removeActionExpectedState(string id, BitFlags!KeyState expectedStates) {
-        auto p = id in _actions;
-
-        if (!p) {
-            return;
-        }
-
-        (*p).expectedStates = (*p).expectedStates & ~expectedStates;
-    }
-
-    /// Supprime tous les états attendus associés à une action
-    void removeActionExpectedStates(string id) {
-        auto p = id in _actions;
-
-        if (!p) {
-            return;
-        }
-
-        (*p).expectedStates = BitFlags!KeyState();
     }
 
     string[] getActions() {

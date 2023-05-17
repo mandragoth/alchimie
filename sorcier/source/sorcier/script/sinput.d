@@ -8,7 +8,7 @@ import grimoire;
 import sorcier.script.common;
 
 void loadAlchimieLibInput(GrLibDefinition library) {
-    GrType keyState = library.addEnum("InputState", [
+    GrType keyState = library.addEnum("KeyState", [
             __traits(allMembers, KeyState)
         ], cast(GrInt[])[EnumMembers!(KeyState)]);
 
@@ -149,7 +149,7 @@ void loadAlchimieLibInput(GrLibDefinition library) {
 
     // Action
 
-    library.addFunction(&_addAction, "addAction", [grString, grFloat]);
+    library.addFunction(&_addAction, "addAction", [grString]);
     library.addFunction(&_removeAction, "removeAction", [grString]);
     library.addFunction(&_hasAction, "hasAction", [grString], [grBool]);
     library.addFunction(&_isAction, "isAction", [inputEvent, grString], [grBool]);
@@ -365,12 +365,12 @@ private void _DropFile_path(GrCall call) {
 
 private void _makeKeyButton(GrCall call) {
     call.setNative(InputEvent.keyButton(call.getEnum!(InputEvent.KeyButton.Button)(0),
-            call.getEnum!KeyState(1), call.getBool(2)));
+            InputState(call.getEnum!KeyState(1)), call.getBool(2)));
 }
 
 private void _makeMouseButton(GrCall call) {
     call.setNative(InputEvent.mouseButton(call.getEnum!(InputEvent.MouseButton.Button)(0),
-            call.getEnum!KeyState(1), call.getInt(2), vec2i(call.getInt(3),
+            InputState(call.getEnum!KeyState(1)), call.getInt(2), vec2i(call.getInt(3),
             call.getInt(4)), vec2i(call.getInt(5), call.getInt(6))));
 }
 
@@ -385,7 +385,7 @@ private void _makeMouseWheel(GrCall call) {
 
 private void _makeControllerButton(GrCall call) {
     call.setNative(InputEvent.controllerButton(
-            call.getEnum!(InputEvent.ControllerButton.Button)(0), call.getEnum!KeyState(1)));
+            call.getEnum!(InputEvent.ControllerButton.Button)(0), InputState(call.getEnum!KeyState(1))));
 }
 
 private void _makeControllerAxis(GrCall call) {
@@ -412,7 +412,7 @@ private void _getAxis(GrCall call) {
 // Action
 
 private void _addAction(GrCall call) {
-    currentApplication.inputManager.addAction(call.getString(0), call.getFloat(1));
+    currentApplication.inputManager.addAction(call.getString(0));
 }
 
 private void _removeAction(GrCall call) {

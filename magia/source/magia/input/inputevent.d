@@ -2,16 +2,20 @@ module magia.input.inputevent;
 
 import std.array : join;
 import std.conv : to;
+import std.stdio;
+import std.typecons : BitFlags;
 
 import bindbc.sdl;
 
 import magia.core;
 
 enum KeyState {
-    UP   = 1 << 0,
-    DOWN = 1 << 1,
-    HOLD = 1 << 2
+    up   = 1 << 0,
+    down = 1 << 1,
+    hold = 1 << 2
 };
+
+alias InputState = BitFlags!KeyState;
 
 /// Événement utilisateur
 final class InputEvent {
@@ -279,13 +283,14 @@ final class InputEvent {
         Button button;
 
         /// Etat du bouton (pressed, down or up)
-        KeyState state;
+        /// ou etats possibles attendus du bouton
+        InputState state;
 
         /// Est-ce une répétition de touche automatique ?
         bool echo;
 
         /// Init
-        this(Button button_, KeyState state_, bool echo_) {
+        this(Button button_, InputState state_, bool echo_) {
             button = button_;
             state = state_;
             echo = echo_;
@@ -314,7 +319,8 @@ final class InputEvent {
         Button button;
 
         /// Etat du bouton (pressed, down or up)
-        KeyState state;
+        /// ou etats possibles attendus du bouton
+        InputState state;
 
         /// Combien de fois cette touche a été appuyé ?
         uint clicks;
@@ -326,7 +332,7 @@ final class InputEvent {
         vec2i relativePosition;
 
         /// Init
-        this(Button button_, KeyState state_, uint clicks_, vec2i globalPosition_, vec2i relativePosition_) {
+        this(Button button_, InputState state_, uint clicks_, vec2i globalPosition_, vec2i relativePosition_) {
             button = button_;
             state = state_;
             clicks = clicks_;
@@ -407,10 +413,11 @@ final class InputEvent {
         Button button;
 
         /// Etat du bouton (pressed, down or up)
-        KeyState state;
+        /// ou etats possibles attendus du bouton
+        InputState state;
 
         /// Init
-        this(Button button_, KeyState state_) {
+        this(Button button_, InputState state_) {
             button = button_;
             state = state_;
         }
@@ -564,7 +571,7 @@ final class InputEvent {
             return _dropFile;
         }
 
-        KeyState state() const {
+        InputState state() const {
             switch (_type) with (Type) {
             case keyButton:
                 return _keyButton.state;
@@ -573,28 +580,28 @@ final class InputEvent {
             case controllerButton:
                 return _controllerButton.state;
             default:
-                return KeyState.UP;
+                return InputState();
             }
         }
 
         /// Dans le cas d’une touche ou d’un bouton, est-il appuyé ?
         bool pressed() const {
-            return state == KeyState.DOWN || state == KeyState.HOLD;
+            return cast(bool) (state & InputState(KeyState.down | KeyState.hold));
         }
 
         /// Dans le cas d’une touche ou d’un bouton, est-il maintenu enfoncé ?
         bool hold() const {
-            return state == KeyState.HOLD;
+            return cast(bool) state & KeyState.hold;
         }
 
         /// Dans le cas d'une touche ou d'un bouton, a-t-il été appuyé cette frame ?
         bool down() const {
-            return state == KeyState.DOWN;
+            return cast(bool) state == KeyState.down;
         }
 
         /// Dans le cas d'une touche ou d'un bouton, a-t-on arreté d'appuyer dessus cette frame ?
         bool up() const {
-            return state == KeyState.UP;
+            return cast(bool) state == KeyState.up;
         }
 
         /// L’événement est-il un écho ?
@@ -727,11 +734,11 @@ final class InputEvent {
     }
 
     private {
-        void _makeKeyButton(KeyButton.Button button, KeyState state, bool echo) {
+        void _makeKeyButton(KeyButton.Button button, InputState state, bool echo) {
             _keyButton = new KeyButton(button, state, echo);
         }
 
-        void _makeMouseButton(MouseButton.Button button, KeyState state,
+        void _makeMouseButton(MouseButton.Button button, InputState state,
                               uint clicks, vec2i globalPosition, vec2i relativePosition) {
             _mouseButton = new MouseButton(button, state, clicks, globalPosition, relativePosition);
         }
@@ -744,7 +751,7 @@ final class InputEvent {
             _mouseWheel = new MouseWheel(wheel);
         }
 
-        void _makeControllerButton(ControllerButton.Button button, KeyState state) {
+        void _makeControllerButton(ControllerButton.Button button, InputState state) {
             _controllerButton = new ControllerButton(button, state);
         }
 
@@ -764,7 +771,7 @@ final class InputEvent {
     /// Touche du clavier
     static {
         /// Retourne un événement correspondant à une touche du clavier
-        InputEvent keyButton(KeyButton.Button button, KeyState state, bool echo) {
+        InputEvent keyButton(KeyButton.Button button, InputState state, bool echo) {
             InputEvent event = new InputEvent;
             event._type = Type.keyButton;
             event._isAccepted = false;
@@ -773,7 +780,7 @@ final class InputEvent {
         }
 
         /// Retourne un événement correspondant à une touche de la souris
-        InputEvent mouseButton(MouseButton.Button button, KeyState state,
+        InputEvent mouseButton(MouseButton.Button button, InputState state,
             uint clicks, vec2i globalPosition, vec2i relativePosition) {
             InputEvent event = new InputEvent;
             event._type = Type.mouseButton;
@@ -801,7 +808,7 @@ final class InputEvent {
         }
 
         /// Retourne un événement correspondant à un bouton de la manette
-        InputEvent controllerButton(ControllerButton.Button button, KeyState state) {
+        InputEvent controllerButton(ControllerButton.Button button, InputState state) {
             InputEvent event = new InputEvent;
             event._type = Type.controllerButton;
             event._isAccepted = false;
@@ -837,8 +844,30 @@ final class InputEvent {
         }
     }
 
-    /// L’événement correspond-t’il à l’autre ?
-    bool match(const InputEvent event) const {
+    /// L'evenement a-t-il un etat qui est attendu par l'autre ?
+    /// Ici non symmetrique: le premier evenement est un veritable evenement
+    ///                      le second est lie a une action
+    bool matchExpectedState(const InputEvent event) const {
+        switch (_type) with (Type) {
+        case keyButton:
+            return cast(bool) (_keyButton.state & event._keyButton.state);
+        case mouseButton:
+            return cast(bool) (_mouseButton.state & event._mouseButton.state);
+        case controllerButton:
+            writeln("given: ", _controllerButton.state);
+            writeln("expected: ", event._controllerButton.state);
+            return cast(bool) (_controllerButton.state & event._controllerButton.state);
+        case controllerAxis:
+            double strength = _controllerAxis.value;
+            double deadzone = event._controllerAxis.value;
+            return abs(strength) > deadzone;
+        default:
+            return false;
+        }
+    }
+
+    /// L’événement a-t-il le meme input que l'autre ?
+    bool matchInput(const InputEvent event) const {
         switch (_type) with (Type) {
         case keyButton:
             return _keyButton.button == event._keyButton.button;

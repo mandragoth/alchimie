@@ -134,13 +134,14 @@ final class InputManager {
                 if (button > InputEvent.KeyButton.Button.max)
                     break;
 
-                if (_keyStateButtons[button] == KeyState.UP) {
-                    _keyStateButtons[button] = KeyState.DOWN;
+                if (_keyStateButtons[button] == KeyState.up) {
+                    _keyStateButtons[button] = KeyState.down;
                 } else {
-                    _keyStateButtons[button] = KeyState.HOLD;
+                    _keyStateButtons[button] = KeyState.hold;
                 }
 
-                events ~= InputEvent.keyButton(button, _keyStateButtons[button], sdlEvent.key.repeat > 0);
+                InputState state = InputState(_keyStateButtons[button]);
+                events ~= InputEvent.keyButton(button, state, sdlEvent.key.repeat > 0);
                 break;
             case SDL_KEYUP:
                 InputEvent.KeyButton.Button button = cast(
@@ -149,9 +150,10 @@ final class InputManager {
                 if (button > InputEvent.KeyButton.Button.max)
                     break;
 
-                _keyStateButtons[button] = KeyState.UP;
+                _keyStateButtons[button] = KeyState.up;
 
-                events ~= InputEvent.keyButton(button, _keyStateButtons[button], sdlEvent.key.repeat > 0);
+                InputState state = InputState(_keyStateButtons[button]);
+                events ~= InputEvent.keyButton(button, state, sdlEvent.key.repeat > 0);
                 break;
             case SDL_TEXTINPUT:
                 string text = to!string(sdlEvent.text.text);
@@ -178,13 +180,14 @@ final class InputManager {
 
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
 
-                if (_keyStateMouses[button] == KeyState.UP) {
-                    _keyStateMouses[button] = KeyState.DOWN;
+                if (_keyStateMouses[button] == KeyState.up) {
+                    _keyStateMouses[button] = KeyState.down;
                 } else {
-                    _keyStateMouses[button] = KeyState.HOLD;
+                    _keyStateMouses[button] = KeyState.hold;
                 }
 
-                events ~= InputEvent.mouseButton(button, _keyStateMouses[button], sdlEvent.button.clicks,
+                InputState state = InputState(_keyStateMouses[button]);
+                events ~= InputEvent.mouseButton(button, state, sdlEvent.button.clicks,
                     _globalMousePosition, _relativeMousePosition);
                 break;
             case SDL_MOUSEBUTTONUP:
@@ -195,9 +198,10 @@ final class InputManager {
                     break;
 
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
-                _keyStateMouses[button] = KeyState.UP;
+                _keyStateMouses[button] = KeyState.up;
 
-                events ~= InputEvent.mouseButton(button, _keyStateMouses[button], sdlEvent.button.clicks,
+                InputState state = InputState(_keyStateMouses[button]);
+                events ~= InputEvent.mouseButton(button, state, sdlEvent.button.clicks,
                     _globalMousePosition, _relativeMousePosition);
                 break;
             case SDL_MOUSEWHEEL:
@@ -233,13 +237,14 @@ final class InputManager {
                 if (button > InputEvent.ControllerButton.Button.max)
                     break;
 
-                if (_keyStateControllers[button] == KeyState.UP) {
-                    _keyStateControllers[button] = KeyState.DOWN;
+                if (_keyStateControllers[button] == KeyState.up) {
+                    _keyStateControllers[button] = KeyState.down;
                 } else {
-                    _keyStateControllers[button] = KeyState.HOLD;
+                    _keyStateControllers[button] = KeyState.hold;
                 }
 
-                events ~= InputEvent.controllerButton(button, _keyStateControllers[button]);
+                InputState state = InputState(_keyStateControllers[button]);
+                events ~= InputEvent.controllerButton(button, state);
                 break;
             case SDL_CONTROLLERBUTTONUP:
                 InputEvent.ControllerButton.Button button = cast(
@@ -248,9 +253,10 @@ final class InputManager {
                 if (button > InputEvent.ControllerButton.Button.max)
                     break;
 
-                _keyStateControllers[button] = KeyState.UP;
+                _keyStateControllers[button] = KeyState.up;
 
-                events ~= InputEvent.controllerButton(button, _keyStateControllers[button]);
+                InputState state = InputState(_keyStateControllers[button]);
+                events ~= InputEvent.controllerButton(button, state);
                 break;
             case SDL_WINDOWEVENT:
                 switch (sdlEvent.window.event) {
@@ -290,7 +296,7 @@ final class InputManager {
             }
         }
 
-        _updateActionStates();
+        _updateActionStates(events);
 
         return events;
     }
@@ -380,7 +386,7 @@ final class InputManager {
     }
 
     // Mise à jour des états des actions
-    private void _updateActionStates() {
+    private void _updateActionStates(InputEvent[] polledEvents) {
         foreach (ref ActionState actionState; _actionStates) {
             InputMap.Action action = _map.getAction(actionState.id);
             bool actionActivated = false;
@@ -389,9 +395,10 @@ final class InputManager {
             foreach (InputEvent event; action.events) {
                 double eventStrength = 0.0;
 
-                // Ignorer cet evenement s'il ne matche pas l'action
-                if (!action.match(event)) 
+                /// Skip inputs not triggered
+                if (!matchPolledInput(polledEvents, event)) {
                     continue;
+                }
 
                 switch (event.type) with (InputEvent.Type) {
                 case keyButton:
@@ -403,7 +410,7 @@ final class InputManager {
                 case controllerAxis:
                     double strength = getAxis(event.asControllerAxis().axis);
                     strength = clamp(abs(strength), 0.0, 1.0);
-                    eventStrength = event.pressed ? rlerp(action.deadzone, 1.0, strength) : 0.0;
+                    eventStrength = rlerp(event.value, 1.0, strength);
                     break;
                 default:
                     break;
@@ -418,19 +425,31 @@ final class InputManager {
         }
     }
 
+    /// Est-ce qu'un evenement attendu associe a une action matche un veritable input cette frame ?
+    private bool matchPolledInput(InputEvent[] polledEvents, InputEvent actionEvent) {
+        /// Performance WILL BE TERRIBLE (we should index differently)
+        foreach (InputEvent polledEvent; polledEvents) {
+            if (polledEvent.matchInput(actionEvent) && polledEvent.matchExpectedState(actionEvent)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// Est-ce que la touche est appuyée ?
     bool isPressed(InputEvent.KeyButton.Button button) const {
-        return _keyStateButtons[button] == KeyState.DOWN || _keyStateButtons[button] == KeyState.HOLD;
+        return _keyStateButtons[button] == KeyState.down || _keyStateButtons[button] == KeyState.hold;
     }
 
     /// Ditto
     bool isPressed(InputEvent.MouseButton.Button button) const {
-        return _keyStateMouses[button] == KeyState.DOWN || _keyStateMouses[button] == KeyState.HOLD;
+        return _keyStateMouses[button] == KeyState.down || _keyStateMouses[button] == KeyState.hold;
     }
 
     /// Ditto
     bool isPressed(InputEvent.ControllerButton.Button button) const {
-        return _keyStateControllers[button] == KeyState.DOWN || _keyStateControllers[button] == KeyState.HOLD;
+        return _keyStateControllers[button] == KeyState.down || _keyStateControllers[button] == KeyState.hold;
     }
 
     /// Retourne la valeur de l’axe
@@ -439,8 +458,8 @@ final class InputManager {
     }
 
     /// Ajoute une nouvelle action
-    void addAction(string id, double deadzone) {
-        _map.addAction(id, deadzone);
+    void addAction(string id) {
+        _map.addAction(id);
         _actionStates[id] = ActionState(id);
     }
 

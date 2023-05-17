@@ -3,31 +3,31 @@ export var mouseY : int;
 
 export func setupControls() {
     // @TODO make deadzone optional here
-    addAction("move_forward", 0.2f);
-    addAction("move_backward", 0.2f);
-    addAction("move_up", 0.2f);
-    addAction("move_down", 0.2f);
-    addAction("move_left", 0.2f);
-    addAction("move_right", 0.2f);
-    addAction("turn_up", 0.2f);
-    addAction("turn_down", 0.2f);
-    addAction("turn_left", 0.2f);
-    addAction("turn_right", 0.2f);
-    addAction("roll_left", 0.2f);
-    addAction("roll_right", 0.2f);
-    addAction("zoom_in", 0.2f);
-    addAction("zoom_out", 0.2f);
-    addAction("exit", 0.2f);
-    addAction("nextBone", 0.2f);
-    addAction("previousBone", 0.2f);
+    addAction("move_forward");
+    addAction("move_backward");
+    addAction("move_up");
+    addAction("move_down");
+    addAction("move_left");
+    addAction("move_right");
+    addAction("turn_up");
+    addAction("turn_down");
+    addAction("turn_left");
+    addAction("turn_right");
+    addAction("roll_left");
+    addAction("roll_right");
+    addAction("zoom_in");
+    addAction("zoom_out");
+    addAction("exit");
+    addAction("nextBone");
+    addAction("previousBone");
     
     // @TODO make true and false parameters optional / dependent on better parameters
     addActionEvent("move_forward", @InputEvent.controllerAxis(ControllerAxis.leftY, -1f));
-    addActionEvent("move_forward", @InputEvent.controllerButton(ControllerButton.up, true));
-    addActionEvent("move_forward", @InputEvent.keyButton(KeyButton.up, true, false));
-    addActionEvent("move_forward", @InputEvent.keyButton(KeyButton.w, true, false));
+    //addActionEvent("move_forward", @InputEvent.controllerButton(ControllerButton.up, KeyState.down));
+    addActionEvent("move_forward", @InputEvent.keyButton(KeyButton.up, KeyState.down, false));
+    //addActionEvent("move_forward", @InputEvent.keyButton(KeyButton.w, false));*/
 
-    addActionEvent("move_backward", @InputEvent.controllerAxis(ControllerAxis.leftY, 1f));
+    /*addActionEvent("move_backward", @InputEvent.controllerAxis(ControllerAxis.leftY, 1f));
     addActionEvent("move_backward", @InputEvent.controllerButton(ControllerButton.down, true));
     addActionEvent("move_backward", @InputEvent.keyButton(KeyButton.down, true, false));
     addActionEvent("move_backward", @InputEvent.keyButton(KeyButton.s, true, false));
@@ -69,7 +69,7 @@ export func setupControls() {
     addActionEvent("exit", @InputEvent.keyButton(KeyButton.escape, true, false));
 
     addActionEvent("nextBone", @InputEvent.keyButton(KeyButton.f1, true, false));
-    addActionEvent("previousBone", @InputEvent.keyButton(KeyButton.f2, true, false));
+    addActionEvent("previousBone", @InputEvent.keyButton(KeyButton.f2, true, false));*/
 }
 
 event input(input: InputEvent) {
