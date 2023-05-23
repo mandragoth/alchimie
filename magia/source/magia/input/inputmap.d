@@ -22,7 +22,7 @@ final class InputMap {
         /// L’événement active-t’il cette action ?
         bool match(InputEvent event_) {
             foreach (InputEvent event; events) {
-                if (event_.matchInput(event) && event_.matchExpectedState(event)) {
+                if (event.matchInput(event_)) {
                     return true;
                 }
             }

@@ -1,5 +1,4 @@
 import "cam.gr"
-import "input.gr"
 
 func randf() (float) {
     return rand(-1f, 1f);

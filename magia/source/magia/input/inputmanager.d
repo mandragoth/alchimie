@@ -11,6 +11,7 @@ version (Windows) {
 import std.file : exists;
 import std.conv : to, parse;
 import std.path, std.string, std.utf;
+import std.stdio;
 
 import bindbc.sdl;
 
@@ -122,6 +123,9 @@ final class InputManager {
         // Reset mouse wheel
         _mouseWheel = vec2i.zero;
 
+        // Update key states FSM
+        _updateKeyStates();
+
         while (SDL_PollEvent(&sdlEvent)) {
             switch (sdlEvent.type) {
             case SDL_QUIT:
@@ -134,10 +138,8 @@ final class InputManager {
                 if (button > InputEvent.KeyButton.Button.max)
                     break;
 
-                if (_keyStateButtons[button] == KeyState.up) {
+                if (_keyStateButtons[button] == KeyState.none) {
                     _keyStateButtons[button] = KeyState.down;
-                } else {
-                    _keyStateButtons[button] = KeyState.hold;
                 }
 
                 InputState state = InputState(_keyStateButtons[button]);
@@ -180,10 +182,8 @@ final class InputManager {
 
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
 
-                if (_keyStateMouses[button] == KeyState.up) {
+                if (_keyStateMouses[button] == KeyState.none) {
                     _keyStateMouses[button] = KeyState.down;
-                } else {
-                    _keyStateMouses[button] = KeyState.hold;
                 }
 
                 InputState state = InputState(_keyStateMouses[button]);
@@ -237,10 +237,8 @@ final class InputManager {
                 if (button > InputEvent.ControllerButton.Button.max)
                     break;
 
-                if (_keyStateControllers[button] == KeyState.up) {
+                if (_keyStateControllers[button] == KeyState.none) {
                     _keyStateControllers[button] = KeyState.down;
-                } else {
-                    _keyStateControllers[button] = KeyState.hold;
                 }
 
                 InputState state = InputState(_keyStateControllers[button]);
@@ -296,7 +294,7 @@ final class InputManager {
             }
         }
 
-        _updateActionStates(events);
+        _updateActionStates();
 
         return events;
     }
@@ -385,8 +383,32 @@ final class InputManager {
             _controllers = _controllers[0 .. index] ~ _controllers[(index + 1) .. $];
     }
 
+    // Mise à jour des états de chaque touche naturelle
+    private void _updateKeyStates() {
+        foreach (ref KeyState keyState; _keyStateButtons) {
+            _updateKeyState(keyState);
+        }
+
+        foreach (ref KeyState keyState; _keyStateMouses) {
+            _updateKeyState(keyState);
+        }
+
+        foreach (ref KeyState keyState; _keyStateControllers) {
+            _updateKeyState(keyState);
+        }
+    }
+
+    // Mise à jour des états d'une touche naturelle
+    private void _updateKeyState(ref KeyState keyState) {
+        if (keyState == KeyState.down) {
+            keyState = KeyState.hold;
+        } else if (keyState == KeyState.up) {
+            keyState = KeyState.none;
+        }
+    }
+
     // Mise à jour des états des actions
-    private void _updateActionStates(InputEvent[] polledEvents) {
+    private void _updateActionStates() {
         foreach (ref ActionState actionState; _actionStates) {
             InputMap.Action action = _map.getAction(actionState.id);
             bool actionActivated = false;
@@ -396,7 +418,7 @@ final class InputManager {
                 double eventStrength = 0.0;
 
                 /// Skip inputs not triggered
-                if (!matchPolledInput(polledEvents, event)) {
+                if (!matchManagedInput(event)) {
                     continue;
                 }
 
@@ -425,16 +447,21 @@ final class InputManager {
         }
     }
 
-    /// Est-ce qu'un evenement attendu associe a une action matche un veritable input cette frame ?
-    private bool matchPolledInput(InputEvent[] polledEvents, InputEvent actionEvent) {
-        /// Performance WILL BE TERRIBLE (we should index differently)
-        foreach (InputEvent polledEvent; polledEvents) {
-            if (polledEvent.matchInput(actionEvent) && polledEvent.matchExpectedState(actionEvent)) {
-                return true;
-            }
+    /// Est-ce qu'un evenement attendu associe a une action matche un veritable input ?
+    private bool matchManagedInput(InputEvent event) {
+        switch (event.type) with (InputEvent.Type) {
+            case keyButton:
+                return event.matchExpectedState(_keyStateButtons[event.asKeyButton.button]);
+            case mouseButton:
+                return event.matchExpectedState(_keyStateMouses[event.asMouseButton.button]);
+            case controllerButton:
+                return event.matchExpectedState(_keyStateControllers[event.asControllerButton.button]);
+            // @TODO fix controller axis check
+            /*case controllerAxis:
+                return event.matchAxisValue(_controllerAxisValues[event.asControllerAxis.axis]);*/
+            default:
+                return false;
         }
-
-        return false;
     }
 
     /// Est-ce que la touche est appuyée ?

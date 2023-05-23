@@ -3,19 +3,22 @@ module magia.input.inputevent;
 import std.array : join;
 import std.conv : to;
 import std.stdio;
-import std.typecons : BitFlags;
+import std.typecons;
 
 import bindbc.sdl;
 
 import magia.core;
 
+/// État d'un bouton
 enum KeyState {
-    up   = 1 << 0,
-    down = 1 << 1,
-    hold = 1 << 2
-};
+    none = 0,
+    down = 1 << 0,
+    hold = 1 << 1,
+    up   = 1 << 2,
+    pressed = down | hold
+}
 
-alias InputState = BitFlags!KeyState;
+alias InputState = BitFlags!(KeyState, Yes.unsafe);
 
 /// Événement utilisateur
 final class InputEvent {
@@ -318,8 +321,7 @@ final class InputEvent {
         /// Touche de la souris
         Button button;
 
-        /// Etat du bouton (pressed, down or up)
-        /// ou etats possibles attendus du bouton
+        /// Etat du bouton ou etats possibles attendus du bouton
         InputState state;
 
         /// Combien de fois cette touche a été appuyé ?
@@ -412,8 +414,7 @@ final class InputEvent {
         /// Bouton de la manette
         Button button;
 
-        /// Etat du bouton (pressed, down or up)
-        /// ou etats possibles attendus du bouton
+        /// Etat du bouton ou etats possibles attendus du bouton
         InputState state;
 
         /// Init
@@ -586,22 +587,22 @@ final class InputEvent {
 
         /// Dans le cas d’une touche ou d’un bouton, est-il appuyé ?
         bool pressed() const {
-            return cast(bool) (state & InputState(KeyState.down | KeyState.hold));
+            return cast(bool) (state & KeyState.pressed);
         }
 
         /// Dans le cas d’une touche ou d’un bouton, est-il maintenu enfoncé ?
         bool hold() const {
-            return cast(bool) state & KeyState.hold;
+            return cast(bool) (state & KeyState.hold);
         }
 
         /// Dans le cas d'une touche ou d'un bouton, a-t-il été appuyé cette frame ?
         bool down() const {
-            return cast(bool) state == KeyState.down;
+            return cast(bool) (state & KeyState.down);
         }
 
         /// Dans le cas d'une touche ou d'un bouton, a-t-on arreté d'appuyer dessus cette frame ?
         bool up() const {
-            return cast(bool) state == KeyState.up;
+            return cast(bool) (state & KeyState.up);
         }
 
         /// L’événement est-il un écho ?
@@ -844,26 +845,25 @@ final class InputEvent {
         }
     }
 
-    /// L'evenement a-t-il un etat qui est attendu par l'autre ?
-    /// Ici non symmetrique: le premier evenement est un veritable evenement
-    ///                      le second est lie a une action
-    bool matchExpectedState(const InputEvent event) const {
+    /// L'événement correspond-il a un input donné?
+    bool matchExpectedState(const KeyState inputState) const {
         switch (_type) with (Type) {
         case keyButton:
-            return cast(bool) (_keyButton.state & event._keyButton.state);
+            return cast(bool) (_keyButton.state & inputState);
         case mouseButton:
-            return cast(bool) (_mouseButton.state & event._mouseButton.state);
+            return cast(bool) (_mouseButton.state & inputState);
         case controllerButton:
-            writeln("given: ", _controllerButton.state);
-            writeln("expected: ", event._controllerButton.state);
-            return cast(bool) (_controllerButton.state & event._controllerButton.state);
-        case controllerAxis:
-            double strength = _controllerAxis.value;
-            double deadzone = event._controllerAxis.value;
-            return abs(strength) > deadzone;
+            return cast(bool) (_controllerButton.state & inputState);
         default:
             return false;
         }
+    }
+
+    /// L'événement correspond-il a une limite d'axe donnée?
+    /// Précondition: l'événement est pour un axe de manette
+    bool matchAxisValue(const double deadzone) {
+        const double strength = _controllerAxis.value;
+        return abs(strength) > deadzone;
     }
 
     /// L’événement a-t-il le meme input que l'autre ?
