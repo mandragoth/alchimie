@@ -41,9 +41,9 @@ final class InputManager {
 
         vec2i _globalMousePosition, _relativeMousePosition, _mouseWheel;
 
-        KeyState[InputEvent.KeyButton.Button.max + 1] _keyStateButtons;
-        KeyState[InputEvent.MouseButton.Button.max + 1] _keyStateMouses;
-        KeyState[InputEvent.ControllerButton.Button.max + 1] _keyStateControllers;
+        KeyState[InputEvent.KeyButton.Button.max + 1] _keyButtonStates;
+        KeyState[InputEvent.MouseButton.Button.max + 1] _mouseButtonStates;
+        KeyState[InputEvent.ControllerButton.Button.max + 1] _controllerButtonStates;
         double[InputEvent.ControllerAxis.Axis.max + 1] _controllerAxisValues = .0;
 
         struct ActionState {
@@ -138,11 +138,11 @@ final class InputManager {
                 if (button > InputEvent.KeyButton.Button.max)
                     break;
 
-                if (_keyStateButtons[button] == KeyState.none) {
-                    _keyStateButtons[button] = KeyState.down;
+                if (_keyButtonStates[button] == KeyState.none) {
+                    _keyButtonStates[button] = KeyState.down;
                 }
 
-                InputState state = InputState(_keyStateButtons[button]);
+                InputState state = InputState(_keyButtonStates[button]);
                 events ~= InputEvent.keyButton(button, state, sdlEvent.key.repeat > 0);
                 break;
             case SDL_KEYUP:
@@ -152,9 +152,9 @@ final class InputManager {
                 if (button > InputEvent.KeyButton.Button.max)
                     break;
 
-                _keyStateButtons[button] = KeyState.up;
+                _keyButtonStates[button] = KeyState.up;
 
-                InputState state = InputState(_keyStateButtons[button]);
+                InputState state = InputState(_keyButtonStates[button]);
                 events ~= InputEvent.keyButton(button, state, sdlEvent.key.repeat > 0);
                 break;
             case SDL_TEXTINPUT:
@@ -182,11 +182,11 @@ final class InputManager {
 
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
 
-                if (_keyStateMouses[button] == KeyState.none) {
-                    _keyStateMouses[button] = KeyState.down;
+                if (_mouseButtonStates[button] == KeyState.none) {
+                    _mouseButtonStates[button] = KeyState.down;
                 }
 
-                InputState state = InputState(_keyStateMouses[button]);
+                InputState state = InputState(_mouseButtonStates[button]);
                 events ~= InputEvent.mouseButton(button, state, sdlEvent.button.clicks,
                     _globalMousePosition, _relativeMousePosition);
                 break;
@@ -198,9 +198,9 @@ final class InputManager {
                     break;
 
                 _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
-                _keyStateMouses[button] = KeyState.up;
+                _mouseButtonStates[button] = KeyState.up;
 
-                InputState state = InputState(_keyStateMouses[button]);
+                InputState state = InputState(_mouseButtonStates[button]);
                 events ~= InputEvent.mouseButton(button, state, sdlEvent.button.clicks,
                     _globalMousePosition, _relativeMousePosition);
                 break;
@@ -237,11 +237,11 @@ final class InputManager {
                 if (button > InputEvent.ControllerButton.Button.max)
                     break;
 
-                if (_keyStateControllers[button] == KeyState.none) {
-                    _keyStateControllers[button] = KeyState.down;
+                if (_controllerButtonStates[button] == KeyState.none) {
+                    _controllerButtonStates[button] = KeyState.down;
                 }
 
-                InputState state = InputState(_keyStateControllers[button]);
+                InputState state = InputState(_controllerButtonStates[button]);
                 events ~= InputEvent.controllerButton(button, state);
                 break;
             case SDL_CONTROLLERBUTTONUP:
@@ -251,9 +251,9 @@ final class InputManager {
                 if (button > InputEvent.ControllerButton.Button.max)
                     break;
 
-                _keyStateControllers[button] = KeyState.up;
+                _controllerButtonStates[button] = KeyState.up;
 
-                InputState state = InputState(_keyStateControllers[button]);
+                InputState state = InputState(_controllerButtonStates[button]);
                 events ~= InputEvent.controllerButton(button, state);
                 break;
             case SDL_WINDOWEVENT:
@@ -385,15 +385,15 @@ final class InputManager {
 
     // Mise à jour des états de chaque touche naturelle
     private void _updateKeyStates() {
-        foreach (ref KeyState keyState; _keyStateButtons) {
+        foreach (ref KeyState keyState; _keyButtonStates) {
             _updateKeyState(keyState);
         }
 
-        foreach (ref KeyState keyState; _keyStateMouses) {
+        foreach (ref KeyState keyState; _mouseButtonStates) {
             _updateKeyState(keyState);
         }
 
-        foreach (ref KeyState keyState; _keyStateControllers) {
+        foreach (ref KeyState keyState; _controllerButtonStates) {
             _updateKeyState(keyState);
         }
     }
@@ -452,11 +452,11 @@ final class InputManager {
     private bool matchManagedInput(InputEvent event) {
         switch (event.type) with (InputEvent.Type) {
             case keyButton:
-                return event.matchExpectedState(_keyStateButtons[event.asKeyButton.button]);
+                return event.matchExpectedState(_keyButtonStates[event.asKeyButton.button]);
             case mouseButton:
-                return event.matchExpectedState(_keyStateMouses[event.asMouseButton.button]);
+                return event.matchExpectedState(_mouseButtonStates[event.asMouseButton.button]);
             case controllerButton:
-                return event.matchExpectedState(_keyStateControllers[event.asControllerButton.button]);
+                return event.matchExpectedState(_controllerButtonStates[event.asControllerButton.button]);
             case controllerAxis:
                 return event.matchAxisValue(_controllerAxisValues[event.asControllerAxis.axis]);
             default:
@@ -466,17 +466,17 @@ final class InputManager {
 
     /// Est-ce que la touche est appuyée ?
     bool isPressed(InputEvent.KeyButton.Button button) const {
-        return _keyStateButtons[button] == KeyState.down || _keyStateButtons[button] == KeyState.hold;
+        return _keyButtonStates[button].pressed();
     }
 
     /// Ditto
     bool isPressed(InputEvent.MouseButton.Button button) const {
-        return _keyStateMouses[button] == KeyState.down || _keyStateMouses[button] == KeyState.hold;
+        return _mouseButtonStates[button].pressed();
     }
 
     /// Ditto
     bool isPressed(InputEvent.ControllerButton.Button button) const {
-        return _keyStateControllers[button] == KeyState.down || _keyStateControllers[button] == KeyState.hold;
+        return _controllerButtonStates[button].pressed();
     }
 
     /// Retourne la valeur de l’axe

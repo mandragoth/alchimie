@@ -18,6 +18,28 @@ enum KeyState {
     pressed = down | hold
 }
 
+pragma(inline) {
+    /// Dans le cas d’une touche ou d’un bouton, est-il appuyé ?
+    bool pressed(KeyState state) {
+        return cast(bool) (state & KeyState.pressed);
+    }
+
+    /// Dans le cas d’une touche ou d’un bouton, est-il maintenu enfoncé ?
+    bool hold(KeyState state) {
+        return cast(bool) (state & KeyState.hold);
+    }
+
+    /// Dans le cas d'une touche ou d'un bouton, a-t-il été appuyé cette frame ?
+    bool down(KeyState state) {
+        return cast(bool) (state & KeyState.down);
+    }
+
+    /// Dans le cas d'une touche ou d'un bouton, a-t-on arreté d'appuyer dessus cette frame ?
+    bool up(KeyState state) {
+        return cast(bool) (state & KeyState.up);
+    }
+}
+
 alias InputState = BitFlags!(KeyState, Yes.unsafe);
 
 /// Événement utilisateur
@@ -285,8 +307,7 @@ final class InputEvent {
         /// Touche du clavier
         Button button;
 
-        /// Etat du bouton (pressed, down or up)
-        /// ou etats possibles attendus du bouton
+        /// État du bouton ou états possibles attendus du bouton
         InputState state;
 
         /// Est-ce une répétition de touche automatique ?
@@ -321,7 +342,7 @@ final class InputEvent {
         /// Touche de la souris
         Button button;
 
-        /// Etat du bouton ou etats possibles attendus du bouton
+        /// État du bouton ou états possibles attendus du bouton
         InputState state;
 
         /// Combien de fois cette touche a été appuyé ?
@@ -414,7 +435,7 @@ final class InputEvent {
         /// Bouton de la manette
         Button button;
 
-        /// Etat du bouton ou etats possibles attendus du bouton
+        /// État du bouton ou états possibles attendus du bouton
         InputState state;
 
         /// Init
@@ -592,22 +613,22 @@ final class InputEvent {
 
         /// Dans le cas d’une touche ou d’un bouton, est-il appuyé ?
         bool pressed() const {
-            return cast(bool) (state & KeyState.pressed);
+            return state.pressed();
         }
 
         /// Dans le cas d’une touche ou d’un bouton, est-il maintenu enfoncé ?
         bool hold() const {
-            return cast(bool) (state & KeyState.hold);
+            return state.hold();
         }
 
         /// Dans le cas d'une touche ou d'un bouton, a-t-il été appuyé cette frame ?
         bool down() const {
-            return cast(bool) (state & KeyState.down);
+            return state.down();
         }
 
         /// Dans le cas d'une touche ou d'un bouton, a-t-on arreté d'appuyer dessus cette frame ?
         bool up() const {
-            return cast(bool) (state & KeyState.up);
+            return state.hold();
         }
 
         /// L’événement est-il un écho ?
@@ -640,8 +661,10 @@ final class InputEvent {
                 return "down";
             } else if (hold) {
                 return "hold";
-            } else {
+            } else if (up) {
                 return "up";
+            } else {
+                return "none";
             }
         }
 
