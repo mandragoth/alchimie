@@ -111,7 +111,11 @@ void loadAlchimieLibInput(GrLibDefinition library) {
 
     // Input
 
-    library.addStatic(&_makeKeyButton, inputEvent, "keyButton", [
+    library.addStatic(&_makeKeyButton1, inputEvent, "keyButton", [
+            keyButton, keyState
+        ], [inputEvent]);
+
+    library.addStatic(&_makeKeyButton2, inputEvent, "keyButton", [
             keyButton, keyState, grBool
         ], [inputEvent]);
 
@@ -363,9 +367,14 @@ private void _DropFile_path(GrCall call) {
 
 // Input
 
-private void _makeKeyButton(GrCall call) {
+private void _makeKeyButton1(GrCall call) {
     call.setNative(InputEvent.keyButton(call.getEnum!(InputEvent.KeyButton.Button)(0),
-            InputState(call.getEnum!KeyState(1)), call.getBool(2)));
+                   InputState(call.getEnum!KeyState(1))));
+}
+
+private void _makeKeyButton2(GrCall call) {
+    call.setNative(InputEvent.keyButton(call.getEnum!(InputEvent.KeyButton.Button)(0),
+                   InputState(call.getEnum!KeyState(1)), call.getBool(2)));
 }
 
 private void _makeMouseButton(GrCall call) {

@@ -449,16 +449,21 @@ final class InputEvent {
         /// La valeur de l’axe
         double value;
 
+        /// Le seuil de l'axe
+        double deadzone;
+
         /// Init
-        this(Axis axis_, double value_) {
+        this(Axis axis_, double value_, double deadzone_ = 0.2) {
             axis = axis_;
             value = value_;
+            deadzone = deadzone_;
         }
 
         /// Copie
         this(const ControllerAxis event) {
             axis = event.axis;
             value = event.value;
+            deadzone = event.deadzone;
         }
     }
 
@@ -772,7 +777,7 @@ final class InputEvent {
     /// Touche du clavier
     static {
         /// Retourne un événement correspondant à une touche du clavier
-        InputEvent keyButton(KeyButton.Button button, InputState state, bool echo) {
+        InputEvent keyButton(KeyButton.Button button, InputState state, bool echo = false) {
             InputEvent event = new InputEvent;
             event._type = Type.keyButton;
             event._isAccepted = false;
@@ -861,9 +866,16 @@ final class InputEvent {
 
     /// L'événement correspond-il a une limite d'axe donnée?
     /// Précondition: l'événement est pour un axe de manette
-    bool matchAxisValue(const double deadzone) {
+    bool matchAxisValue(const double value) {
         const double strength = _controllerAxis.value;
-        return abs(strength) > deadzone;
+        const double deadzone = _controllerAxis.deadzone;
+
+        if ((value < 0.0) == (strength < 0.0) &&
+            (value > 0.0) == (strength > 0.0)) {
+            return abs(value) > deadzone;
+        }
+
+        return false;
     }
 
     /// L’événement a-t-il le meme input que l'autre ?

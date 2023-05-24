@@ -430,9 +430,10 @@ final class InputManager {
                     eventStrength = event.value;
                     break;
                 case controllerAxis:
-                    double strength = getAxis(event.asControllerAxis().axis);
+                    const InputEvent.ControllerAxis controllerAxis = event.asControllerAxis();
+                    double strength = getAxis(controllerAxis.axis);
                     strength = clamp(abs(strength), 0.0, 1.0);
-                    eventStrength = rlerp(event.value, 1.0, strength);
+                    eventStrength = rlerp(controllerAxis.deadzone, 1.0, strength);
                     break;
                 default:
                     break;
@@ -456,9 +457,8 @@ final class InputManager {
                 return event.matchExpectedState(_keyStateMouses[event.asMouseButton.button]);
             case controllerButton:
                 return event.matchExpectedState(_keyStateControllers[event.asControllerButton.button]);
-            // @TODO fix controller axis check
-            /*case controllerAxis:
-                return event.matchAxisValue(_controllerAxisValues[event.asControllerAxis.axis]);*/
+            case controllerAxis:
+                return event.matchAxisValue(_controllerAxisValues[event.asControllerAxis.axis]);
             default:
                 return false;
         }

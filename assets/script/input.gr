@@ -20,29 +20,29 @@ export func setupControls() {
     // 3D camera
     addActionEvent("move_forward", @InputEvent.controllerAxis(ControllerAxis.leftY, -1f));
     addActionEvent("move_forward", @InputEvent.controllerButton(ControllerButton.up, KeyState.pressed));
-    addActionEvent("move_forward", @InputEvent.keyButton(KeyButton.up, KeyState.pressed, false));
-    addActionEvent("move_forward", @InputEvent.keyButton(KeyButton.w, KeyState.pressed, false));
+    addActionEvent("move_forward", @InputEvent.keyButton(KeyButton.up, KeyState.pressed));
+    addActionEvent("move_forward", @InputEvent.keyButton(KeyButton.w, KeyState.pressed));
 
     addActionEvent("move_backward", @InputEvent.controllerAxis(ControllerAxis.leftY, 1f));
     addActionEvent("move_backward", @InputEvent.controllerButton(ControllerButton.down, KeyState.pressed));
-    addActionEvent("move_backward", @InputEvent.keyButton(KeyButton.down, KeyState.pressed, false));
-    addActionEvent("move_backward", @InputEvent.keyButton(KeyButton.s, KeyState.pressed, false));
+    addActionEvent("move_backward", @InputEvent.keyButton(KeyButton.down, KeyState.pressed));
+    addActionEvent("move_backward", @InputEvent.keyButton(KeyButton.s, KeyState.pressed));
 
     addActionEvent("move_up", @InputEvent.controllerAxis(ControllerAxis.rightTrigger, 1f));
-    addActionEvent("move_up", @InputEvent.keyButton(KeyButton.space, KeyState.pressed, false));
+    addActionEvent("move_up", @InputEvent.keyButton(KeyButton.space, KeyState.pressed));
 
     addActionEvent("move_down", @InputEvent.controllerAxis(ControllerAxis.leftTrigger, 1f));
-    addActionEvent("move_down", @InputEvent.keyButton(KeyButton.leftShift, KeyState.pressed, false));
+    addActionEvent("move_down", @InputEvent.keyButton(KeyButton.leftShift, KeyState.pressed));
 
     addActionEvent("move_left", @InputEvent.controllerAxis(ControllerAxis.leftX, -1f));
     addActionEvent("move_left", @InputEvent.controllerButton(ControllerButton.left, KeyState.pressed));
-    addActionEvent("move_left", @InputEvent.keyButton(KeyButton.left, KeyState.pressed, false));
-    addActionEvent("move_left", @InputEvent.keyButton(KeyButton.a, KeyState.pressed, false));
+    addActionEvent("move_left", @InputEvent.keyButton(KeyButton.left, KeyState.pressed));
+    addActionEvent("move_left", @InputEvent.keyButton(KeyButton.a, KeyState.pressed));
 
     addActionEvent("move_right", @InputEvent.controllerAxis(ControllerAxis.leftX, 1f));
     addActionEvent("move_right", @InputEvent.controllerButton(ControllerButton.right, KeyState.pressed));
-    addActionEvent("move_right", @InputEvent.keyButton(KeyButton.right, KeyState.pressed, false));
-    addActionEvent("move_right", @InputEvent.keyButton(KeyButton.d, KeyState.pressed, false));
+    addActionEvent("move_right", @InputEvent.keyButton(KeyButton.right, KeyState.pressed));
+    addActionEvent("move_right", @InputEvent.keyButton(KeyButton.d, KeyState.pressed));
 
     addActionEvent("turn_up", @InputEvent.controllerAxis(ControllerAxis.rightY, 1f));
     addActionEvent("turn_down", @InputEvent.controllerAxis(ControllerAxis.rightY, -1f));
@@ -51,24 +51,24 @@ export func setupControls() {
 
     // 2D camera controls
     addActionEvent("roll_left", @InputEvent.controllerButton(ControllerButton.leftShoulder, KeyState.pressed));
-    addActionEvent("roll_left", @InputEvent.keyButton(KeyButton.q, KeyState.pressed, false));
+    addActionEvent("roll_left", @InputEvent.keyButton(KeyButton.q, KeyState.pressed));
 
     addActionEvent("roll_right", @InputEvent.controllerButton(ControllerButton.rightShoulder, KeyState.pressed));
-    addActionEvent("roll_right", @InputEvent.keyButton(KeyButton.e, KeyState.pressed, false));
+    addActionEvent("roll_right", @InputEvent.keyButton(KeyButton.e, KeyState.pressed));
 
-    addActionEvent("zoom_in", @InputEvent.keyButton(KeyButton.numPlus, KeyState.pressed, false));
-    addActionEvent("zoom_out", @InputEvent.keyButton(KeyButton.numMinus, KeyState.pressed, false));
+    addActionEvent("zoom_in", @InputEvent.keyButton(KeyButton.numPlus, KeyState.pressed));
+    addActionEvent("zoom_out", @InputEvent.keyButton(KeyButton.numMinus, KeyState.pressed));
 
     addActionEvent("zoom_in", @InputEvent.mouseWheel(0, -1));
     addActionEvent("zoom_out", @InputEvent.mouseWheel(0, 1));
 
     // Exit
     addActionEvent("exit", @InputEvent.controllerButton(ControllerButton.start, KeyState.pressed));
-    addActionEvent("exit", @InputEvent.keyButton(KeyButton.escape, KeyState.pressed, false));
+    addActionEvent("exit", @InputEvent.keyButton(KeyButton.escape, KeyState.pressed));
 
     // Bones debug
-    addActionEvent("previousBone", @InputEvent.keyButton(KeyButton.f1, KeyState.down, false));
-    addActionEvent("nextBone", @InputEvent.keyButton(KeyButton.f2, KeyState.down, false));
+    addActionEvent("previousBone", @InputEvent.keyButton(KeyButton.f1, KeyState.down));
+    addActionEvent("nextBone", @InputEvent.keyButton(KeyButton.f2, KeyState.down));
 }
 
 export var mouseX : int;
