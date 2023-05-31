@@ -2,8 +2,10 @@ module magia.render.buffer;
 
 import bindbc.opengl;
 
+import magia.core.color;
 import magia.core.mat;
 import magia.core.vec;
+import magia.render.joint;
 import magia.render.vertex;
 
 import std.conv;
@@ -211,12 +213,51 @@ class VertexBuffer {
         glBufferData(GL_ARRAY_BUFFER, vertices.length * vec2.sizeof, vertices.ptr, GL_STATIC_DRAW);
     }
 
-    /// Constructor given vertex buffer
+    /// Constructor given vertices
     this(Vertex[] vertices, BufferLayout layout_ = null) {
         layout = layout_;
         glCreateBuffers(1, &id);
         glBindBuffer(GL_ARRAY_BUFFER, id);
         glBufferData(GL_ARRAY_BUFFER, vertices.length * Vertex.sizeof, vertices.ptr, GL_STATIC_DRAW);
+    }
+
+    /// Structure holding packed vertex and joint data
+    struct AnimatedVertexData {
+        /// Where to place the vertex
+        vec3 position;
+        /// Normal vector (for lights, etc.)
+        vec3 normal;
+        /// Color of the vertex
+        Color color;
+        /// Texture coordinates
+        vec2 texUV;
+        /// Joint associated vertex
+        vec4i boneIds;
+        /// Joint associated weight
+        vec4 weights;
+
+        this(Vertex vertex, Joint joint) {
+            position = vertex.position;
+            normal = vertex.normal;
+            color = vertex.color;
+            texUV = vertex.texUV;
+            boneIds = joint.boneIds;
+            weights = joint.weights;
+        }
+    }
+
+    /// Constructor given vertices and joints
+    this(Vertex[] vertices, Joint[] joints, BufferLayout layout_ = null) {
+        layout = layout_;
+        glCreateBuffers(1, &id);
+
+        AnimatedVertexData[] animationData;
+        for (uint i = 0; i < vertices.length; ++i) {
+            animationData ~= AnimatedVertexData(vertices[i], joints[i]);
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, id);
+        glBufferData(GL_ARRAY_BUFFER, animationData.length * AnimatedVertexData.sizeof, animationData.ptr, GL_STATIC_DRAW);
     }
 
     /// Constructor given mat4 array
