@@ -611,11 +611,13 @@ final class ModelInstance : Entity {
     }
 
     @property {
+        /// Get number of bones
         int nbBones() {
             return _model.nbBones;
         }
     }
 
+    /// Current index of bone to display
     int displayBoneId = -1;
 
     /// Constructor
