@@ -153,6 +153,17 @@ struct Vector(type, uint dimension_) {
         }
     }
 
+    /// Does the vector contain a value
+    bool contains(type value) {
+        static foreach(i; TupleRange!(0, dimension)) {
+            if(data[i] == value) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// Vector unary operation
     Vector opUnary(string op)() const {
         static if(op == "+")

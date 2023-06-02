@@ -7,6 +7,7 @@ import std.conv : to;
 import std.format;
 import std.math;
 import std.traits : isFloatingPoint, isDynamicArray;
+import std.stdio;
 
 /// Generic matrix type
 struct Matrix(type, uint rows_, uint columns_) {
@@ -51,15 +52,20 @@ struct Matrix(type, uint rows_, uint columns_) {
         static if (i >= rows * columns) {
             static assert(false, "Too many arguments passed to constructor");
         } else static if (is(T : type)) {
-            matrix[i / columns][i % columns] = head;
+            data[i / columns][i % columns] = head;
             construct!(i + 1)(tail);
         } else static if(isDynamicArray!T) {
             foreach (j; 0..columns * rows) {
-                matrix[j / columns][j % columns] = head[j];
+                data[j / columns][j % columns] = head[j];
             }
         } else {
             static assert(false, "Matrix constructor argument must be of type " ~ type.stringof ~ " or vector, not " ~ T.stringof);
         }
+    }
+
+    /// Termination for recursive matrix construct
+    private void construct(int i)() {
+        static assert(i == rows * columns, "Not enough arguments passed to constructor");
     }
 
     /// Sets all values of the matrix to value (each column in each row will contain this value)
@@ -295,6 +301,14 @@ struct Matrix(type, uint rows_, uint columns_) {
                             - data[0][0] * data[1][2] * data[2][1] - data[0][1] * data[1][0] * data[2][2] - data[0][2] * data[1][1] * data[2][0]) * d]];
                 
                 return mat;
+            }
+
+            /// Print mat4
+            void print() {
+                writefln("%f %f %f %f", data[0][0], data[0][1], data[0][2], data[0][3]);
+                writefln("%f %f %f %f", data[1][0], data[1][1], data[1][2], data[1][3]);
+                writefln("%f %f %f %f", data[2][0], data[2][1], data[2][2], data[2][3]);
+                writefln("%f %f %f %f", data[3][0], data[3][1], data[3][2], data[3][3]);
             }
 
             /// Floating point type

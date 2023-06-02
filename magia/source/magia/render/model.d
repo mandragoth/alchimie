@@ -1,6 +1,7 @@
 module magia.render.model;
 
 import std.algorithm;
+import std.array;
 import std.conv;
 import std.file;
 import std.json;
@@ -23,14 +24,19 @@ import magia.render.shader;
 import magia.render.texture;
 import magia.render.vertex;
 
+/// Default uint value
 enum uint uintDefault = -1;
 
 private {
     // Trace (@TODO improve)
     bool s_Trace = false;
     bool s_TraceMesh = false;
-    bool s_TraceAnim = false;
+    bool s_TraceAnim = true;
     bool s_TraceDeep = false;
+
+    bool s_TraceAny() {
+        return s_Trace || s_TraceMesh || s_TraceAnim || s_TraceDeep;
+    }
 
     // Debug model
     bool s_DebugModel = false;
@@ -38,6 +44,7 @@ private {
 
 /// Class handling model data and draw call
 final class Model {
+    /// Component POD type
     enum ComponentType {
         byte_t = 5120,
         ubyte_t = 5121,
@@ -47,7 +54,8 @@ final class Model {
         float_t = 5126
     }
 
-    int nbBones;
+    /// Number of bones in the model (0 if not animated)
+    ulong nbBones;
 
     private {
         // JSON data
@@ -91,7 +99,7 @@ final class Model {
 
         // Traverse all animations
         foreach (JSONValue animation; animations) {
-            traverseAnimation(animation);
+            //traverseAnimation(animation);
         }
     }
 
@@ -136,7 +144,8 @@ final class Model {
         ubyte[] getData(string fileName) {
             _fileDirectory = dirName(fileName);
 
-            if (s_Trace || s_TraceMesh || s_TraceAnim || s_TraceDeep) {
+            if (s_TraceAny) {
+                writeln("*".replicate(100));
                 writeln("Model file path: ", fileName);
             }
 
@@ -164,6 +173,8 @@ final class Model {
                 nbBytesPerVertex = 3;
             } else if (type == "VEC4") {
                 nbBytesPerVertex = 4;
+            } else if (type == "MAT4") {
+                nbBytesPerVertex = 16;
             }
 
             const uint dataStart = byteOffset + accessorByteOffset;
@@ -334,6 +345,18 @@ final class Model {
             return values;
         }
 
+        /// Group given float array as mat4
+        mat4[] groupFloatsMat4(float[] floats) {
+            mat4[] values;
+            for (uint i = 0; i < floats.length;) {
+                values ~= mat4(floats[i++], floats[i++], floats[i++], floats[i++],
+                               floats[i++], floats[i++], floats[i++], floats[i++],
+                               floats[i++], floats[i++], floats[i++], floats[i++],
+                               floats[i++], floats[i++], floats[i++], floats[i++]);
+            }
+            return values;
+        }
+
         /// Assemble all vertices
         Vertex[] assembleVertices(vec3[] positions, vec3[] normals, vec2[] texUVs) {
             if (s_Trace) {
@@ -385,7 +408,9 @@ final class Model {
             }
 
             const JSONValue[] jsonAccessors = getJsonArray(_json, "accessors");
-            const JSONValue[] jsonPrimitives = getJsonArray(_json["meshes"][meshId], "primitives");
+
+            const JSONValue jsonMesh = _json["meshes"][meshId];
+            const JSONValue[] jsonPrimitives = getJsonArray(jsonMesh, "primitives");
 
             foreach(JSONValue jsonPrimitive; jsonPrimitives) {
                 const JSONValue jsonAttributes = getJson(jsonPrimitive, "attributes");
@@ -409,6 +434,10 @@ final class Model {
                 // Load textures
                 loadTextures();
 
+                AnimatedVertexData[] animationData;
+                int[] jointIds;
+                mat4[] jointMatrices;
+
                 // Load skin details (joints and weights) if they exist
                 if (skinId != uintDefault) {
                     // Fetch joint data (associated vertices and weight impact)
@@ -423,25 +452,62 @@ final class Model {
 
                     // Fetch interpolation data
                     JSONValue skin = _json["skins"][skinId];
-                    int[] jointIds = getJsonArrayInt(skin, "joints");
+
+                    // Parse inverse bind matrices
+                    const uint jointMatrixId = getJsonInt(skin, "inverseBindMatrices");
+                    jointMatrices = groupFloatsMat4(getFloats(jsonAccessors[jointMatrixId]));
+
+                    // Parse joints
+                    jointIds = getJsonArrayInt(skin, "joints");
                     nbBones += jointIds.length;
 
-                    foreach(int jointId; jointIds) {
-                        traverseNode(jointId);
+                    for (uint i = 0; i < vertices.length; ++i) {
+                        animationData ~= AnimatedVertexData(vertices[i], joints[i]);
                     }
+                }
 
-                    if (s_TraceAnim) {
-                        writeln("Bones size: ", boneIds.length);
-                        writeln("Weights size: ", weights.length);
-                        writeln("Skin joints count: ", jointIds.length);
-                    }
+                if (s_TraceAny) {
+                    traceMeshData(meshId, getJsonStr(jsonMesh, "name"), vertices.length, indices.length, nbBones);
+                    traceBoneData(animationData, jointIds, jointMatrices);
+                }
 
-                    _meshes ~= new Mesh(new VertexBuffer(vertices, joints, layout3DAnimated), new IndexBuffer(indices));
-                } else {
+                if (animationData.empty()) {
                     _meshes ~= new Mesh(new VertexBuffer(vertices, layout3D), new IndexBuffer(indices));
+                } else {
+                    _meshes ~= new Mesh(new VertexBuffer(animationData, layout3DAnimated), new IndexBuffer(indices));
                 }
 
                 _vertices ~= vertices;
+            }
+        }
+
+        /// Trace mesh data
+        void traceMeshData(uint meshId, string name, ulong nbVertices, ulong nbIndices, ulong nbBones) {
+            writefln("  Mesh %u '%s': vertices %u indices %u bones %u", meshId, name, nbVertices, nbIndices, nbBones);
+        }
+
+        /// Trace bone data (each bone and their name, affected vertices and weights, hierarchy)
+        /// Note: Only for debug purposes, this one is rather heavy as it remaps vertices to bones
+        void traceBoneData(AnimatedVertexData[] animationData, int[] jointIds, mat4[] jointMatrices) {
+            ulong[] aBoneNbVertices;
+            aBoneNbVertices.length = nbBones;
+
+            for (ulong animationId = 0; animationId < animationData.length; ++animationId) {
+                const AnimatedVertexData boneData = animationData[animationId];
+                vec4i boneIds = boneData.boneIds;
+
+                for (int boneId = 0; boneId < nbBones; ++boneId) {
+                    if (boneIds.contains(boneId)) {
+                        ++aBoneNbVertices[boneId];
+                    }
+                }
+            }
+
+            for (ulong boneId = 0; boneId < nbBones; ++boneId) {
+                JSONValue boneNode = _json["nodes"][jointIds[boneId]];
+                writefln("    Bone '%s': affects %u vertices", getJsonStr(boneNode, "name"), aBoneNbVertices[boneId]);
+                writefln("      Matrix:");
+                jointMatrices[boneId].print();
             }
         }
 
@@ -523,7 +589,7 @@ final class Model {
             }
 
             // Compute object model
-            mat4 model = combineModel(translation, quat.identity, scale);
+            mat4 model = combineModel(translation, rotation, scale);
 
             // Combine parent and current transform matrices
             mat4 matNextNode = matrix * matNode * model;
@@ -612,7 +678,7 @@ final class ModelInstance : Entity {
 
     @property {
         int nbBones() {
-            return _model.nbBones;
+            return cast(int)_model.nbBones;
         }
     }
 
