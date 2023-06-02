@@ -53,11 +53,19 @@ task runtime() {
         var reimuNbBones = reimu:nbBones;
 
         if (isActionActivated("nextBone")) {
-            reimuBoneId = (reimuBoneId + 1) % reimuNbBones;
-            print("Selected bone: " ~ reimuBoneId);
-        } else if (isActionActivated("previousBone") && reimuBoneId > 0) {
-            reimuBoneId = (reimuBoneId - 1) % reimuNbBones;
-            print("Selected bone: " ~ reimuBoneId);
+            if (reimuBoneId == reimuNbBones - 1) {
+                reimuBoneId = -1;
+            } else {
+                reimuBoneId = (reimuBoneId + 1) % reimuNbBones;
+            }
+        } else if (isActionActivated("previousBone") && reimuBoneId >= -1) {
+            if (reimuBoneId == 0) {
+                reimuBoneId = -1;
+            } else if (reimuBoneId == -1) {
+                reimuBoneId = reimuNbBones - 1;
+            } else {
+                reimuBoneId = (reimuBoneId - 1) % reimuNbBones;
+            }
         }
 
         reimu:displayBoneId(reimuBoneId);

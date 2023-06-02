@@ -1,9 +1,10 @@
 module magia.render.joint;
 
+import magia.core.mat;
 import magia.core.vec;
 import bindbc.opengl;
 
-/// Structure holding Joint
+/// Structure holding per-vertex joint data
 struct Joint {
     /// Associated vertex
     vec4i boneIds;
@@ -14,5 +15,19 @@ struct Joint {
     this(vec4i boneIds_, vec4 weights_) {
         boneIds = boneIds_;
         weights = weights_;
+    }
+}
+
+/// Structure holding bone data
+struct Bone {
+    /// Offset matrix
+    mat4 offsetMatrix;
+    /// Final transform
+    mat4 finalTransform;
+
+    /// Constructor
+    this(mat4 model) {
+        offsetMatrix = model;
+        finalTransform = mat4.identity;
     }
 }

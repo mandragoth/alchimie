@@ -77,7 +77,13 @@ class Shader {
         glDeleteShader(_fragmentShader);
     }
 
-    /// Upload an uniform of type int to the shader (also used for sampler2D)
+    /// Upload an uniform of type bool to the shader
+    void uploadUniformBool(const char* label, bool data) {
+        GLint labelId = getShaderLocation(label);
+        glUniform1i(labelId, data);
+    }
+
+    /// Upload an uniform of type int to the shader
     void uploadUniformInt(const char* label, int data) {
         GLint labelId = getShaderLocation(label);
         glUniform1i(labelId, data);

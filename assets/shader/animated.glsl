@@ -16,16 +16,33 @@ out vec3 v_Position;
 out vec3 v_Normal;
 out vec3 v_Color;
 out vec2 v_TexCoords;
+// Flat = No rasterizer interpolation
+flat out ivec4 v_BoneIDs;
+out vec4 v_Weights;
 
 uniform mat4 u_CamMatrix;
 uniform mat4 u_Transform;
 
+const int kMaxBones = 100;
+uniform mat4 u_BoneMatrix[kMaxBones];
+
 void main() {
+    /// Compute bone transformation
+    mat4 boneTransform = u_BoneMatrix[v_BoneIDs[0]] * v_Weights[0] +
+                         u_BoneMatrix[v_BoneIDs[1]] * v_Weights[1] +
+                         u_BoneMatrix[v_BoneIDs[2]] * v_Weights[2] +
+                         u_BoneMatrix[v_BoneIDs[3]] * v_Weights[3];
+
+    /// Apply bone matrix
+    vec4 localPosition = boneTransform * vec4(a_Position, 1.0);
+
     /// Apply transformation matrix
-    v_Position = vec3(u_Transform * vec4(a_Position, 1.0));
+    v_Position = vec3(u_Transform * localPosition);
     v_Normal = a_Normal;
     v_Color = a_Color;
     v_TexCoords = a_TexCoords;
+    v_BoneIDs = a_BoneIDs;
+    v_Weights = a_Weights;
 
     /// Apply camera matrix
     gl_Position = u_CamMatrix * vec4(v_Position, 1.0);
@@ -41,6 +58,9 @@ in vec3 v_Normal;
 in vec3 v_Color;
 in vec2 v_TexCoords;
 in vec4 v_LightPosition;
+// Flat = No rasterizer interpolation
+flat in ivec4 v_BoneIDs;
+in vec4 v_Weights;
 
 struct BaseLight {
     vec3 color;
@@ -152,17 +172,40 @@ vec4 calcSpotLight(SpotLight spotLight, vec3 normal) {
     return vec4(0.0);
 }
 
+const vec3 red    = vec3(1.0, 0.0, 0.0);
+const vec3 green  = vec3(0.0, 1.0, 0.0);
+const vec3 blue   = vec3(0.0, 0.0, 1.0);
+const vec3 yellow = vec3(1.0, 1.0, 0.0);
+
+const vec3 colors[] = vec3[](green, yellow, red);
+
+/// Depending on weight we access the right array index
+vec3 boneGradient(float weight) {
+    int colorId = int(round(weight * float(colors.length() - 1)));
+    return colors[colorId];
+}
+
 void main() {
-    vec3 normal = normalize(v_Normal);
-    vec4 totalLight = calcDirectionalLight(normal);
+    if (u_DisplayBoneId != -1) {
+        fragColor = vec4(blue, 0.0);
+        for (int boneId = 0; boneId < 4; ++boneId) {
+            if (v_BoneIDs[boneId] == u_DisplayBoneId) {
+                fragColor = vec4(boneGradient(v_Weights[boneId]), 0.0);
+                break;
+            }
+        }
+    } else {
+        vec3 normal = normalize(v_Normal);
+        vec4 totalLight = calcDirectionalLight(normal);
 
-    for (int pointLightId = 0; pointLightId < u_NbPointLights; ++pointLightId) {
-        totalLight += calcPointLight(u_PointLights[pointLightId], normal);
+        for (int pointLightId = 0; pointLightId < u_NbPointLights; ++pointLightId) {
+            totalLight += calcPointLight(u_PointLights[pointLightId], normal);
+        }
+
+        for (int spotLightId = 0; spotLightId < u_NbSpotLights; ++spotLightId) {
+            totalLight += calcSpotLight(u_SpotLights[spotLightId], normal);
+        }
+
+        fragColor = texture(u_Diffuse0, v_TexCoords) * totalLight;
     }
-
-    for (int spotLightId = 0; spotLightId < u_NbSpotLights; ++spotLightId) {
-        totalLight += calcSpotLight(u_SpotLights[spotLightId], normal);
-    }
-
-    fragColor = texture(u_Diffuse0, v_TexCoords) * totalLight;
 }
