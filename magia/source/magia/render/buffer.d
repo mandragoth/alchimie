@@ -68,6 +68,25 @@ struct BufferElement {
     uint divisor;
 
     @property {
+        /// Is the type for this element integer?
+        bool intType() const {
+            final switch (type) with (LayoutType) {
+            case ltInt:
+            case ltInt2:
+            case ltInt3:
+            case ltInt4:
+                return true;
+            case ltBool:
+            case ltFloat:
+            case ltFloat2:
+            case ltFloat3:
+            case ltFloat4:
+            case ltMat3:
+            case ltMat4:
+                return false;
+            }
+        }
+
         /// Number of entries for this item
         uint count() const {
             final switch (type) with (LayoutType) {
@@ -161,12 +180,21 @@ class BufferLayout {
         uint layoutId = 0;
         foreach(ref BufferElement element; _elements) {
             glEnableVertexAttribArray(layoutId);
-            glVertexAttribPointer(layoutId,
-                                  element.count,
-                                  element.glType,
-                                  GL_FALSE, // @TODO normalization
-                                  stride,
-                                  cast(void *)element.offset);
+
+            if (element.intType) {
+                glVertexAttribIPointer(layoutId,
+                                       element.count,
+                                       element.glType,
+                                       stride,
+                                       cast(void *)element.offset);
+            } else {
+                glVertexAttribPointer(layoutId,
+                                    element.count,
+                                    element.glType,
+                                    GL_FALSE, // No normalization
+                                    stride,
+                                    cast(void *)element.offset);
+            }
             ++layoutId;
         }
     }
