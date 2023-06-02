@@ -2,10 +2,45 @@ module magia.input.inputevent;
 
 import std.array : join;
 import std.conv : to;
+import std.stdio;
+import std.typecons;
 
 import bindbc.sdl;
 
 import magia.core;
+
+/// État d'un bouton
+enum KeyState {
+    none = 0,
+    down = 1 << 0,
+    hold = 1 << 1,
+    up   = 1 << 2,
+    pressed = down | hold
+}
+
+pragma(inline) {
+    /// Dans le cas d’une touche ou d’un bouton, est-il appuyé ?
+    bool pressed(KeyState state) {
+        return cast(bool) (state & KeyState.pressed);
+    }
+
+    /// Dans le cas d’une touche ou d’un bouton, est-il maintenu enfoncé ?
+    bool hold(KeyState state) {
+        return cast(bool) (state & KeyState.hold);
+    }
+
+    /// Dans le cas d'une touche ou d'un bouton, a-t-il été appuyé cette frame ?
+    bool down(KeyState state) {
+        return cast(bool) (state & KeyState.down);
+    }
+
+    /// Dans le cas d'une touche ou d'un bouton, a-t-on arreté d'appuyer dessus cette frame ?
+    bool up(KeyState state) {
+        return cast(bool) (state & KeyState.up);
+    }
+}
+
+alias InputState = BitFlags!(KeyState, Yes.unsafe);
 
 /// Événement utilisateur
 final class InputEvent {
@@ -272,24 +307,24 @@ final class InputEvent {
         /// Touche du clavier
         Button button;
 
-        /// Est-ce que la touche est pressée ?
-        bool pressed;
+        /// État du bouton ou états possibles attendus du bouton
+        InputState state;
 
         /// Est-ce une répétition de touche automatique ?
-        bool isEcho;
+        bool echo;
 
         /// Init
-        this(Button button_, bool pressed_, bool isEcho_) {
+        this(Button button_, InputState state_, bool echo_) {
             button = button_;
-            pressed = pressed_;
-            isEcho = isEcho_;
+            state = state_;
+            echo = echo_;
         }
 
         /// Copie
         this(const KeyButton event) {
             button = event.button;
-            pressed = event.pressed;
-            isEcho = event.isEcho;
+            state = event.state;
+            echo = event.echo;
         }
     }
 
@@ -307,8 +342,8 @@ final class InputEvent {
         /// Touche de la souris
         Button button;
 
-        /// Est-ce que la touche est pressée ?
-        bool pressed;
+        /// État du bouton ou états possibles attendus du bouton
+        InputState state;
 
         /// Combien de fois cette touche a été appuyé ?
         uint clicks;
@@ -320,9 +355,9 @@ final class InputEvent {
         vec2i relativePosition;
 
         /// Init
-        this(Button button_, bool pressed_, uint clicks_, vec2i globalPosition_, vec2i relativePosition_) {
+        this(Button button_, InputState state_, uint clicks_, vec2i globalPosition_, vec2i relativePosition_) {
             button = button_;
-            pressed = pressed_;
+            state = state_;
             clicks = clicks_;
             globalPosition = globalPosition_;
             relativePosition = relativePosition_;
@@ -331,7 +366,7 @@ final class InputEvent {
         /// Copie
         this(const MouseButton event) {
             button = event.button;
-            pressed = event.pressed;
+            state = event.state;
             clicks = event.clicks;
             globalPosition = event.globalPosition;
             relativePosition = event.relativePosition;
@@ -400,19 +435,19 @@ final class InputEvent {
         /// Bouton de la manette
         Button button;
 
-        /// Est-ce que la touche est pressée ?
-        bool pressed;
+        /// État du bouton ou états possibles attendus du bouton
+        InputState state;
 
         /// Init
-        this(Button button_, bool pressed_) {
+        this(Button button_, InputState state_) {
             button = button_;
-            pressed = pressed_;
+            state = state_;
         }
 
         /// Copie
         this(const ControllerButton event) {
             button = event.button;
-            pressed = event.pressed;
+            state = event.state;
         }
     }
 
@@ -435,16 +470,21 @@ final class InputEvent {
         /// La valeur de l’axe
         double value;
 
+        /// Le seuil de l'axe
+        double deadzone;
+
         /// Init
-        this(Axis axis_, double value_) {
+        this(Axis axis_, double value_, double deadzone_ = 0.2) {
             axis = axis_;
             value = value_;
+            deadzone = deadzone_;
         }
 
         /// Copie
         this(const ControllerAxis event) {
             axis = event.axis;
             value = event.value;
+            deadzone = event.deadzone;
         }
     }
 
@@ -558,27 +598,44 @@ final class InputEvent {
             return _dropFile;
         }
 
-        /// Dans le cas d’une touche ou d’un bouton, est-il appuyé ?
-        bool isPressed() const {
+        InputState state() const {
             switch (_type) with (Type) {
             case keyButton:
-                return _keyButton.pressed;
+                return _keyButton.state;
             case mouseButton:
-                return _mouseButton.pressed;
+                return _mouseButton.state;
             case controllerButton:
-                return _controllerButton.pressed;
-            case controllerAxis:
-                return abs(_controllerAxis.value) > 0.5;
+                return _controllerButton.state;
             default:
-                return false;
+                return InputState();
             }
         }
 
+        /// Dans le cas d’une touche ou d’un bouton, est-il appuyé ?
+        bool pressed() const {
+            return state.pressed();
+        }
+
+        /// Dans le cas d’une touche ou d’un bouton, est-il maintenu enfoncé ?
+        bool hold() const {
+            return state.hold();
+        }
+
+        /// Dans le cas d'une touche ou d'un bouton, a-t-il été appuyé cette frame ?
+        bool down() const {
+            return state.down();
+        }
+
+        /// Dans le cas d'une touche ou d'un bouton, a-t-on arreté d'appuyer dessus cette frame ?
+        bool up() const {
+            return state.hold();
+        }
+
         /// L’événement est-il un écho ?
-        bool isEcho() const {
+        bool echo() const {
             switch (_type) with (Type) {
             case keyButton:
-                return _keyButton.isEcho;
+                return _keyButton.echo;
             default:
                 return false;
             }
@@ -588,15 +645,26 @@ final class InputEvent {
         double value() const {
             switch (_type) with (Type) {
             case keyButton:
-                return _keyButton.pressed ? 1.0 : .0;
             case mouseButton:
-                return _mouseButton.pressed ? 1.0 : .0;
             case controllerButton:
-                return _controllerButton.pressed ? 1.0 : .0;
+                return pressed ? 1.0 : .0;
             case controllerAxis:
                 return _controllerAxis.value;
             default:
                 return .0;
+            }
+        }
+
+        /// Formate l'etat
+        string infoState() const {
+            if (down) {
+                return "down";
+            } else if (hold) {
+                return "hold";
+            } else if (up) {
+                return "up";
+            } else {
+                return "none";
             }
         }
 
@@ -612,13 +680,13 @@ final class InputEvent {
                 break;
             case keyButton:
                 info ~= "button: " ~ to!string(_keyButton.button);
-                info ~= _keyButton.pressed ? "pressed" : "released";
-                if (_keyButton.isEcho)
+                info ~= infoState;
+                if (_keyButton.echo)
                     info ~= "echo";
                 break;
             case mouseButton:
                 info ~= "button: " ~ to!string(_mouseButton.button);
-                info ~= _mouseButton.pressed ? "pressed" : "released";
+                info ~= infoState;
                 info ~= "clicks: " ~ to!string(_mouseButton.clicks);
                 info ~= "globalPosition: " ~ to!string(_mouseButton.globalPosition);
                 info ~= "relativePosition: " ~ to!string(_mouseButton.relativePosition);
@@ -632,7 +700,7 @@ final class InputEvent {
                 break;
             case controllerButton:
                 info ~= "button: " ~ to!string(_controllerButton.button);
-                info ~= _controllerButton.pressed ? "pressed" : "released";
+                info ~= infoState;
                 break;
             case controllerAxis:
                 info ~= "axis: " ~ to!string(_controllerAxis.axis);
@@ -695,13 +763,13 @@ final class InputEvent {
     }
 
     private {
-        void _makeKeyButton(KeyButton.Button button, bool pressed, bool isEcho) {
-            _keyButton = new KeyButton(button, pressed, isEcho);
+        void _makeKeyButton(KeyButton.Button button, InputState state, bool echo) {
+            _keyButton = new KeyButton(button, state, echo);
         }
 
-        void _makeMouseButton(MouseButton.Button button, bool pressed,
-            uint clicks, vec2i globalPosition, vec2i relativePosition) {
-            _mouseButton = new MouseButton(button, pressed, clicks, globalPosition, relativePosition);
+        void _makeMouseButton(MouseButton.Button button, InputState state,
+                              uint clicks, vec2i globalPosition, vec2i relativePosition) {
+            _mouseButton = new MouseButton(button, state, clicks, globalPosition, relativePosition);
         }
 
         void _makeMouseMotion(vec2i globalPosition, vec2i relativePosition) {
@@ -712,8 +780,8 @@ final class InputEvent {
             _mouseWheel = new MouseWheel(wheel);
         }
 
-        void _makeControllerButton(ControllerButton.Button button, bool pressed) {
-            _controllerButton = new ControllerButton(button, pressed);
+        void _makeControllerButton(ControllerButton.Button button, InputState state) {
+            _controllerButton = new ControllerButton(button, state);
         }
 
         void _makeControllerAxis(ControllerAxis.Axis axis, double value) {
@@ -732,21 +800,21 @@ final class InputEvent {
     /// Touche du clavier
     static {
         /// Retourne un événement correspondant à une touche du clavier
-        InputEvent keyButton(KeyButton.Button button, bool pressed, bool isEcho) {
+        InputEvent keyButton(KeyButton.Button button, InputState state, bool echo = false) {
             InputEvent event = new InputEvent;
             event._type = Type.keyButton;
             event._isAccepted = false;
-            event._makeKeyButton(button, pressed, isEcho);
+            event._makeKeyButton(button, state, echo);
             return event;
         }
 
         /// Retourne un événement correspondant à une touche de la souris
-        InputEvent mouseButton(MouseButton.Button button, bool pressed,
+        InputEvent mouseButton(MouseButton.Button button, InputState state,
             uint clicks, vec2i globalPosition, vec2i relativePosition) {
             InputEvent event = new InputEvent;
             event._type = Type.mouseButton;
             event._isAccepted = false;
-            event._makeMouseButton(button, pressed, clicks, globalPosition, relativePosition);
+            event._makeMouseButton(button, state, clicks, globalPosition, relativePosition);
             return event;
         }
 
@@ -769,11 +837,11 @@ final class InputEvent {
         }
 
         /// Retourne un événement correspondant à un bouton de la manette
-        InputEvent controllerButton(ControllerButton.Button button, bool pressed) {
+        InputEvent controllerButton(ControllerButton.Button button, InputState state) {
             InputEvent event = new InputEvent;
             event._type = Type.controllerButton;
             event._isAccepted = false;
-            event._makeControllerButton(button, pressed);
+            event._makeControllerButton(button, state);
             return event;
         }
 
@@ -805,8 +873,36 @@ final class InputEvent {
         }
     }
 
-    /// L’événement correspond-t’il à l’autre ?
-    bool match(const InputEvent event) const {
+    /// L'événement correspond-il a un input donné?
+    bool matchExpectedState(const KeyState inputState) const {
+        switch (_type) with (Type) {
+        case keyButton:
+            return cast(bool) (_keyButton.state & inputState);
+        case mouseButton:
+            return cast(bool) (_mouseButton.state & inputState);
+        case controllerButton:
+            return cast(bool) (_controllerButton.state & inputState);
+        default:
+            return false;
+        }
+    }
+
+    /// L'événement correspond-il a une limite d'axe donnée?
+    /// Précondition: l'événement est pour un axe de manette
+    bool matchAxisValue(const double value) {
+        const double strength = _controllerAxis.value;
+        const double deadzone = _controllerAxis.deadzone;
+
+        if ((value < 0.0) == (strength < 0.0) &&
+            (value > 0.0) == (strength > 0.0)) {
+            return abs(value) > deadzone;
+        }
+
+        return false;
+    }
+
+    /// L’événement a-t-il le meme input que l'autre ?
+    bool matchInput(const InputEvent event) const {
         switch (_type) with (Type) {
         case keyButton:
             return _keyButton.button == event._keyButton.button;

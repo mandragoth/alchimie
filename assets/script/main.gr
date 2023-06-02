@@ -1,5 +1,4 @@
 import "cam.gr"
-import "input.gr"
 
 func randf() (float) {
     return rand(-1f, 1f);
@@ -53,10 +52,10 @@ task runtime() {
         var reimuBoneId = reimu:displayBoneId;
         var reimuNbBones = reimu:nbBones;
 
-        if (isActionPressed("nextBone")) {
+        if (isActionActivated("nextBone")) {
             reimuBoneId = (reimuBoneId + 1) % reimuNbBones;
             print("Selected bone: " ~ reimuBoneId);
-        } else if (isActionPressed("previousBone") && reimuBoneId > 0) {
+        } else if (isActionActivated("previousBone") && reimuBoneId > 0) {
             reimuBoneId = (reimuBoneId - 1) % reimuNbBones;
             print("Selected bone: " ~ reimuBoneId);
         }
