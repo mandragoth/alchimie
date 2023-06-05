@@ -68,25 +68,6 @@ struct BufferElement {
     uint divisor;
 
     @property {
-        /// Is the type for this element integer?
-        bool intType() const {
-            final switch (type) with (LayoutType) {
-            case ltInt:
-            case ltInt2:
-            case ltInt3:
-            case ltInt4:
-                return true;
-            case ltBool:
-            case ltFloat:
-            case ltFloat2:
-            case ltFloat3:
-            case ltFloat4:
-            case ltMat3:
-            case ltMat4:
-                return false;
-            }
-        }
-
         /// Number of entries for this item
         uint count() const {
             final switch (type) with (LayoutType) {
@@ -181,7 +162,7 @@ class BufferLayout {
         foreach(ref BufferElement element; _elements) {
             glEnableVertexAttribArray(layoutId);
 
-            if (element.intType) {
+            if (element.glType == GL_INT) {
                 glVertexAttribIPointer(layoutId,
                                        element.count,
                                        element.glType,

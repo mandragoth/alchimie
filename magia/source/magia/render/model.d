@@ -621,8 +621,11 @@ final class Model {
             mat4 globalModel = parentModel * currentModel;
 
             // If this node is a bone, compute its final transform
-            if (_boneNodeIds.canFind(nodeId)) {
-                _bones[nodeId].finalTransform = globalModel * _bones[nodeId].offsetMatrix;
+            for(ulong boneId = 0; boneId < _boneNodeIds.length; ++boneId) {
+                if (_boneNodeIds[boneId] == nodeId) {
+                    _bones[boneId].finalTransform = globalModel * _bones[boneId].offsetMatrix;
+                    break;
+                }
             }
 
             // Load current node mesh
