@@ -103,12 +103,29 @@ struct Matrix(type, uint rows_, uint columns_) {
     }
 
     /// Matrix multiplication with scalar
-    private void scalarMultiplication(type scalar, ref Matrix mat) const {
-        for(int r = 0; r < rows; r++) {
-            for(int c = 0; c < columns; c++) {
-                mat.data[r][c] = data[r][c] * scalar;
+    Matrix!(type, rows, columns) opBinary(string op : "*")(type scalar) const {
+        Matrix!(type, rows, columns) toReturn;
+
+        foreach(r; TupleRange!(0, rows)) {
+            foreach(c; TupleRange!(0, columns)) {
+                toReturn.data[r][c] = data[r][c] * scalar;
             }
         }
+
+        return toReturn;
+    }
+
+    /// Matrix addition
+    Matrix opBinary(string op)(Matrix other) const if((op == "+") || (op == "-")) {
+        Matrix toReturn;
+
+        foreach(r; TupleRange!(0, rows)) {
+            foreach(c; TupleRange!(0, columns)) {
+                toReturn.data[r][c] = mixin("data[r][c]" ~ op ~ "other.data[r][c]");
+            }
+        }
+
+        return toReturn;
     }
 
     /// Multiplication operation

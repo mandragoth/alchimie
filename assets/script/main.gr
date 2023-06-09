@@ -52,26 +52,7 @@ task runtime() {
 
         setup3D();
 
-        var reimuBoneId = reimu:displayBoneId;
-        var reimuNbBones = reimu:nbBones;
-
-        if (isActionActivated("nextBone")) {
-            if (reimuBoneId == reimuNbBones - 1) {
-                reimuBoneId = -1;
-            } else {
-                reimuBoneId = (reimuBoneId + 1) % reimuNbBones;
-            }
-        } else if (isActionActivated("previousBone") && reimuBoneId >= -1) {
-            if (reimuBoneId == 0) {
-                reimuBoneId = -1;
-            } else if (reimuBoneId == -1) {
-                reimuBoneId = reimuNbBones - 1;
-            } else {
-                reimuBoneId = (reimuBoneId - 1) % reimuNbBones;
-            }
-        }
-
-        reimu:displayBoneId(reimuBoneId);
+        skin:updateDisplayBoneId();
 
         skybox:draw();
         jupiter:draw();
@@ -88,6 +69,29 @@ task runtime() {
 
         render();
     }
+}
+
+func updateDisplayBoneId(model: Model) {
+    var modelBoneId = model:displayBoneId;
+    var modelNbBones = model:nbBones;
+
+    if (isActionActivated("nextBone")) {
+        if (modelBoneId == modelNbBones - 1) {
+            modelBoneId = -1;
+        } else {
+            modelBoneId = (modelBoneId + 1) % modelNbBones;
+        }
+    } else if (isActionActivated("previousBone") && modelBoneId >= -1) {
+        if (modelBoneId == 0) {
+            modelBoneId = -1;
+        } else if (modelBoneId == -1) {
+            modelBoneId = modelNbBones - 1;
+        } else {
+            modelBoneId = (modelBoneId - 1) % modelNbBones;
+        }
+    }
+
+    model:displayBoneId(modelBoneId);
 }
 
 func testUI() {

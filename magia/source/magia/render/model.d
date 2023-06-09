@@ -65,6 +65,9 @@ final class Model {
         // Raw vertex data
         Vertex[] _vertices;
 
+        // Animation data
+        AnimatedVertexData[] _animationData;
+
         // Transformations
         Transform[] _transforms;
 
@@ -191,14 +194,10 @@ final class Model {
             const uint count = getJsonInt(accessor, "count");
             const string type = getJsonStr(accessor, "type");
 
-            if (_traceDeep) {
-                writeln("Load indices with bufferViewId ", bufferViewId, " count ", count,
-                        " byteOffset ", byteOffset, " componentType ", componentType);
-            }
-
             JSONValue bufferView = _json["bufferViews"][bufferViewId];
             const uint bufferId = getJsonInt(bufferView, "buffer");
-            const uint accessorByteOffset = getJsonInt(bufferView, "byteOffset", 0);
+            const uint bufferByteOffset = getJsonInt(bufferView, "byteOffset", 0);
+            const uint bufferByteStride = getJsonInt(bufferView, "byteStride", 0);
 
             uint nbBytesPerVertex;
             if (type == "SCALAR") {
@@ -213,13 +212,24 @@ final class Model {
                 nbBytesPerVertex = 16;
             }
 
-            const uint dataStart = byteOffset + accessorByteOffset;
+            const uint dataStart = byteOffset + bufferByteOffset;
 
             T[] values;
             if (componentType == ComponentType.float_t) {
-                const uint dataLength = count * 4 * nbBytesPerVertex;
+                // Size in bytes of an entry = number of values * size of value
+                const uint entrySize = nbBytesPerVertex * 4;
 
-                for (uint dataId = dataStart; dataId < dataStart + dataLength; dataId) {
+                // Stride is either buffer view defined or the entry size
+                const uint stride = bufferByteStride ? bufferByteStride : entrySize;
+
+                // Until what buffer portion shall we iterate?
+                const uint dataEnd = dataStart + count * stride;
+
+                uint parsedEntries = 0;
+                uint remainingToParse = nbBytesPerVertex;
+                for (uint dataId = dataStart; dataId < dataEnd; dataId) {
+                    const uint dataHead = dataId;
+
                     ubyte[] bytes = [
                         _data[bufferId][dataId++],
                         _data[bufferId][dataId++],
@@ -227,14 +237,35 @@ final class Model {
                         _data[bufferId][dataId++]
                     ];
 
-                    // Cast data to uint, then GLuint
+                    // Cast data to float, then T
                     float value = *cast(float*)bytes.ptr;
                     values ~= cast(T) value;
+
+                    // Decrement remaining entries to parse
+                    remainingToParse--;
+
+                    // When no more remaining entries, fetch next batch
+                    if (remainingToParse == 0) {
+                        remainingToParse = nbBytesPerVertex;
+                        ++parsedEntries;
+                        dataId = dataStart + parsedEntries * stride;
+                    }
                 }
             } else if (componentType == ComponentType.uint_t) {
-                const uint dataLength = count * 4 * nbBytesPerVertex;
+                // Size in bytes of an entry = number of values * size of value
+                const uint entrySize = nbBytesPerVertex * 4;
 
-                for (uint dataId = dataStart; dataId < dataStart + dataLength; dataId) {
+                // Stride is either buffer view defined or the entry size
+                const uint stride = bufferByteStride ? bufferByteStride : entrySize;
+
+                // Until what buffer portion shall we iterate?
+                const uint dataEnd = dataStart + count * stride;
+
+                uint parsedEntries = 0;
+                uint remainingToParse = nbBytesPerVertex;
+                for (uint dataId = dataStart; dataId < dataEnd; dataId) {
+                    const uint dataHead = dataId;
+
                     ubyte[] bytes = [
                         _data[bufferId][dataId++],
                         _data[bufferId][dataId++],
@@ -242,43 +273,114 @@ final class Model {
                         _data[bufferId][dataId++]
                     ];
 
-                    // Cast data to uint, then GLuint
+                    // Cast data to uint, then T
                     uint value = *cast(uint*)bytes.ptr;
                     values ~= cast(T) value;
+
+                    // Decrement remaining entries to parse
+                    remainingToParse--;
+
+                    // When no more remaining entries, fetch next batch
+                    if (remainingToParse == 0) {
+                        remainingToParse = nbBytesPerVertex;
+                        ++parsedEntries;
+                        dataId = dataStart + parsedEntries * stride;
+                    }
                 }
             } else if (componentType == ComponentType.ushort_t) {
-                const uint dataLength = count * 2 * nbBytesPerVertex;
+                // Size in bytes of an entry = number of values * size of value
+                const uint entrySize = nbBytesPerVertex * 2;
 
-                for (uint dataId = dataStart; dataId < dataStart + dataLength; dataId) {
+                // Stride is either buffer view defined or the entry size
+                const uint stride = bufferByteStride ? bufferByteStride : entrySize;
+
+                // Until what buffer portion shall we iterate?
+                const uint dataEnd = dataStart + count * stride;
+
+                uint parsedEntries = 0;
+                uint remainingToParse = nbBytesPerVertex;
+                for (uint dataId = dataStart; dataId < dataEnd; dataId) {
                     ubyte[] bytes = [
                         _data[bufferId][dataId++],
                         _data[bufferId][dataId++]
                     ];
 
-                    // Cast data to ushort, then GLuint
+                    // Cast data to ushort, then T
                     ushort value = *cast(ushort*)bytes.ptr;
                     values ~= cast(T) value;
+
+                    // Decrement remaining entries to parse
+                    remainingToParse--;
+
+                    // When no more remaining entries, fetch next batch
+                    if (remainingToParse == 0) {
+                        remainingToParse = nbBytesPerVertex;
+                        ++parsedEntries;
+                        dataId = dataStart + parsedEntries * stride;
+                    }
                 }
             } else if (componentType == ComponentType.short_t) {
-                const uint dataLength = count * 2 * nbBytesPerVertex;
+                // Size in bytes of an entry = number of values * size of value
+                const uint entrySize = nbBytesPerVertex * 2;
 
-                for (uint dataId = dataStart; dataId < dataStart + dataLength; dataId) {
+                // Stride is either buffer view defined or the entry size
+                const uint stride = bufferByteStride ? bufferByteStride : entrySize;
+
+                // Until what buffer portion shall we iterate?
+                const uint dataEnd = dataStart + count * stride;
+
+                uint parsedEntries = 0;
+                uint remainingToParse = nbBytesPerVertex;
+                for (uint dataId = dataStart; dataId < dataEnd; dataId) {
+                    const uint dataHead = dataId;
+
                     ubyte[] bytes = [
                         _data[bufferId][dataId++],
                         _data[bufferId][dataId++]
                     ];
 
-                    // Cast data to short, then GLuint
+                    // Cast data to short, then T
                     short value = *cast(short*)bytes.ptr;
                     values ~= cast(T) value;
+
+                    // Decrement remaining entries to parse
+                    remainingToParse--;
+
+                    // When no more remaining entries, fetch next batch
+                    if (remainingToParse == 0) {
+                        remainingToParse = nbBytesPerVertex;
+                        ++parsedEntries;
+                        dataId = dataStart + parsedEntries * stride;
+                    }
                 }
             } else if (componentType == ComponentType.ubyte_t) {
-                const uint dataLength = count * nbBytesPerVertex;
+                // Size in bytes of an entry = number of values * size of value
+                const uint entrySize = nbBytesPerVertex;
 
-                for (uint dataId = dataStart; dataId < dataStart + dataLength; dataId) {
-                    // Cast data to GLuint
+                // Stride is either buffer view defined or the entry size
+                const uint stride = bufferByteStride ? bufferByteStride : entrySize;
+
+                // Until what buffer portion shall we iterate?
+                const uint dataEnd = dataStart + count * stride;
+
+                uint parsedEntries = 0;
+                uint remainingToParse = nbBytesPerVertex;
+                for (uint dataId = dataStart; dataId < dataEnd; dataId) {
+                    const uint dataHead = dataId;
+
+                    // Cast data to T
                     const ubyte value = _data[bufferId][dataId++];
                     values ~= cast(T) value;
+
+                    // Decrement remaining entries to parse
+                    remainingToParse--;
+
+                    // When no more remaining entries, fetch next batch
+                    if (remainingToParse == 0) {
+                        remainingToParse = nbBytesPerVertex;
+                        ++parsedEntries;
+                        dataId = dataStart + parsedEntries * stride;
+                    }
                 }
             } else {
                 throw new Exception("Unsupported indice data type " ~ to!string(componentType));
@@ -290,7 +392,7 @@ final class Model {
         /// Group given float array as a vec2
         vec2[] groupFloatsVec2(float[] floats) {
             vec2[] values;
-            for (uint i = 0; i < floats.length;) {
+            for (ulong i = 0; i < floats.length;) {
                 values ~= vec2(floats[i++], floats[i++]);
             }
             return values;
@@ -299,26 +401,26 @@ final class Model {
         /// Group given float array as a vec3
         vec3[] groupFloatsVec3(float[] floats) {
             vec3[] values;
-            for (uint i = 0; i < floats.length;) {
+            for (ulong i = 0; i < floats.length;) {
                 values ~= vec3(floats[i++], floats[i++], floats[i++]);
             }
             return values;
         }
 
         /// Group given float array as a vec4
-        vec4[] groupFloatsVec4(float[] floats) {
+        vec4[] groupFloatsVec4(float[] inputs) {
             vec4[] values;
-            for (uint i = 0; i < floats.length;) {
-                values ~= vec4(floats[i++], floats[i++], floats[i++], floats[i++]);
+            for (ulong i = 0; i < inputs.length;) {
+                values ~= vec4(inputs[i++], inputs[i++], inputs[i++], inputs[i++]);
             }
             return values;
         }
 
         /// Group given GLuint array as vec4i
-        vec4i[] groupIntsVec4i(ubyte[] uints) {
+        vec4i[] groupIntsVec4i(T)(T[] inputs) {
             vec4i[] values;
-            for (uint i = 0; i < uints.length;) {
-                values ~= vec4i(uints[i++], uints[i++], uints[i++], uints[i++]);
+            for (ulong i = 0; i < inputs.length;) {
+                values ~= vec4i(inputs[i++], inputs[i++], inputs[i++], inputs[i++]);
             }
             return values;
         }
@@ -326,7 +428,7 @@ final class Model {
         /// Group given float array as mat4
         mat4[] groupFloatsMat4(float[] floats) {
             mat4[] values;
-            for (uint i = 0; i < floats.length;) {
+            for (ulong i = 0; i < floats.length;) {
                 mat4 value = mat4(floats[i++], floats[i++], floats[i++], floats[i++],
                                   floats[i++], floats[i++], floats[i++], floats[i++],
                                   floats[i++], floats[i++], floats[i++], floats[i++],
@@ -338,25 +440,25 @@ final class Model {
 
         /// Assemble all vertices
         Vertex[] assembleVertices(vec3[] positions, vec3[] normals, vec2[] texUVs) {
-            if (_traceDeep) {
-                writeln("Vertices size: ", positions.length);
-                writeln("Normals size: ", normals.length);
-                writeln("UVs size: ", texUVs.length);
-            }
-
             Vertex[] vertices;
             for (ulong i = 0; i < positions.length; ++i) {
                 vec3 normal = i < normals.length ? normals[i] : vec3.zero;
                 vec2 texUV = i < texUVs.length ? texUVs[i] : vec2.zero;
+                vertices ~= Vertex(positions[i], texUV, normal);
+            }
 
-                if (_traceDeep) {
-                    writeln("Assembling vertex with",
-                            " position ", positions[i],
-                            " normal ", normal,
-                            " texture UV ", texUV);
+            if (_traceDeep) {
+                for (ulong i = 0; i < positions.length; ++i) {
+                    writefln("    positions[%u]: %s", i, positions[i]);
                 }
 
-                vertices ~= Vertex(positions[i], texUV, normal);
+                for (ulong i = 0; i < normals.length; ++i) {
+                    writefln("    normals[%u]: %s", i, normals[i]);
+                }
+
+                for (ulong i = 0; i < texUVs.length; ++i) {
+                    writefln("    texUVs[%u]: %s", i, texUVs[i]);
+                }
             }
 
             return vertices;
@@ -367,17 +469,17 @@ final class Model {
             assert(boneIds.length == weights.length);
 
             if (_traceDeep) {
-                for (uint i = 0; i < boneIds.length; ++i) {
-                    writefln("  boneIds[%u]: %s", i, boneIds[i]);
+                for (ulong i = 0; i < boneIds.length; ++i) {
+                    writefln("    boneIds[%d]: %s", i, boneIds[i]);
                 }
 
-                for (uint i = 0; i < weights.length; ++i) {
-                    writefln("  weights[%u]: %s", i, weights[i]);
+                for (ulong i = 0; i < weights.length; ++i) {
+                    writefln("    weights[%u]: %s", i, weights[i]);
                 }
             }
 
             Joint[] joints;
-            for (uint i = 0; i < boneIds.length; ++i) {
+            for (ulong i = 0; i < boneIds.length; ++i) {
                 joints ~= Joint(boneIds[i], weights[i]);
             }
 
@@ -385,16 +487,8 @@ final class Model {
         }
 
         Bone[] assembleBones(mat4[] boneMatrices) {
-            if (_traceDeep) {
-                writeln("Bone matrices size: ", boneMatrices.length);
-            }
-
             Bone[] bones;
-            for (uint i = 0; i < boneMatrices.length; ++i) {
-                if (_traceDeep) {
-                    writeln("Assembling bone with matrix ", boneMatrices[i]);
-                }
-
+            for (ulong i = 0; i < boneMatrices.length; ++i) {
                 bones ~= Bone(boneMatrices[i]);
             }
 
@@ -449,10 +543,10 @@ final class Model {
                     }
 
                     // Fetch joint data (associated vertices and weight impact)
-                    const uint vertexId = getJsonInt(jsonAttributes, "JOINTS_0");
+                    const uint jointId = getJsonInt(jsonAttributes, "JOINTS_0");
                     const uint weightId = getJsonInt(jsonAttributes, "WEIGHTS_0");
 
-                    vec4i[] boneIds = groupIntsVec4i(parseBufferData!ubyte(jsonAccessors[vertexId]));
+                    vec4i[] boneIds = groupIntsVec4i(parseBufferData!ushort(jsonAccessors[jointId]));
                     vec4[] weights = groupFloatsVec4(parseBufferData!float(jsonAccessors[weightId]));
 
                     // Pack all joints into an array
@@ -474,7 +568,7 @@ final class Model {
                     _boneNodeIds ~= boneNodeIds;
 
                     // Pack vertex and joints as animation data
-                    for (uint i = 0; i < vertices.length; ++i) {
+                    for (ulong i = 0; i < vertices.length; ++i) {
                         animationData ~= AnimatedVertexData(vertices[i], joints[i]);
                     }
                 }
@@ -491,6 +585,7 @@ final class Model {
                 }
 
                 _vertices ~= vertices;
+                _animationData ~= animationData;
             }
         }
 
@@ -656,7 +751,7 @@ final class Model {
                     globalModel.print();
                 }
 
-                for (uint i = 0; i < children.length; ++i) {
+                for (ulong i = 0; i < children.length; ++i) {
                     const uint childrenId = children[i].get!uint;
                     traverseNode(childrenId, globalModel);
                 }
@@ -708,6 +803,26 @@ final class Model {
             for(ulong boneId = 0; boneId < _bones.length; ++boneId) {
                 const char* uniformName = toStringz(format("u_BoneMatrix[%u]", boneId));
                 shader.uploadUniformMat4(uniformName, _bones[boneId].finalTransform);
+
+                if (_trace) {
+                    writefln("Uploading uniform %s", to!string(uniformName));
+                }
+
+                if (_traceDeep) {
+                    for (ulong animationId = 0; animationId < _animationData.length; ++animationId) {
+                        const vec4i boneIds = _animationData[animationId].boneIds;
+                        const vec4 weights = _animationData[animationId].weights;
+
+                        mat4 boneTransform =
+                            _bones[boneIds.x].finalTransform * weights.x +
+                            _bones[boneIds.y].finalTransform * weights.y +
+                            _bones[boneIds.z].finalTransform * weights.z +
+                            _bones[boneIds.w].finalTransform * weights.w;
+
+                        writefln("VertexId # %u, matrix: ", animationId);
+                        boneTransform.print();
+                    }
+                }
             }
         }
     }
