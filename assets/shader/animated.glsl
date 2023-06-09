@@ -28,24 +28,26 @@ uniform mat4 u_BoneMatrix[kMaxBones];
 
 void main() {
     /// Compute bone transformation
-    mat4 boneTransform = u_BoneMatrix[v_BoneIDs[0]] * v_Weights[0] +
-                         u_BoneMatrix[v_BoneIDs[1]] * v_Weights[1] +
-                         u_BoneMatrix[v_BoneIDs[2]] * v_Weights[2] +
-                         u_BoneMatrix[v_BoneIDs[3]] * v_Weights[3];
+    mat4 boneTransform = v_Weights.x * u_BoneMatrix[v_BoneIDs.x] +
+                         v_Weights.y * u_BoneMatrix[v_BoneIDs.y] +
+                         v_Weights.z * u_BoneMatrix[v_BoneIDs.z] +
+                         v_Weights.w * u_BoneMatrix[v_BoneIDs.w];
 
-    /// Apply bone matrix
-    vec4 localPosition = boneTransform * vec4(a_Position, 1.0);
+    /// Apply bone matrix, then transform, then camera matrix
+    vec4 bonePosition  = vec4(a_Position, 1.0);
+    vec4 localPosition = u_Transform * bonePosition;
+    vec4 worldPosition = u_CamMatrix * localPosition;
 
-    /// Apply transformation matrix
-    v_Position = vec3(u_Transform * localPosition);
+    /// Setup all defined outputs
+    v_Position = vec3(localPosition);
     v_Normal = a_Normal;
     v_Color = a_Color;
     v_TexCoords = a_TexCoords;
     v_BoneIDs = a_BoneIDs;
     v_Weights = a_Weights;
 
-    /// Apply camera matrix
-    gl_Position = u_CamMatrix * vec4(v_Position, 1.0);
+    /// Setup position
+    gl_Position = worldPosition;
 }
 
 #type frag

@@ -44,6 +44,9 @@ task runtime() {
     reimuHair:addTexture("reimu_hair");
     // @TODO add as child
 
+    var skin = @Model("skin");
+    skin:position(@vec3f(0f, -1f, 0f));
+
     loop yield {
         clear();
 
@@ -72,8 +75,9 @@ task runtime() {
 
         skybox:draw();
         jupiter:draw();
-        reimu:draw();
-        reimuHair:draw();
+        //reimu:draw();
+        //reimuHair:draw();
+        skin:draw();
 
         setup2D();
 

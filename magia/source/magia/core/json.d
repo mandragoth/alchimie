@@ -23,24 +23,27 @@ string convertPathToImport(string path) {
     return replaceAll(path, regex(r"\\/|/|\\"), dirSeparator);
 }
 
-/// Does the node exist ?
+/// Does the node exist?
 bool hasJson(JSONValue json, string tag) {
     return ((tag in json.object) !is null);
 }
 
+/// Asset JSON tag exists, otherwise throw "tag does not exist in JSON" error
+void assetJSONTagExists(JSONValue json, string tag) {
+    if (!(tag in json.object)) {
+        throw new Exception("JSON: \'" ~ tag ~ "\' does not exist in JSON.");
+    }
+}
+
 /// Get the node
 JSONValue getJson(JSONValue json, string tag) {
-    if (!(tag in json.object)) {
-        throw new Exception("JSON: \'" ~ tag ~ "\'' does not exist in JSON.");
-    }
-
+    assetJSONTagExists(json, tag);
     return json.object[tag];
 }
 
 /// Get a JSONValue array associated to tag (throws if not found)
 JSONValue[] getJsonArray(JSONValue json, string tag) {
     if (!(tag in json.object)) {
-        //throw new Exception("JSON: \'" ~ tag ~ "\'' does not exist in JSON.");
         return [];
     }
 
@@ -64,9 +67,7 @@ string[] getJsonArrayStr(JSONValue json, string tag, string[] defaultValue) {
 
 /// Get a int array associated to tag (throws if not found)
 int[] getJsonArrayInt(JSONValue json, string tag) {
-    if (!(tag in json.object)) {
-        throw new Exception("JSON: \'" ~ tag ~ "\'' does not exist in JSON.");
-    }
+    assetJSONTagExists(json, tag);
 
     int[] array;
     foreach (JSONValue value; json.object[tag].array) {
@@ -126,10 +127,7 @@ float[] getJsonArrayFloat(JSONValue json, string tag, float[] defaultValue) {
 
 /// Get a string associated to tag (throws if not found)
 string getJsonStr(JSONValue json, string tag) {
-    if (!(tag in json.object)) {
-        throw new Exception("JSON: \'" ~ tag ~ "\'' does not exist in JSON.");
-    }
-
+    assetJSONTagExists(json, tag);
     return json.object[tag].str;
 }
 
@@ -144,9 +142,7 @@ string getJsonStr(JSONValue json, string tag, string defaultValue) {
 
 /// Get a int associated to tag (throws if not found)
 int getJsonInt(JSONValue json, string tag) {
-    if (!(tag in json.object)) {
-        throw new Exception("JSON: \'" ~ tag ~ "\'' does not exist in JSON.");
-    }
+    assetJSONTagExists(json, tag);
 
     JSONValue value = json.object[tag];
     switch (value.type()) with (JSONType) {
@@ -186,9 +182,7 @@ int getJsonInt(JSONValue json, string tag, int defaultValue) {
 
 /// Get a float associated to tag (throws if not found)
 float getJsonFloat(JSONValue json, string tag) {
-    if (!(tag in json.object)) {
-        throw new Exception("JSON: \'" ~ tag ~ "\'' does not exist in JSON.");
-    }
+    assetJSONTagExists(json, tag);
 
     JSONValue value = json.object[tag];
     switch (value.type()) with (JSONType) {
@@ -228,9 +222,7 @@ float getJsonFloat(JSONValue json, string tag, float defaultValue) {
 
 /// Get a bool associated to tag (throws if not found)
 bool getJsonBool(JSONValue json, string tag) {
-    if (!(tag in json.object)) {
-        throw new Exception("JSON: \'" ~ tag ~ "\'' does not exist in JSON.");
-    }
+    assetJSONTagExists(json, tag);
 
     JSONValue value = json.object[tag];
     if (value.type() == JSONType.true_) {

@@ -2,11 +2,14 @@ module magia.render.model;
 
 import std.algorithm;
 import std.array;
+import std.base64;
 import std.conv;
 import std.file;
+import std.format;
 import std.json;
 import std.path;
 import std.stdio;
+import std.string;
 import std.typecons;
 
 import bindbc.opengl;
@@ -28,15 +31,9 @@ import magia.render.vertex;
 enum uint uintDefault = -1;
 
 private {
-    // Trace (@TODO improve)
-    bool s_Trace = false;
-    bool s_TraceMesh = false;
-    bool s_TraceAnim = false;
-    bool s_TraceDeep = false;
-
-    bool s_TraceAny() {
-        return s_Trace || s_TraceMesh || s_TraceAnim || s_TraceDeep;
-    }
+    // File to debug + should we trace deep layers?
+    string s_DebugFile = "skin.gltf";
+    bool s_TraceDeep = true;
 
     // Debug model
     bool s_DebugModel = false;
@@ -56,7 +53,7 @@ final class Model {
 
     private {
         // JSON data
-        ubyte[] _data;
+        ubyte[][] _data;
         JSONValue _json;
 
         // Material data
@@ -77,6 +74,10 @@ final class Model {
 
         // Directory
         string _fileDirectory;
+
+        // Trace mechanism
+        bool _trace;
+        bool _traceDeep;
     }
 
     @property {
@@ -88,11 +89,16 @@ final class Model {
 
     /// Constructor
     this(string fileName) {
+        if (fileName.canFind(s_DebugFile)) {
+            _trace = true;
+            _traceDeep = s_TraceDeep;
+        }
+
         // Initialize material
         _material = new Material();
 
-        // Fetch data
-        _data = getData(fileName);
+        // Fetch file data into buffers
+        parseFileData(fileName);
 
         // Fetch root nodes from scenes
         JSONValue scenes = _json["scenes"][0];
@@ -115,9 +121,12 @@ final class Model {
     this(Model other) {
         _data = other._data;
         _json = other._json;
+        _material = other._material;
         _meshes = other._meshes;
         _vertices = other._vertices;
         _transforms = other._transforms;
+        _bones = other._bones;
+        _boneNodeIds = other._boneNodeIds;
         _fileDirectory = other._fileDirectory;
     }
 
@@ -148,29 +157,48 @@ final class Model {
     }
 
     private {
-        /// Get data
-        ubyte[] getData(string fileName) {
+        /// Get data from files and build internal buffers
+        void parseFileData(string fileName) {
             _fileDirectory = dirName(fileName);
 
-            if (s_TraceAny) {
+            if (_trace) {
                 writeln("*".replicate(100));
                 writeln("Model file path: ", fileName);
             }
 
             _json = parseJSON(readText(fileName));
-            string uri = _json["buffers"][0]["uri"].get!string;
-            return cast(ubyte[]) read(buildNormalizedPath(_fileDirectory, uri));
+
+            JSONValue[] jsonBuffers = getJsonArray(_json, "buffers");
+            _data.length = jsonBuffers.length;
+
+            for (ulong bufferId = 0; bufferId < jsonBuffers.length; ++bufferId) {
+                string uri = jsonBuffers[bufferId]["uri"].get!string;
+
+                if (canFind(uri, ".bin")) {
+                    _data[bufferId] = cast(ubyte[]) read(buildNormalizedPath(_fileDirectory, uri));
+                } else {
+                    string data = uri.replace("data:application/gltf-buffer;base64,", "");
+                    _data[bufferId] = Base64.decode(data);
+                }
+            }
         }
 
-        /// Get all floats from a JSONValue accessor
-        float[] getFloats(JSONValue accessor) {
-            const uint bufferViewId = getJsonInt(accessor, "bufferView", 1);
-            const uint count = getJsonInt(accessor, "count");
+        /// Get data from buffers with accessor
+        T[] parseBufferData(T)(JSONValue accessor) {
+            const uint bufferViewId = getJsonInt(accessor, "bufferView", 0);
             const uint byteOffset = getJsonInt(accessor, "byteOffset", 0);
+            const uint componentType = getJsonInt(accessor, "componentType");
+            const uint count = getJsonInt(accessor, "count");
             const string type = getJsonStr(accessor, "type");
 
+            if (_traceDeep) {
+                writeln("Load indices with bufferViewId ", bufferViewId, " count ", count,
+                        " byteOffset ", byteOffset, " componentType ", componentType);
+            }
+
             JSONValue bufferView = _json["bufferViews"][bufferViewId];
-            const uint accessorByteOffset = getJsonInt(bufferView, "byteOffset");
+            const uint bufferId = getJsonInt(bufferView, "buffer");
+            const uint accessorByteOffset = getJsonInt(bufferView, "byteOffset", 0);
 
             uint nbBytesPerVertex;
             if (type == "SCALAR") {
@@ -186,129 +214,71 @@ final class Model {
             }
 
             const uint dataStart = byteOffset + accessorByteOffset;
-            const uint dataLength = count * 4 * nbBytesPerVertex;
 
-            float[] values;
-            for (uint dataId = dataStart; dataId < dataStart + dataLength;) {
-                ubyte[] bytes = [
-                    _data[dataId++],
-                    _data[dataId++],
-                    _data[dataId++],
-                    _data[dataId++]
-                ];
-
-                // Cast data to float
-                values ~= *cast(float*)bytes.ptr;
-            }
-
-            return values;
-        }
-
-        /// Get all floats from a JSONValue accessor
-        ubyte[] getUbytes(JSONValue accessor) {
-            const uint bufferViewId = getJsonInt(accessor, "bufferView", 1);
-            const uint count = getJsonInt(accessor, "count");
-            const uint byteOffset = getJsonInt(accessor, "byteOffset", 0);
-            const string type = getJsonStr(accessor, "type");
-
-            JSONValue bufferView = _json["bufferViews"][bufferViewId];
-            const uint accessorByteOffset = getJsonInt(bufferView, "byteOffset");
-
-            uint nbBytesPerVertex;
-            if (type == "SCALAR") {
-                nbBytesPerVertex = 1;
-            } else if (type == "VEC2") {
-                nbBytesPerVertex = 2;
-            } else if (type == "VEC3") {
-                nbBytesPerVertex = 3;
-            } else if (type == "VEC4") {
-                nbBytesPerVertex = 4;
-            }
-
-            const uint dataStart = byteOffset + accessorByteOffset;
-            const uint dataLength = count * nbBytesPerVertex;
-
-            ubyte[] values;
-            for (uint dataId = dataStart; dataId < dataStart + dataLength;) {
-                ubyte[] bytes = [
-                    _data[dataId++],
-                    _data[dataId++],
-                    _data[dataId++],
-                    _data[dataId++]
-                ];
-
-                // No cast needed here
-                values ~= bytes;
-            }
-
-            return values;
-        }
-
-        GLuint[] getIndices(JSONValue accessor) {
-            const uint bufferViewId = getJsonInt(accessor, "bufferView", 0);
-            const uint count = getJsonInt(accessor, "count");
-            const uint byteOffset = getJsonInt(accessor, "byteOffset", 0);
-            const uint componentType = getJsonInt(accessor, "componentType");
-
-            if (s_Trace) {
-                writeln("Load indices with bufferViewId ", bufferViewId, " count ", count,
-                        " byteOffset ", byteOffset, " componentType ", componentType);
-            }
-
-            JSONValue bufferView = _json["bufferViews"][bufferViewId];
-            const uint accessorByteOffset = getJsonInt(bufferView, "byteOffset");
-
-            const uint dataStart = byteOffset + accessorByteOffset;
-
-            GLuint[] values;
-            if (componentType == ComponentType.uint_t) {
-                const uint dataLength = count * 4;
+            T[] values;
+            if (componentType == ComponentType.float_t) {
+                const uint dataLength = count * 4 * nbBytesPerVertex;
 
                 for (uint dataId = dataStart; dataId < dataStart + dataLength; dataId) {
                     ubyte[] bytes = [
-                        _data[dataId++],
-                        _data[dataId++],
-                        _data[dataId++],
-                        _data[dataId++]
+                        _data[bufferId][dataId++],
+                        _data[bufferId][dataId++],
+                        _data[bufferId][dataId++],
+                        _data[bufferId][dataId++]
+                    ];
+
+                    // Cast data to uint, then GLuint
+                    float value = *cast(float*)bytes.ptr;
+                    values ~= cast(T) value;
+                }
+            } else if (componentType == ComponentType.uint_t) {
+                const uint dataLength = count * 4 * nbBytesPerVertex;
+
+                for (uint dataId = dataStart; dataId < dataStart + dataLength; dataId) {
+                    ubyte[] bytes = [
+                        _data[bufferId][dataId++],
+                        _data[bufferId][dataId++],
+                        _data[bufferId][dataId++],
+                        _data[bufferId][dataId++]
                     ];
 
                     // Cast data to uint, then GLuint
                     uint value = *cast(uint*)bytes.ptr;
-                    values ~= cast(GLuint) value;
+                    values ~= cast(T) value;
                 }
             } else if (componentType == ComponentType.ushort_t) {
-                const uint dataLength = count * 2;
+                const uint dataLength = count * 2 * nbBytesPerVertex;
 
                 for (uint dataId = dataStart; dataId < dataStart + dataLength; dataId) {
                     ubyte[] bytes = [
-                        _data[dataId++],
-                        _data[dataId++]
+                        _data[bufferId][dataId++],
+                        _data[bufferId][dataId++]
                     ];
 
                     // Cast data to ushort, then GLuint
                     ushort value = *cast(ushort*)bytes.ptr;
-                    values ~= cast(GLuint) value;
+                    values ~= cast(T) value;
                 }
             } else if (componentType == ComponentType.short_t) {
-                const uint dataLength = count * 2;
+                const uint dataLength = count * 2 * nbBytesPerVertex;
 
                 for (uint dataId = dataStart; dataId < dataStart + dataLength; dataId) {
                     ubyte[] bytes = [
-                        _data[dataId++],
-                        _data[dataId++]
+                        _data[bufferId][dataId++],
+                        _data[bufferId][dataId++]
                     ];
 
                     // Cast data to short, then GLuint
                     short value = *cast(short*)bytes.ptr;
-                    values ~= cast(GLuint) value;
+                    values ~= cast(T) value;
                 }
             } else if (componentType == ComponentType.ubyte_t) {
-                const uint dataLength = count;
+                const uint dataLength = count * nbBytesPerVertex;
 
                 for (uint dataId = dataStart; dataId < dataStart + dataLength; dataId) {
                     // Cast data to GLuint
-                    const ubyte value = _data[dataId++];
-                    values ~= cast(GLuint) value;
+                    const ubyte value = _data[bufferId][dataId++];
+                    values ~= cast(T) value;
                 }
             } else {
                 throw new Exception("Unsupported indice data type " ~ to!string(componentType));
@@ -357,32 +327,36 @@ final class Model {
         mat4[] groupFloatsMat4(float[] floats) {
             mat4[] values;
             for (uint i = 0; i < floats.length;) {
-                values ~= mat4(floats[i++], floats[i++], floats[i++], floats[i++],
-                               floats[i++], floats[i++], floats[i++], floats[i++],
-                               floats[i++], floats[i++], floats[i++], floats[i++],
-                               floats[i++], floats[i++], floats[i++], floats[i++]);
+                mat4 value = mat4(floats[i++], floats[i++], floats[i++], floats[i++],
+                                  floats[i++], floats[i++], floats[i++], floats[i++],
+                                  floats[i++], floats[i++], floats[i++], floats[i++],
+                                  floats[i++], floats[i++], floats[i++], floats[i++]);
+                values ~= value.transposed();
             }
             return values;
         }
 
         /// Assemble all vertices
         Vertex[] assembleVertices(vec3[] positions, vec3[] normals, vec2[] texUVs) {
-            if (s_Trace) {
-                writeln("Vertices size: ", positions.count);
-                writeln("Normals size: ", normals.count);
-                writeln("UVs size: ", texUVs.count);
+            if (_traceDeep) {
+                writeln("Vertices size: ", positions.length);
+                writeln("Normals size: ", normals.length);
+                writeln("UVs size: ", texUVs.length);
             }
 
             Vertex[] vertices;
-            for (uint i = 0; i < positions.length; ++i) {
-                if (s_TraceDeep) {
+            for (ulong i = 0; i < positions.length; ++i) {
+                vec3 normal = i < normals.length ? normals[i] : vec3.zero;
+                vec2 texUV = i < texUVs.length ? texUVs[i] : vec2.zero;
+
+                if (_traceDeep) {
                     writeln("Assembling vertex with",
                             " position ", positions[i],
-                            " normal ", normals[i],
-                            " texture UV ", texUVs[i]);
+                            " normal ", normal,
+                            " texture UV ", texUV);
                 }
 
-                vertices ~= Vertex(positions[i], texUVs[i], normals[i]);
+                vertices ~= Vertex(positions[i], texUV, normal);
             }
 
             return vertices;
@@ -390,19 +364,20 @@ final class Model {
 
         /// Assemble all joints
         Joint[] assembleJoints(vec4i[] boneIds, vec4[] weights) {
-            if (s_Trace) {
-                writeln("Vertices references size: ", boneIds.length);
-                writeln("Weights size: ", weights.length);
+            assert(boneIds.length == weights.length);
+
+            if (_traceDeep) {
+                for (uint i = 0; i < boneIds.length; ++i) {
+                    writefln("  boneIds[%u]: %s", i, boneIds[i]);
+                }
+
+                for (uint i = 0; i < weights.length; ++i) {
+                    writefln("  weights[%u]: %s", i, weights[i]);
+                }
             }
 
             Joint[] joints;
             for (uint i = 0; i < boneIds.length; ++i) {
-                if (s_TraceDeep) {
-                    writeln("Assembling joint with",
-                            " vertexId ", boneIds[i],
-                            " weight ", weights[i]);
-                }
-
                 joints ~= Joint(boneIds[i], weights[i]);
             }
 
@@ -410,9 +385,13 @@ final class Model {
         }
 
         Bone[] assembleBones(mat4[] boneMatrices) {
+            if (_traceDeep) {
+                writeln("Bone matrices size: ", boneMatrices.length);
+            }
+
             Bone[] bones;
             for (uint i = 0; i < boneMatrices.length; ++i) {
-                if (s_TraceDeep) {
+                if (_traceDeep) {
                     writeln("Assembling bone with matrix ", boneMatrices[i]);
                 }
 
@@ -424,10 +403,6 @@ final class Model {
 
         /// Load mesh
         void loadMesh(const uint meshId, const uint skinId = uintDefault) {
-            if (s_Trace) {
-                writeln("Mesh load");
-            }
-
             const JSONValue[] jsonAccessors = getJsonArray(_json, "accessors");
 
             const JSONValue jsonMesh = _json["meshes"][meshId];
@@ -438,19 +413,27 @@ final class Model {
 
                 // Load vertices
                 const uint positionId = getJsonInt(jsonAttributes, "POSITION");
-                const uint normalId = getJsonInt(jsonAttributes, "NORMAL");
-                const uint texUVId = getJsonInt(jsonAttributes, "TEXCOORD_0");
+                vec3[] positions = groupFloatsVec3(parseBufferData!float(jsonAccessors[positionId]));
 
-                vec3[] positions = groupFloatsVec3(getFloats(jsonAccessors[positionId]));
-                vec3[] normals = groupFloatsVec3(getFloats(jsonAccessors[normalId]));
-                vec2[] texUVs = groupFloatsVec2(getFloats(jsonAccessors[texUVId]));
+                const uint normalId = getJsonInt(jsonAttributes, "NORMAL", -1);
+
+                vec3[] normals;
+                if (normalId != -1) {
+                    normals = groupFloatsVec3(parseBufferData!float(jsonAccessors[normalId]));
+                }
+
+                const uint texUVId = getJsonInt(jsonAttributes, "TEXCOORD_0", -1);
+                vec2[] texUVs;
+                if (texUVId != -1) {
+                    texUVs = groupFloatsVec2(parseBufferData!float(jsonAccessors[texUVId]));
+                }
 
                 // Pack all vertices into an array
                 Vertex[] vertices = assembleVertices(positions, normals, texUVs);
 
                 // Load indices
                 const uint indicesId = getJsonInt(jsonPrimitive, "indices");
-                GLuint[] indices = getIndices(jsonAccessors[indicesId]);
+                GLuint[] indices = parseBufferData!GLuint(jsonAccessors[indicesId]);
 
                 // Load textures
                 loadTextures();
@@ -461,12 +444,16 @@ final class Model {
 
                 // Load skin details (joints and weights) if they exist
                 if (skinId != uintDefault) {
+                    if (_traceDeep) {
+                        writefln("Joint # %u", skinId);
+                    }
+
                     // Fetch joint data (associated vertices and weight impact)
                     const uint vertexId = getJsonInt(jsonAttributes, "JOINTS_0");
                     const uint weightId = getJsonInt(jsonAttributes, "WEIGHTS_0");
 
-                    vec4i[] boneIds = groupIntsVec4i(getUbytes(jsonAccessors[vertexId]));
-                    vec4[] weights = groupFloatsVec4(getFloats(jsonAccessors[weightId]));
+                    vec4i[] boneIds = groupIntsVec4i(parseBufferData!ubyte(jsonAccessors[vertexId]));
+                    vec4[] weights = groupFloatsVec4(parseBufferData!float(jsonAccessors[weightId]));
 
                     // Pack all joints into an array
                     Joint[] joints = assembleJoints(boneIds, weights);
@@ -476,7 +463,7 @@ final class Model {
 
                     // Parse inverse bind matrices
                     const uint boneMatrixId = getJsonInt(skin, "inverseBindMatrices");
-                    boneMatrices = groupFloatsMat4(getFloats(jsonAccessors[boneMatrixId]));
+                    boneMatrices = groupFloatsMat4(parseBufferData!float(jsonAccessors[boneMatrixId]));
 
                     // Pack all bones into global array
                     Bone[] bones = assembleBones(boneMatrices);
@@ -492,8 +479,8 @@ final class Model {
                     }
                 }
 
-                if (s_TraceAny) {
-                    traceMeshData(meshId, getJsonStr(jsonMesh, "name"), vertices.length, indices.length, nbBones);
+                if (_trace) {
+                    traceMeshData(meshId, getJsonStr(jsonMesh, "name", ""), vertices.length, indices.length, nbBones);
                     traceBoneData(animationData, boneNodeIds, boneMatrices);
                 }
 
@@ -531,8 +518,8 @@ final class Model {
 
             for (ulong boneId = 0; boneId < boneMatrices.length; ++boneId) {
                 JSONValue boneNode = _json["nodes"][jointIds[boneId]];
-                writefln("    Bone '%s': affects %u vertices", getJsonStr(boneNode, "name"), aBoneNbVertices[boneId]);
-                writefln("      Matrix:");
+                writefln("    Bone '%s': affects %u vertices", getJsonStr(boneNode, "name", ""), aBoneNbVertices[boneId]);
+                writefln("      Bone offset matrix:");
                 boneMatrices[boneId].print();
             }
         }
@@ -552,13 +539,17 @@ final class Model {
                 } else if (canFind(path, "metallicRoughness") || canFind(path, "specular")) {
                     _material.textures ~= new Texture(path, TextureType.specular, textureId);
                     ++textureId;
-                } else if (s_Trace) {
+                } else if (_trace) {
                     writeln("Warning: unknown texture type ", path ,", not loaded");
                 }
             }
 
             // If we haven't found any texture, fetch the default one
             if (textureId == 0) {
+                if (_trace) {
+                    writeln("Using default texture");
+                }
+
                 _material.textures ~= defaultTexture;
             }
         }
@@ -576,7 +567,7 @@ final class Model {
             if (translationArray.length == 3) {
                 translation = vec3(translationArray[0], translationArray[1], translationArray[2]);
 
-                if (s_Trace) {
+                if (_traceDeep) {
                     writeln("Translation: ", translation);
                 }
             }
@@ -585,7 +576,7 @@ final class Model {
             if (rotationArray.length == 4) {
                 rotation = quat(rotationArray[0], rotationArray[1], rotationArray[2], rotationArray[3]);
 
-                if (s_Trace) {
+                if (_traceDeep) {
                     writeln("Rotation: ", rotation);
                 }
             }
@@ -594,7 +585,7 @@ final class Model {
             if (scaleArray.length == 3) {
                 scale = vec3(scaleArray[0], scaleArray[1], scaleArray[2]);
 
-                if (s_Trace) {
+                if (_traceDeep) {
                     writeln("Scale: ", scale);
                 }
             }
@@ -609,7 +600,7 @@ final class Model {
                     }
                 }
 
-                if (s_Trace) {
+                if (_traceDeep) {
                     writeln("Matrix: ", matNode);
                 }
             }
@@ -624,15 +615,25 @@ final class Model {
             for(ulong boneId = 0; boneId < _boneNodeIds.length; ++boneId) {
                 if (_boneNodeIds[boneId] == nodeId) {
                     _bones[boneId].finalTransform = globalModel * _bones[boneId].offsetMatrix;
+
+                    if (_trace) {
+                        writefln("    Bone # %u", boneId);
+                        writefln("      Global model: ");
+                        globalModel.print();
+                        writefln("      Final transform: ");
+                        _bones[boneId].finalTransform.print();
+                    }
+
                     break;
                 }
             }
 
             // Load current node mesh
             if (hasJson(node, "mesh")) {
-                if (s_TraceMesh) {
-                    writeln("Load current mesh # ", nodeId);
-                    writeln("Combined model: ", currentModel);
+                if (_trace) {
+                    writeln("  Loading mesh # ", nodeId);
+                    writeln("    Combined model: ");
+                    currentModel.print();
                 }
 
                 // Record transform for new mesh
@@ -649,9 +650,10 @@ final class Model {
             if (hasJson(node, "children")) {
                 const JSONValue[] children = getJsonArray(node, "children");
 
-                if (s_Trace) {
-                    writeln("Load children ", children);
-                    writeln("Combined global model: ", globalModel);
+                if (_traceDeep) {
+                    writeln("  Loading children nodes ", children);
+                    writeln("    Combined global model: ");
+                    globalModel.print();
                 }
 
                 for (uint i = 0; i < children.length; ++i) {
@@ -663,9 +665,9 @@ final class Model {
 
         /// Traverse given animation
         void traverseAnimation(JSONValue animation) {
-            string name = getJsonStr(animation, "name");
+            string name = getJsonStr(animation, "name", "");
 
-            if (s_TraceMesh) {
+            if (_trace) {
                 writeln("Animation name: ", name);
             }
 
@@ -684,7 +686,7 @@ final class Model {
                     const uint nodeId = getJsonInt(target, "node");
                     const string path = getJsonStr(target, "path");
 
-                    if (s_TraceAnim) {
+                    if (_trace) {
                         writeln("SamplerId: ", samplerId, ", nodeId: ", nodeId, ", path: ", path);
                     }
 
@@ -694,10 +696,18 @@ final class Model {
                     const uint outputId = getJsonInt(sampler, "output");
                     const string interpolation = getJsonStr(sampler, "interpolation");
 
-                    if (s_TraceAnim) {
+                    if (_trace) {
                         writeln("InputId: ", inputId, ", outputId: ", outputId, " interpolation: ", interpolation);
                     }
                 }
+            }
+        }
+
+        /// Upload bone transformations to shader
+        void uploadBoneTransforms(Shader shader) {
+            for(ulong boneId = 0; boneId < _bones.length; ++boneId) {
+                const char* uniformName = toStringz(format("u_BoneMatrix[%u]", boneId));
+                shader.uploadUniformMat4(uniformName, _bones[boneId].finalTransform);
             }
         }
     }
@@ -729,6 +739,9 @@ final class ModelInstance : Entity {
             _shader = fetchPrototype!Shader("model");
         } else {
             _shader = fetchPrototype!Shader("animated");
+
+            _shader.activate();
+            _model.uploadBoneTransforms(_shader);
         }
     }
 
@@ -736,11 +749,14 @@ final class ModelInstance : Entity {
     override void draw() {
         _shader.activate();
 
+        if (nbBones) {
+            _shader.uploadUniformInt("u_DisplayBoneId", displayBoneId);
+        }
+
         foreach (Camera camera; renderer.cameras) {
             glViewport(camera.viewport.x, camera.viewport.y, camera.viewport.z, camera.viewport.w);
             _shader.uploadUniformVec3("u_CamPos", camera.position);
             _shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
-            _shader.uploadUniformInt("u_DisplayBoneId", displayBoneId);
 
             if (material) {
                 _model.draw(_shader, material, transform);

@@ -3,10 +3,10 @@ module magia.core.mat;
 import magia.core.tuple;
 import magia.core.vec;
 
-import std.conv : to;
+import std.conv;
 import std.format;
 import std.math;
-import std.traits : isFloatingPoint, isDynamicArray;
+import std.traits;
 import std.stdio;
 
 /// Generic matrix type
@@ -303,12 +303,14 @@ struct Matrix(type, uint rows_, uint columns_) {
                 return mat;
             }
 
-            /// Print mat4
+            /// Print normalized mat4 (with specified precision)
             void print() {
-                writefln("%f %f %f %f", data[0][0], data[0][1], data[0][2], data[0][3]);
-                writefln("%f %f %f %f", data[1][0], data[1][1], data[1][2], data[1][3]);
-                writefln("%f %f %f %f", data[2][0], data[2][1], data[2][2], data[2][3]);
-                writefln("%f %f %f %f", data[3][0], data[3][1], data[3][2], data[3][3]);
+                foreach (r; TupleRange!(0, rows)) {
+                    foreach (c; TupleRange!(0, columns)) {
+                        writef("%12.2f ", data[r][c]);
+                    }
+                    write("\n");
+                }
             }
 
             /// Floating point type
