@@ -320,16 +320,6 @@ struct Matrix(type, uint rows_, uint columns_) {
                 return mat;
             }
 
-            /// Print normalized mat4 (with specified precision)
-            void print() {
-                foreach (r; TupleRange!(0, rows)) {
-                    foreach (c; TupleRange!(0, columns)) {
-                        writef("%12.2f ", data[r][c]);
-                    }
-                    write("\n");
-                }
-            }
-
             /// Floating point type
             static if(isFloatingPoint!type) {
                 alias vec3mt = Vector!(type, 3);

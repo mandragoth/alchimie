@@ -130,6 +130,33 @@ struct Quaternion(type) {
 
         return toReturn;
     }
+
+    /// Quaternion addition and subtraction
+    Quaternion opBinary(string op)(Quaternion other) const  if((op == "+") || (op == "-")) {
+        Quaternion toReturn;
+
+        mixin("toReturn.w = w" ~ op ~ "other.w;");
+        mixin("toReturn.x = x" ~ op ~ "other.x;");
+        mixin("toReturn.y = y" ~ op ~ "other.y;");
+        mixin("toReturn.z = z" ~ op ~ "other.z;");
+
+        return toReturn;
+    }
+
+    /// Scalar multiplication
+    Quaternion opBinary(string op : "*")(type scalar) const {
+        return Quaternion(scalar * w, scalar * x, scalar * y, scalar * z);
+    }
+
+    /// Commutative binary operations
+    auto opBinaryRight(string op, T)(T inp) const if(!is_quaternion!T) {
+        return this.opBinary!(op)(inp);
+    }
+
+    /// Quaternion dot product
+    type dot(Quaternion other) const {
+        return x * other.x + y * other.y + z * other.z + w * other.w;
+    }
 }
 
 /// Predefined quaternion for float type

@@ -170,11 +170,11 @@ class BufferLayout {
                                        cast(void *)element.offset);
             } else {
                 glVertexAttribPointer(layoutId,
-                                    element.count,
-                                    element.glType,
-                                    GL_FALSE, // No normalization
-                                    stride,
-                                    cast(void *)element.offset);
+                                      element.count,
+                                      element.glType,
+                                      GL_FALSE, // No normalization
+                                      stride,
+                                      cast(void *)element.offset);
             }
             ++layoutId;
         }

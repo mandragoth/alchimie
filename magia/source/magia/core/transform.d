@@ -84,13 +84,13 @@ struct Transform {
     }
 }
 
-/// Combine position, rotation and scale into model matrix
-mat4 combineModel(vec3 position, quat rotation, vec3 scale) {
-    mat4 localTranslation = mat4.identity.translate(position);
-    mat4 localRotation = rotation.to_matrix!(4, 4);
-    mat4 localScale = mat4.identity.scale(scale);
+/// Combine translation, rotation and scale into model matrix
+mat4 combineModel(vec3 translation, quat rotation, vec3 scale) {
+    mat4 mTranslation = mat4.identity.translate(translation);
+    mat4 mRotation = rotation.to_matrix!(4, 4);
+    mat4 mScale = mat4.identity.scale(scale);
 
-    return localTranslation * localRotation * localScale;
+    return mTranslation * mRotation * mScale;
 }
 
 /// Combine model from transform position, rotation, scale

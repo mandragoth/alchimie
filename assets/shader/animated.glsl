@@ -23,15 +23,15 @@ out vec4 v_Weights;
 uniform mat4 u_CamMatrix;
 uniform mat4 u_Transform;
 
-const int kMaxBones = 2;
+const int kMaxBones = 100;
 uniform mat4 u_BoneMatrix[kMaxBones];
 
 void main() {
     /// Compute bone transformation
-    mat4 boneTransform = u_BoneMatrix[a_BoneIDs.x] * a_Weights.x +
-                         u_BoneMatrix[a_BoneIDs.y] * a_Weights.y +
-                         u_BoneMatrix[a_BoneIDs.z] * a_Weights.z +
-                         u_BoneMatrix[a_BoneIDs.w] * a_Weights.w;
+    mat4 boneTransform = u_BoneMatrix[a_BoneIDs[0]] * a_Weights[0] +
+                         u_BoneMatrix[a_BoneIDs[1]] * a_Weights[1] +
+                         u_BoneMatrix[a_BoneIDs[2]] * a_Weights[2] +
+                         u_BoneMatrix[a_BoneIDs[3]] * a_Weights[3];
 
     /// Apply bone matrix, then transform, then camera matrix
     vec4 bonePosition  = boneTransform * vec4(a_Position, 1.0);
@@ -208,6 +208,6 @@ void main() {
             totalLight += calcSpotLight(u_SpotLights[spotLightId], normal);
         }
 
-        fragColor = texture(u_Diffuse0, v_TexCoords) * totalLight;
+        fragColor = texture(u_Diffuse0, v_TexCoords) * vec4(v_Color, 1.0) * totalLight;
     }
 }

@@ -15,6 +15,7 @@ import std.typecons;
 import bindbc.opengl;
 
 import magia.core;
+import magia.render.animation;
 import magia.render.buffer;
 import magia.render.camera;
 import magia.render.data;
@@ -26,6 +27,7 @@ import magia.render.renderer;
 import magia.render.shader;
 import magia.render.texture;
 import magia.render.vertex;
+import magia.render.window;
 
 /// Default uint value
 enum uint uintDefault = -1;
@@ -62,11 +64,14 @@ final class Model {
         // Raw vertex data
         Vertex[] _vertices;
 
-        // Animation data
+        // Raw animated vertex data
         AnimatedVertex[] _animatedVertices;
 
         // Transformations
         Transform[] _transforms;
+
+        // Animations
+        Animation[uint] _animations;
 
         // Bone data (optional)
         Bone[] _bones;
@@ -110,11 +115,11 @@ final class Model {
             traverseNode(nodeId);
         }
 
-        JSONValue[] animations = getJsonArray(_json, "animations");
+        JSONValue[] jsonAnimations = getJsonArray(_json, "animations");
 
-        // Traverse all animations
-        foreach (JSONValue animation; animations) {
-            //traverseAnimation(animation);
+        // Load all animations
+        foreach (JSONValue jsonAnimation; jsonAnimations) {
+            loadAnimation(jsonAnimation);
         }
     }
 
@@ -172,7 +177,7 @@ final class Model {
             JSONValue[] jsonBuffers = getJsonArray(_json, "buffers");
             _data.length = jsonBuffers.length;
 
-            for (ulong bufferId = 0; bufferId < jsonBuffers.length; ++bufferId) {
+            for (uint bufferId = 0; bufferId < jsonBuffers.length; ++bufferId) {
                 string uri = jsonBuffers[bufferId]["uri"].get!string;
 
                 if (canFind(uri, ".bin")) {
@@ -276,7 +281,7 @@ final class Model {
         /// Group given float array as a vec2
         vec2[] groupFloatsVec2(float[] floats) {
             vec2[] values;
-            for (ulong i = 0; i < floats.length;) {
+            for (uint i = 0; i < floats.length;) {
                 values ~= vec2(floats[i++], floats[i++]);
             }
             return values;
@@ -285,7 +290,7 @@ final class Model {
         /// Group given float array as a vec3
         vec3[] groupFloatsVec3(float[] floats) {
             vec3[] values;
-            for (ulong i = 0; i < floats.length;) {
+            for (uint i = 0; i < floats.length;) {
                 values ~= vec3(floats[i++], floats[i++], floats[i++]);
             }
             return values;
@@ -294,8 +299,18 @@ final class Model {
         /// Group given float array as a vec4
         vec4[] groupFloatsVec4(float[] inputs) {
             vec4[] values;
-            for (ulong i = 0; i < inputs.length;) {
+            for (uint i = 0; i < inputs.length;) {
                 values ~= vec4(inputs[i++], inputs[i++], inputs[i++], inputs[i++]);
+            }
+            return values;
+        }
+
+        /// Group given float array as a quat
+        quat[] groupFloatsQuat(float[] inputs) {
+            quat[] values;
+            for (uint i = 0; i < inputs.length; i += 4) {
+                // Gltf format is X, Y, Z, W (internal one is W, X, Y, Z)
+                values ~= quat(inputs[i + 3], inputs[i + 1], inputs[i + 2], inputs[i]);
             }
             return values;
         }
@@ -303,16 +318,16 @@ final class Model {
         /// Group given GLuint array as vec4i
         vec4i[] groupIntsVec4i(T)(T[] inputs) {
             vec4i[] values;
-            for (ulong i = 0; i < inputs.length;) {
+            for (uint i = 0; i < inputs.length;) {
                 values ~= vec4i(inputs[i++], inputs[i++], inputs[i++], inputs[i++]);
             }
             return values;
         }
 
-        /// Group given float array as mat4
+        /// Group given float array as mat4 (we transpose them because stored column by column)
         mat4[] groupFloatsMat4(float[] floats) {
             mat4[] values;
-            for (ulong i = 0; i < floats.length;) {
+            for (uint i = 0; i < floats.length;) {
                 mat4 value = mat4(floats[i++], floats[i++], floats[i++], floats[i++],
                                   floats[i++], floats[i++], floats[i++], floats[i++],
                                   floats[i++], floats[i++], floats[i++], floats[i++],
@@ -325,22 +340,22 @@ final class Model {
         /// Assemble all vertices
         Vertex[] assembleVertices(vec3[] positions, vec3[] normals, vec2[] texUVs) {
             Vertex[] vertices;
-            for (ulong i = 0; i < positions.length; ++i) {
+            for (uint i = 0; i < positions.length; ++i) {
                 vec3 normal = i < normals.length ? normals[i] : vec3.zero;
                 vec2 texUV = i < texUVs.length ? texUVs[i] : vec2.zero;
                 vertices ~= Vertex(positions[i], texUV, normal);
             }
 
             if (_traceDeep) {
-                for (ulong i = 0; i < positions.length; ++i) {
+                for (uint i = 0; i < positions.length; ++i) {
                     writefln("    positions[%u]: %s", i, positions[i]);
                 }
 
-                for (ulong i = 0; i < normals.length; ++i) {
+                for (uint i = 0; i < normals.length; ++i) {
                     writefln("    normals[%u]: %s", i, normals[i]);
                 }
 
-                for (ulong i = 0; i < texUVs.length; ++i) {
+                for (uint i = 0; i < texUVs.length; ++i) {
                     writefln("    texUVs[%u]: %s", i, texUVs[i]);
                 }
             }
@@ -353,17 +368,17 @@ final class Model {
             assert(boneIds.length == weights.length);
 
             if (_traceDeep) {
-                for (ulong i = 0; i < boneIds.length; ++i) {
+                for (uint i = 0; i < boneIds.length; ++i) {
                     writefln("    boneIds[%d]: %s", i, boneIds[i]);
                 }
 
-                for (ulong i = 0; i < weights.length; ++i) {
+                for (uint i = 0; i < weights.length; ++i) {
                     writefln("    weights[%u]: %s", i, weights[i]);
                 }
             }
 
             Joint[] joints;
-            for (ulong i = 0; i < boneIds.length; ++i) {
+            for (uint i = 0; i < boneIds.length; ++i) {
                 joints ~= Joint(boneIds[i], weights[i]);
             }
 
@@ -372,7 +387,7 @@ final class Model {
 
         Bone[] assembleBones(mat4[] boneMatrices) {
             Bone[] bones;
-            for (ulong i = 0; i < boneMatrices.length; ++i) {
+            for (uint i = 0; i < boneMatrices.length; ++i) {
                 bones ~= Bone(boneMatrices[i]);
             }
 
@@ -453,7 +468,7 @@ final class Model {
                     _boneNodeIds ~= boneNodeIds;
 
                     // Pack vertex and joints as animation data @TODO
-                    for (ulong i = 0; i < vertices.length; ++i) {
+                    for (uint i = 0; i < vertices.length; ++i) {
                         animatedVertices ~= AnimatedVertex(vertices[i], joints[i]);
                     }
                 }
@@ -481,10 +496,10 @@ final class Model {
         /// Trace bone data (each bone and their name, affected vertices and weights, hierarchy)
         /// Note: Only for debug purposes, this one is rather heavy as it remaps vertices to bones
         void traceBoneData(AnimatedVertex[] aAnimatedVertices, int[] aJointIds, mat4[] aBoneMatrices) {
-            ulong[] aBoneNbVertices;
+            uint[] aBoneNbVertices;
             aBoneNbVertices.length = aBoneMatrices.length;
 
-            for (ulong vertexId = 0; vertexId < aAnimatedVertices.length; ++vertexId) {
+            for (uint vertexId = 0; vertexId < aAnimatedVertices.length; ++vertexId) {
                 const AnimatedVertex animatedVertex = aAnimatedVertices[vertexId];
 
                 for (int boneId = 0; boneId < aBoneMatrices.length; ++boneId) {
@@ -494,11 +509,9 @@ final class Model {
                 }
             }
 
-            for (ulong boneId = 0; boneId < aBoneMatrices.length; ++boneId) {
+            for (uint boneId = 0; boneId < aBoneMatrices.length; ++boneId) {
                 JSONValue boneNode = _json["nodes"][aJointIds[boneId]];
                 writefln("    Bone %u '%s': affects %u vertices", boneId, getJsonStr(boneNode, "name", ""), aBoneNbVertices[boneId]);
-                writefln("      Bone offset matrix:");
-                aBoneMatrices[boneId].print();
             }
         }
 
@@ -541,7 +554,7 @@ final class Model {
             vec3 scale = vec3.one;
             mat4 matNode = mat4.identity;
 
-            float[] translationArray = getJsonArrayFloat(node, "translation", []);
+            float[] translationArray = getJsonArrayFloat(node, "translation");
             if (translationArray.length == 3) {
                 translation = vec3(translationArray[0], translationArray[1], translationArray[2]);
 
@@ -550,16 +563,12 @@ final class Model {
                 }
             }
 
-            float[] rotationArray = getJsonArrayFloat(node, "rotation", []);
+            float[] rotationArray = getJsonArrayFloat(node, "rotation");
             if (rotationArray.length == 4) {
                 rotation = quat(rotationArray[3], rotationArray[1], rotationArray[2], rotationArray[0]);
-
-                if (_traceDeep) {
-                    writeln("Rotation: ", rotation);
-                }
             }
 
-            float[] scaleArray = getJsonArrayFloat(node, "scale", []);
+            float[] scaleArray = getJsonArrayFloat(node, "scale");
             if (scaleArray.length == 3) {
                 scale = vec3(scaleArray[0], scaleArray[1], scaleArray[2]);
 
@@ -568,7 +577,7 @@ final class Model {
                 }
             }
 
-            float[] matrixArray = getJsonArrayFloat(node, "matrix", []);
+            float[] matrixArray = getJsonArrayFloat(node, "matrix");
             if (matrixArray.length == 16) {
                 uint arrayId = 0;
                 for (uint i = 0 ; i < 4; ++i) {
@@ -584,34 +593,18 @@ final class Model {
             }
 
             // Compute current node model
-            mat4 currentModel = matNode * combineModel(translation, rotation, scale);
+            const mat4 currentModel = matNode * combineModel(translation, rotation, scale);
 
             // Combine parent and current transform matrices
-            mat4 globalModel = parentModel * currentModel;
+            const mat4 globalModel = parentModel * currentModel;
 
             // If this node is a bone, compute its final transform
-            for(ulong boneId = 0; boneId < _boneNodeIds.length; ++boneId) {
-                if (_boneNodeIds[boneId] == nodeId) {
-                    _bones[boneId].finalTransform = globalModel * _bones[boneId].offsetMatrix;
-
-                    if (_trace) {
-                        writefln("    Bone # %u", boneId);
-                        writefln("      Global model: ");
-                        globalModel.print();
-                        writefln("      Final transform: ");
-                        _bones[boneId].finalTransform.print();
-                    }
-
-                    break;
-                }
-            }
+            computeBoneTransforms(nodeId, parentModel, globalModel);
 
             // Load current node mesh
             if (hasJson(node, "mesh")) {
                 if (_trace) {
                     writeln("  Loading mesh # ", nodeId);
-                    writeln("    Combined model: ");
-                    currentModel.print();
                 }
 
                 // Record transform for new mesh
@@ -630,11 +623,9 @@ final class Model {
 
                 if (_traceDeep) {
                     writeln("  Loading children nodes ", children);
-                    writeln("    Combined global model: ");
-                    globalModel.print();
                 }
 
-                for (ulong i = 0; i < children.length; ++i) {
+                for (uint i = 0; i < children.length; ++i) {
                     const uint childrenId = children[i].get!uint;
                     traverseNode(childrenId, globalModel);
                 }
@@ -642,19 +633,21 @@ final class Model {
         }
 
         /// Traverse given animation
-        void traverseAnimation(JSONValue animation) {
-            string name = getJsonStr(animation, "name", "");
+        void loadAnimation(JSONValue jsonAnimation) {
+            const JSONValue[] jsonAccessors = getJsonArray(_json, "accessors");
+
+            string name = getJsonStr(jsonAnimation, "name", "");
 
             if (_trace) {
-                writeln("Animation name: ", name);
+                writefln("Animation '%s'", name);
             }
 
             /// Fetch related samplers
-            JSONValue[] samplers = getJsonArray(animation, "samplers");
+            JSONValue[] samplers = getJsonArray(jsonAnimation, "samplers");
 
             /// Fetch related channels
-            if (hasJson(animation, "channels")) {
-                JSONValue[] channels = getJsonArray(animation, "channels");
+            if (hasJson(jsonAnimation, "channels")) {
+                JSONValue[] channels = getJsonArray(jsonAnimation, "channels");
 
                 /// Loop on all channels
                 foreach(JSONValue channel; channels) {
@@ -665,7 +658,7 @@ final class Model {
                     const string path = getJsonStr(target, "path");
 
                     if (_trace) {
-                        writeln("SamplerId: ", samplerId, ", nodeId: ", nodeId, ", path: ", path);
+                        writeln("  SamplerId: ", samplerId, ", nodeId: ", nodeId, ", path: ", path);
                     }
 
                     JSONValue sampler = samplers[samplerId];
@@ -675,7 +668,66 @@ final class Model {
                     const string interpolation = getJsonStr(sampler, "interpolation");
 
                     if (_trace) {
-                        writeln("InputId: ", inputId, ", outputId: ", outputId, " interpolation: ", interpolation);
+                        writeln("  InputId: ", inputId, ", outputId: ", outputId, " interpolation: ", interpolation);
+                    }
+
+                    JSONValue jsonTimes = jsonAccessors[inputId];
+                    JSONValue jsonData = jsonAccessors[outputId];
+
+                    vec3[] translations;
+                    if (path == "translation") {
+                        translations = groupFloatsVec3(parseBufferData!float(jsonData));
+                    }
+
+                    quat[] rotations;
+                    if (path == "rotation") {
+                        rotations = groupFloatsQuat(parseBufferData!float(jsonData));
+                    }
+
+                    vec3[] scales;
+                    if (path == "scale") {
+                       scales = groupFloatsVec3(parseBufferData!float(jsonData));
+                    }
+
+                    _animations[nodeId] = new Animation(getJsonArrayFloat(jsonTimes, "min")[0],
+                                                        getJsonArrayFloat(jsonTimes, "max")[0],
+                                                        parseBufferData!float(jsonTimes),
+                                                        interpolation,
+                                                        translations,
+                                                        rotations,
+                                                        scales);
+                }
+            }
+        }
+
+        /// Compute bone transformations at rest
+        void computeBoneTransforms(uint nodeId, mat4 parentModel, mat4 globalModel) {
+            for (uint boneId = 0; boneId < _boneNodeIds.length; ++boneId) {
+                if (_boneNodeIds[boneId] == nodeId) {
+                    _bones[boneId].parentTransform = parentModel;
+                    _bones[boneId].finalTransform = globalModel * _bones[boneId].offsetMatrix;
+                    break;
+                }
+            }
+        }
+
+        /// Compute bone transformations when animated
+        void updateAnimations() {
+            for (uint boneId = 0; boneId < _boneNodeIds.length; ++boneId) {
+                // Fetch bone related node
+                uint nodeId = _boneNodeIds[boneId];
+
+                // If this node has an animation
+                if (nodeId in _animations) {
+                    Animation animation = _animations[nodeId];
+                    animation.update();
+
+                    // Only proceed if the animation already started
+                    if (animation.validTime) {
+                        const mat4 animationModel = animation.computeInterpolatedModel();
+
+                        // Recompute final transform (parent * current * offset)
+                        _bones[boneId].finalTransform = _bones[boneId].parentTransform * animationModel * _bones[boneId].offsetMatrix;
                     }
                 }
             }
@@ -683,13 +735,9 @@ final class Model {
 
         /// Upload bone transformations to shader
         void uploadBoneTransforms(Shader shader) {
-            for(ulong boneId = 0; boneId < _bones.length; ++boneId) {
+            for(uint boneId = 0; boneId < _bones.length; ++boneId) {
                 const char* uniformName = toStringz(format("u_BoneMatrix[%u]", boneId));
                 shader.uploadUniformMat4(uniformName, _bones[boneId].finalTransform);
-
-                if (_trace) {
-                    writefln("Uploading uniform %s", to!string(uniformName));
-                }
             }
         }
     }
@@ -721,15 +769,15 @@ final class ModelInstance : Entity {
             _shader = fetchPrototype!Shader("model");
         } else {
             _shader = fetchPrototype!Shader("animated");
-
-            _shader.activate();
-            _model.uploadBoneTransforms(_shader);
         }
     }
 
     /// Render the model
     override void draw() {
         _shader.activate();
+
+        _model.updateAnimations();
+        _model.uploadBoneTransforms(_shader);
 
         if (nbBones) {
             _shader.uploadUniformInt("u_DisplayBoneId", displayBoneId);

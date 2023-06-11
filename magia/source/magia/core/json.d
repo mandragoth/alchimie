@@ -82,7 +82,7 @@ int[] getJsonArrayInt(JSONValue json, string tag) {
 }
 
 /// Get a int array associated to tag (default if not found)
-int[] getJsonArrayInt(JSONValue json, string tag, int[] defaultValue) {
+int[] getJsonArrayInt(JSONValue json, string tag, int[] defaultValue = []) {
     if (!(tag in json.object)) {
         return defaultValue;
     }
@@ -100,7 +100,7 @@ int[] getJsonArrayInt(JSONValue json, string tag, int[] defaultValue) {
 }
 
 /// Get a int array associated to tag (default if not found)
-float[] getJsonArrayFloat(JSONValue json, string tag, float[] defaultValue) {
+float[] getJsonArrayFloat(JSONValue json, string tag, float[] defaultValue = []) {
     if (!(tag in json.object)) {
         return defaultValue;
     }

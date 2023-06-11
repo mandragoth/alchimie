@@ -22,12 +22,15 @@ struct Joint {
 struct Bone {
     /// Offset matrix
     mat4 offsetMatrix;
+    /// Paremt transform
+    mat4 parentTransform;
     /// Final transform
     mat4 finalTransform;
 
     /// Constructor
     this(mat4 model) {
         offsetMatrix = model;
+        parentTransform = mat4.identity;
         finalTransform = mat4.identity;
     }
 }
