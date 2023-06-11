@@ -28,10 +28,10 @@ uniform mat4 u_BoneMatrix[kMaxBones];
 
 void main() {
     /// Compute bone transformation
-    mat4 boneTransform = u_BoneMatrix[v_BoneIDs.x] * v_Weights.x +
-                         u_BoneMatrix[v_BoneIDs.y] * v_Weights.y +
-                         u_BoneMatrix[v_BoneIDs.z] * v_Weights.z +
-                         u_BoneMatrix[v_BoneIDs.w] * v_Weights.w;
+    mat4 boneTransform = u_BoneMatrix[a_BoneIDs.x] * a_Weights.x +
+                         u_BoneMatrix[a_BoneIDs.y] * a_Weights.y +
+                         u_BoneMatrix[a_BoneIDs.z] * a_Weights.z +
+                         u_BoneMatrix[a_BoneIDs.w] * a_Weights.w;
 
     /// Apply bone matrix, then transform, then camera matrix
     vec4 bonePosition  = boneTransform * vec4(a_Position, 1.0);

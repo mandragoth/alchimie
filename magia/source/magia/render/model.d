@@ -552,7 +552,7 @@ final class Model {
 
             float[] rotationArray = getJsonArrayFloat(node, "rotation", []);
             if (rotationArray.length == 4) {
-                rotation = quat(rotationArray[0], rotationArray[1], rotationArray[2], rotationArray[3]);
+                rotation = quat(rotationArray[3], rotationArray[1], rotationArray[2], rotationArray[0]);
 
                 if (_traceDeep) {
                     writeln("Rotation: ", rotation);
@@ -594,7 +594,7 @@ final class Model {
                 if (_boneNodeIds[boneId] == nodeId) {
                     _bones[boneId].finalTransform = globalModel * _bones[boneId].offsetMatrix;
 
-                    if (_traceDeep) {
+                    if (_trace) {
                         writefln("    Bone # %u", boneId);
                         writefln("      Global model: ");
                         globalModel.print();
@@ -689,22 +689,6 @@ final class Model {
 
                 if (_trace) {
                     writefln("Uploading uniform %s", to!string(uniformName));
-                }
-
-                if (_traceDeep) {
-                    for (ulong vertexId = 0; vertexId < _animatedVertices.length; ++vertexId) {
-                        const vec4i boneIds = _animatedVertices[vertexId].boneIds;
-                        const vec4 weights = _animatedVertices[vertexId].weights;
-
-                        mat4 boneTransform =
-                            _bones[boneIds.x].finalTransform * weights.x +
-                            _bones[boneIds.y].finalTransform * weights.y +
-                            _bones[boneIds.z].finalTransform * weights.z +
-                            _bones[boneIds.w].finalTransform * weights.w;
-
-                        writefln("VertexId # %u, matrix: ", vertexId);
-                        boneTransform.print();
-                    }
                 }
             }
         }
