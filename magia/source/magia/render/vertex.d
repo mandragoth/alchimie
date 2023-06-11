@@ -30,7 +30,7 @@ struct Vertex {
 }
 
 /// Structure holding packed vertex and joint data
-struct AnimatedVertexData {
+struct AnimatedVertex {
     /// Where to place the vertex
     vec3 position;
     /// Normal vector (for lights, etc.)

@@ -33,10 +33,7 @@ enum uint uintDefault = -1;
 private {
     // File to debug + should we trace deep layers?
     string s_DebugFile = "skin.gltf";
-    bool s_TraceDeep = true;
-
-    // Debug model
-    bool s_DebugModel = false;
+    bool s_TraceDeep = false;
 }
 
 /// Class handling model data and draw call
@@ -66,7 +63,7 @@ final class Model {
         Vertex[] _vertices;
 
         // Animation data
-        AnimatedVertexData[] _animationData;
+        AnimatedVertex[] _animatedVertices;
 
         // Transformations
         Transform[] _transforms;
@@ -81,6 +78,7 @@ final class Model {
         // Trace mechanism
         bool _trace;
         bool _traceDeep;
+        bool _traceNormals;
     }
 
     @property {
@@ -92,7 +90,7 @@ final class Model {
 
     /// Constructor
     this(string fileName) {
-        if (fileName.canFind(s_DebugFile)) {
+        if (baseName(fileName) == s_DebugFile) {
             _trace = true;
             _traceDeep = s_TraceDeep;
         }
@@ -145,7 +143,7 @@ final class Model {
             Transform meshTransform = _transforms[meshId] * transform;
             _meshes[meshId].draw(shader, material, meshTransform);
 
-            if (s_DebugModel) {
+            if (_traceNormals) {
                 _vertices[meshId].drawNormal();
             }
         }
@@ -187,12 +185,12 @@ final class Model {
         }
 
         /// Get data from buffers with accessor
-        T[] parseBufferData(T)(JSONValue accessor) {
+        castType[] parseBufferData(castType)(JSONValue accessor) {
             const uint bufferViewId = getJsonInt(accessor, "bufferView", 0);
             const uint byteOffset = getJsonInt(accessor, "byteOffset", 0);
             const uint componentType = getJsonInt(accessor, "componentType");
             const uint count = getJsonInt(accessor, "count");
-            const string type = getJsonStr(accessor, "type");
+            const string accessorType = getJsonStr(accessor, "type");
 
             JSONValue bufferView = _json["bufferViews"][bufferViewId];
             const uint bufferId = getJsonInt(bufferView, "buffer");
@@ -200,192 +198,78 @@ final class Model {
             const uint bufferByteStride = getJsonInt(bufferView, "byteStride", 0);
 
             uint nbBytesPerVertex;
-            if (type == "SCALAR") {
+            if (accessorType == "SCALAR") {
                 nbBytesPerVertex = 1;
-            } else if (type == "VEC2") {
+            } else if (accessorType == "VEC2") {
                 nbBytesPerVertex = 2;
-            } else if (type == "VEC3") {
+            } else if (accessorType == "VEC3") {
                 nbBytesPerVertex = 3;
-            } else if (type == "VEC4") {
+            } else if (accessorType == "VEC4") {
                 nbBytesPerVertex = 4;
-            } else if (type == "MAT4") {
+            } else if (accessorType == "MAT4") {
                 nbBytesPerVertex = 16;
+            } else {
+                throw new Exception("Unsupported accessor data type " ~ accessorType);
             }
 
             const uint dataStart = byteOffset + bufferByteOffset;
 
-            T[] values;
-            if (componentType == ComponentType.float_t) {
-                // Size in bytes of an entry = number of values * size of value
-                const uint entrySize = nbBytesPerVertex * 4;
-
-                // Stride is either buffer view defined or the entry size
-                const uint stride = bufferByteStride ? bufferByteStride : entrySize;
-
-                // Until what buffer portion shall we iterate?
-                const uint dataEnd = dataStart + count * stride;
-
-                uint parsedEntries = 0;
-                uint remainingToParse = nbBytesPerVertex;
-                for (uint dataId = dataStart; dataId < dataEnd; dataId) {
-                    const uint dataHead = dataId;
-
-                    ubyte[] bytes = [
-                        _data[bufferId][dataId++],
-                        _data[bufferId][dataId++],
-                        _data[bufferId][dataId++],
-                        _data[bufferId][dataId++]
-                    ];
-
-                    // Cast data to float, then T
-                    float value = *cast(float*)bytes.ptr;
-                    values ~= cast(T) value;
-
-                    // Decrement remaining entries to parse
-                    remainingToParse--;
-
-                    // When no more remaining entries, fetch next batch
-                    if (remainingToParse == 0) {
-                        remainingToParse = nbBytesPerVertex;
-                        ++parsedEntries;
-                        dataId = dataStart + parsedEntries * stride;
-                    }
-                }
-            } else if (componentType == ComponentType.uint_t) {
-                // Size in bytes of an entry = number of values * size of value
-                const uint entrySize = nbBytesPerVertex * 4;
-
-                // Stride is either buffer view defined or the entry size
-                const uint stride = bufferByteStride ? bufferByteStride : entrySize;
-
-                // Until what buffer portion shall we iterate?
-                const uint dataEnd = dataStart + count * stride;
-
-                uint parsedEntries = 0;
-                uint remainingToParse = nbBytesPerVertex;
-                for (uint dataId = dataStart; dataId < dataEnd; dataId) {
-                    const uint dataHead = dataId;
-
-                    ubyte[] bytes = [
-                        _data[bufferId][dataId++],
-                        _data[bufferId][dataId++],
-                        _data[bufferId][dataId++],
-                        _data[bufferId][dataId++]
-                    ];
-
-                    // Cast data to uint, then T
-                    uint value = *cast(uint*)bytes.ptr;
-                    values ~= cast(T) value;
-
-                    // Decrement remaining entries to parse
-                    remainingToParse--;
-
-                    // When no more remaining entries, fetch next batch
-                    if (remainingToParse == 0) {
-                        remainingToParse = nbBytesPerVertex;
-                        ++parsedEntries;
-                        dataId = dataStart + parsedEntries * stride;
-                    }
-                }
-            } else if (componentType == ComponentType.ushort_t) {
-                // Size in bytes of an entry = number of values * size of value
-                const uint entrySize = nbBytesPerVertex * 2;
-
-                // Stride is either buffer view defined or the entry size
-                const uint stride = bufferByteStride ? bufferByteStride : entrySize;
-
-                // Until what buffer portion shall we iterate?
-                const uint dataEnd = dataStart + count * stride;
-
-                uint parsedEntries = 0;
-                uint remainingToParse = nbBytesPerVertex;
-                for (uint dataId = dataStart; dataId < dataEnd; dataId) {
-                    ubyte[] bytes = [
-                        _data[bufferId][dataId++],
-                        _data[bufferId][dataId++]
-                    ];
-
-                    // Cast data to ushort, then T
-                    ushort value = *cast(ushort*)bytes.ptr;
-                    values ~= cast(T) value;
-
-                    // Decrement remaining entries to parse
-                    remainingToParse--;
-
-                    // When no more remaining entries, fetch next batch
-                    if (remainingToParse == 0) {
-                        remainingToParse = nbBytesPerVertex;
-                        ++parsedEntries;
-                        dataId = dataStart + parsedEntries * stride;
-                    }
-                }
-            } else if (componentType == ComponentType.short_t) {
-                // Size in bytes of an entry = number of values * size of value
-                const uint entrySize = nbBytesPerVertex * 2;
-
-                // Stride is either buffer view defined or the entry size
-                const uint stride = bufferByteStride ? bufferByteStride : entrySize;
-
-                // Until what buffer portion shall we iterate?
-                const uint dataEnd = dataStart + count * stride;
-
-                uint parsedEntries = 0;
-                uint remainingToParse = nbBytesPerVertex;
-                for (uint dataId = dataStart; dataId < dataEnd; dataId) {
-                    const uint dataHead = dataId;
-
-                    ubyte[] bytes = [
-                        _data[bufferId][dataId++],
-                        _data[bufferId][dataId++]
-                    ];
-
-                    // Cast data to short, then T
-                    short value = *cast(short*)bytes.ptr;
-                    values ~= cast(T) value;
-
-                    // Decrement remaining entries to parse
-                    remainingToParse--;
-
-                    // When no more remaining entries, fetch next batch
-                    if (remainingToParse == 0) {
-                        remainingToParse = nbBytesPerVertex;
-                        ++parsedEntries;
-                        dataId = dataStart + parsedEntries * stride;
-                    }
-                }
-            } else if (componentType == ComponentType.ubyte_t) {
-                // Size in bytes of an entry = number of values * size of value
-                const uint entrySize = nbBytesPerVertex;
-
-                // Stride is either buffer view defined or the entry size
-                const uint stride = bufferByteStride ? bufferByteStride : entrySize;
-
-                // Until what buffer portion shall we iterate?
-                const uint dataEnd = dataStart + count * stride;
-
-                uint parsedEntries = 0;
-                uint remainingToParse = nbBytesPerVertex;
-                for (uint dataId = dataStart; dataId < dataEnd; dataId) {
-                    const uint dataHead = dataId;
-
-                    // Cast data to T
-                    const ubyte value = _data[bufferId][dataId++];
-                    values ~= cast(T) value;
-
-                    // Decrement remaining entries to parse
-                    remainingToParse--;
-
-                    // When no more remaining entries, fetch next batch
-                    if (remainingToParse == 0) {
-                        remainingToParse = nbBytesPerVertex;
-                        ++parsedEntries;
-                        dataId = dataStart + parsedEntries * stride;
-                    }
-                }
-            } else {
-                throw new Exception("Unsupported indice data type " ~ to!string(componentType));
+            final switch(componentType) with (ComponentType) {
+            case float_t:
+                return parseData!(float, castType)(bufferId, dataStart, bufferByteStride, count, nbBytesPerVertex);
+            case uint_t:
+                return parseData!(uint, castType)(bufferId, dataStart, bufferByteStride, count, nbBytesPerVertex);
+            case ushort_t:
+                return parseData!(ushort, castType)(bufferId, dataStart, bufferByteStride, count, nbBytesPerVertex);
+            case short_t:
+                return parseData!(short, castType)(bufferId, dataStart, bufferByteStride, count, nbBytesPerVertex);
+            case ubyte_t:
+                return parseData!(ubyte, castType)(bufferId, dataStart, bufferByteStride, count, nbBytesPerVertex);
+            case byte_t:
+                return parseData!(uint, castType)(bufferId, dataStart, bufferByteStride, count, nbBytesPerVertex);
             }
-            
+        }
+
+        /// Parse data
+        castType[] parseData(fileType, castType)(uint bufferId, uint dataStart, uint bufferStride, uint count, uint nbBytesPerVertex) {
+            // Values array to return
+            castType[] values;
+
+            // Size in bytes of internal file type
+            const uint fileTypeSize = fileType.sizeof;
+
+            // Size in bytes of an entry = number of values * size of value
+            const uint entrySize = nbBytesPerVertex * fileTypeSize;
+
+            // Stride is either buffer view defined or the entry size
+            const uint stride = bufferStride ? bufferStride : entrySize;
+
+            // Until what buffer portion shall we iterate?
+            const uint dataEnd = dataStart + count * stride;
+
+            uint parsedEntries = 0;
+            uint remainingToParse = nbBytesPerVertex;
+            for (uint dataId = dataStart; dataId < dataEnd; dataId) {
+                ubyte[] bytes;
+                for (uint byteId = 0; byteId < fileTypeSize; ++byteId) {
+                    bytes ~= _data[bufferId][dataId++];
+                }
+
+                // Cast data to fileType, then castType
+                fileType value = *cast(fileType*)bytes.ptr;
+                values ~= cast(castType) value;
+
+                // Decrement remaining entries to parse
+                remainingToParse--;
+
+                // When no more remaining entries, fetch next batch
+                if (remainingToParse == 0) {
+                    remainingToParse = nbBytesPerVertex;
+                    ++parsedEntries;
+                    dataId = dataStart + parsedEntries * stride;
+                }
+            }
+
             return values;
         }
 
@@ -532,12 +416,13 @@ final class Model {
                 // Load textures
                 loadTextures();
 
-                AnimatedVertexData[] animationData;
+                AnimatedVertex[] animatedVertices;
                 int[] boneNodeIds;
                 mat4[] boneMatrices;
 
                 // Load skin details (joints and weights) if they exist
-                if (skinId != uintDefault) {
+                const bool hasSkin = skinId != uintDefault;
+                if (hasSkin) {
                     if (_traceDeep) {
                         writefln("Joint # %u", skinId);
                     }
@@ -567,25 +452,24 @@ final class Model {
                     boneNodeIds = getJsonArrayInt(skin, "joints");
                     _boneNodeIds ~= boneNodeIds;
 
-                    // Pack vertex and joints as animation data
+                    // Pack vertex and joints as animation data @TODO
                     for (ulong i = 0; i < vertices.length; ++i) {
-                        animationData ~= AnimatedVertexData(vertices[i], joints[i]);
+                        animatedVertices ~= AnimatedVertex(vertices[i], joints[i]);
                     }
                 }
 
                 if (_trace) {
                     traceMeshData(meshId, getJsonStr(jsonMesh, "name", ""), vertices.length, indices.length, nbBones);
-                    traceBoneData(animationData, boneNodeIds, boneMatrices);
+                    traceBoneData(animatedVertices, boneNodeIds, boneMatrices);
                 }
 
-                if (animationData.empty()) {
-                    _meshes ~= new Mesh(new VertexBuffer(vertices, layout3D), new IndexBuffer(indices));
+                if (hasSkin) {
+                    _meshes ~= new Mesh(new VertexBuffer(animatedVertices, layout3DAnimated), new IndexBuffer(indices));
+                    _animatedVertices ~= animatedVertices;
                 } else {
-                    _meshes ~= new Mesh(new VertexBuffer(animationData, layout3DAnimated), new IndexBuffer(indices));
+                    _meshes ~= new Mesh(new VertexBuffer(vertices, layout3D), new IndexBuffer(indices));
+                    _vertices ~= vertices;
                 }
-
-                _vertices ~= vertices;
-                _animationData ~= animationData;
             }
         }
 
@@ -596,26 +480,25 @@ final class Model {
 
         /// Trace bone data (each bone and their name, affected vertices and weights, hierarchy)
         /// Note: Only for debug purposes, this one is rather heavy as it remaps vertices to bones
-        void traceBoneData(AnimatedVertexData[] animationData, int[] jointIds, mat4[] boneMatrices) {
+        void traceBoneData(AnimatedVertex[] aAnimatedVertices, int[] aJointIds, mat4[] aBoneMatrices) {
             ulong[] aBoneNbVertices;
-            aBoneNbVertices.length = boneMatrices.length;
+            aBoneNbVertices.length = aBoneMatrices.length;
 
-            for (ulong animationId = 0; animationId < animationData.length; ++animationId) {
-                const AnimatedVertexData boneData = animationData[animationId];
-                vec4i boneIds = boneData.boneIds;
+            for (ulong vertexId = 0; vertexId < aAnimatedVertices.length; ++vertexId) {
+                const AnimatedVertex animatedVertex = aAnimatedVertices[vertexId];
 
-                for (int boneId = 0; boneId < boneMatrices.length; ++boneId) {
-                    if (boneIds.contains(boneId)) {
+                for (int boneId = 0; boneId < aBoneMatrices.length; ++boneId) {
+                    if (animatedVertex.boneIds.contains(boneId)) {
                         ++aBoneNbVertices[boneId];
                     }
                 }
             }
 
-            for (ulong boneId = 0; boneId < boneMatrices.length; ++boneId) {
-                JSONValue boneNode = _json["nodes"][jointIds[boneId]];
-                writefln("    Bone '%s': affects %u vertices", getJsonStr(boneNode, "name", ""), aBoneNbVertices[boneId]);
+            for (ulong boneId = 0; boneId < aBoneMatrices.length; ++boneId) {
+                JSONValue boneNode = _json["nodes"][aJointIds[boneId]];
+                writefln("    Bone %u '%s': affects %u vertices", boneId, getJsonStr(boneNode, "name", ""), aBoneNbVertices[boneId]);
                 writefln("      Bone offset matrix:");
-                boneMatrices[boneId].print();
+                aBoneMatrices[boneId].print();
             }
         }
 
@@ -711,7 +594,7 @@ final class Model {
                 if (_boneNodeIds[boneId] == nodeId) {
                     _bones[boneId].finalTransform = globalModel * _bones[boneId].offsetMatrix;
 
-                    if (_trace) {
+                    if (_traceDeep) {
                         writefln("    Bone # %u", boneId);
                         writefln("      Global model: ");
                         globalModel.print();
@@ -809,9 +692,9 @@ final class Model {
                 }
 
                 if (_traceDeep) {
-                    for (ulong animationId = 0; animationId < _animationData.length; ++animationId) {
-                        const vec4i boneIds = _animationData[animationId].boneIds;
-                        const vec4 weights = _animationData[animationId].weights;
+                    for (ulong vertexId = 0; vertexId < _animatedVertices.length; ++vertexId) {
+                        const vec4i boneIds = _animatedVertices[vertexId].boneIds;
+                        const vec4 weights = _animatedVertices[vertexId].weights;
 
                         mat4 boneTransform =
                             _bones[boneIds.x].finalTransform * weights.x +
@@ -819,7 +702,7 @@ final class Model {
                             _bones[boneIds.z].finalTransform * weights.z +
                             _bones[boneIds.w].finalTransform * weights.w;
 
-                        writefln("VertexId # %u, matrix: ", animationId);
+                        writefln("VertexId # %u, matrix: ", vertexId);
                         boneTransform.print();
                     }
                 }

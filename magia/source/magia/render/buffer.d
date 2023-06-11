@@ -231,11 +231,11 @@ class VertexBuffer {
     }
 
     /// Constructor given vertices and joints
-    this(AnimatedVertexData[] animationData, BufferLayout layout_ = null) {
+    this(AnimatedVertex[] animatedVertices, BufferLayout layout_ = null) {
         layout = layout_;
         glCreateBuffers(1, &id);
         glBindBuffer(GL_ARRAY_BUFFER, id);
-        glBufferData(GL_ARRAY_BUFFER, animationData.length * AnimatedVertexData.sizeof, animationData.ptr, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, animatedVertices.length * AnimatedVertex.sizeof, animatedVertices.ptr, GL_STATIC_DRAW);
     }
 
     /// Constructor given mat4 array

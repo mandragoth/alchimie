@@ -154,7 +154,7 @@ struct Vector(type, uint dimension_) {
     }
 
     /// Does the vector contain a value
-    bool contains(type value) {
+    bool contains(type value) const {
         static foreach(i; TupleRange!(0, dimension)) {
             if(data[i] == value) {
                 return true;
