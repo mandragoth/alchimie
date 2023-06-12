@@ -52,13 +52,13 @@ task runtime() {
 
         setup3D();
 
-        skin:updateDisplayBoneId();
+        reimu:updateDisplayBoneId();
 
         skybox:draw();
         jupiter:draw();
-        //reimu:draw();
-        //reimuHair:draw();
-        skin:draw();
+        reimu:draw();
+        reimuHair:draw();
+        //skin:draw();
 
         setup2D();
 

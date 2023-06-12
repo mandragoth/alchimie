@@ -34,7 +34,7 @@ enum uint uintDefault = -1;
 
 private {
     // File to debug + should we trace deep layers?
-    string s_DebugFile = "skin.gltf";
+    string s_DebugFile = "idleanim.gltf";
     bool s_TraceDeep = false;
 }
 
@@ -70,12 +70,11 @@ final class Model {
         // Transformations
         Transform[] _transforms;
 
+        // Bones
+        Bone[uint] _bones;
+
         // Animations
         Animation[uint] _animations;
-
-        // Bone data (optional)
-        Bone[] _bones;
-        int[] _boneNodeIds;
 
         // Directory
         string _fileDirectory;
@@ -115,6 +114,12 @@ final class Model {
             traverseNode(nodeId);
         }
 
+        // @TODO once fixed, uncomment
+        /*if (_trace) {
+            traceMeshData();
+            traceBoneData();
+        }*/
+
         JSONValue[] jsonAnimations = getJsonArray(_json, "animations");
 
         // Load all animations
@@ -132,7 +137,7 @@ final class Model {
         _vertices = other._vertices;
         _transforms = other._transforms;
         _bones = other._bones;
-        _boneNodeIds = other._boneNodeIds;
+        _animations = other._animations;
         _fileDirectory = other._fileDirectory;
     }
 
@@ -385,13 +390,20 @@ final class Model {
             return joints;
         }
 
-        Bone[] assembleBones(mat4[] boneMatrices) {
-            Bone[] bones;
-            for (uint i = 0; i < boneMatrices.length; ++i) {
-                bones ~= Bone(boneMatrices[i]);
-            }
+        void assembleBones(mat4[] boneMatrices, int[] boneNodeIds) {
+            assert(boneMatrices.length == boneNodeIds.length);
 
-            return bones;
+            for (uint boneId = 0; boneId < boneMatrices.length; ++boneId) {
+                // Get related nodeId
+                uint nodeId = boneNodeIds[boneId];
+
+                // Fetch bone name from json
+                JSONValue boneNode = _json["nodes"][nodeId];
+                string name = getJsonStr(boneNode, "name", "");
+
+                // Create new bone and index it internally by its node index
+                _bones[nodeId] = new Bone(boneId, name, boneMatrices[boneId]);
+            }
         }
 
         /// Load mesh
@@ -432,8 +444,6 @@ final class Model {
                 loadTextures();
 
                 AnimatedVertex[] animatedVertices;
-                int[] boneNodeIds;
-                mat4[] boneMatrices;
 
                 // Load skin details (joints and weights) if they exist
                 const bool hasSkin = skinId != uintDefault;
@@ -457,25 +467,18 @@ final class Model {
 
                     // Parse inverse bind matrices
                     const uint boneMatrixId = getJsonInt(skin, "inverseBindMatrices");
-                    boneMatrices = groupFloatsMat4(parseBufferData!float(jsonAccessors[boneMatrixId]));
-
-                    // Pack all bones into global array
-                    Bone[] bones = assembleBones(boneMatrices);
-                    _bones ~= bones;
+                    mat4[] boneMatrices = groupFloatsMat4(parseBufferData!float(jsonAccessors[boneMatrixId]));
 
                     // Parse bone indices referenced if any
-                    boneNodeIds = getJsonArrayInt(skin, "joints");
-                    _boneNodeIds ~= boneNodeIds;
+                    int[] boneNodeIds = getJsonArrayInt(skin, "joints");
+
+                    // Pack all bones into global array
+                    assembleBones(boneMatrices, boneNodeIds);
 
                     // Pack vertex and joints as animation data @TODO
                     for (uint i = 0; i < vertices.length; ++i) {
                         animatedVertices ~= AnimatedVertex(vertices[i], joints[i]);
                     }
-                }
-
-                if (_trace) {
-                    traceMeshData(meshId, getJsonStr(jsonMesh, "name", ""), vertices.length, indices.length, nbBones);
-                    traceBoneData(animatedVertices, boneNodeIds, boneMatrices);
                 }
 
                 if (hasSkin) {
@@ -489,29 +492,30 @@ final class Model {
         }
 
         /// Trace mesh data
-        void traceMeshData(uint meshId, string name, ulong nbVertices, ulong nbIndices, ulong nbBones) {
-            writefln("  Mesh %u '%s': vertices %u indices %u bones %u", meshId, name, nbVertices, nbIndices, nbBones);
+        void traceMeshData() {
+            foreach (const Mesh mesh; _meshes) {
+                // @TODO a mesh needs to have an id, name, vertices or animated vertices, indices and bones
+                // They should be moved away from the model
+                //writefln("  Mesh %u '%s': vertices %u indices %u bones %u", meshId, name, nbVertices, nbIndices, nbBones);
+                //traceBoneData(meshId);
+            }
         }
 
         /// Trace bone data (each bone and their name, affected vertices and weights, hierarchy)
-        /// Note: Only for debug purposes, this one is rather heavy as it remaps vertices to bones
-        void traceBoneData(AnimatedVertex[] aAnimatedVertices, int[] aJointIds, mat4[] aBoneMatrices) {
+        void traceBoneData() {
             uint[] aBoneNbVertices;
-            aBoneNbVertices.length = aBoneMatrices.length;
+            aBoneNbVertices.length = _bones.length;
 
-            for (uint vertexId = 0; vertexId < aAnimatedVertices.length; ++vertexId) {
-                const AnimatedVertex animatedVertex = aAnimatedVertices[vertexId];
-
-                for (int boneId = 0; boneId < aBoneMatrices.length; ++boneId) {
-                    if (animatedVertex.boneIds.contains(boneId)) {
-                        ++aBoneNbVertices[boneId];
+            foreach (const AnimatedVertex animatedVertex; _animatedVertices) {
+                foreach (const Bone bone; _bones) {
+                    if (animatedVertex.boneIds.contains(bone.id)) {
+                        ++aBoneNbVertices[bone.id];
                     }
                 }
             }
 
-            for (uint boneId = 0; boneId < aBoneMatrices.length; ++boneId) {
-                JSONValue boneNode = _json["nodes"][aJointIds[boneId]];
-                writefln("    Bone %u '%s': affects %u vertices", boneId, getJsonStr(boneNode, "name", ""), aBoneNbVertices[boneId]);
+            foreach (const Bone bone; _bones) {
+                writefln("    Bone %u '%s': affects %u vertices", bone.id, bone.name, aBoneNbVertices[bone.id]);
             }
         }
 
@@ -538,7 +542,7 @@ final class Model {
             // If we haven't found any texture, fetch the default one
             if (textureId == 0) {
                 if (_trace) {
-                    writeln("Using default texture");
+                    writeln("  Using default texture");
                 }
 
                 _material.textures ~= defaultTexture;
@@ -599,12 +603,15 @@ final class Model {
             const mat4 globalModel = parentModel * currentModel;
 
             // If this node is a bone, compute its final transform
-            computeBoneTransforms(nodeId, parentModel, globalModel);
+            if (nodeId in _bones) {
+                Bone bone = _bones[nodeId];
+                bone.computeBindPose(globalModel);
+            }
 
             // Load current node mesh
             if (hasJson(node, "mesh")) {
                 if (_trace) {
-                    writeln("  Loading mesh # ", nodeId);
+                    writeln("  Loading mesh at node # ", nodeId);
                 }
 
                 // Record transform for new mesh
@@ -639,7 +646,7 @@ final class Model {
             string name = getJsonStr(jsonAnimation, "name", "");
 
             if (_trace) {
-                writefln("Animation '%s'", name);
+                writefln("  Animations layer '%s'", name);
             }
 
             /// Fetch related samplers
@@ -657,7 +664,7 @@ final class Model {
                     const uint nodeId = getJsonInt(target, "node");
                     const string path = getJsonStr(target, "path");
 
-                    if (_trace) {
+                    if (_traceDeep) {
                         writeln("  SamplerId: ", samplerId, ", nodeId: ", nodeId, ", path: ", path);
                     }
 
@@ -667,7 +674,7 @@ final class Model {
                     const uint outputId = getJsonInt(sampler, "output");
                     const string interpolation = getJsonStr(sampler, "interpolation");
 
-                    if (_trace) {
+                    if (_traceDeep) {
                         writeln("  InputId: ", inputId, ", outputId: ", outputId, " interpolation: ", interpolation);
                     }
 
@@ -700,44 +707,23 @@ final class Model {
             }
         }
 
-        /// Compute bone transformations at rest
-        void computeBoneTransforms(uint nodeId, mat4 parentModel, mat4 globalModel) {
-            for (uint boneId = 0; boneId < _boneNodeIds.length; ++boneId) {
-                if (_boneNodeIds[boneId] == nodeId) {
-                    _bones[boneId].parentTransform = parentModel;
-                    _bones[boneId].finalTransform = globalModel * _bones[boneId].offsetMatrix;
-                    break;
-                }
-            }
-        }
-
         /// Compute bone transformations when animated
         void updateAnimations() {
-            for (uint boneId = 0; boneId < _boneNodeIds.length; ++boneId) {
-                // Fetch bone related node
-                uint nodeId = _boneNodeIds[boneId];
-
-                // If this node has an animation
+            // Loop through all bones
+            foreach (nodeId, bone; _bones) {
+                // If this bone has an animation
                 if (nodeId in _animations) {
                     Animation animation = _animations[nodeId];
-                    animation.update();
-
-                    // Only proceed if the animation already started
-                    if (animation.validTime) {
-                        const mat4 animationModel = animation.computeInterpolatedModel();
-
-                        // Recompute final transform (parent * current * offset)
-                        _bones[boneId].finalTransform = _bones[boneId].parentTransform * animationModel * _bones[boneId].offsetMatrix;
-                    }
+                    bone.computeAnimatedPose(animation);
                 }
             }
         }
 
         /// Upload bone transformations to shader
         void uploadBoneTransforms(Shader shader) {
-            for(uint boneId = 0; boneId < _bones.length; ++boneId) {
-                const char* uniformName = toStringz(format("u_BoneMatrix[%u]", boneId));
-                shader.uploadUniformMat4(uniformName, _bones[boneId].finalTransform);
+            foreach (bone; _bones) {
+                const char* uniformName = toStringz(format("u_BoneMatrix[%u]", bone.id));
+                shader.uploadUniformMat4(uniformName, bone.model);
             }
         }
     }
