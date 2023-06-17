@@ -34,8 +34,9 @@ enum uint uintDefault = -1;
 
 private {
     // File to debug + should we trace deep layers?
-    string s_DebugFile = "idleanim.gltf";
-    bool s_TraceDeep = false;
+    string s_DebugFile = "rigged.gltf";
+    bool s_TraceDeep = true;
+    bool s_TraceData = false;
 }
 
 /// Class handling model data and draw call
@@ -82,6 +83,7 @@ final class Model {
         // Trace mechanism
         bool _trace;
         bool _traceDeep;
+        bool _traceData;
         bool _traceNormals;
     }
 
@@ -97,6 +99,7 @@ final class Model {
         if (baseName(fileName) == s_DebugFile) {
             _trace = true;
             _traceDeep = s_TraceDeep;
+            _traceData = s_TraceData;
         }
 
         // Initialize material
@@ -115,10 +118,10 @@ final class Model {
         }
 
         // @TODO once fixed, uncomment
-        /*if (_trace) {
-            traceMeshData();
+        if (_trace) {
+            //traceMeshData();
             traceBoneData();
-        }*/
+        }
 
         JSONValue[] jsonAnimations = getJsonArray(_json, "animations");
 
@@ -188,8 +191,9 @@ final class Model {
                 if (canFind(uri, ".bin")) {
                     _data[bufferId] = cast(ubyte[]) read(buildNormalizedPath(_fileDirectory, uri));
                 } else {
-                    string data = uri.replace("data:application/gltf-buffer;base64,", "");
-                    _data[bufferId] = Base64.decode(data);
+                    string[] data = uri.split(",");
+                    assert(canFind(data[0], "base64"));
+                    _data[bufferId] = Base64.decode(data[1]);
                 }
             }
         }
@@ -351,7 +355,7 @@ final class Model {
                 vertices ~= Vertex(positions[i], texUV, normal);
             }
 
-            if (_traceDeep) {
+            if (_traceData) {
                 for (uint i = 0; i < positions.length; ++i) {
                     writefln("    positions[%u]: %s", i, positions[i]);
                 }
@@ -372,7 +376,7 @@ final class Model {
         Joint[] assembleJoints(vec4i[] boneIds, vec4[] weights) {
             assert(boneIds.length == weights.length);
 
-            if (_traceDeep) {
+            if (_traceData) {
                 for (uint i = 0; i < boneIds.length; ++i) {
                     writefln("    boneIds[%d]: %s", i, boneIds[i]);
                 }
@@ -390,7 +394,7 @@ final class Model {
             return joints;
         }
 
-        void assembleBones(mat4[] boneMatrices, int[] boneNodeIds) {
+        void assembleBones(int[] boneNodeIds, mat4[] boneMatrices) {
             assert(boneMatrices.length == boneNodeIds.length);
 
             for (uint boneId = 0; boneId < boneMatrices.length; ++boneId) {
@@ -400,6 +404,12 @@ final class Model {
                 // Fetch bone name from json
                 JSONValue boneNode = _json["nodes"][nodeId];
                 string name = getJsonStr(boneNode, "name", "");
+
+                if (_traceDeep) {
+                    writefln("    Associating node # %u to bone # %u", nodeId, boneId);
+                    writeln("    Offset matrix: ");
+                    boneMatrices[boneId].print();
+                }
 
                 // Create new bone and index it internally by its node index
                 _bones[nodeId] = new Bone(boneId, name, boneMatrices[boneId]);
@@ -449,7 +459,7 @@ final class Model {
                 const bool hasSkin = skinId != uintDefault;
                 if (hasSkin) {
                     if (_traceDeep) {
-                        writefln("Joint # %u", skinId);
+                        writefln("  Loading skin");
                     }
 
                     // Fetch joint data (associated vertices and weight impact)
@@ -465,15 +475,15 @@ final class Model {
                     // Fetch interpolation data
                     JSONValue skin = _json["skins"][skinId];
 
+                    // Parse bone indices referenced if any
+                    int[] boneNodeIds = getJsonArrayInt(skin, "joints");
+
                     // Parse inverse bind matrices
                     const uint boneMatrixId = getJsonInt(skin, "inverseBindMatrices");
                     mat4[] boneMatrices = groupFloatsMat4(parseBufferData!float(jsonAccessors[boneMatrixId]));
 
-                    // Parse bone indices referenced if any
-                    int[] boneNodeIds = getJsonArrayInt(skin, "joints");
-
                     // Pack all bones into global array
-                    assembleBones(boneMatrices, boneNodeIds);
+                    assembleBones(boneNodeIds, boneMatrices);
 
                     // Pack vertex and joints as animation data @TODO
                     for (uint i = 0; i < vertices.length; ++i) {
@@ -508,8 +518,10 @@ final class Model {
 
             foreach (const AnimatedVertex animatedVertex; _animatedVertices) {
                 foreach (const Bone bone; _bones) {
-                    if (animatedVertex.boneIds.contains(bone.id)) {
-                        ++aBoneNbVertices[bone.id];
+                    for (uint entryId = 0; entryId < 4; ++entryId) {
+                        if (animatedVertex.boneIds[entryId] == bone.id && animatedVertex.weights[entryId] != 0) {
+                            ++aBoneNbVertices[bone.id];
+                        }
                     }
                 }
             }
@@ -550,38 +562,48 @@ final class Model {
         }
 
         /// Traverse given node
-        void traverseNode(uint nodeId, mat4 parentModel = mat4.identity) {
-            JSONValue node = _json["nodes"][nodeId];
+        void traverseNode(uint nodeId, mat4 parentModel = mat4.identity, bool isRoot = true) {
+            JSONValue jsonNode = _json["nodes"][nodeId];
 
             vec3 translation = vec3.zero;
             quat rotation = quat.identity;
             vec3 scale = vec3.one;
             mat4 matNode = mat4.identity;
 
-            float[] translationArray = getJsonArrayFloat(node, "translation");
+            if (_traceDeep) {
+                string name = getJsonStr(jsonNode, "name", "");
+                string hierarchy = isRoot ? "root" : "child";
+                writefln("Loading %s node # %u '%s'", hierarchy, nodeId, name);
+            }
+
+            float[] translationArray = getJsonArrayFloat(jsonNode, "translation");
             if (translationArray.length == 3) {
                 translation = vec3(translationArray[0], translationArray[1], translationArray[2]);
 
                 if (_traceDeep) {
-                    writeln("Translation: ", translation);
+                    writeln("  Translation: ", translation);
                 }
             }
 
-            float[] rotationArray = getJsonArrayFloat(node, "rotation");
+            float[] rotationArray = getJsonArrayFloat(jsonNode, "rotation");
             if (rotationArray.length == 4) {
                 rotation = quat(rotationArray[3], rotationArray[1], rotationArray[2], rotationArray[0]);
+
+                if (_traceDeep) {
+                    writeln("  Rotation: ", rotation);
+                }
             }
 
-            float[] scaleArray = getJsonArrayFloat(node, "scale");
+            float[] scaleArray = getJsonArrayFloat(jsonNode, "scale");
             if (scaleArray.length == 3) {
                 scale = vec3(scaleArray[0], scaleArray[1], scaleArray[2]);
 
                 if (_traceDeep) {
-                    writeln("Scale: ", scale);
+                    writeln("  Scale: ", scale);
                 }
             }
 
-            float[] matrixArray = getJsonArrayFloat(node, "matrix");
+            float[] matrixArray = getJsonArrayFloat(jsonNode, "matrix");
             if (matrixArray.length == 16) {
                 uint arrayId = 0;
                 for (uint i = 0 ; i < 4; ++i) {
@@ -592,7 +614,7 @@ final class Model {
                 }
 
                 if (_traceDeep) {
-                    writeln("Matrix: ", matNode);
+                    writeln("  Matrix: ", matNode);
                 }
             }
 
@@ -602,40 +624,60 @@ final class Model {
             // Combine parent and current transform matrices
             const mat4 globalModel = parentModel * currentModel;
 
-            // If this node is a bone, compute its final transform
-            if (nodeId in _bones) {
-                Bone bone = _bones[nodeId];
-                bone.computeBindPose(globalModel);
+            if (_traceDeep) {
+                writefln("  Node local model:");
+                currentModel.print();
+                writefln("  Node global model:");
+                globalModel.print();
             }
 
-            // Load current node mesh
-            if (hasJson(node, "mesh")) {
+            // Load current node mesh if any
+            if (hasJson(jsonNode, "mesh")) {
                 if (_trace) {
-                    writeln("  Loading mesh at node # ", nodeId);
+                    writeln("  Loading mesh");
                 }
 
                 // Record transform for new mesh
                 _transforms ~= Transform(currentModel, translation, rotation, scale);
 
-                const uint meshId = getJsonInt(node, "mesh");
-                const uint skinId = getJsonInt(node, "skin", uintDefault);
+                const uint meshId = getJsonInt(jsonNode, "mesh");
+                const uint skinId = getJsonInt(jsonNode, "skin", uintDefault);
 
                 // Load the new mesh
                 loadMesh(meshId, skinId);
             }
 
             // Traverse children recursively
-            if (hasJson(node, "children")) {
-                const JSONValue[] children = getJsonArray(node, "children");
+            if (hasJson(jsonNode, "children")) {
+                const JSONValue[] children = getJsonArray(jsonNode, "children");
 
                 if (_traceDeep) {
                     writeln("  Loading children nodes ", children);
                 }
 
+                isRoot = false;
                 for (uint i = 0; i < children.length; ++i) {
                     const uint childrenId = children[i].get!uint;
-                    traverseNode(childrenId, globalModel);
+                    traverseNode(childrenId, globalModel, isRoot);
                 }
+            }
+
+            if (_traceDeep) {
+                writeln("HERE");
+                writeln("nodeId: ", nodeId);
+                writeln("Bones: ", _bones);
+            }
+
+            // @TODO we need to loop through mesh, THEN bones as we could visit bones before they are marked as joints of a skin
+            // Maybe avoid performing a recursive call ?
+            // If this node is a bone, compute its final transform
+            if (nodeId in _bones) {
+                if (_traceDeep) {
+                    writefln("  This node is a bone");
+                }
+
+                Bone bone = _bones[nodeId];
+                bone.computeBindPose(globalModel);
             }
         }
 
@@ -646,7 +688,7 @@ final class Model {
             string name = getJsonStr(jsonAnimation, "name", "");
 
             if (_trace) {
-                writefln("  Animations layer '%s'", name);
+                writefln("Animations layer '%s'", name);
             }
 
             /// Fetch related samplers
@@ -707,7 +749,7 @@ final class Model {
             }
         }
 
-        /// Compute bone transformations when animated
+        /// Update all animations
         void updateAnimations() {
             // Loop through all bones
             foreach (nodeId, bone; _bones) {
@@ -762,7 +804,7 @@ final class ModelInstance : Entity {
     override void draw() {
         _shader.activate();
 
-        _model.updateAnimations();
+        //_model.updateAnimations();
         _model.uploadBoneTransforms(_shader);
 
         if (nbBones) {

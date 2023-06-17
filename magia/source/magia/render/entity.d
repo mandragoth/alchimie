@@ -30,6 +30,11 @@ abstract class Instance {
             return transform.position;
         }
 
+        /// Set rotation (3D, euler)
+        void rotation(vec3 rotation_) {
+            transform.rotation = quat.euler_rotation(rotation_);
+        }
+
         /// Set scale (2D)
         void scale(vec2 scale_) {
             transform.scale = vec3(scale_, 0f);

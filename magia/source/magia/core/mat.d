@@ -145,6 +145,25 @@ struct Matrix(type, uint rows_, uint columns_) {
         return toReturn;
     }
 
+    /// Print the matrix in mathematica standard
+    public void print() const {
+        write("{");
+        foreach(r; TupleRange!(0, rows)) {
+            write("{");
+            foreach(c; TupleRange!(0, columns)) {
+                write(data[r][c]);
+                if (c + 1 < columns) {
+                    write(",");
+                }
+            }
+            write("}");
+            if (r + 1 < rows) {
+                write(",");
+            }
+        }
+        write("}\n");
+    }
+
     // Operation for square matrices
     static if(rows == columns) {
         @property {

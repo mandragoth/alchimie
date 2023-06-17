@@ -23,6 +23,8 @@ out vec4 v_Weights;
 uniform mat4 u_CamMatrix;
 uniform mat4 u_Transform;
 
+uniform int u_DisplayBoneId;
+
 const int kMaxBones = 100;
 uniform mat4 u_BoneMatrix[kMaxBones];
 
@@ -34,7 +36,7 @@ void main() {
                          u_BoneMatrix[a_BoneIDs[3]] * a_Weights[3];
 
     /// Apply bone matrix, then transform, then camera matrix
-    vec4 bonePosition  = boneTransform * vec4(a_Position, 1.0);
+    vec4 bonePosition  = vec4(a_Position, 1.0);
     vec4 localPosition = u_Transform * bonePosition;
     vec4 worldPosition = u_CamMatrix * localPosition;
 
@@ -190,9 +192,9 @@ vec3 boneGradient(float weight) {
 void main() {
     if (u_DisplayBoneId != -1) {
         fragColor = vec4(blue, 0.0);
-        for (int boneId = 0; boneId < 4; ++boneId) {
-            if (v_BoneIDs[boneId] == u_DisplayBoneId) {
-                fragColor = vec4(boneGradient(v_Weights[boneId]), 0.0);
+        for (int entryId = 0; entryId < 4; ++entryId) {
+            if (v_BoneIDs[entryId] == u_DisplayBoneId) {
+                fragColor = vec4(boneGradient(v_Weights[entryId]), 0.0);
                 break;
             }
         }

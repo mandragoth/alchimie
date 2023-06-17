@@ -4,6 +4,7 @@ import std.conv : to;
 import std.format;
 import std.math;
 import magia.core.mat;
+import magia.core.vec;
 
 /// Quaternion structure
 struct Quaternion(type) {
@@ -84,6 +85,11 @@ struct Quaternion(type) {
         toReturn.data[3] = cr * cp * sy - sr * sp * cy;
 
         return toReturn;
+    }
+
+    /// Instancing using euler angles
+    static Quaternion euler_rotation(vec3 rotation) {
+        return euler_rotation(rotation.x, rotation.y, rotation.z);
     }
 
     /// Return the quaternion as a matrix

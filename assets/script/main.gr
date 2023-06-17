@@ -34,30 +34,35 @@ task runtime() {
     jupiter:scale(@vec3f(.05f, .05f, .05f));
 
     var reimu = @Model("reimu");
-    reimu:scale(@vec3f(0.1f, 0.1f, 0.1f));
     reimu:position(@vec3f(0f, -1f, 0f));
+    reimu:scale(@vec3f(0.1f, 0.1f, 0.1f));
     reimu:addTexture("reimu_body");
 
     var reimuHair = @Model("reimu_hair");
-    reimuHair:scale(@vec3f(0.1f, 0.1f, 0.1f));
     reimuHair:position(@vec3f(0f, -1f, 0f));
+    reimuHair:scale(@vec3f(0.1f, 0.1f, 0.1f));
     reimuHair:addTexture("reimu_hair");
     // @TODO add as child
 
     var skin = @Model("skin");
     skin:position(@vec3f(0f, -1f, 0f));
 
+    var rig = @Model("riggedsimple");
+    rig:rotation(@vec3f(0f, 90f, 0f));
+    rig:scale(@vec3f(0.1f, 0.1f, 0.1f));
+
     loop yield {
         clear();
 
         setup3D();
 
-        reimu:updateDisplayBoneId();
+        rig:updateDisplayBoneId();
 
         skybox:draw();
-        jupiter:draw();
-        reimu:draw();
-        reimuHair:draw();
+        //jupiter:draw();
+        rig:draw();
+        //reimu:draw();
+        //reimuHair:draw();
         //skin:draw();
 
         setup2D();

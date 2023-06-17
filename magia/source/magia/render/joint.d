@@ -61,7 +61,7 @@ class Bone {
         _bindTransform = bindModel;
 
         /// Compute final transformation in case we do not animate the model
-        _finalTransform = bindModel * _offsetMatrix;
+        _finalTransform = _bindTransform * _offsetMatrix;
     }
 
     void computeAnimatedPose(Animation animation) {

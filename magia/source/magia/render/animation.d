@@ -1,5 +1,7 @@
 module magia.render.animation;
 
+import std.stdio;
+
 import magia.core;
 
 /// Type of interpolation
@@ -11,25 +13,29 @@ enum Interpolation {
 
 /// Structure holding animation data
 class Animation {
-    /// Start of the animation
-    float _start;
-    /// End of the animation
-    float _end;
-    /// Keyframes times in seconds
-    float[] _keyTimes;
-    /// Array of translations to interpolate between
-    vec3[] _translations;
-    /// Array of rotations to interpolate between
-    quat[] _rotations;
-    /// Array of scales to intepolate between
-    vec3[] _scales;
-    /// Interpolation function used
-    Interpolation _interpolation;
-    /// Timer used to run the animation
-    Timer timer;
+    private {
+        // Start of the animation
+        float _start;
+        // End of the animation
+        float _end;
+        // Keyframes times in seconds
+        float[] _keyTimes;
+        // Array of translations to interpolate between
+        vec3[] _translations;
+        // Array of rotations to interpolate between
+        quat[] _rotations;
+        // Array of scales to intepolate between
+        vec3[] _scales;
+        // Interpolation function used
+        Interpolation _interpolation;
+        // Timer used to run the animation
+        Timer timer;
+        // Trace mechanism
+        bool _trace;
+    }
     
     /// Constructor
-    this(float start, float end, float[] keyTimes, string interpolation, vec3[] translations, quat[] rotations, vec3[] scales) {
+    this(float start, float end, float[] keyTimes, string interpolation, vec3[] translations, quat[] rotations, vec3[] scales, bool trace = false) {
         _start = start;
         _end = end;
         _keyTimes = keyTimes;
@@ -37,6 +43,21 @@ class Animation {
         _translations = translations;
         _rotations = rotations;
         _scales = scales;
+        _trace = trace;
+
+        if (_trace) {
+            writeln("  New animation");
+            writeln("    Key times: ", _keyTimes);
+            if (_translations) {
+                writeln("    Translations: ", _translations);
+            }
+            if (_rotations) {
+                writeln("    Rotations: ", _rotations);
+            }
+            if (_scales) {
+                writeln("    Scales: ", _scales);
+            }
+        }
     }
 
     /// Update animation
@@ -58,17 +79,17 @@ class Animation {
     /// Interpolate translations
     mat4 computeInterpolatedModel() {
         vec3 translation = vec3.zero;
-        if (_translations.length > 0) {
+        if (_translations) {
             translation = computeInterpolatedVec3(_translations);
         }
 
         quat rotation = quat.identity;
-        if (_rotations.length > 0) {
+        if (_rotations) {
             rotation = computeInterpolatedQuat(_rotations);
         }
 
         vec3 scale = vec3.one;
-        if (_scales.length > 0) {
+        if (_scales) {
             scale = computeInterpolatedVec3(_scales);
         }
 
