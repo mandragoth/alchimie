@@ -57,6 +57,21 @@ class Renderer {
 
         // Framebuffers for picking (@TODO pack?)
         FrameBuffer _pickingFrameBuffer;
+
+        OrthographicCamera _camera2d;
+
+        /**
+        Note: Temporaire, à remplacer par un vrai système de sélection de scène/caméra.
+
+        Le but est de pouvoir rendre les entités sur différentes caméras.
+        Exemple:
+        - un écran partagé avec deux scènes différentes ? (ptet surtout un render to texture -> séparateur -> caméra ?)
+        - afficher une scène 2d qui ne doit pas s’afficher dans la caméra gérant le background 3d.
+        - afficher l’interface qui ne doit pas s’afficher dans les autres caméra non-plus.
+
+        Pour l’instant, il me permet surtout d’afficher les instances 2d sans interférer avec les caméras 3d.
+        **/
+        bool _is3d = false;
     }
 
     @property {
@@ -98,6 +113,9 @@ class Renderer {
         // Enable multi sampling and setup clear color
         glEnable(GL_MULTISAMPLE);
         glClearColor(bgColor.r, bgColor.g, bgColor.b, 1f);
+
+        // Caméra par défaut pour la 2d et l’iu
+        _camera2d = new OrthographicCamera();
     }
 
     /// Clear rendered frame
@@ -112,6 +130,8 @@ class Renderer {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
+
+        _is3d = false;
     }
 
     /// Prepare to render 3D items
@@ -120,6 +140,8 @@ class Renderer {
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
         glCullFace(GL_FRONT);
+
+        _is3d = true;
     }
 
     /// Update
@@ -127,6 +149,7 @@ class Renderer {
         foreach (Camera camera; cameras) {
             camera.update(timeStep);
         }
+        _camera2d.update(timeStep);
     }
     
     /// Render line @TODO factorize mesh and use transform to parametrize line?
@@ -158,8 +181,7 @@ class Renderer {
                      vec4i clip = vec4i.zero, Flip flip = Flip.none, Blend blend = Blend.alpha,
                      Color color = Color.white, float alpha = 1f) {
         // Create material
-        Material material;
-        material.textures ~= texture;
+        Material material = new Material(texture);
 
         // Set transform
         Transform transform = toScreenSpace(position, size);
@@ -284,9 +306,15 @@ class Renderer {
 
     /// @TODO batching
     private void drawIndexed(Mesh mesh, Shader shader, Material material, Transform transform) {
-        // One draw call per camera
-        foreach (Camera camera; cameras) {
-            shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
+        if(_is3d) {
+            // One draw call per camera
+            foreach (Camera camera; cameras) {
+                shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
+                mesh.draw(shader, material, transform);
+            }
+        }
+        else {
+            shader.uploadUniformMat4("u_CamMatrix", _camera2d.matrix);
             mesh.draw(shader, material, transform);
         }
     }

@@ -22,7 +22,12 @@
     "configurations": [
         {
             "name": "debug",
-            "targetPath": "../bin"
+            "targetPath": "../bin",
+            "dflags": ["-gf"],
+            "versions": [
+                "AlchimieDebug"
+            ],
+            "targetName": "alchimie-dbg"
         },
         {
             "name": "export_dev",
@@ -33,12 +38,12 @@
             "targetName": "alchimie"
         },
         {
-            "name": "export_dist",
+            "name": "export_rt",
             "versions": [
-                "AlchimieDist"
+                "AlchimieRT"
             ],
             "targetPath": "../export",
-            "targetName": "alchimie-dist"
+            "targetName": "alchimie-rt"
         }
     ]
 }

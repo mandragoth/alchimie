@@ -68,7 +68,7 @@ final class Runtime {
         _stdLib = grLoadStdLibrary();
         _alchimieLib = loadAlchimieLibrary();
 
-        version (AlchimieDist) {
+        version (AlchimieRT) {
             _bytecode = new GrBytecode(_filePath);
         } else {
             GrCompiler compiler = new GrCompiler;
@@ -163,7 +163,7 @@ final class Runtime {
             }
 
             // @TODO delegate to scripts events?
-            //currentApplication.draw();
+            currentApplication.draw();
         }
     }
 }

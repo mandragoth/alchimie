@@ -26,7 +26,7 @@ void main(string[] args) {
         SetConsoleOutputCP(65_001);
     }
     try {
-        version (AlchimieDist) {
+        version (AlchimieRT) {
             bootUp(args);
         }
         else {
