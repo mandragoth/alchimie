@@ -61,6 +61,7 @@ class Application {
         /// Setup console output properly for windows
         version (Windows) {
             import core.sys.windows.windows : SetConsoleOutputCP;
+
             SetConsoleOutputCP(65_001);
         }
 
@@ -96,20 +97,20 @@ class Application {
 
     /// Render application
     void draw() {
-        // Clear up screen
-        renderer.clear();
-
         // Setup 2D
         renderer.setup2DRender();
 
         // Draw scene (so far only 2D)
-        _scene.draw();
+        //_scene.draw();
 
         // Draw UI
         _uiManager.draw();
 
         // Render all draw calls on window
         window.render();
+
+        // Clear up screen
+        renderer.clear();
     }
 
     /// Render
@@ -119,7 +120,7 @@ class Application {
 
     /// Set application icon
     void setIcon() {
-        
+
     }
 
     /// Append UI element at root level

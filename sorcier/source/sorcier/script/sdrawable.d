@@ -80,7 +80,7 @@ private void _setPosition(GrCall call) {
 
 private void _setRotation(GrCall call) {
     Instance instance = call.getNative!Instance(0);
-    instance.rotation = cast(vec3) call.getNative!GrVec3f(1);
+    instance.rotation = cast(vec3) call.getNative!SVec3f(1);
 }
 
 private void _setScale(GrCall call) {

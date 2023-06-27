@@ -8,8 +8,8 @@ event onLoad() {
     setupControls();
     setupCamera();
     yield;
-    runtime();
     testUI();
+    runtime();
 }
 
 task runtime() {
@@ -52,27 +52,27 @@ task runtime() {
     rig:scale(@vec3f(0.1f, 0.1f, 0.1f));
 
     loop yield {
-        clear();
+        //clear();
 
         setup3D();
 
         rig:updateDisplayBoneId();
 
         skybox:draw();
-        //jupiter:draw();
+        jupiter:draw();
         rig:draw();
-        //reimu:draw();
-        //reimuHair:draw();
-        //skin:draw();
+        reimu:draw();
+        reimuHair:draw();
+        skin:draw();
 
         setup2D();
 
-        /*drawFilledRect(@vec2(0f, 0f), @vec2(50f, 50f), @color(1f, 0f, 0f));
         //drawFilledCircle(@vec2(25f, 25f), 50f, @color(0f, 1f, 0f));
+        //drawFilledRect(@vec2(0f, 0f), @vec2(50f, 50f), @color(1f, 0f, 0f));
         remilia:draw();
-        remilia2:draw();*/
+        remilia2:draw();
 
-        render();
+        //render();
     }
 }
 
@@ -99,7 +99,7 @@ func updateDisplayBoneId(model: Model) {
     model:displayBoneId(modelBoneId);
 }
 
-func testUI() {
+task testUI() {
     var label = @Label("Hello World !");
     label.pos(200f, 200f);
     label.align(AlignX.right, AlignY.top);
