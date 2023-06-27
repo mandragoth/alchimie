@@ -33,6 +33,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addFunction(&_getPosition, "position", [instanceType], [vec3Type]);
     library.addFunction(&_setPosition2D, "position2D", [instanceType, vec2Type]);
     library.addFunction(&_setPosition, "position", [instanceType, vec3Type]);
+    library.addFunction(&_setRotation, "rotation", [instanceType, vec3Type]);
     library.addFunction(&_setScale, "scale", [instanceType, vec3Type]);
     library.addFunction(&_addTexture, "addTexture", [entityType, grString]);
     library.addFunction(&_draw, "draw", [entityType]);
@@ -75,6 +76,11 @@ private void _setPosition2D(GrCall call) {
 private void _setPosition(GrCall call) {
     Instance instance = call.getNative!Instance(0);
     instance.position = cast(vec3) call.getNative!SVec3f(1);
+}
+
+private void _setRotation(GrCall call) {
+    Instance instance = call.getNative!Instance(0);
+    instance.rotation = cast(vec3) call.getNative!GrVec3f(1);
 }
 
 private void _setScale(GrCall call) {

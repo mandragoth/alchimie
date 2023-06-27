@@ -4,6 +4,7 @@ import std.conv : to;
 import std.format;
 import std.math;
 import magia.core.mat;
+import magia.core.vec;
 
 /// Quaternion structure
 struct Quaternion(type) {
@@ -86,6 +87,11 @@ struct Quaternion(type) {
         return toReturn;
     }
 
+    /// Instancing using euler angles
+    static Quaternion euler_rotation(vec3 rotation) {
+        return euler_rotation(rotation.x, rotation.y, rotation.z);
+    }
+
     /// Return the quaternion as a matrix
     Matrix!(type, rows, cols) to_matrix(int rows, int cols)() const if((rows >= 3) && (cols >= 3)) {
         static if((rows == 3) && (cols == 3)) {
@@ -129,6 +135,33 @@ struct Quaternion(type) {
         toReturn.z =  x * other.y - y * other.x + z * other.w + w * other.z;
 
         return toReturn;
+    }
+
+    /// Quaternion addition and subtraction
+    Quaternion opBinary(string op)(Quaternion other) const  if((op == "+") || (op == "-")) {
+        Quaternion toReturn;
+
+        mixin("toReturn.w = w" ~ op ~ "other.w;");
+        mixin("toReturn.x = x" ~ op ~ "other.x;");
+        mixin("toReturn.y = y" ~ op ~ "other.y;");
+        mixin("toReturn.z = z" ~ op ~ "other.z;");
+
+        return toReturn;
+    }
+
+    /// Scalar multiplication
+    Quaternion opBinary(string op : "*")(type scalar) const {
+        return Quaternion(scalar * w, scalar * x, scalar * y, scalar * z);
+    }
+
+    /// Commutative binary operations
+    auto opBinaryRight(string op, T)(T inp) const if(!is_quaternion!T) {
+        return this.opBinary!(op)(inp);
+    }
+
+    /// Quaternion dot product
+    type dot(Quaternion other) const {
+        return x * other.x + y * other.y + z * other.z + w * other.w;
     }
 }
 

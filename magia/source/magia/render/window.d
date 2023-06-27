@@ -47,20 +47,20 @@ class Window {
         vec2 _screenSize;
 
         /// Timing details
-        double previousTime = 0.0;
-        double currentTime = 0.0;
-        double deltaTime;
+        float _previousTime = 0f;
+        float _currentTime = 0f;
+        float _deltaTime;
 
         /// Frame counter
         uint counter = 0;
     }
 
     @property {
-        /// Width of the window in pixels.
+        /// Width of the window in pixels
         uint screenWidth() const {
             return _windowSize.x;
         }
-        /// Height of the window in pixels.
+        /// Height of the window in pixels
         uint screenHeight() const {
             return _windowSize.y;
         }
@@ -68,9 +68,13 @@ class Window {
         uint screenMaxDim() const {
             return max(screenWidth, screenHeight);
         }
-        /// Size of the window in pixels.
+        /// Size of the window in pixels
         vec2 screenSize() const {
             return _screenSize;
+        }
+        /// Delta time
+        float deltaTime() const {
+            return _deltaTime;
         }
         /// Set title
         void title(string title) {
@@ -132,16 +136,16 @@ class Window {
 
     /// Compute framerate and display window content
     void render() {
-        currentTime = SDL_GetTicks() / 1000;
-        deltaTime = currentTime - previousTime;
+        _currentTime = getCurrentTimeInMilliseconds() / 1000f;
+        _deltaTime = _currentTime - _previousTime;
         counter++;
 
-        if (deltaTime >= 1.0 / 30.0) {
-            const double FPS = (1.0 / deltaTime) * counter;
-            const double ms = (deltaTime / counter) * 1000;
+        if (_deltaTime >= 1f / 30f) {
+            const uint FPS = cast(uint)((1f / _deltaTime) * counter);
+            const uint ms = cast(uint)((_deltaTime / counter) * 1000f);
             title = "Magia - " ~ to!string(FPS) ~ "FPS / " ~ to!string(ms) ~ "ms";
 
-            previousTime = currentTime;
+            _previousTime = _currentTime;
             counter = 0;
         }
 

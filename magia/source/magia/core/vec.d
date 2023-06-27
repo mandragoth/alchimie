@@ -153,6 +153,17 @@ struct Vector(type, uint dimension_) {
         }
     }
 
+    /// Does the vector contain a value
+    bool contains(type value) const {
+        static foreach(i; TupleRange!(0, dimension)) {
+            if(data[i] == value) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// Vector unary operation
     Vector opUnary(string op)() const {
         static if(op == "+")
@@ -195,6 +206,12 @@ struct Vector(type, uint dimension_) {
         return this.opBinary!(op)(inp);
     }
 
+    /// Accessing data from index
+    type opIndex(uint id) const {
+        assert(id < dimension);
+        return data[id];
+    }
+
     /// Cast operation
     Vector!(newType, dimension) opCast(V : Vector!(newType, dimension), newType)() const {
         Vector!(newType, dimension) toReturn;
@@ -206,6 +223,7 @@ struct Vector(type, uint dimension_) {
         return toReturn;
     }
 
+    /// Assignment
     Vector!(type, dimension) opAssign(T)(Vector!(T, dimension) other) {
         static foreach(i; TupleRange!(0, dimension)) {
             data[i] = cast(type) other.data[i];
@@ -214,6 +232,7 @@ struct Vector(type, uint dimension_) {
         return this;
     }
 
+    /// Array assignment
     Vector!(type, dimension) opOpAssign(string op, T)(Vector!(T, dimension) other) {
         static foreach(i; TupleRange!(0, dimension)) {
             mixin("data[i] ", op, "= cast(type)(other.data[i]);");

@@ -54,6 +54,7 @@ class Renderer {
         Shader _quadShader;
         Shader _circleShader;
         Shader _modelShader;
+        Shader _animatedShader;
 
         // Framebuffers for picking (@TODO pack?)
         FrameBuffer _pickingFrameBuffer;
@@ -105,6 +106,7 @@ class Renderer {
         _quadShader = fetchPrototype!Shader("quad");
         _circleShader = fetchPrototype!Shader("circle");
         _modelShader = fetchPrototype!Shader("model");
+        _animatedShader = fetchPrototype!Shader("animated");
 
         // Load frame buffers for post process effects
         _pickingFrameBuffer = new FrameBuffer([TextureType.picking, TextureType.depth],
@@ -228,6 +230,7 @@ class Renderer {
     /// Setup lights for all shaders that use them
     void setupLights() {
         lightingManager.setupInShader(_modelShader);
+        lightingManager.setupInShader(_animatedShader);
     }
 
     private Transform toScreenSpace(vec2 position, vec2 size) {
@@ -327,17 +330,17 @@ version (linux) {
             const GLchar* message, void*) nothrow {
             switch (severity) {
             case GL_DEBUG_SEVERITY_HIGH:
-                printf("[OPENGL][FATAL] %s", message);
+                printf("[OPENGL][FATAL] %s\n", message);
                 break;
             case GL_DEBUG_SEVERITY_MEDIUM:
-                printf("[OPENGL][MEDIUM] %s", message);
+                printf("[OPENGL][MEDIUM] %s\n", message);
                 break;
             case GL_DEBUG_SEVERITY_LOW:
-                printf("[OPENGL][MINOR] %s", message);
+                printf("[OPENGL][MINOR] %s\n", message);
                 break;
             case GL_DEBUG_SEVERITY_NOTIFICATION:
             default:
-                //printf("[OPENGL][INFO] %s", message);
+                printf("[OPENGL][INFO] %s\n", message);
                 break;
             }
         }

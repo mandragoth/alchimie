@@ -8,6 +8,8 @@
 
 module magia.core.timer;
 
+import bindbc.sdl;
+
 private {
     uint _nominalFPS = 60u;
 }
@@ -17,9 +19,20 @@ private {
 uint getNominalFPS() {
     return _nominalFPS;
 }
+
 /// Ditto
 uint setNominalFPS(uint fps) {
     return _nominalFPS = fps;
+}
+
+/// Get current time since application start in milliseconds
+uint getCurrentTimeInMilliseconds() {
+    return SDL_GetTicks();
+}
+
+/// Get current time since application start in seconds
+float getCurrentTimeInSeconds() {
+    return SDL_GetTicks() / 1000f;
 }
 
 /**

@@ -3,10 +3,11 @@ module magia.core.mat;
 import magia.core.tuple;
 import magia.core.vec;
 
-import std.conv : to;
+import std.conv;
 import std.format;
 import std.math;
-import std.traits : isFloatingPoint, isDynamicArray;
+import std.traits;
+import std.stdio;
 
 /// Generic matrix type
 struct Matrix(type, uint rows_, uint columns_) {
@@ -51,15 +52,20 @@ struct Matrix(type, uint rows_, uint columns_) {
         static if (i >= rows * columns) {
             static assert(false, "Too many arguments passed to constructor");
         } else static if (is(T : type)) {
-            matrix[i / columns][i % columns] = head;
+            data[i / columns][i % columns] = head;
             construct!(i + 1)(tail);
         } else static if(isDynamicArray!T) {
             foreach (j; 0..columns * rows) {
-                matrix[j / columns][j % columns] = head[j];
+                data[j / columns][j % columns] = head[j];
             }
         } else {
             static assert(false, "Matrix constructor argument must be of type " ~ type.stringof ~ " or vector, not " ~ T.stringof);
         }
+    }
+
+    /// Termination for recursive matrix construct
+    private void construct(int i)() {
+        static assert(i == rows * columns, "Not enough arguments passed to constructor");
     }
 
     /// Sets all values of the matrix to value (each column in each row will contain this value)
@@ -97,12 +103,29 @@ struct Matrix(type, uint rows_, uint columns_) {
     }
 
     /// Matrix multiplication with scalar
-    private void scalarMultiplication(type scalar, ref Matrix mat) const {
-        for(int r = 0; r < rows; r++) {
-            for(int c = 0; c < columns; c++) {
-                mat.data[r][c] = data[r][c] * scalar;
+    Matrix!(type, rows, columns) opBinary(string op : "*")(type scalar) const {
+        Matrix!(type, rows, columns) toReturn;
+
+        foreach(r; TupleRange!(0, rows)) {
+            foreach(c; TupleRange!(0, columns)) {
+                toReturn.data[r][c] = data[r][c] * scalar;
             }
         }
+
+        return toReturn;
+    }
+
+    /// Matrix addition
+    Matrix opBinary(string op)(Matrix other) const if((op == "+") || (op == "-")) {
+        Matrix toReturn;
+
+        foreach(r; TupleRange!(0, rows)) {
+            foreach(c; TupleRange!(0, columns)) {
+                toReturn.data[r][c] = mixin("data[r][c]" ~ op ~ "other.data[r][c]");
+            }
+        }
+
+        return toReturn;
     }
 
     /// Multiplication operation
@@ -120,6 +143,25 @@ struct Matrix(type, uint rows_, uint columns_) {
         }
 
         return toReturn;
+    }
+
+    /// Print the matrix in mathematica standard
+    public void print() const {
+        write("{");
+        foreach(r; TupleRange!(0, rows)) {
+            write("{");
+            foreach(c; TupleRange!(0, columns)) {
+                write(data[r][c]);
+                if (c + 1 < columns) {
+                    write(",");
+                }
+            }
+            write("}");
+            if (r + 1 < rows) {
+                write(",");
+            }
+        }
+        write("}\n");
     }
 
     // Operation for square matrices

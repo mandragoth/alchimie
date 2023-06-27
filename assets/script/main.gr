@@ -34,38 +34,36 @@ task runtime() {
     jupiter:scale(@vec3f(.05f, .05f, .05f));
 
     var reimu = @Model("reimu");
-    reimu:scale(@vec3f(0.1f, 0.1f, 0.1f));
     reimu:position(@vec3f(0f, -1f, 0f));
+    reimu:scale(@vec3f(0.1f, 0.1f, 0.1f));
     reimu:addTexture("reimu_body");
 
     var reimuHair = @Model("reimu_hair");
-    reimuHair:scale(@vec3f(0.1f, 0.1f, 0.1f));
     reimuHair:position(@vec3f(0f, -1f, 0f));
+    reimuHair:scale(@vec3f(0.1f, 0.1f, 0.1f));
     reimuHair:addTexture("reimu_hair");
     // @TODO add as child
+
+    var skin = @Model("skin");
+    skin:position(@vec3f(0f, -1f, 0f));
+
+    var rig = @Model("riggedsimple");
+    rig:rotation(@vec3f(0f, 90f, 0f));
+    rig:scale(@vec3f(0.1f, 0.1f, 0.1f));
 
     loop yield {
         clear();
 
         setup3D();
 
-        var reimuBoneId = reimu:displayBoneId;
-        var reimuNbBones = reimu:nbBones;
-
-        if (isActionActivated("nextBone")) {
-            reimuBoneId = (reimuBoneId + 1) % reimuNbBones;
-            print("Selected bone: " ~ reimuBoneId);
-        } else if (isActionActivated("previousBone") && reimuBoneId > 0) {
-            reimuBoneId = (reimuBoneId - 1) % reimuNbBones;
-            print("Selected bone: " ~ reimuBoneId);
-        }
-
-        reimu:displayBoneId(reimuBoneId);
+        rig:updateDisplayBoneId();
 
         skybox:draw();
-        jupiter:draw();
-        reimu:draw();
-        reimuHair:draw();
+        //jupiter:draw();
+        rig:draw();
+        //reimu:draw();
+        //reimuHair:draw();
+        //skin:draw();
 
         setup2D();
 
@@ -76,6 +74,29 @@ task runtime() {
 
         render();
     }
+}
+
+func updateDisplayBoneId(model: Model) {
+    var modelBoneId = model:displayBoneId;
+    var modelNbBones = model:nbBones;
+
+    if (isActionActivated("nextBone")) {
+        if (modelBoneId == modelNbBones - 1) {
+            modelBoneId = -1;
+        } else {
+            modelBoneId = (modelBoneId + 1) % modelNbBones;
+        }
+    } else if (isActionActivated("previousBone") && modelBoneId >= -1) {
+        if (modelBoneId == 0) {
+            modelBoneId = -1;
+        } else if (modelBoneId == -1) {
+            modelBoneId = modelNbBones - 1;
+        } else {
+            modelBoneId = (modelBoneId - 1) % modelNbBones;
+        }
+    }
+
+    model:displayBoneId(modelBoneId);
 }
 
 func testUI() {
