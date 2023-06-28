@@ -22,21 +22,6 @@ import std.stdio;
 /// Global renderer
 Renderer renderer;
 
-/// Representation of a 2D coordinate system
-struct Coordinates {
-    /// Origin
-    vec2 origin;
-
-    /// X,Y axis
-    vec2 axis;
-}
-
-/// Default coordinate system
-Coordinates defaultCoordinates = Coordinates(vec2.zero, vec2.one);
-
-/// Topleft coordinate system
-Coordinates topLeftCoordinates = Coordinates(vec2.topLeft, vec2.bottomRight);
-
 /// 2D renderer
 class Renderer {
     /// Active cameras
@@ -47,7 +32,7 @@ class Renderer {
 
     private {
         // Coordinate system used for draws
-        Coordinates _coordinates;
+        CoordinateSystem _coordinateSystem;
 
         // Shaders
         Shader _lineShader;
@@ -81,11 +66,6 @@ class Renderer {
             bgColor = color;
             glClearColor(bgColor.r, bgColor.g, bgColor.b, 1f);
         }
-
-        /// Set coordinates
-        void coordinates(Coordinates coord) {
-            _coordinates = coord;
-        }
     }
 
     /// Constructor
@@ -96,7 +76,7 @@ class Renderer {
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
         // Set screen origin
-        _coordinates = defaultCoordinates;
+        _coordinateSystem = CoordinateSystem.center;
 
         // Setup lighing manager
         lightingManager = new LightingManager();
@@ -134,6 +114,7 @@ class Renderer {
         glDisable(GL_CULL_FACE);
 
         _is3d = false;
+        _coordinateSystem = CoordinateSystem.topLeft;
     }
 
     /// Prepare to render 3D items
@@ -144,6 +125,7 @@ class Renderer {
         glCullFace(GL_FRONT);
 
         _is3d = true;
+        _coordinateSystem = _coordinateSystem.center;
     }
 
     /// Update
@@ -166,38 +148,39 @@ class Renderer {
 
     /// Render filled circle
     void drawFilledCircle(vec2 position, float size, Color color = Color.white, float alpha = 1f) {
-        Transform transform = toScreenSpace(position, vec2(size, size));
+        Transform transform = _coordinateSystem.toRenderSpace(position, vec2(size, size), window.screenSize);
         setupCircleShader(transform.position2D, transform.scale.x, color, alpha);
         drawIndexed(rectMesh, _circleShader, defaultMaterial, transform);
     }
 
     /// Render filled rectangle
     void drawFilledRect(vec2 position, vec2 size, Color color = Color.white, float alpha = 1f) {
-        Transform transform = toScreenSpace(position, size);
+        Transform transform = _coordinateSystem.toRenderSpace(position, size, window.screenSize);
         setupQuadShader(color, alpha);
         drawIndexed(rectMesh, _quadShader, defaultMaterial, transform);
     }
 
-    /// Render a sprite @TODO handle rotation, alpha, color
+    /// Render a texture at given location
     void drawTexture(Texture texture, vec2 position, vec2 size,
                      vec4i clip = vec4i.zero, Flip flip = Flip.none, Blend blend = Blend.alpha,
                      Color color = Color.white, float alpha = 1f) {
-        // Create material
-        Material material = new Material(texture);
+        Transform transform = _coordinateSystem.toRenderSpace(position, size, window.screenSize);
+        Material material = new Material(texture, color, alpha, blend, flip, clip);
+        drawMaterial(material, transform);
+    }
 
-        // Set transform
-        Transform transform = toScreenSpace(position, size);
-
+    /// Render a texture
+    void drawMaterial(Material material, Transform transform) {
         // Default clip has x, y = 0 and w, h = 1
         vec4 clipf = vec4(0f, 0f, 1f, 1f);
 
         // Cut texture depending on clip parameters
         // @TODO set in material instead
-        if (clip != vec4i.zero) {
-            clipf.x = cast(float) clip.x / cast(float) texture.width;
-            clipf.y = cast(float) clip.y / cast(float) texture.height;
-            clipf.z = clipf.x + (cast(float) clip.z / cast(float) texture.width);
-            clipf.w = clipf.y + (cast(float) clip.w / cast(float) texture.height);
+        if (material.clip != vec4i.zero) {
+            clipf.x = cast(float) material.clip.x / cast(float) material.textures[0].width;
+            clipf.y = cast(float) material.clip.y / cast(float) material.textures[0].height;
+            clipf.z = clipf.x + (cast(float) material.clip.z / cast(float) material.textures[0].width);
+            clipf.w = clipf.y + (cast(float) material.clip.w / cast(float) material.textures[0].height);
         }
 
         // Bind shader and uploaded dedicated uniforms
@@ -206,7 +189,7 @@ class Renderer {
 
         // Set flip
         vec2 flipf;
-        final switch (flip) with (Flip) {
+        final switch (material.flip) with (Flip) {
             case none:
                 flipf = vec2(0f, 0f);
                 break;
@@ -223,7 +206,7 @@ class Renderer {
 
         _quadShader.uploadUniformVec2("u_Flip", flipf);
 
-        setupQuadShader(color, alpha);
+        setupQuadShader(material.color, material.alpha);
         drawIndexed(rectMesh, _quadShader, material, transform);
     }
 
@@ -231,17 +214,6 @@ class Renderer {
     void setupLights() {
         lightingManager.setupInShader(_modelShader);
         lightingManager.setupInShader(_animatedShader);
-    }
-
-    private Transform toScreenSpace(vec2 position, vec2 size) {
-        // Express size as ratio of size and screen size
-        size = size / window.screenSize;
-
-        // Express position as ratio of position and screen size
-        position = _coordinates.origin + position / window.screenSize * 2 * _coordinates.axis + size * _coordinates.axis;
-
-        // Set transform
-        return Transform(vec3(position, 0), vec3(size, 0));
     }
 
     private void setupLineShader(Color color = Color.white, float alpha = 1f) {

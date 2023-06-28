@@ -52,10 +52,10 @@ struct Glyph {
     void draw(mat4 transform, float posX, float posY, float scale, Color color, float alpha) {
         _sprite.transform = Transform(transform);
         _sprite.position = vec2(posX, posY);
-        _sprite.size = vec2(_width * scale, _height * scale);
-        _sprite.clip = vec4i(_packX, _packY, _packWidth, _packHeight);
-        _sprite.color = color;
-        _sprite.alpha = alpha;
+        //_sprite.scale = scale; @TODO forward scale to sprite properly
+        _sprite.material.clip = vec4i(_packX, _packY, _packWidth, _packHeight);
+        _sprite.material.color = color;
+        _sprite.material.alpha = alpha;
         _sprite.draw();
     }
 }
