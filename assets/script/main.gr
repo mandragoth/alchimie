@@ -106,8 +106,7 @@ task testUI() {
     appendUI(label);
 
     var state = @UIState("hidden");
-    state.time = .25f;
-    state.time += 2f;
+    state.ticks = 15;
     state.spline = Spline.sineInOut;
     state.alpha = 0f;
     state.offsetX = -100f;

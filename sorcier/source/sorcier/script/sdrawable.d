@@ -106,7 +106,7 @@ private void _draw(GrCall call) {
 
 private void _update(GrCall call) {
     Entity entity = call.getNative!Entity(0);
-    entity.update(TimeStep());
+    entity.update();
 }
 
 private void _newSprite(GrCall call) {
@@ -161,7 +161,7 @@ private void _setup3D(GrCall) {
 }
 
 private void _render(GrCall) {
-    currentApplication.render();
+    //currentApplication.render();
 }
 
 private void _drawFilledRect(GrCall call) {

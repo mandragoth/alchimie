@@ -65,8 +65,8 @@ package void loadAlchimieLibUI(GrLibDefinition library) {
     library.addProperty(&_ui_state_alpha!"get", &_ui_state_alpha!"set",
         "alpha", stateType, grFloat);
 
-    library.addProperty(&_ui_state_time!"get", &_ui_state_time!"set",
-        "time", stateType, grFloat);
+    library.addProperty(&_ui_state_ticks!"get", &_ui_state_ticks!"set",
+        "ticks", stateType, grUInt);
     library.addProperty(&_ui_state_spline!"get", &_ui_state_spline!"set",
         "spline", stateType, splineType);
 
@@ -401,16 +401,16 @@ private void _ui_state_alpha(string op)(GrCall call) {
     call.setFloat(state.alpha);
 }
 
-private void _ui_state_time(string op)(GrCall call) {
+private void _ui_state_ticks(string op)(GrCall call) {
     UIElement.State state = call.getNative!(UIElement.State)(0);
     if (!state) {
         call.raise("NullError");
         return;
     }
     static if (op == "set") {
-        state.time = call.getFloat(1);
+        state.ticks = call.getUInt(1);
     }
-    call.setFloat(state.time);
+    call.setUInt(state.ticks);
 }
 
 private void _ui_state_spline(string op)(GrCall call) {
@@ -480,9 +480,9 @@ private void _ui_runState(GrCall call) {
     ui.initState.scaleY = ui.scaleY;
     ui.initState.angle = ui.angle;
     ui.initState.alpha = ui.alpha;
-    ui.initState.time = ui.timer.duration;
+    ui.initState.ticks = ui.timer.duration;
     ui.targetState = *ptr;
-    ui.timer.start(ptr.time);
+    ui.timer.start(ptr.ticks);
 }
 
 private void _ui_append_root(GrCall call) {

@@ -1,29 +1,11 @@
-/**
-    Tweening
-
-    Copyright: (c) Enalye 2019
-    License: Zlib
-    Authors: Enalye
-*/
-
+/** 
+ * Copyright: Enalye
+ * License: Zlib
+ * Authors: Enalye
+ */
 module magia.core.timer;
 
 import bindbc.sdl;
-
-private {
-    uint _nominalFPS = 60u;
-}
-
-/// Maximum framerate of the application. \
-/// The deltatime is equal to 1 if the framerate is exactly that.
-uint getNominalFPS() {
-    return _nominalFPS;
-}
-
-/// Ditto
-uint setNominalFPS(uint fps) {
-    return _nominalFPS = fps;
-}
 
 /// Get current time since application start in milliseconds
 uint getCurrentTimeInMilliseconds() {
@@ -58,7 +40,7 @@ struct Timer {
     }
 
     private {
-        float _time = 0f, _duration = 1f;
+        int _time = 0, _duration = 60;
         bool _isRunning = false, _isReversed = false;
         Mode _mode = Mode.once;
     }
@@ -66,22 +48,22 @@ struct Timer {
     @property {
         /// The relative time elapsed between 0 and 1.
         float value01() const {
-            return _time;
+            return cast(float) _time / cast(float) _duration;
         }
 
         /// Time elapsed between 0 and the max duration.
-        float value() const {
-            return _time * _duration;
+        int value() const {
+            return _time;
         }
 
         /// Duration in seconds from witch the timer goes from 0 to 1 (framerate dependent). \
         /// Only positive non-null values.
-        float duration() const {
+        int duration() const {
             return _duration;
         }
         /// Ditto
-        float duration(float v) {
-            return _duration = v;
+        int duration(int duration_) {
+            return _duration = duration_;
         }
 
         /// Is the timer currently running ?
@@ -94,8 +76,8 @@ struct Timer {
             return _mode;
         }
         /// Ditto
-        Mode mode(Mode v) {
-            return _mode = v;
+        Mode mode(Mode mode_) {
+            return _mode = mode_;
         }
     }
 
@@ -108,9 +90,17 @@ struct Timer {
 
     /// Immediatly starts the timer with the specified running time. \
     /// Note that loop and bounce behaviours will never stop until you tell him to.
-    void start(float duration_) {
+    void start(int duration_) {
         _isRunning = true;
-        duration(duration_);
+        _duration = duration_;
+        reset();
+    }
+
+    /// Ditto
+    void start(int duration_, Mode mode_) {
+        _isRunning = true;
+        _duration = duration_;
+        _mode = mode_;
         reset();
     }
 
@@ -134,27 +124,27 @@ struct Timer {
     void reset() {
         final switch (_mode) with (Mode) {
         case once:
-            _time = 0f;
+            _time = 0;
             _isReversed = false;
             break;
         case reverse:
-            _time = 1f;
+            _time = _duration;
             _isReversed = false;
             break;
         case loop:
-            _time = 0f;
+            _time = 0;
             _isReversed = false;
             break;
         case loopReverse:
-            _time = 1f;
+            _time = _duration;
             _isReversed = false;
             break;
         case bounce:
-            _time = 0f;
+            _time = 0;
             _isReversed = false;
             break;
         case bounceReverse:
-            _time = 1f;
+            _time = _duration;
             _isReversed = false;
             break;
         }
@@ -162,76 +152,77 @@ struct Timer {
 
     /// Update with the current deltatime (~1)
     /// If you don't call update, the timer won't advance.
-    void update(float deltaTime) {
+    void update(int ticks = 1) {
         if (!_isRunning)
             return;
-        if (_duration <= 0f) {
-            _time = _isReversed ? 0f : 1f;
+
+        if (_duration <= 0) {
+            _time = _isReversed ? 0 : _duration;
             _isRunning = false;
             return;
         }
-        const float stepInterval = deltaTime / (getNominalFPS() * _duration);
+
         final switch (_mode) with (Mode) {
         case once:
-            if (_time < 1f)
-                _time += stepInterval;
-            if (_time >= 1f) {
-                _time = 1f;
+            if (_time < _duration)
+                _time += ticks;
+            if (_time >= _duration) {
+                _time = _duration;
                 _isRunning = false;
             }
             break;
         case reverse:
-            if (_time > 0f)
-                _time -= stepInterval;
-            if (_time <= 0f) {
-                _time = 0f;
+            if (_time > 0)
+                _time -= ticks;
+            if (_time <= 0) {
+                _time = 0;
                 _isRunning = false;
             }
             break;
         case loop:
-            if (_time < 1f)
-                _time += stepInterval;
-            if (_time >= 1f)
-                _time = (_time - 1f) + stepInterval;
+            if (_time < _duration)
+                _time += ticks;
+            if (_time >= _duration)
+                _time = (_time - _duration) + ticks;
             break;
         case loopReverse:
-            if (_time > 0f)
-                _time -= stepInterval;
-            if (_time <= 0f)
-                _time = (1f - _time) - stepInterval;
+            if (_time > 0)
+                _time -= ticks;
+            if (_time <= 0)
+                _time = (_duration - _time) - ticks;
             break;
         case bounce:
             if (_isReversed) {
-                if (_time > 0f)
-                    _time -= stepInterval;
-                if (_time <= 0f) {
-                    _time = -(_time - stepInterval);
+                if (_time > 0)
+                    _time -= ticks;
+                if (_time <= 0) {
+                    _time = -(_time - ticks);
                     _isReversed = false;
                 }
             }
             else {
-                if (_time < 1f)
-                    _time += stepInterval;
-                if (_time >= 1f) {
-                    _time = 1f - ((_time - 1f) + stepInterval);
+                if (_time < _duration)
+                    _time += ticks;
+                if (_time >= _duration) {
+                    _time = _duration - ((_time - _duration) + ticks);
                     _isReversed = true;
                 }
             }
             break;
         case bounceReverse:
             if (_isReversed) {
-                if (_time < 1f)
-                    _time += stepInterval;
-                if (_time >= 1f) {
-                    _time = 1f - ((_time - 1f) + stepInterval);
+                if (_time < _duration)
+                    _time += ticks;
+                if (_time >= _duration) {
+                    _time = _duration - ((_time - _duration) + ticks);
                     _isReversed = false;
                 }
             }
             else {
-                if (_time > 0f)
-                    _time -= stepInterval;
-                if (_time <= 0f) {
-                    _time = -(_time - stepInterval);
+                if (_time > 0)
+                    _time -= ticks;
+                if (_time <= 0) {
+                    _time = -(_time - ticks);
                     _isReversed = true;
                 }
             }

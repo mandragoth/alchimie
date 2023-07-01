@@ -38,11 +38,11 @@ class Scene {
     }
 
     /// Update scene
-    void update(TimeStep timeStep) {
-        renderer.update(timeStep);
+    void update() {
+        renderer.update();
 
         foreach(entity; _entities) {
-            entity.update(timeStep);
+            entity.update();
         }
     }
 

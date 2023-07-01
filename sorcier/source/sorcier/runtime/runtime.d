@@ -38,7 +38,7 @@ void launchProject(string path) {
     rt.run();
 }
 
-final class Runtime {
+final class Runtime : Application {
     private {
         string _filePath;
 
@@ -50,21 +50,16 @@ final class Runtime {
 
         // Événements
         GrEvent _inputEvent, _lateInputEvent;
-
-        // IPS
-        float _deltatime = 1f;
-        float _currentFps;
-        long _tickStartFrame;
     }
 
     this(string filePath) {
         _filePath = filePath;
         enforce(exists(_filePath), "boot file does not exist `" ~ _filePath ~ "`");
 
-        _load();
+        super(vec2u(800, 800), "Alchimie");
     }
 
-    private void _load() {
+    override Status load() {
         _stdLib = grLoadStdLibrary();
         _alchimieLib = loadAlchimieLibrary();
 
@@ -82,7 +77,7 @@ final class Runtime {
 
             if (!_bytecode) {
                 writeln(compiler.getError().prettify(GrLocale.fr_FR));
-                return;
+                return Status.error;
             }
 
             //writeln(_bytecode.prettify());
@@ -102,68 +97,49 @@ final class Runtime {
 
         grSetOutputFunction(&print);
 
-        // Create the application
-        currentApplication = new Application(vec2u(800, 800), "Alchimie");
-
         // Load resources
         loadResources();
 
-        // Create scene and renderers once data loaded
-        currentApplication.postLoad();
+        return Status.ok;
     }
 
-    void run() {
+    override Status tick() {
         if (!_engine)
-            return;
+            return Status.exit;
 
-        _tickStartFrame = Clock.currStdTime();
+        InputEvent[] inputEvents = pollEvents();
 
-        while (currentApplication.isRunning()) {
-            InputEvent[] inputEvents = currentApplication.pollEvents();
-
-            if (_engine) {
-                if (_inputEvent) {
-                    foreach (InputEvent inputEvent; inputEvents) {
-                        _engine.callEvent(_inputEvent, [GrValue(inputEvent)]);
-                    }
-                }
-
-                if (_engine.hasTasks)
-                    _engine.process();
-                else {
-                    _engine = null;
-                    destroy(window);
-                    return;
-                }
-
-                remove!(a => a.isAccepted)(inputEvents);
-
-                if (_engine.isPanicking) {
-                    string err = "panique: " ~ _engine.panicMessage ~ "\n";
-                    foreach (trace; _engine.stackTraces) {
-                        err ~= "[" ~ to!string(
-                            trace.pc) ~ "] dans " ~ trace.name ~ " à " ~ trace.file ~ "(" ~ to!string(
-                            trace.line) ~ "," ~ to!string(trace.column) ~ ")\n";
-                    }
-                    _engine = null;
-                    writeln(err);
-
-                    destroy(window);
-                    return;
-                }
+        if (_inputEvent) {
+            foreach (InputEvent inputEvent; inputEvents) {
+                _engine.callEvent(_inputEvent, [GrValue(inputEvent)]);
             }
-
-            // @TODO delegate to scripts events?
-            currentApplication.update();
-
-            if (_engine) {
-                if (_lateInputEvent && inputEvents.length) {
-                    _engine.callEvent(_lateInputEvent, [GrValue(inputEvents)]);
-                }
-            }
-
-            // @TODO delegate to scripts events?
-            currentApplication.draw();
         }
+
+        if (_engine.hasTasks)
+            _engine.process();
+        else {
+            _engine = null;
+            return Status.exit;
+        }
+
+        remove!(a => a.isAccepted)(inputEvents);
+
+        if (_engine.isPanicking) {
+            string err = "panique: " ~ _engine.panicMessage ~ "\n";
+            foreach (trace; _engine.stackTraces) {
+                err ~= "[" ~ to!string(
+                    trace.pc) ~ "] dans " ~ trace.name ~ " à " ~ trace.file ~ "(" ~ to!string(
+                    trace.line) ~ "," ~ to!string(trace.column) ~ ")\n";
+            }
+            _engine = null;
+            writeln(err);
+            return Status.error;
+        }
+
+        if (_lateInputEvent && inputEvents.length) {
+            _engine.callEvent(_lateInputEvent, [GrValue(inputEvents)]);
+        }
+
+        return Status.ok;
     }
 }

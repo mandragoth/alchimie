@@ -23,6 +23,7 @@ class Application {
 
         float _currentFps;
         long _tickStartFrame;
+        uint _ticksPerSecond = 60u;
 
         // @TODO handle several scene (Ressource?)
         Scene _scene;
@@ -32,6 +33,13 @@ class Application {
 
         // @TODO move ?
         InputManager _inputManager;
+    }
+
+    /// État des opérations
+    enum Status {
+        error,
+        exit,
+        ok
     }
 
     @property {
@@ -72,13 +80,8 @@ class Application {
         // Create window
         window = new Window(size, title);
         _tickStartFrame = Clock.currStdTime();
-    }
 
-    /// scene, UI and input managers
-    void postLoad() {
-        _scene = new Scene();
-        _uiManager = new UIManager();
-        _inputManager = new InputManager;
+        currentApplication = this;
     }
 
     /// Récupère les événements (clavier/souris/manette/etc)
@@ -89,14 +92,60 @@ class Application {
     }
 
     /// Run application
-    void update() {
-        _uiManager.update(_timeStep.delta);
-        _scene.update(_timeStep);
-        window.update();
+    void run() {
+        //@TODO: Traiter Status.error en affichant le message d’erreur ?
+        if (Status.ok != load())
+            return;
+
+        _scene = new Scene();
+        _uiManager = new UIManager();
+        _inputManager = new InputManager;
+
+        _tickStartFrame = Clock.currStdTime();
+        double accumulator = 0.0;
+
+        while (isRunning()) {
+            long deltaTicks = Clock.currStdTime() - _tickStartFrame;
+
+            deltaTicks = Clock.currStdTime() - _tickStartFrame;
+            double deltaTime = (cast(double)(deltaTicks) / 10_000_000.0) * _ticksPerSecond;
+            _currentFps = (deltaTime == .0) ? .0 : (10_000_000.0 / cast(double)(deltaTicks));
+            _tickStartFrame = Clock.currStdTime();
+
+            accumulator += deltaTime;
+
+            while (accumulator >= 1.0) {
+                accumulator -= 1.0;
+
+                _uiManager.update();
+                _scene.update();
+                window.update();
+
+                if (Status.ok != tick()) {
+                    return;
+                    //@TODO: Traiter Status.error en affichant le message d’erreur ?
+                }
+            }
+
+            // Setup 2D
+            renderer.setup2DRender();
+
+            // Draw scene (so far only 2D)
+            //_scene.draw();
+
+            // Draw UI
+            _uiManager.draw();
+
+            // Render all draw calls on window
+            window.render();
+
+            // Clear up screen
+            renderer.clear();
+        }
     }
 
     /// Render application
-    void draw() {
+    /*void draw() {
         // Setup 2D
         renderer.setup2DRender();
 
@@ -111,12 +160,12 @@ class Application {
 
         // Clear up screen
         renderer.clear();
-    }
+    }*/
 
     /// Render
-    void render() {
+    /*void render() {
         window.render();
-    }
+    }*/
 
     /// Set application icon
     void setIcon() {
@@ -127,4 +176,10 @@ class Application {
     void appendUIRootElement(UIElement ui) {
         _uiManager.appendRoot(ui);
     }
+
+    /// Chargement des resources
+    abstract Status load();
+
+    /// Logique de l’application
+    abstract Status tick();
 }
