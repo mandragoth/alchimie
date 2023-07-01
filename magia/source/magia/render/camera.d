@@ -198,7 +198,7 @@ class PerspectiveCamera : Camera {
     }
 
     /// Update the camera @TODO only recomputed when needed
-    override void update(TimeStep timeStep) {
+    override void update() {
         updateMatrix(45f, 0.1f, 1000f);
     }
 }

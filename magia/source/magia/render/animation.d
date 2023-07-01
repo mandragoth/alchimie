@@ -65,9 +65,9 @@ class Animation {
         // Start timer if not yet done
         if (!timer.isRunning) {
             timer.mode = Timer.Mode.loop;
-            timer.start(_end);
+            timer.start(cast(int) _end); //@TODO: Flemme de changer ça maintenant, mais faut plus travailler avec des secondes, mais des ticks dorénavant
         } else {
-            timer.update(1f); // @TODO plug delta time
+            timer.update();
         }
     }
 

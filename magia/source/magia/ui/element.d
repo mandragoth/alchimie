@@ -41,7 +41,7 @@ abstract class UIElement {
         float scaleX = 1f, scaleY = 1f;
         float angle = 0f;
         float alpha = 1f;
-        float time = 1f;
+        uint ticks = 60;
         Spline spline = Spline.linear;
     }
 

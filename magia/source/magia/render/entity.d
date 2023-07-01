@@ -47,7 +47,7 @@ abstract class Instance {
     }
 
     /// Update the object (given a deltaTime)
-    void update(TimeStep) {}
+    void update() {}
 }
 
 /// An entity is a drawable instance

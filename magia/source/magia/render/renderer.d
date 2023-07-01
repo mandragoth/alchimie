@@ -129,11 +129,11 @@ class Renderer {
     }
 
     /// Update
-    void update(TimeStep timeStep) {
+    void update() {
         foreach (Camera camera; cameras) {
-            camera.update(timeStep);
+            camera.update();
         }
-        _camera2d.update(timeStep);
+        _camera2d.update();
     }
     
     /// Render line @TODO factorize mesh and use transform to parametrize line?
