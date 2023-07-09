@@ -263,7 +263,7 @@ final class Model {
 
             uint parsedEntries = 0;
             uint remainingToParse = nbBytesPerVertex;
-            for (uint dataId = dataStart; dataId < dataEnd; dataId) {
+            for (uint dataId = dataStart; dataId < dataEnd;) {
                 ubyte[] bytes;
                 for (uint byteId = 0; byteId < fileTypeSize; ++byteId) {
                     bytes ~= _data[bufferId][dataId++];

@@ -1,0 +1,5 @@
+module magia.audio;
+
+public {
+    
+}

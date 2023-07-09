@@ -7,6 +7,7 @@ import std.exception;
 
 import bindbc.opengl;
 import bindbc.sdl;
+import bindbc.soloud;
 
 import magia.core;
 import magia.render.camera;
@@ -175,27 +176,9 @@ bool s_DebugLoad = false;
 
 /// Load SDL and OpenGL
 void loadSDLOpenGL() {
-    SDLSupport sdlSupport = loadSDL();
-    SDLImageSupport imageSupport = loadSDLImage();
-    SDLTTFSupport ttfSupport = loadSDLTTF();
-    SDLMixerSupport mixerSupport = loadSDLMixer();
-
-    if (s_DebugLoad) {
-        writeln(sdlSupport);
-        writeln(imageSupport);
-        writeln(ttfSupport);
-        writeln(mixerSupport);
-    }
-
-    /// SDL load
-    enforce(sdlSupport >= SDLSupport.sdl202, "Failed to load SDL");
-    enforce(imageSupport >= SDLImageSupport.sdlImage200, "Failed to load SDLImage");
-    enforce(ttfSupport >= SDLTTFSupport.sdlTTF2014, "Failed to load SDLTTF");
-    enforce(mixerSupport >= SDLMixerSupport.sdlMixer200, "Failed to load SDLMixer");
-
     /// Initilizations
     enforce(SDL_Init(SDL_INIT_EVERYTHING) == 0, "Could not initialize SDL: " ~ fromStringz(SDL_GetError()));
     enforce(TTF_Init() != -1, "Could not initialize TTF module");
-    enforce(Mix_OpenAudio(44_100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) != -1, "No audio device connected");
-    enforce(Mix_AllocateChannels(16) != -1, "Could not allocate audio channels");
+
+    loadSoloud();
 }
