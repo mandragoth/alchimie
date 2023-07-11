@@ -97,9 +97,9 @@ final class Model {
     /// Constructor
     this(string fileName) {
         if (baseName(fileName) == s_DebugFile) {
-            _trace = true;
-            _traceDeep = s_TraceDeep;
-            _traceData = s_TraceData;
+            _trace = false;
+            _traceDeep = false;//s_TraceDeep;
+            _traceData = false;//s_TraceData;
         }
 
         // Initialize material

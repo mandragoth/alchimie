@@ -6,6 +6,7 @@ import std.conv;
 import std.datetime;
 import std.stdio;
 
+import magia.audio;
 import magia.core;
 import magia.input;
 import magia.render;
@@ -33,6 +34,8 @@ class Application {
 
         // @TODO move ?
         InputManager _inputManager;
+
+        AudioManager _audioManager;
     }
 
     /// État des opérations
@@ -100,6 +103,7 @@ class Application {
         _scene = new Scene();
         _uiManager = new UIManager();
         _inputManager = new InputManager;
+        _audioManager = new AudioManager;
 
         _tickStartFrame = Clock.currStdTime();
         double accumulator = 0.0;

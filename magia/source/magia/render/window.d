@@ -177,7 +177,10 @@ bool s_DebugLoad = false;
 /// Load SDL and OpenGL
 void loadSDLOpenGL() {
     /// Initilizations
-    enforce(SDL_Init(SDL_INIT_EVERYTHING) == 0, "Could not initialize SDL: " ~ fromStringz(SDL_GetError()));
+    enforce(SDL_Init(
+			SDL_INIT_TIMER    | SDL_INIT_VIDEO |
+			SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER |
+			SDL_INIT_EVENTS   | SDL_INIT_SENSOR) == 0, "Could not initialize SDL: " ~ fromStringz(SDL_GetError()));
     enforce(TTF_Init() != -1, "Could not initialize TTF module");
 
     loadSoloud();
