@@ -1,63 +1,46 @@
 {
-	"authors": [
-		"Jonath",
-		"Enalye"
-	],
-	"buildTypes": {
-		"debug": {
-			"buildOptions": [
-				"debugMode",
-				"debugInfo"
-			]
-		},
-		"release": {
-			"buildOptions": [
-				"releaseMode",
-				"inline",
-				"noBoundsCheck",
-				"optimize"
-			]
-		},
-		"unittest": {
-			"buildOptions": [
-				"debugMode",
-				"debugInfo",
-				"unittests"
-			]
-		}
-	},
-	"copyright": "Copyright © 2022, Jonath, Enalye",
-	"dependencies": {
-		"bindbc-sdl": "~>1.3.3",
-		"bindbc-opengl": "~>1.0.0",
-		"bindbc-soloud": "~>0.1.3",
-		"grimoire": {
-			"path": "../grimoire"
-		}
-	},
-	"description": "Moteur de jeu Magia",
-	"license": "Zlib",
-	"name": "magia",
-	"targetName": "magia",
-	"targetPath": "./bin$ARCH",
-	"targetType": "library",
-	"versions": [
-		"GL_41",
-		"GL_ARB",
-        "BindSDL_Static",
-        "SDL_2_26",
-        "SDL_Image_2_6",
-        "SDL_Mixer_2_6",
-        "SDL_TTF_2_20"
-	],
-    "subConfigurations": {
-        "bindbc-sdl": "static"
+    "authors": [
+        "Jonath",
+        "Enalye"
+    ],
+    "buildTypes": {
+        "debug": {
+            "buildOptions": [
+                "debugMode",
+                "debugInfo"
+            ]
+        },
+        "release": {
+            "buildOptions": [
+                "releaseMode",
+                "inline",
+                "noBoundsCheck",
+                "optimize"
+            ]
+        },
+        "unittest": {
+            "buildOptions": [
+                "debugMode",
+                "debugInfo",
+                "unittests"
+            ]
+        }
     },
-    "libs-windows": [
-        "../libs/$PLATFORM/$ARCH/SDL2",
-        "../libs/$PLATFORM/$ARCH/SDL2_image",
-        "../libs/$PLATFORM/$ARCH/SDL2_mixer",
-        "../libs/$PLATFORM/$ARCH/SDL2_ttf"
+    "copyright": "Copyright © 2022, Jonath, Enalye",
+    "dependencies": {
+        "bindbc-openal": "~>1.0.0",
+        "bindbc-opengl": "~>1.0.0",
+        "bindbc-sdl": "~>1.3.3",
+        "grimoire": {
+            "path": "../grimoire"
+        }
+    },
+    "description": "Moteur de jeu Magia",
+    "copyFiles": [
+        "../libs/$PLATFORM/$ARCH/SDL2.dll",
+        "../libs/$PLATFORM/$ARCH/SDL2_image.dll",
+        "../libs/$PLATFORM/$ARCH/SDL2_ttf.dll",
+        "../libs/$PLATFORM/$ARCH/OpenAL32.dll"
     ],
     "lflags-posix": [
         "-L-L../libs/$PLATFORM/$ARCH/",
@@ -68,5 +51,29 @@
         "SDL2_image",
         "SDL2_mixer",
         "SDL2_ttf"
+    ],
+    "libs-windows": [
+        "../libs/$PLATFORM/$ARCH/SDL2",
+        "../libs/$PLATFORM/$ARCH/SDL2_image",
+        "../libs/$PLATFORM/$ARCH/SDL2_mixer",
+        "../libs/$PLATFORM/$ARCH/SDL2_ttf",
+        "../libs/$PLATFORM/$ARCH/OpenAL32"
+    ],
+    "license": "Zlib",
+    "name": "magia",
+    "subConfigurations": {
+        "bindbc-sdl": "static"
+    },
+    "targetName": "magia",
+    "targetPath": "./bin$ARCH",
+    "targetType": "library",
+    "versions": [
+        "GL_41",
+        "GL_ARB",
+        "BindSDL_Static",
+        "SDL_2_26",
+        "SDL_Image_2_6",
+        "SDL_Mixer_2_6",
+        "SDL_TTF_2_20"
     ]
 }

@@ -7,7 +7,6 @@ import std.exception;
 
 import bindbc.opengl;
 import bindbc.sdl;
-import bindbc.soloud;
 
 import magia.core;
 import magia.render.camera;
@@ -182,6 +181,4 @@ void loadSDLOpenGL() {
 			SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER |
 			SDL_INIT_EVENTS   | SDL_INIT_SENSOR) == 0, "Could not initialize SDL: " ~ fromStringz(SDL_GetError()));
     enforce(TTF_Init() != -1, "Could not initialize TTF module");
-
-    loadSoloud();
 }
