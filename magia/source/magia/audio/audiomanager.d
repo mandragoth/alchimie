@@ -4,6 +4,7 @@ import std.exception : enforce;
 
 import bindbc.sdl;
 import bindbc.openal;
+import audioformats;
 
 import std.stdio;
 import std.conv;
@@ -99,12 +100,26 @@ final class AudioManager {
         alListenerfv(AL_ORIENTATION, listenerOri.ptr);
         checkAL();
 
-        SDL_AudioSpec wav_spec;
+        /*SDL_AudioSpec wav_spec;
         uint wav_length;
         ubyte* wav_buffer;
         if (!SDL_LoadWAV("assets/sound/wind.wav", &wav_spec, &wav_buffer, &wav_length)) {
             assert(false, to!string(SDL_GetError()));
-        }
+        }*/
+
+        AudioStream stream;
+        stream.openFromFile("assets/sound/wind.wav");
+        int channels = stream.getNumChannels();
+
+        float[] data = new float[stream.getLengthInFrames() * channels];
+
+        int framesRead = stream.readSamplesFloat(data);
+        assert(framesRead == stream.getLengthInFrames());
+
+        writeln("Frames: ", stream.getLengthInFrames());
+        writeln("Channels: ", stream.getNumChannels());
+        writeln("Length: ", data.length);
+        writeln("Format: ", stream.getFormat());
 
         ALuint source;
 
@@ -130,9 +145,8 @@ final class AudioManager {
 
         alGenBuffers(cast(ALuint) 1, &buffer);
         checkAL();
-
-        alBufferData(buffer, to_al_format(wav_spec.channels, wav_spec.format),
-            wav_buffer, wav_length, wav_spec.freq);
+        alBufferData(buffer, AL_FORMAT_STEREO_FLOAT32, data.ptr,
+            cast(int)(data.length * float.sizeof), cast(int) stream.getSamplerate());
         checkAL();
 
         alSourcei(source, AL_BUFFER, buffer);
