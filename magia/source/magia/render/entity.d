@@ -1,5 +1,6 @@
 module magia.render.entity;
 
+import magia.audio;
 import magia.core;
 import magia.render.material;
 import magia.render.texture;

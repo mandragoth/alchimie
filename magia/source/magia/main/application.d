@@ -25,6 +25,7 @@ class Application {
         float _currentFps;
         long _tickStartFrame;
         uint _ticksPerSecond = 60u;
+        ulong _currentTick;
 
         // @TODO handle several scene (Ressource?)
         Scene _scene;
@@ -34,8 +35,6 @@ class Application {
 
         // @TODO move ?
         InputManager _inputManager;
-
-        AudioManager _audioManager;
     }
 
     /// État des opérations
@@ -65,6 +64,16 @@ class Application {
         Scene scene() {
             return _scene;
         }
+
+        /// Ticks écoulés depuis le début
+        ulong currentTick() const {
+            return _currentTick;
+        }
+
+        /// Nombre de ticks présents dans une seconde
+        uint ticksPerSecond() const {
+            return _ticksPerSecond;
+        }
     }
 
     /// Constructor
@@ -78,6 +87,7 @@ class Application {
 
         // Load internal libs
         loadSDLOpenGL();
+        openAudio();
         initFont();
 
         // Create window
@@ -103,7 +113,6 @@ class Application {
         _scene = new Scene();
         _uiManager = new UIManager();
         _inputManager = new InputManager;
-        _audioManager = new AudioManager;
 
         _tickStartFrame = Clock.currStdTime();
         double accumulator = 0.0;
@@ -124,6 +133,8 @@ class Application {
                 _uiManager.update();
                 _scene.update();
                 window.update();
+
+                _currentTick ++;
 
                 if (Status.ok != tick()) {
                     return;
@@ -146,6 +157,8 @@ class Application {
             // Clear up screen
             renderer.clear();
         }
+
+        closeAudio();
     }
 
     /// Render application

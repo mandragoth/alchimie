@@ -45,6 +45,9 @@ private void _newPerspectiveCamera(GrCall call) {
     PerspectiveCamera camera = new PerspectiveCamera(window.screenWidth, window.screenHeight);
     renderer.cameras ~= camera;
     call.setNative(camera);
+
+    //Temp
+    _setupAudioContext(camera);
 }
 
 private void _newPerspectiveCamera2(GrCall call) {
@@ -58,6 +61,16 @@ private void _newPerspectiveCamera2(GrCall call) {
 
     renderer.cameras ~= camera;
     call.setNative(camera);
+
+    //Temp
+    _setupAudioContext(camera);
+}
+
+void _setupAudioContext(Camera camera) {
+    import magia.audio;
+
+    renderer._audioContext = new AudioContext(camera);
+    setCurrentAudioContext(renderer._audioContext);
 }
 
 private void _newOrthographicCamera(GrCall call) {
