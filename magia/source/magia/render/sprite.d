@@ -61,7 +61,7 @@ final class Sprite : Entity2D {
 
     /// Constructor given an image path
     this(string fileName, vec4i clip = vec4i.zero) {
-        transform = Transform.identity;
+        transform = Transform2D.identity;
         Texture texture = fetchPrototype!Texture(fileName);
         material = new Material(texture);
         material.clip = clip;
@@ -69,8 +69,8 @@ final class Sprite : Entity2D {
     }
 
     /// Draw the sprite on the screen
-    override void draw() {
-        Transform worldTransfrom = alignment.toRenderSpace(globalPosition2D, size, window.screenSize);
+    override void draw(Renderer2D renderer) {
+        Transform2D worldTransfrom = alignment.toRenderSpace(globalPosition, size, renderer.window.screenSize);
         renderer.drawMaterial(material, worldTransfrom);
     }
 }

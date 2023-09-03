@@ -60,7 +60,7 @@ final class Model {
         Material _material;
 
         // Mesh data
-        Mesh[] _meshes;
+        Mesh3D[] _meshes;
 
         // Raw vertex data
         Vertex[] _vertices;
@@ -150,12 +150,8 @@ final class Model {
         glCullFace(GL_BACK);
 
         for (uint meshId = 0; meshId < _meshes.length; ++meshId) {
-            Transform meshTransform = _transforms[meshId] * transform;
+            Transform3D meshTransform = _transforms[meshId] * transform;
             _meshes[meshId].draw(shader, material, meshTransform);
-
-            if (_traceNormals) {
-                _vertices[meshId].drawNormal();
-            }
         }
 
         // Revert to usual culling
@@ -489,10 +485,10 @@ final class Model {
                 }
 
                 if (hasSkin) {
-                    _meshes ~= new Mesh(new VertexBuffer(animatedVertices, layout3DAnimated), new IndexBuffer(indices));
+                    _meshes ~= new Mesh3D(new VertexBuffer(animatedVertices, layout3DAnimated), new IndexBuffer(indices));
                     _animatedVertices ~= animatedVertices;
                 } else {
-                    _meshes ~= new Mesh(new VertexBuffer(vertices, layout3D), new IndexBuffer(indices));
+                    _meshes ~= new Mesh3D(new VertexBuffer(vertices, layout3D), new IndexBuffer(indices));
                     _vertices ~= vertices;
                 }
             }
@@ -500,7 +496,7 @@ final class Model {
 
         /// Trace mesh data
         void traceMeshData() {
-            foreach (const Mesh mesh; _meshes) {
+            foreach (const Mesh3D mesh; _meshes) {
                 // @TODO a mesh needs to have an id, name, vertices or animated vertices, indices and bones
                 // They should be moved away from the model
                 //writefln("  Mesh %u '%s': vertices %u indices %u bones %u", meshId, name, nbVertices, nbIndices, nbBones);
@@ -635,7 +631,7 @@ final class Model {
                 }
 
                 // Record transform for new mesh
-                _transforms ~= Transform(translation, rotation, scale);
+                _transforms ~= Transform3D(translation, rot3(rotation), scale);
 
                 const uint meshId = getJsonInt(jsonNode, "mesh");
                 const uint skinId = getJsonInt(jsonNode, "skin", uintDefault);
@@ -787,7 +783,7 @@ final class ModelInstance : Entity3D {
 
     /// Constructor
     this(string fileName, uint instances = 1, mat4[] instanceMatrices = [mat4.identity]) {
-        transform = Transform.identity;
+        transform = Transform3D.identity;
         _model = fetchPrototype!Model(fileName);
 
         if (nbBones == 0) {
@@ -798,7 +794,7 @@ final class ModelInstance : Entity3D {
     }
 
     /// Render the model
-    override void draw() {
+    override void draw(Renderer3D renderer) {
         _shader.activate();
 
         //_model.updateAnimations();

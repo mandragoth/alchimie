@@ -1,6 +1,7 @@
 module magia.ui.element;
 
 import magia.core;
+import magia.render.renderer;
 
 /// Abstract class representing an UI element
 /// @TODO remake with Element2D inheritance for position, scale and angle
@@ -91,5 +92,5 @@ abstract class UIElement {
     bool isHovered, isClicked;
 
     /// Draw call to implement
-    void draw(Transform2D);
+    void draw(Renderer2D, Transform2D);
 }

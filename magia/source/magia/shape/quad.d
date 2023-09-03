@@ -18,7 +18,7 @@ final class QuadInstance : Entity3D {
 
     /// Constructor
     this() {
-        transform = Transform.identity;
+        transform = Transform3D.identity;
 
         _material.textures ~= [
             new Texture(buildNormalizedPath("assets", "texture", "planks.png"), TextureType.diffuse, 0),
@@ -29,7 +29,7 @@ final class QuadInstance : Entity3D {
     }
 
     /// Render the quad
-    override void draw() {
+    override void draw(Renderer3D renderer) {
         _shader.activate();
 
         // @TODO handle generically?

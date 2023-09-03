@@ -44,7 +44,7 @@ final class Skybox : Entity3D {
     }
 
     /// Draw call
-    override void draw() {
+    override void draw(Renderer3D renderer) {
         glDepthFunc(GL_LEQUAL);
 
         skyboxMesh.bindData(_shader, _material);

@@ -17,7 +17,7 @@ import magia.render.shader;
 import magia.render.vertex;
 
 /// Class handling mesh data and draw call
-final class Mesh {
+final class Mesh(uint dimension_) {
     private {
         VertexArray _vertexArray;
         VertexBuffer _vertexBuffer;
@@ -92,7 +92,7 @@ final class Mesh {
     }
 
     /// Draw call
-    void draw(Shader shader, Material material, Transform3D transform = Transform3D.identity) {
+    void draw(Shader shader, Material material, Transform!(dimension_) transform = Transform!(dimension_).identity) {
         bindData(shader, material);
         
         // Index buffer: defer to glDrawElements* methods
@@ -105,9 +105,9 @@ final class Mesh {
         }
     }
 
-    private void drawElements(Shader shader, Transform3D transform) {
+    private void drawElements(Shader shader, Transform!(dimension_) transform) {
         if (_instances == 1) {
-            shader.uploadUniformMat4("u_Transform", transform.model);
+            shader.uploadUniformMat4("u_Transform", combineModel(transform));
             glDrawElements(_drawMode, _vertexArray.elementCount, GL_UNSIGNED_INT, null);
         } else {
             shader.uploadUniformMat4("u_Transform", mat4.identity);
@@ -117,10 +117,13 @@ final class Mesh {
         // Debug: normals
     }
 
-    private void drawArrays(Shader shader, Transform3D transform) {
+    private void drawArrays(Shader shader, Transform!(dimension_)  transform) {
         if (_instances == 1) {
-            shader.uploadUniformMat4("u_Transform", transform.model);
+            shader.uploadUniformMat4("u_Transform", combineModel(transform));
             //glDrawArrays(_drawMode, 0, );
         }
     }
 }
+
+alias Mesh2D = Mesh!(2);
+alias Mesh3D = Mesh!(3);

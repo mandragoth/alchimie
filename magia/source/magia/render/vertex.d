@@ -22,11 +22,6 @@ struct Vertex {
         color = color_;
         texUV = texUV_;
     }
-
-    /// Draw normals for debug
-    void drawNormal() {
-        renderer.drawLine(position, position + normal, Color.blue);
-    }
 }
 
 /// Structure holding packed vertex and joint data

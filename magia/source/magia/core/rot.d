@@ -1,6 +1,9 @@
 module magia.core.rot;
 
+import magia.core.mat;
 import magia.core.quat;
+import magia.core.util;
+import magia.core.vec;
 
 /// Prototype for generic rotor class, today only handles 2D, 3D
 struct Rotor(type, uint dimension_) {
@@ -12,7 +15,12 @@ struct Rotor(type, uint dimension_) {
 
         /// Constructor
         this(float rotation_) {
-            rotation = rotation_;
+            rotation = rotation_ % pi2;
+        }
+
+        /// Composition of two rotations
+        Rotor opBinary(string op : "*")(Rotor other) const {
+            return Rotor(rotation + other.rotation);
         }
     } else static if(dimension_ == 3) {
         /// Rotation in 3D can be defined by 3 euler angles or a quat
@@ -21,6 +29,21 @@ struct Rotor(type, uint dimension_) {
         /// Constructor
         this(quat rotation_) {
             rotation = rotation_;
+        }
+
+        /// Constructor
+        this(vec3 eulerAngles) {
+            rotation = quat.euler_rotation(eulerAngles.x, eulerAngles.y, eulerAngles.z);
+        }
+
+        /// Matrix conversion
+        mat4 toMatrix() {
+            return rotation.to_matrix!(4, 4);
+        }
+
+        /// Composition of two rotations
+        Rotor opBinary(string op : "*")(Rotor other) const {
+            return Rotor(rotation * other.rotation);
         }
     }
 

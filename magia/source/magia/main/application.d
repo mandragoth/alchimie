@@ -14,7 +14,7 @@ import magia.ui;
 import grimoire;
 
 /// Current application being tracked
-Application currentApplication;
+Application application;
 
 /// Application class
 class Application {
@@ -25,6 +25,16 @@ class Application {
         long _tickStartFrame;
         uint _ticksPerSecond = 60u;
         double _accumulator = 0.0;
+
+        // Main window
+        Window _window;
+
+        /// Lighting manager
+        LightingManager _lightingManager;
+
+        // Renderer for 2D, 3D
+        Renderer2D _renderer2D;
+        Renderer3D _renderer3D;
 
         // @TODO handle several scene (Ressource?)
         Scene3D _scene3D;
@@ -51,6 +61,16 @@ class Application {
             return !_inputManager.hasQuit();
         }
 
+        /// Fenetre
+        Window window() {
+            return _window;
+        }
+
+        /// Renderer 2D
+        Renderer2D renderer2D() {
+            return _renderer2D;
+        }
+
         /// Module d’entrées
         InputManager inputManager() {
             return _inputManager;
@@ -59,6 +79,45 @@ class Application {
         /// Module d’interface
         UIManager uiManager() {
             return _uiManager;
+        }
+
+        /// Add 2D camera
+        void addCamera2D(OrthographicCamera camera) {
+            camera.window = _window;
+            _window.addCamera(camera);
+            _renderer2D.cameras ~= camera;
+        }
+
+        /// Add 3D camera
+        void addCamera3D(PerspectiveCamera camera) {
+            camera.window = _window;
+            _window.addCamera(camera);
+            _renderer3D.cameras ~= camera;
+        }
+
+        /// Add 2D entity
+        void addEntity(Entity2D entity) {
+            _scene2D.addEntity(entity);
+        }
+
+        /// Add 3D entity
+        void addEntity(Entity3D entity) {
+            _scene3D.addEntity(entity);
+        }
+
+        /// Set directional light
+        void setDirectionalLight(DirectionalLight directionalLight) {
+            _lightingManager.directionalLight = directionalLight;
+        }
+
+        /// Add point light
+        void addPointLight(PointLight pointLight) {
+            _lightingManager.addPointLight(pointLight);
+        }
+
+        /// Add spot light
+        void addSpotLight(SpotLight spotLight) {
+            _lightingManager.addSpotLight(spotLight);
         }
     }
 
@@ -76,10 +135,10 @@ class Application {
         initFont();
 
         // Create window
-        window = new Window(size, title);
+        _window = new Window(size, title);
         _tickStartFrame = Clock.currStdTime();
 
-        currentApplication = this;
+        application = this;
     }
 
     /// Récupère les événements (clavier/souris/manette/etc)
@@ -96,16 +155,20 @@ class Application {
             return;
         }
 
-        // Create renderer
-        renderer = new Renderer();
+        // Lighting manager
+        _lightingManager = new LightingManager();
+
+        // Create renderers and their associated coordinate system and camera
+        _renderer3D = new Renderer3D(_window, CoordinateSystem.center);
+        _renderer2D = new Renderer2D(_window, CoordinateSystem.topLeft);
         
-        // Create rendering stacks
-        _scene3D = new Scene3D();
-        _scene2D = new Scene2D();
-        _uiManager = new UIManager();
+        // Create scenes (@TODO and associate renderers to them)
+        _scene3D = new Scene3D(_renderer3D);
+        _scene2D = new Scene2D(_renderer2D);
+        _uiManager = new UIManager(_renderer2D);
 
         // Create input handlers
-        _inputManager = new InputManager;
+        _inputManager = new InputManager(_window);
 
         _tickStartFrame = Clock.currStdTime();
         while (isRunning()) {
@@ -129,11 +192,10 @@ class Application {
             while (_accumulator >= 1.0) {
                 _accumulator -= 1.0;
 
-                renderer.update();
                 _uiManager.update();
                 _scene3D.update();
                 _scene2D.update();
-                window.update();
+                _window.update();
                 
                 // @TODO: Traiter Status.error en affichant le message d’erreur ?
                 if (Status.ok != tick()) {
@@ -144,20 +206,16 @@ class Application {
 
         /// Render application
         void draw() {
-            // Draw 3D scene
-            renderer.setup3DRender();
-            _scene3D.draw();
+            // Setup light
+            _lightingManager.setup();
 
-            // Draw 2D scene, UI
-            renderer.setup2DRender();
+            // Draw 3D, then 2D, then UI
+            _scene3D.draw();
             _scene2D.draw();
             _uiManager.draw();
 
             // Render all draw calls on window
-            window.render();
-
-            // Clear up screen
-            renderer.clear();
+            _window.render();
         }
     }
 

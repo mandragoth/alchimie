@@ -35,8 +35,11 @@ final class InputManager {
             int index, joystickId;
         }
 
-        InputMap _map;
+        // Window InputManager impacts
+        Window _window;
 
+        // Input handlers
+        InputMap _map;
         Controller[] _controllers;
 
         vec2i _globalMousePosition, _relativeMousePosition, _mouseWheel;
@@ -72,7 +75,7 @@ final class InputManager {
     }
 
     /// Init
-    this() {
+    this(Window window) {
         signal(SIGINT, &_signalHandler);
         _globalMousePosition = vec2i.zero;
         _relativeMousePosition = vec2i.zero;
@@ -259,7 +262,7 @@ final class InputManager {
             case SDL_WINDOWEVENT:
                 switch (sdlEvent.window.event) {
                 case SDL_WINDOWEVENT_RESIZED:
-                    window.resizeWindow(vec2u(sdlEvent.window.data1, sdlEvent.window.data2));
+                    _window.resizeWindow(vec2u(sdlEvent.window.data1, sdlEvent.window.data2));
                     break;
                 case SDL_WINDOWEVENT_SIZE_CHANGED:
                     break;

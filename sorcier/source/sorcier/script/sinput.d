@@ -411,47 +411,47 @@ private void _makeDropFile(GrCall call) {
 }
 
 private void _isPressed(T)(GrCall call) {
-    call.setBool(currentApplication.inputManager.isPressed(call.getEnum!T(0)));
+    call.setBool(application.inputManager.isPressed(call.getEnum!T(0)));
 }
 
 private void _getAxis(GrCall call) {
-    call.setFloat(currentApplication.inputManager.getAxis(call.getEnum!(InputEvent.ControllerAxis.Axis)(0)));
+    call.setFloat(application.inputManager.getAxis(call.getEnum!(InputEvent.ControllerAxis.Axis)(0)));
 }
 
 // Action
 
 private void _addAction(GrCall call) {
-    currentApplication.inputManager.addAction(call.getString(0));
+    application.inputManager.addAction(call.getString(0));
 }
 
 private void _removeAction(GrCall call) {
-    currentApplication.inputManager.removeAction(call.getString(0));
+    application.inputManager.removeAction(call.getString(0));
 }
 
 private void _hasAction(GrCall call) {
-    call.setBool(currentApplication.inputManager.hasAction(call.getString(0)));
+    call.setBool(application.inputManager.hasAction(call.getString(0)));
 }
 
 private void _isAction(GrCall call) {
-    call.setBool(currentApplication.inputManager.isAction(call.getString(1), call.getNative!InputEvent(0)));
+    call.setBool(application.inputManager.isAction(call.getString(1), call.getNative!InputEvent(0)));
 }
 
 private void _addActionEvent(GrCall call) {
-    currentApplication.inputManager.addActionEvent(call.getString(0), call.getNative!InputEvent(1));
+    application.inputManager.addActionEvent(call.getString(0), call.getNative!InputEvent(1));
 }
 
 private void _removeActionEvents(GrCall call) {
-    currentApplication.inputManager.removeActionEvents(call.getString(0));
+    application.inputManager.removeActionEvents(call.getString(0));
 }
 
 private void _isActionActivated(GrCall call) {
-    call.setBool(currentApplication.inputManager.activated(call.getString(0)));
+    call.setBool(application.inputManager.activated(call.getString(0)));
 }
 
 private void _getActionStrength(GrCall call) {
-    call.setFloat(currentApplication.inputManager.getActionStrength(call.getString(0)));
+    call.setFloat(application.inputManager.getActionStrength(call.getString(0)));
 }
 
 private void _getActionAxis(GrCall call) {
-    call.setFloat(currentApplication.inputManager.getActionAxis(call.getString(0), call.getString(1)));
+    call.setFloat(application.inputManager.getActionAxis(call.getString(0), call.getString(1)));
 }

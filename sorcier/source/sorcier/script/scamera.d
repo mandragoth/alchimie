@@ -30,7 +30,6 @@ void loadAlchimieLibCamera(GrLibDefinition library) {
     library.addProperty(&_getForward, null, "forward", pCameraType, vec3Type);
 
     // Camera operations
-    library.addFunction(&_getCamera, "getCamera", [grInt], [cameraType]);
     library.addFunction(&_setRotation, "rotation", [cameraType, grFloat]);
     library.addFunction(&_setZoom, "zoom", [cameraType, grFloat]);
     library.addFunction(&_setViewport, "viewport", [pCameraType, vec4iType]);
@@ -42,8 +41,8 @@ void loadAlchimieLibCamera(GrLibDefinition library) {
 }
 
 private void _newPerspectiveCamera(GrCall call) {
-    PerspectiveCamera camera = new PerspectiveCamera(window.screenWidth, window.screenHeight);
-    renderer.cameras ~= camera;
+    PerspectiveCamera camera = new PerspectiveCamera(application.window.screenWidth, application.window.screenHeight);
+    application.addCamera3D(camera);
     call.setNative(camera);
 }
 
@@ -55,19 +54,14 @@ private void _newPerspectiveCamera2(GrCall call) {
     vec3 up = cast(vec3) call.getNative!SVec3f(4);
 
     PerspectiveCamera camera = new PerspectiveCamera(width, height, position, target, up);
-
-    renderer.cameras ~= camera;
+    application.addCamera3D(camera);
     call.setNative(camera);
 }
 
 private void _newOrthographicCamera(GrCall call) {
     OrthographicCamera camera = new OrthographicCamera();
-    renderer.cameras ~= camera;
+    application.addCamera2D(camera);
     call.setNative(camera);
-}
-
-private void _getCamera(GrCall call) {
-    call.setNative(renderer.cameras[call.getInt(0)]);
 }
 
 private void _getRotation(GrCall call) {
@@ -116,9 +110,9 @@ private void _setForward(GrCall call) {
 }
 
 private void _getScreenWidth(GrCall call) {
-    call.setInt(cast(int) window.screenWidth);
+    call.setInt(cast(int) application.window.screenWidth);
 }
 
 private void _getScreenHeight(GrCall call) {
-    call.setInt(cast(int) window.screenHeight);
+    call.setInt(cast(int) application.window.screenHeight);
 }

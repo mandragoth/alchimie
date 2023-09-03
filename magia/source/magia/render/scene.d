@@ -12,21 +12,21 @@ import magia.render.renderer;
 import magia.render.skybox;
 
 /// Scene class
-class Scene(type, uint dimension_) {
-    alias Entities = Entity!(type, dimension_)[];
+class Scene(uint dimension_) {
+    alias Entities = Entity!(dimension_)[];
 
     private {
+        Renderer!(dimension_) _renderer;
         Entities _entities;
-        Skybox _skybox;
     }
 
     /// Constructor
-    this() {
-        _skybox = new Skybox();
+    this(Renderer!(dimension_) renderer) {
+        _renderer = renderer;
     }
 
     /// Add an entity
-    void addEntity(Entity!(type, dimension_) entity) {
+    void addEntity(Entity!(dimension_) entity) {
         _entities ~= entity;
     }
 
@@ -44,13 +44,12 @@ class Scene(type, uint dimension_) {
 
     /// Draw scene
     void draw() {
+        _renderer.setup();
         foreach(entity; _entities) {
-            entity.draw();
+            entity.draw(_renderer);
         }
-
-        _skybox.draw();
     }
 }
 
-alias Scene2D = Scene!(float, 2);
-alias Scene3D = Scene!(float, 3);
+alias Scene2D = Scene!(2);
+alias Scene3D = Scene!(3);

@@ -30,6 +30,9 @@ abstract class Camera : Instance3D {
 
         /// Zone on screen for camera draw
         vec4i _viewport;
+
+        /// Window camera is bound to
+        Window _window;
     }
 
     @property {
@@ -82,6 +85,11 @@ abstract class Camera : Instance3D {
         void viewport(vec4i viewport_) {
             _viewport = viewport_;
         }
+
+        /// Set window
+        void window(Window window) {
+            _window = window;
+        }
     }
 }
 
@@ -111,7 +119,7 @@ class OrthographicCamera : Camera {
 
     /// Constructor
     this() {
-        _aspectRatio = window.getAspectRatio();
+        _aspectRatio = _window.getAspectRatio();
         computeProjectionMatrix();
     }
 

@@ -56,7 +56,7 @@ final class Label : UIElement {
         reload();
     }
 
-    override void draw(Transform2D transform) {
+    override void draw(Renderer2D renderer, Transform2D transform) {
         Color color = Color.white;
         vec2 pos = vec2.zero;
 
@@ -73,7 +73,7 @@ final class Label : UIElement {
 
                 const float drawPosX = pos.x + metrics.offsetX * _charScale;
                 const float drawPosY = pos.y - metrics.offsetY * _charScale;
-                metrics.draw(transform, drawPosX, drawPosY, _charScale, color, alpha);
+                metrics.draw(renderer, transform, drawPosX, drawPosY, _charScale, color, alpha);
                 pos.x += (metrics.advance + _charSpacing) * _charScale;
                 prevChar = ch;
             }

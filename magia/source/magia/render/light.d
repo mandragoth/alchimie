@@ -196,61 +196,68 @@ class LightingManager {
             throw new Exception("Cannot add any more point light, maximum internally set to " ~ kMaxSpotLights);
         }
     }
-
+    
     /// Setup lighting in shader
-    void setupInShader(Shader shader) {
-        shader.activate();
+    void setup() {
+        setupInShader(modelShader);
+        setupInShader(animatedShader);
+    }
 
-        // Setup directional light data
-        if (_directionalLight) {
-            shader.uploadUniformVec3("u_DirectionalLight.direction", _directionalLight.direction);
-            shader.uploadUniformVec3("u_DirectionalLight.base.color", _directionalLight.color.rgb);
-            shader.uploadUniformFloat("u_DirectionalLight.base.ambientIntensity", _directionalLight.ambientIntensity);
-            shader.uploadUniformFloat("u_DirectionalLight.base.diffuseIntensity", _directionalLight.diffuseIntensity);
-        }
+    private {
+        void setupInShader(Shader shader) {
+            shader.activate();
 
-        // Setup point light data
-        const int nbPointLights = cast(int)_pointLights.length;
-        shader.uploadUniformInt("u_NbPointLights", nbPointLights);
-        for (int pointLightId = 0; pointLightId < nbPointLights; ++pointLightId) {
-            PointLight pointLight = _pointLights[pointLightId];
+            // Setup directional light data
+            if (_directionalLight) {
+                shader.uploadUniformVec3("u_DirectionalLight.direction", _directionalLight.direction);
+                shader.uploadUniformVec3("u_DirectionalLight.base.color", _directionalLight.color.rgb);
+                shader.uploadUniformFloat("u_DirectionalLight.base.ambientIntensity", _directionalLight.ambientIntensity);
+                shader.uploadUniformFloat("u_DirectionalLight.base.diffuseIntensity", _directionalLight.diffuseIntensity);
+            }
 
-            string uniformName = "u_PointLights[" ~ to!string(pointLightId) ~ "]";
-            shader.uploadUniformVec3(toStringz(uniformName ~ ".position"), pointLight.globalPosition);
+            // Setup point light data
+            const int nbPointLights = cast(int)_pointLights.length;
+            shader.uploadUniformInt("u_NbPointLights", nbPointLights);
+            for (int pointLightId = 0; pointLightId < nbPointLights; ++pointLightId) {
+                PointLight pointLight = _pointLights[pointLightId];
 
-            string baseUniformName = uniformName ~ ".base";
-            shader.uploadUniformVec3(toStringz(baseUniformName ~ ".color"), pointLight.color.rgb);
-            shader.uploadUniformFloat(toStringz(baseUniformName ~ ".ambientIntensity"), pointLight.ambientIntensity);
-            shader.uploadUniformFloat(toStringz(baseUniformName ~ ".diffuseIntensity"), pointLight.diffuseIntensity);
+                string uniformName = "u_PointLights[" ~ to!string(pointLightId) ~ "]";
+                shader.uploadUniformVec3(toStringz(uniformName ~ ".position"), pointLight.globalPosition);
 
-            string attenuationUniformName = uniformName ~ ".attenuation";
-            shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".constant"), pointLight.constant);
-            shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".linear"), pointLight.linear);
-            shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".exp"), pointLight.exp);
-        }
+                string baseUniformName = uniformName ~ ".base";
+                shader.uploadUniformVec3(toStringz(baseUniformName ~ ".color"), pointLight.color.rgb);
+                shader.uploadUniformFloat(toStringz(baseUniformName ~ ".ambientIntensity"), pointLight.ambientIntensity);
+                shader.uploadUniformFloat(toStringz(baseUniformName ~ ".diffuseIntensity"), pointLight.diffuseIntensity);
 
-        // Setup spot light data
-        const int nbSpotLights = cast(int)_spotLights.length;
-        shader.uploadUniformInt("u_NbSpotLights", nbSpotLights);
-        for (int spotLightId = 0; spotLightId < nbSpotLights; ++spotLightId) {
-            SpotLight spotLight = _spotLights[spotLightId];
+                string attenuationUniformName = uniformName ~ ".attenuation";
+                shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".constant"), pointLight.constant);
+                shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".linear"), pointLight.linear);
+                shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".exp"), pointLight.exp);
+            }
 
-            string uniformName = "u_SpotLights[" ~ to!string(spotLightId) ~ "]";
-            shader.uploadUniformVec3(toStringz(uniformName ~ ".direction"), spotLight.direction);
-            shader.uploadUniformFloat(toStringz(uniformName ~ ".cutoff"), cos(spotLight.angle * degToRad));
+            // Setup spot light data
+            const int nbSpotLights = cast(int)_spotLights.length;
+            shader.uploadUniformInt("u_NbSpotLights", nbSpotLights);
+            for (int spotLightId = 0; spotLightId < nbSpotLights; ++spotLightId) {
+                SpotLight spotLight = _spotLights[spotLightId];
 
-            string baseUniformName = uniformName ~ ".base";
-            shader.uploadUniformVec3(toStringz(baseUniformName ~ ".position"), spotLight.globalPosition);
+                string uniformName = "u_SpotLights[" ~ to!string(spotLightId) ~ "]";
+                shader.uploadUniformVec3(toStringz(uniformName ~ ".direction"), spotLight.direction);
+                shader.uploadUniformFloat(toStringz(uniformName ~ ".cutoff"), cos(spotLight.angle * degToRad));
 
-            string base2UniformName = baseUniformName ~ ".base";
-            shader.uploadUniformVec3(toStringz(base2UniformName ~ ".color"), spotLight.color.rgb);
-            shader.uploadUniformFloat(toStringz(base2UniformName ~ ".ambientIntensity"), spotLight.ambientIntensity);
-            shader.uploadUniformFloat(toStringz(base2UniformName ~ ".diffuseIntensity"), spotLight.diffuseIntensity);
+                string baseUniformName = uniformName ~ ".base";
+                shader.uploadUniformVec3(toStringz(baseUniformName ~ ".position"), spotLight.globalPosition);
 
-            string attenuationUniformName = baseUniformName ~ ".attenuation";
-            shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".constant"), spotLight.constant);
-            shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".linear"), spotLight.linear);
-            shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".exp"), spotLight.exp);
+                string base2UniformName = baseUniformName ~ ".base";
+                shader.uploadUniformVec3(toStringz(base2UniformName ~ ".color"), spotLight.color.rgb);
+                shader.uploadUniformFloat(toStringz(base2UniformName ~ ".ambientIntensity"), spotLight.ambientIntensity);
+                shader.uploadUniformFloat(toStringz(base2UniformName ~ ".diffuseIntensity"), spotLight.diffuseIntensity);
+
+                string attenuationUniformName = baseUniformName ~ ".attenuation";
+                shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".constant"), spotLight.constant);
+                shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".linear"), spotLight.linear);
+                shader.uploadUniformFloat(toStringz(attenuationUniformName ~ ".exp"), spotLight.exp);
+            }
         }
     }
 }
