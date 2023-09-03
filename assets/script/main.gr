@@ -39,10 +39,8 @@ task runtime() {
     reimu:addTexture("reimu_body");
 
     var reimuHair = @Model("reimu_hair");
-    reimuHair:position(@vec3f(0f, -1f, 0f));
-    reimuHair:scale(@vec3f(0.1f, 0.1f, 0.1f));
     reimuHair:addTexture("reimu_hair");
-    // @TODO add as child
+    reimu:addChild(reimuHair);
 
     /*var skin = @Model("skin");
     skin:position(@vec3f(0f, -1f, 0f));

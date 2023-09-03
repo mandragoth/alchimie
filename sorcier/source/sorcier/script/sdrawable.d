@@ -29,17 +29,19 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addConstructor(&_newModel, modelType, [grString]);
     library.addConstructor(&_newQuad, quadType);
 
-    // Entity operations
-    library.addFunction(&_getPosition, "position", [instanceType], [vec3Type]);
+    // Instance operations
+    library.addFunction(&_getGlobalPosition, "globalPosition", [instanceType], [vec3Type]);
+    library.addFunction(&_getLocalPosition, "localPosition", [instanceType], [vec3Type]);
     library.addFunction(&_setPosition2D, "position2D", [instanceType, vec2Type]);
     library.addFunction(&_setPosition, "position", [instanceType, vec3Type]);
     library.addFunction(&_setRotation, "rotation", [instanceType, vec3Type]);
     library.addFunction(&_setScale, "scale", [instanceType, vec3Type]);
-    library.addFunction(&_addTexture, "addTexture", [entityType, grString]);
-    library.addFunction(&_draw, "draw", [entityType]);
-    library.addFunction(&_update, "update", [entityType]);
+    library.addFunction(&_addChild, "addChild", [instanceType, instanceType]);
 
-    // Entity draw commands
+    // Entity operations
+    library.addFunction(&_addTexture, "addTexture", [entityType, grString]);
+
+    // Global draw commands
     library.addFunction(&_drawFilledRect, "drawFilledRect", [vec2Type, vec2Type, colorType]);
     library.addFunction(&_drawFilledCircle, "drawFilledCircle", [vec2Type, grFloat, colorType]);
 
@@ -59,9 +61,14 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addFunction(&_setDisplayBoneId, "displayBoneId", [modelType, grInt], []);
 }
 
-private void _getPosition(GrCall call) {
+private void _getGlobalPosition(GrCall call) {
     Instance instance = call.getNative!Instance(0);
-    call.setNative(toSVec3f(instance.position));
+    call.setNative(toSVec3f(instance.globalPosition));
+}
+
+private void _getLocalPosition(GrCall call) {
+    Instance instance = call.getNative!Instance(0);
+    call.setNative(toSVec3f(instance.localPosition));
 }
 
 private void _setPosition2D(GrCall call) {
@@ -84,6 +91,12 @@ private void _setScale(GrCall call) {
     instance.scale = cast(vec3) call.getNative!SVec3f(1);
 }
 
+private void _addChild(GrCall call) {
+    Instance current = call.getNative!Instance(0);
+    Instance child   = call.getNative!Instance(1);
+    current.addChild(child);
+}
+
 private void _addTexture(GrCall call) {
     Entity entity = call.getNative!Entity(0);
     Texture texture = fetchPrototype!Texture(call.getString(1));
@@ -93,16 +106,6 @@ private void _addTexture(GrCall call) {
     } else {
         entity.material.textures ~= texture;
     }
-}
-
-private void _draw(GrCall call) {
-    Entity entity = call.getNative!Entity(0);
-    entity.draw();
-}
-
-private void _update(GrCall call) {
-    Entity entity = call.getNative!Entity(0);
-    entity.update();
 }
 
 private void _newSprite(GrCall call) {
@@ -163,7 +166,7 @@ private void _drawFilledCircle(GrCall call) {
 private void _newDirectionalLight(GrCall call) {
     DirectionalLight directionalLight = new DirectionalLight();
 
-    directionalLight.direction = call.getNative!SVec3f(0);
+    directionalLight.direction = cast(vec3) call.getNative!SVec3f(0);
     directionalLight.ambientIntensity = call.getFloat(1);
     directionalLight.diffuseIntensity = call.getFloat(2);
 

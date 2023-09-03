@@ -17,6 +17,7 @@ public {
     import magia.core.quat;
     import magia.core.resource;
     import magia.core.ringbuffer;
+    import magia.core.rot;
     import magia.core.simplex;
     import magia.core.singleton;
     import magia.core.spline;

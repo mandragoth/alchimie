@@ -9,7 +9,7 @@ import std.stdio;
 
 // @TODO move to shape
 /// Instance of sphere
-class Sphere : Entity {
+class Sphere : Entity3D {
     protected {
         Mesh[] _meshes;
 

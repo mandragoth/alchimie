@@ -56,7 +56,7 @@ final class Label : UIElement {
         reload();
     }
 
-    override void draw(Transform transform) {
+    override void draw(Transform2D transform) {
         Color color = Color.white;
         vec2 pos = vec2.zero;
 

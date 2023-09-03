@@ -5,56 +5,77 @@ import magia.render.material;
 import magia.render.texture;
 
 /// An instance is an item with a transform that can be updated
-abstract class Instance {
+abstract class Instance(type, uint dimension_) {
     /// Transform stating where the instance is located
-    Transform transform;
+    Transform!(type, dimension_) transform;
+
+    /// Parent instance
+    Instance parent;
+
+    /// Children instances
+    Instance[] children;
 
     @property {
-        /// Set position (2D)
-        void position(vec2 position_) {
-            transform.position = vec3(position_, 0f);
+        /// Get global transform
+        Transform!(type, dimension_) globalTransform() {
+            Transform toReturn = transform;
+
+            Instance ancestor = parent;
+            while(ancestor !is null) {
+                toReturn = toReturn * ancestor.transform;
+                ancestor = ancestor.parent;
+            }
+
+            return toReturn;
         }
 
-        /// Set position (3D)
-        void position(vec3 position_) {
+        /// Set position
+        void position(Vector!(type, dimension_) position_) {
             transform.position = position_;
         }
 
-        /// Get position (2D)
-        vec2 position2D() {
-            return vec2(transform.position.x, transform.position.y);
-        }
-
-        /// Get position (3D)
-        vec3 position() {
+        /// Get local position
+        Vector!(type, dimension_) localPosition() {
             return transform.position;
         }
 
-        /// Set rotation (3D, euler)
-        void rotation(vec3 rotation_) {
-            transform.rotation = quat.euler_rotation(rotation_);
+        /// Get global position
+        Vector!(type, dimension_) globalPosition2D() {
+            return globalTransform.position;
         }
 
-        /// Set scale (2D)
-        void scale(vec2 scale_) {
-            transform.scale = vec3(scale_, 0f);
+        /// Set rotation
+        void rotation(Rotor!(type, dimension_) rotation_) {
+            transform.rotation = rotation_;
         }
 
-        /// Set scale (3D)
-        void scale(vec3 scale_) {
+        /// Set scale
+        void scale(Vector!(type, dimension_) scale_) {
             transform.scale = scale_;
         }
+    }
+
+    /// Add a child
+    void addChild(Instance instance) {
+        children ~= instance;
+        instance.parent = this;
     }
 
     /// Update the object (given a deltaTime)
     void update() {}
 }
 
+alias Instance2D = Instance!(float, 2);
+alias Instance3D = Instance!(float, 3);
+
 /// An entity is a drawable instance
-abstract class Entity : Instance {
+abstract class Entity(type, uint dimension_) : Instance!(type, dimension_) {
     /// Material stating how to render the item
     Material material;
 
     /// Render on screen
     void draw() {}
 }
+
+alias Entity2D = Entity!(float, 2);
+alias Entity3D = Entity!(float, 3);

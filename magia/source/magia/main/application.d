@@ -27,9 +27,11 @@ class Application {
         double _accumulator = 0.0;
 
         // @TODO handle several scene (Ressource?)
-        Scene _scene;
+        Scene3D _scene3D;
+        Scene2D _scene2D;
 
         // @TODO merge UIManager with scene / hierarchy
+        // To be specific the UIManager ought to be a Scene2D?
         UIManager _uiManager;
 
         // @TODO move ?
@@ -57,11 +59,6 @@ class Application {
         /// Module d’interface
         UIManager uiManager() {
             return _uiManager;
-        }
-
-        /// Scene actuelle
-        Scene scene() {
-            return _scene;
         }
     }
 
@@ -103,7 +100,8 @@ class Application {
         renderer = new Renderer();
         
         // Create rendering stacks
-        _scene = new Scene();
+        _scene3D = new Scene3D();
+        _scene2D = new Scene2D();
         _uiManager = new UIManager();
 
         // Create input handlers
@@ -131,10 +129,11 @@ class Application {
             while (_accumulator >= 1.0) {
                 _accumulator -= 1.0;
 
+                renderer.update();
                 _uiManager.update();
-                _scene.update();
+                _scene3D.update();
+                _scene2D.update();
                 window.update();
-
                 
                 // @TODO: Traiter Status.error en affichant le message d’erreur ?
                 if (Status.ok != tick()) {
@@ -145,10 +144,13 @@ class Application {
 
         /// Render application
         void draw() {
-            // Draw scene
-            _scene.draw();
+            // Draw 3D scene
+            renderer.setup3DRender();
+            _scene3D.draw();
 
-            // Draw UI
+            // Draw 2D scene, UI
+            renderer.setup2DRender();
+            _scene2D.draw();
             _uiManager.draw();
 
             // Render all draw calls on window

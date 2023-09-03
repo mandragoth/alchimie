@@ -88,7 +88,7 @@ struct LightAttenuation {
 }
 
 /// Point light representation
-class PointLight : Instance {
+class PointLight : Instance3D {
     /// Base light
     BaseLight base;
 
@@ -146,7 +146,7 @@ class PointLight : Instance {
     void printData() {
         writeln(base);
         writeln(attenuation);
-        writeln(position);
+        writeln(globalPosition);
     }
 }
 
@@ -216,7 +216,7 @@ class LightingManager {
             PointLight pointLight = _pointLights[pointLightId];
 
             string uniformName = "u_PointLights[" ~ to!string(pointLightId) ~ "]";
-            shader.uploadUniformVec3(toStringz(uniformName ~ ".position"), pointLight.position);
+            shader.uploadUniformVec3(toStringz(uniformName ~ ".position"), pointLight.globalPosition);
 
             string baseUniformName = uniformName ~ ".base";
             shader.uploadUniformVec3(toStringz(baseUniformName ~ ".color"), pointLight.color.rgb);
@@ -240,7 +240,7 @@ class LightingManager {
             shader.uploadUniformFloat(toStringz(uniformName ~ ".cutoff"), cos(spotLight.angle * degToRad));
 
             string baseUniformName = uniformName ~ ".base";
-            shader.uploadUniformVec3(toStringz(baseUniformName ~ ".position"), spotLight.position);
+            shader.uploadUniformVec3(toStringz(baseUniformName ~ ".position"), spotLight.globalPosition);
 
             string base2UniformName = baseUniformName ~ ".base";
             shader.uploadUniformVec3(toStringz(base2UniformName ~ ".color"), spotLight.color.rgb);

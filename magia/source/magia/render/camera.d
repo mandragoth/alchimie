@@ -12,7 +12,7 @@ import magia.render.shader;
 import magia.render.window;
 
 /// Global camera class
-abstract class Camera : Instance {
+abstract class Camera : Instance3D {
     protected {
         /// Rotation around Z axis
         float _zRotation = 0f;
@@ -192,7 +192,7 @@ class PerspectiveCamera : Camera {
 
     /// Setting up camera matrices operations
     void updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
-        _view = mat4.look_at(position, position + _target, _up);
+        _view = mat4.look_at(globalPosition, globalPosition + _target, _up);
         _projection = mat4.perspective(_width, _height, FOVdeg, nearPlane, farPlane);
         _matrix = _projection * _view;
     }

@@ -151,14 +151,14 @@ class Renderer {
 
     /// Render filled circle
     void drawFilledCircle(vec2 position, float size, Color color = Color.white, float alpha = 1f) {
-        Transform transform = _coordinateSystem.toRenderSpace(position, vec2(size, size), window.screenSize);
+        Transform2D transform = _coordinateSystem.toRenderSpace(position, vec2(size, size), window.screenSize);
         setupCircleShader(transform.position2D, transform.scale.x, color, alpha);
         drawIndexed(rectMesh, _circleShader, defaultMaterial, transform);
     }
 
     /// Render filled rectangle
     void drawFilledRect(vec2 position, vec2 size, Color color = Color.white, float alpha = 1f) {
-        Transform transform = _coordinateSystem.toRenderSpace(position, size, window.screenSize);
+        Transform2D transform = _coordinateSystem.toRenderSpace(position, size, window.screenSize);
         setupQuadShader(color, alpha);
         drawIndexed(rectMesh, _quadShader, defaultMaterial, transform);
     }
@@ -167,13 +167,13 @@ class Renderer {
     void drawTexture(Texture texture, vec2 position, vec2 size,
                      vec4i clip = vec4i.zero, Flip flip = Flip.none, Blend blend = Blend.alpha,
                      Color color = Color.white, float alpha = 1f) {
-        Transform transform = _coordinateSystem.toRenderSpace(position, size, window.screenSize);
+        Transform2D transform = _coordinateSystem.toRenderSpace(position, size, window.screenSize);
         Material material = new Material(texture, color, alpha, blend, flip, clip);
         drawMaterial(material, transform);
     }
 
     /// Render a texture
-    void drawMaterial(Material material, Transform transform) {
+    void drawMaterial(Material material, Transform2D transform) {
         // Default clip has x, y = 0 and w, h = 1
         vec4 clipf = vec4(0f, 0f, 1f, 1f);
 
@@ -277,7 +277,7 @@ class Renderer {
     }
 
     /// @TODO batching
-    private void drawIndexed(Mesh mesh, Shader shader, Material material, Transform transform) {
+    private void drawIndexed(Mesh mesh, Shader shader, Material material, Transform3D transform) {
         if(_is3d) {
             // One draw call per camera
             foreach (Camera camera; cameras) {

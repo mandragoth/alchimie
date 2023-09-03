@@ -69,7 +69,7 @@ final class Model {
         AnimatedVertex[] _animatedVertices;
 
         // Transformations
-        Transform[] _transforms;
+        Transform3D[] _transforms;
 
         // Bones
         Bone[uint] _bones;
@@ -145,7 +145,7 @@ final class Model {
     }
 
     /// Draw the model (by default with its preloaded material)
-    void draw(Shader shader, Material material, Transform transform) {
+    void draw(Shader shader, Material material, Transform3D transform) {
         // Model culling is the opposite of usual objects
         glCullFace(GL_BACK);
 
@@ -163,7 +163,7 @@ final class Model {
     }
 
     /// Draw the model (with its preloaded material)
-    void draw(Shader shader, Transform transform) {
+    void draw(Shader shader, Transform3D transform) {
         draw(shader, _material, transform);
     }
 
@@ -769,7 +769,7 @@ final class Model {
 }
 
 /// Instance of a **Model** to render
-final class ModelInstance : Entity {
+final class ModelInstance : Entity3D {
     private {
         Model _model;
         Shader _shader;
@@ -810,13 +810,13 @@ final class ModelInstance : Entity {
 
         foreach (Camera camera; renderer.cameras) {
             glViewport(camera.viewport.x, camera.viewport.y, camera.viewport.z, camera.viewport.w);
-            _shader.uploadUniformVec3("u_CamPos", camera.position);
+            _shader.uploadUniformVec3("u_CamPos", camera.globalPosition);
             _shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
 
             if (material) {
-                _model.draw(_shader, material, transform);
+                _model.draw(_shader, material, globalTransform);
             } else {
-                _model.draw(_shader, transform);
+                _model.draw(_shader, globalTransform);
             }
         }
     }

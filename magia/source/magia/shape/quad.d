@@ -10,7 +10,7 @@ import magia.core;
 import magia.render;
 
 /// Instance of quad
-final class QuadInstance : Entity {
+final class QuadInstance : Entity3D {
     private {
         Shader _shader;
         Material _material;
@@ -35,7 +35,7 @@ final class QuadInstance : Entity {
         // @TODO handle generically?
         foreach (Camera camera; renderer.cameras) {
             glViewport(camera.viewport.x, camera.viewport.y, camera.viewport.z, camera.viewport.w);
-            _shader.uploadUniformVec3("u_CamPos", camera.position);
+            _shader.uploadUniformVec3("u_CamPos", camera.globalPosition);
             _shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
 
             quadMesh.draw(_shader, _material, transform);

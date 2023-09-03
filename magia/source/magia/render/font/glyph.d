@@ -49,7 +49,7 @@ struct Glyph {
     }
 
     /// Render glyph (@TODO rewrite?)
-    void draw(Transform transform, float posX, float posY, float scale, Color color, float alpha) {
+    void draw(Transform2D transform, float posX, float posY, float scale, Color color, float alpha) {
         _sprite.transform = transform;
         _sprite.position = vec2(posX, posY);
         //_sprite.scale = scale; @TODO forward scale to sprite properly

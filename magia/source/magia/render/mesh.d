@@ -92,7 +92,7 @@ final class Mesh {
     }
 
     /// Draw call
-    void draw(Shader shader, Material material, Transform transform = Transform.identity) {
+    void draw(Shader shader, Material material, Transform3D transform = Transform3D.identity) {
         bindData(shader, material);
         
         // Index buffer: defer to glDrawElements* methods
@@ -105,7 +105,7 @@ final class Mesh {
         }
     }
 
-    private void drawElements(Shader shader, Transform transform) {
+    private void drawElements(Shader shader, Transform3D transform) {
         if (_instances == 1) {
             shader.uploadUniformMat4("u_Transform", transform.model);
             glDrawElements(_drawMode, _vertexArray.elementCount, GL_UNSIGNED_INT, null);
@@ -117,7 +117,7 @@ final class Mesh {
         // Debug: normals
     }
 
-    private void drawArrays(Shader shader, Transform transform) {
+    private void drawArrays(Shader shader, Transform3D transform) {
         if (_instances == 1) {
             shader.uploadUniformMat4("u_Transform", transform.model);
             //glDrawArrays(_drawMode, 0, );

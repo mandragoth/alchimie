@@ -47,7 +47,7 @@ task camera3D() {
     var controllerSensitivity = 2f;
     var minRotX = rad(5f);
 
-    var cPosition = camera.position;
+    var cPosition = camera.globalPosition;
 
     loop yield {
         var xAxis = camera.right;

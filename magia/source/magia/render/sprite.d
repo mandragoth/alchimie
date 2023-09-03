@@ -16,7 +16,7 @@ import magia.render.texture;
 import magia.render.window;
 
 /// Base rendering class.
-final class Sprite : Entity {
+final class Sprite : Entity2D {
     /// Alignment used to render the sprites
     CoordinateSystem alignment;
 
@@ -70,7 +70,7 @@ final class Sprite : Entity {
 
     /// Draw the sprite on the screen
     override void draw() {
-        Transform worldTransfrom = alignment.toRenderSpace(position2D, size, window.screenSize);
+        Transform worldTransfrom = alignment.toRenderSpace(globalPosition2D, size, window.screenSize);
         renderer.drawMaterial(material, worldTransfrom);
     }
 }

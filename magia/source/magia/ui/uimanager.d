@@ -58,7 +58,7 @@ class UIManager {
         }
     }
 
-    private void draw(Transform transform, UIElement element, UIElement parent = null) {
+    private void draw(Transform2D transform, UIElement element, UIElement parent = null) {
         // Scale
         vec3 scale = vec3(element.scaleX, element.scaleY, 1f);
 
