@@ -5,6 +5,9 @@ import magia.core.quat;
 import magia.core.vec;
 import magia.core.util;
 
+/// Identity transform
+Transform identity = Transform.identity;
+
 /// Transform structure
 struct Transform {
     /// Object position
@@ -16,9 +19,6 @@ struct Transform {
     /// Object scale
     vec3 scale = vec3.one;
 
-    /// Matrix model
-    private mat4 _model;
-
     @property {
         /// Default transform
         static @property Transform identity() {
@@ -27,7 +27,7 @@ struct Transform {
 
         /// Get model
         mat4 model() const {
-            return _model;
+            return combineModel(position, rotation, scale);
         }
 
         /// Get 2D position
@@ -50,7 +50,6 @@ struct Transform {
     this(vec3 position_, vec3 scale_) {
         position = position_;
         scale = scale_;
-        _model = combineModel(position, rotation, scale);
     }
 
     /// Constructor given position, rotation, scale
@@ -58,27 +57,11 @@ struct Transform {
         position = position_;
         rotation = rotation_;
         scale = scale_;
-        _model = combineModel(position, rotation, scale);
-    }
-
-    /// Constructor (given model)
-    this(mat4 model_, vec3 position_ = vec3.zero,
-         quat rotation_ = quat.identity, vec3 scale_ = vec3.one) {
-        _model = model_;
-        position = position_;
-        rotation = rotation_;
-        scale = scale_;
-    }
-
-    /// Compute transform model
-    void recomputeModel() {
-        _model = combineModel(position, rotation, scale);
     }
 
     /// Combine two transforms
     Transform opBinary(string op : "*")(Transform other) const {
-        return Transform(other._model * _model,
-                         other.position + position,
+        return Transform(other.position + position,
                          other.rotation * rotation,
                          other.scale * scale);
     }

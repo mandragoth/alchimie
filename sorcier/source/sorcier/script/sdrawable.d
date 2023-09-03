@@ -11,7 +11,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     // Maths types
     GrType vec2Type = grGetNativeType("vec2", [grFloat]);
     GrType vec3Type = grGetNativeType("vec3", [grFloat]);
-    GrType colorType = grGetNativeType("Color");
+    GrType colorType = grGetNativeType("color");
     GrType vec4iType = grGetNativeType("vec4", [grInt]);
 
     // Entity types
@@ -40,10 +40,6 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addFunction(&_update, "update", [entityType]);
 
     // Entity draw commands
-    library.addFunction(&_clear, "clear");
-    library.addFunction(&_setup2D, "setup2D");
-    library.addFunction(&_setup3D, "setup3D");
-    library.addFunction(&_render, "render");
     library.addFunction(&_drawFilledRect, "drawFilledRect", [vec2Type, vec2Type, colorType]);
     library.addFunction(&_drawFilledCircle, "drawFilledCircle", [vec2Type, grFloat, colorType]);
 
@@ -128,6 +124,7 @@ private void _newSkybox(GrCall call) {
 
 private void _newModel(GrCall call) {
     ModelInstance modelInstance = new ModelInstance(call.getString(0));
+    currentApplication.scene.addEntity(modelInstance);
     call.setNative(modelInstance);
 }
 
@@ -145,23 +142,6 @@ private void _packInstanceMatrix(GrCall call) {
     mat4 instanceMatrix = combineModel(position, rotation, scale);
 
     call.setNative(instanceMatrix);
-}
-
-private void _clear(GrCall) {
-    renderer.clear();
-}
-
-private void _setup2D(GrCall) {
-    renderer.setup2DRender();
-}
-
-private void _setup3D(GrCall) {
-    renderer.setup3DRender();
-    renderer.setupLights();
-}
-
-private void _render(GrCall) {
-    //currentApplication.render();
 }
 
 private void _drawFilledRect(GrCall call) {

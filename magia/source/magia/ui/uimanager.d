@@ -46,37 +46,24 @@ class UIManager {
 
     /// Draw
     void draw() {
-        mat4 position = mat4.identity;
-        mat4 size = mat4.identity;
-        position.translate(-1f, -1f, 0.0f);
-        size.scale(1f / window.screenSize().x, 1f / window.screenSize().y, 1.0f);
+        // Top left corner
+        vec3 position = vec3(-1f, -1f, 0f);
 
-        mat4 transform = position * size;
+        // Window ratio
+        vec3 size = vec3(1f / window.screenSize().x, 1f / window.screenSize().y, 1.0f);
+
+        Transform transform = Transform(position, size);
         foreach (UIElement element; _roots) {
             draw(transform, element);
         }
     }
 
-    private void draw(mat4 transform, UIElement element, UIElement parent = null) {
-        mat4 local = mat4.identity;
-
+    private void draw(Transform transform, UIElement element, UIElement parent = null) {
         // Scale
-        local.scale(element.scaleX, element.scaleY, 1f);
-
-        // Rotation: translate the element back to 0,0 temporarily
-        local.translate(-element.sizeX * element.scaleX * element.pivotX * 2f,
-                        -element.sizeY * element.scaleY * element.pivotY * 2f,
-                        0f);
+        vec3 scale = vec3(element.scaleX, element.scaleY, 1f);
 
         // Rotation
-        if (element.angle) {
-            local.rotatez(element.angle);
-        }
-
-        // Rotation: translate the element back to its pivot
-        local.translate(element.sizeX * element.scaleX * element.pivotX * 2f,
-                        element.sizeY * element.scaleY * element.pivotY * 2f,
-                        0f);
+        quat rotation = quat.euler_rotation(0f, 0f, element.angle);
 
         float x = element.posX + element.offsetX;
         float y = element.posY + element.offsetY;
@@ -107,8 +94,8 @@ class UIManager {
         }
 
         // Position
-        local.translate(x * 2f, y * 2f, 0f);
-        transform = transform * local;
+        vec3 position = vec3(x * 2f, y * 2f, 0f);
+        transform = transform * Transform(position, rotation, scale);
 
         element.draw(transform);
         foreach (UIElement child; element._children) {
