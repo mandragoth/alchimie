@@ -138,7 +138,7 @@ class Renderer(uint dimension_) {
         }
     } else static if (dimension_ == 3) {
         /// Prepare to render 3D items
-        void setup() {  
+        void setup() {
             glDisable(GL_BLEND);
             glEnable(GL_CULL_FACE);
             glEnable(GL_DEPTH_TEST);

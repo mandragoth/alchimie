@@ -192,9 +192,16 @@ class Application {
             while (_accumulator >= 1.0) {
                 _accumulator -= 1.0;
 
-                _uiManager.update();
+                // Update rendering stacks
+                _renderer3D.update();
+                _renderer2D.update();
+
+                // Update 3D, 2D and UI draw stacks
                 _scene3D.update();
                 _scene2D.update();
+                _uiManager.update();
+
+                // Update window
                 _window.update();
                 
                 // @TODO: Traiter Status.error en affichant le message d’erreur ?
@@ -216,6 +223,10 @@ class Application {
 
             // Render all draw calls on window
             _window.render();
+
+            // Clear renderers
+            _renderer3D.clear();
+            _renderer2D.clear();
         }
     }
 

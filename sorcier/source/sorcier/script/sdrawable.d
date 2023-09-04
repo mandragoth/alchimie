@@ -25,7 +25,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     // Entity constructors
     library.addConstructor(&_newSprite, spriteType, [grString]);
     library.addConstructor(&_newSprite2, spriteType, [grString, vec4iType]);
-    library.addConstructor(&_newSkybox, skyboxType, [grString]);
+    library.addConstructor(&_newSkybox, skyboxType, []);
     library.addConstructor(&_newModel, modelType, [grString]);
     library.addConstructor(&_newQuad, quadType);
 
@@ -119,10 +119,9 @@ private void _newSprite2(GrCall call) {
     call.setNative(sprite);
 }
 
-// @TODO handle currentApplication.scene.addEntity(sprite); and related callbacks
-
 private void _newSkybox(GrCall call) {
-    Skybox skybox = new Skybox( /*call.getString(0)*/ );
+    Skybox skybox = new Skybox();
+    application.addEntity(skybox);
     call.setNative(skybox);
 }
 
