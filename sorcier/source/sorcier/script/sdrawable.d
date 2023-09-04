@@ -111,11 +111,13 @@ private void _addTexture(GrCall call) {
 
 private void _newSprite(GrCall call) {
     Sprite sprite = new Sprite(call.getString(0));
+    application.addEntity(sprite);
     call.setNative(sprite);
 }
 
 private void _newSprite2(GrCall call) {
     Sprite sprite = new Sprite(call.getString(0), call.getNative!SVec4i(1));
+    application.addEntity(sprite);
     call.setNative(sprite);
 }
 

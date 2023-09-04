@@ -1,15 +1,16 @@
 import "input.gr"
 
 export func setupCamera() {
-    //camera2D();
     camera3D();
+    camera2D();
     //splitScreen();
 }
 
 task camera2D() {
     var camera = @OrthographicCamera();
 
-    var moveSpeed = 0.01f;
+    // 2D camera controls removed for now
+    /*var moveSpeed = 0.01f;
     var zRotationSpeed = rad(2f);
     var zoomSpeed = 0.05f;
     var wheelFrames = 5;
@@ -34,7 +35,7 @@ task camera2D() {
         camera:position(cPosition);
         camera:rotation(zRotation);
         camera:zoom(zoomLevel);
-    }
+    }*/
 }
 
 task camera3D() {

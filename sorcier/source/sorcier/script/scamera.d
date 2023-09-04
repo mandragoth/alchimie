@@ -59,7 +59,7 @@ private void _newPerspectiveCamera2(GrCall call) {
 }
 
 private void _newOrthographicCamera(GrCall call) {
-    OrthographicCamera camera = new OrthographicCamera();
+    OrthographicCamera camera = new OrthographicCamera(application.window.getAspectRatio());
     application.addCamera2D(camera);
     call.setNative(camera);
 }

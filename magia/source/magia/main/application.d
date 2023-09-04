@@ -83,14 +83,12 @@ class Application {
 
         /// Add 2D camera
         void addCamera2D(OrthographicCamera camera) {
-            camera.window = _window;
             _window.addCamera(camera);
             _renderer2D.cameras ~= camera;
         }
 
         /// Add 3D camera
         void addCamera3D(PerspectiveCamera camera) {
-            camera.window = _window;
             _window.addCamera(camera);
             _renderer3D.cameras ~= camera;
         }
