@@ -26,6 +26,7 @@ class Application {
         long _tickStartFrame;
         uint _ticksPerSecond = 60u;
         ulong _currentTick;
+        double _accumulator = 0.0;
 
         // @TODO handle several scene (Ressource?)
         Scene _scene;
@@ -106,18 +107,32 @@ class Application {
 
     /// Run application
     void run() {
-        //@TODO: Traiter Status.error en affichant le message d’erreur ?
-        if (Status.ok != load())
+        // @TODO: Traiter Status.error en affichant le message d’erreur ?
+        if (Status.ok != load()) {
             return;
+        }
 
+        // Create renderer
+        renderer = new Renderer();
+        
+        // Create rendering stacks
         _scene = new Scene();
         _uiManager = new UIManager();
+
+        // Create input handlers
         _inputManager = new InputManager;
 
         _tickStartFrame = Clock.currStdTime();
-        double accumulator = 0.0;
-
         while (isRunning()) {
+            update();
+            draw();
+        }
+        closeAudio();
+    }
+
+    private {
+        /// Update application
+        void update() {
             long deltaTicks = Clock.currStdTime() - _tickStartFrame;
 
             deltaTicks = Clock.currStdTime() - _tickStartFrame;
@@ -125,10 +140,10 @@ class Application {
             _currentFps = (deltaTime == .0) ? .0 : (10_000_000.0 / cast(double)(deltaTicks));
             _tickStartFrame = Clock.currStdTime();
 
-            accumulator += deltaTime;
+            _accumulator += deltaTime;
 
-            while (accumulator >= 1.0) {
-                accumulator -= 1.0;
+            while (_accumulator >= 1.0) {
+                _accumulator -= 1.0;
 
                 _uiManager.update();
                 _scene.update();
@@ -136,17 +151,18 @@ class Application {
 
                 _currentTick ++;
 
+                
+                // @TODO: Traiter Status.error en affichant le message d’erreur ?
                 if (Status.ok != tick()) {
                     return;
-                    //@TODO: Traiter Status.error en affichant le message d’erreur ?
                 }
             }
+        }
 
-            // Setup 2D
-            renderer.setup2DRender();
-
-            // Draw scene (so far only 2D)
-            //_scene.draw();
+        /// Render application
+        void draw() {
+            // Draw scene
+            _scene.draw();
 
             // Draw UI
             _uiManager.draw();
@@ -157,32 +173,8 @@ class Application {
             // Clear up screen
             renderer.clear();
         }
-
-        closeAudio();
     }
 
-    /// Render application
-    /*void draw() {
-        // Setup 2D
-        renderer.setup2DRender();
-
-        // Draw scene (so far only 2D)
-        //_scene.draw();
-
-        // Draw UI
-        _uiManager.draw();
-
-        // Render all draw calls on window
-        window.render();
-
-        // Clear up screen
-        renderer.clear();
-    }*/
-
-    /// Render
-    /*void render() {
-        window.render();
-    }*/
 
     /// Set application icon
     void setIcon() {

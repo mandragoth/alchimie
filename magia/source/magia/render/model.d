@@ -35,7 +35,7 @@ enum uint uintDefault = -1;
 private {
     // File to debug + should we trace deep layers?
     string s_DebugFile = "rigged.gltf";
-    bool s_TraceDeep = true;
+    bool s_TraceDeep = false;
     bool s_TraceData = false;
 }
 
@@ -98,8 +98,8 @@ final class Model {
     this(string fileName) {
         if (baseName(fileName) == s_DebugFile) {
             _trace = false;
-            _traceDeep = false;//s_TraceDeep;
-            _traceData = false;//s_TraceData;
+            _traceDeep = s_TraceDeep;
+            _traceData = s_TraceData;
         }
 
         // Initialize material
@@ -148,9 +148,6 @@ final class Model {
     void draw(Shader shader, Material material, Transform transform) {
         // Model culling is the opposite of usual objects
         glCullFace(GL_BACK);
-
-        // Recompute model of transform in case it is not yet done
-        transform.recomputeModel();
 
         for (uint meshId = 0; meshId < _meshes.length; ++meshId) {
             Transform meshTransform = _transforms[meshId] * transform;
@@ -638,7 +635,7 @@ final class Model {
                 }
 
                 // Record transform for new mesh
-                _transforms ~= Transform(currentModel, translation, rotation, scale);
+                _transforms ~= Transform(translation, rotation, scale);
 
                 const uint meshId = getJsonInt(jsonNode, "mesh");
                 const uint skinId = getJsonInt(jsonNode, "skin", uintDefault);

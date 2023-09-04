@@ -45,13 +45,21 @@ abstract class UIElement {
         Spline spline = Spline.linear;
     }
 
+    /// States indexed by name
     State[string] states;
+
+    /// Current state
     string currentStateName;
+
+    /// Initial and target states
     State initState, targetState;
+
+    /// Internal timer
     Timer timer;
 
-    // Propriétés
+    /// Propriétés
     bool isHovered, isClicked;
 
-    void draw(mat4);
+    /// Draw call to implement
+    void draw(Transform);
 }

@@ -7,7 +7,7 @@ import magia.render.font;
 import magia.render.postprocess;
 
 /// Render text on screen
-void drawText(mat4 transform, string text, float x, float y, Font font = null) {
+void drawText(Transform transform, string text, float x, float y, Font font = null) {
     if (!font) {
         font = getDefaultFont();
     }

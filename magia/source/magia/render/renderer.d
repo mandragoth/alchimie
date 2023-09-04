@@ -132,6 +132,9 @@ class Renderer {
 
         _is3d = true;
         _coordinateSystem = _coordinateSystem.center;
+
+        lightingManager.setupInShader(_modelShader);
+        lightingManager.setupInShader(_animatedShader);
     }
 
     /// Update
@@ -217,12 +220,6 @@ class Renderer {
 
         setupQuadShader(material.color, material.alpha);
         drawIndexed(rectMesh, _quadShader, material, transform);
-    }
-
-    /// Setup lights for all shaders that use them
-    void setupLights() {
-        lightingManager.setupInShader(_modelShader);
-        lightingManager.setupInShader(_animatedShader);
     }
 
     private void setupLineShader(Color color = Color.white, float alpha = 1f) {

@@ -6,7 +6,7 @@ import grimoire;
 import sorcier.script.common;
 
 package void loadAlchimieLibColor(GrLibDefinition library) {
-    GrType colorType = library.addNative("Color");
+    GrType colorType = library.addNative("color");
 
     library.addConstructor(&_ctor, colorType, [grFloat, grFloat, grFloat]);
 

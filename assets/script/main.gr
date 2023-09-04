@@ -13,17 +13,17 @@ event onLoad() {
 }
 
 task runtime() {
-    var remilia = @Sprite("remilia", @vec4i(0, 0, 32, 48));
+    /*var remilia = @Sprite("remilia", @vec4i(0, 0, 32, 48));
     remilia:position2D(@vec2f(12.5f, 0f));
 
     var remilia2 = @Sprite("remilia", @vec4i(96, 48, 32, 48));
-    remilia2:position2D(@vec2f(12.5f + 32f, 0f));
+    remilia2:position2D(@vec2f(12.5f + 32f, 0f));*/
 
     var skybox = @Skybox(""); // @TODO fix
     var globalLight = @DirectionalLight(@vec3f(0f, -10f, 0f), .2f, .01f);
-    //var pointLight1 = @PointLight(@vec3(-1f, 0.5f, 0f), @color(1f, 0f, 0f), 0f, 0.3f);
-    //var pointLight2 = @PointLight(@vec3(1f, 0.5f, 0f), @color(0f, 1f, 0f), 0f, 0.3f);
-    //var spotLight = @SpotLight(@vec3(0f, 5f, 0f), @vec3(0f, -1f, 0f), @color(1f, 1f, 1f), 20f, 0.5f, 0.3f);
+    //var pointLight1 = @PointLight(@vec3f(-1f, 0.5f, 0f), @color(1f, 0f, 0f), 0f, 0.3f);
+    //var pointLight2 = @PointLight(@vec3f(1f, 0.5f, 0f), @color(0f, 1f, 0f), 0f, 0.3f);
+    //var spotLight = @SpotLight(@vec3f(0f, 5f, 0f), @vec3f(0f, -1f, 0f), @color(1f, 1f, 1f), 20f, 0.5f, 0.3f);
 
     //var quad = @Quad();
 
@@ -44,12 +44,12 @@ task runtime() {
     reimuHair:addTexture("reimu_hair");
     // @TODO add as child
 
-    var skin = @Model("skin");
+    /*var skin = @Model("skin");
     skin:position(@vec3f(0f, -1f, 0f));
 
     var rig = @Model("riggedsimple");
     rig:rotation(@vec3f(0f, 90f, 0f));
-    rig:scale(@vec3f(0.1f, 0.1f, 0.1f));
+    rig:scale(@vec3f(0.1f, 0.1f, 0.1f));*/
 
     task() {
         var sound = @Sound("assets/sound/wind.wav");
@@ -57,27 +57,7 @@ task runtime() {
     }();
 
     loop yield {
-        //clear();
-
-        setup3D();
-
-        rig:updateDisplayBoneId();
-
-        skybox:draw();
-        jupiter:draw();
-        rig:draw();
-        reimu:draw();
-        reimuHair:draw();
-        skin:draw();
-
-        setup2D();
-
-        //drawFilledCircle(@vec2(25f, 25f), 50f, @color(0f, 1f, 0f));
-        //drawFilledRect(@vec2(0f, 0f), @vec2(50f, 50f), @color(1f, 0f, 0f));
-        remilia:draw();
-        remilia2:draw();
-
-        //render();
+        reimu:updateDisplayBoneId();
     }
 }
 
