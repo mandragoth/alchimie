@@ -10,7 +10,7 @@ import std.range;
 import std.typecons;
 
 /// Liste supprimant la fragmentation tout en gardant les index valides.
-final class Array(T, size_t _capacity, bool _useParallelism = false) {
+final class IArray(T, size_t _capacity, bool _useParallelism = false) {
     private size_t _dataTop = 0u;
     private size_t _availableIndexesTop = 0u;
     private size_t _removeTop = 0u;
@@ -57,15 +57,15 @@ final class Array(T, size_t _capacity, bool _useParallelism = false) {
         }
 
         if (_availableIndexesTop) {
-            //Take out the last available index on the list.
+            //Retire le dernier index disponible dans la liste
             _availableIndexesTop--;
             index = _availableIndexes[_availableIndexesTop];
         } else {
-            //Or use a new id.
+            //Ou on utilise un nouvel id
             index = _dataTop;
         }
 
-        //Add the value to the data stack.
+        //Ajoute la valeur à la pile
         _dataTable[_dataTop] = value;
         _translationTable[index] = _dataTop;
         _reverseTranslationTable[_dataTop] = index;
@@ -79,14 +79,14 @@ final class Array(T, size_t _capacity, bool _useParallelism = false) {
     void pop(size_t index) {
         size_t valueIndex = _translationTable[index];
 
-        //Push the index on the available indexes stack.
+        //Ajoute l’index à la pile des index disponibles
         _availableIndexes[_availableIndexesTop] = index;
         _availableIndexesTop++;
 
-        //Invalidate the index.
+        //Invalide l’index
         _translationTable[index] = -1;
 
-        //Take the top value on the stack and fill the gap.
+        //Prend la première valeur de la pile et comble le trou
         _dataTop--;
         if (valueIndex < _dataTop) {
             size_t userIndex = _reverseTranslationTable[_dataTop];
@@ -248,5 +248,203 @@ final class Array(T, size_t _capacity, bool _useParallelism = false) {
     T back() {
         assert(_dataTop > 0);
         return _dataTable[_dataTop - 1];
+    }
+}
+
+/// Liste supprimant la fragmentation sans garder les index valides.
+final class Array(T, bool _useParallelism = false) {
+    private {
+        T[] _dataTable;
+        size_t[] _removeTable;
+    }
+
+    @property {
+        /// Nombre d’éléments contenus
+        size_t length() const {
+            return _dataTable.length;
+        }
+
+        /// Capacité maximale que peut contenir la liste
+        size_t capacity() const {
+            return _dataTable.capacity;
+        }
+
+        /// Liste des éléments contenus
+        ref T[] data() {
+            return _dataTable;
+        }
+
+        /// La liste est-elle vide ?
+        bool empty() const {
+            return _dataTable.length == 0;
+        }
+
+        /// La liste est-elle pleine ?
+        bool full() const {
+            return false;
+        }
+    }
+
+    /// Ajoute un élément à la liste
+    void push(T value) {
+        _dataTable ~= value;
+    }
+
+    /// Retire un élément de la liste
+    void pop(size_t index) {
+        //Prend la première valeur de la pile et comble le trou
+        if ((index + 1) < _dataTable.length) {
+            _dataTable[index] = _dataTable[$ - 1];
+        }
+
+        _dataTable.length--;
+    }
+
+    /// Vide la liste
+    void reset() {
+        _dataTable.length = 0u;
+        _removeTable.length = 0u;
+    }
+
+    /// Marque un élément à supprimer
+    void mark(size_t index) {
+        _removeTable ~= index;
+    }
+
+    /// Supprime tous les éléments marqué pour suppression
+    void sweep() {
+        foreach (size_t index; _removeTable) {
+            pop(index);
+        }
+        _removeTable.length = 0u;
+    }
+
+    static if (_useParallelism) {
+        /// Itère sur la liste
+        int opApply(int delegate(ref T) dlg) {
+            int result;
+
+            foreach (i; parallel(iota(_dataTable.length))) {
+                result = dlg(_dataTable[i]);
+
+                if (result)
+                    break;
+            }
+
+            return result;
+        }
+    } else {
+        /// Ditto
+        int opApply(int delegate(ref T) dlg) {
+            int result;
+
+            foreach (value; _dataTable) {
+                result = dlg(value);
+
+                if (result)
+                    break;
+            }
+
+            return result;
+        }
+    }
+
+    /// Ditto
+    int opApply(int delegate(const ref T) dlg) const {
+        int result;
+
+        foreach (value; _dataTable) {
+            result = dlg(value);
+
+            if (result)
+                break;
+        }
+
+        return result;
+    }
+
+    static if (_useParallelism) {
+        /// Ditto
+        int opApply(int delegate(const size_t, ref T) dlg) {
+            int result;
+
+            foreach (i; parallel(iota(_dataTable.length))) {
+                result = dlg(i, _dataTable[i]);
+
+                if (result)
+                    break;
+            }
+
+            return result;
+        }
+    } else {
+        /// Ditto
+        int opApply(int delegate(const size_t, ref T) dlg) {
+            int result;
+
+            foreach (size_t i, T value; _dataTable) {
+                result = dlg(i, value);
+
+                if (result)
+                    break;
+            }
+
+            return result;
+        }
+    }
+
+    /// Ditto
+    int opApply(int delegate(const size_t, const ref T) dlg) const {
+        int result;
+
+        foreach (size_t i, const T value; _dataTable) {
+            result = dlg(i, value);
+
+            if (result)
+                break;
+        }
+
+        return result;
+    }
+
+    /// Ditto
+    int opApply(int delegate(const Tuple!(const size_t, const T)) dlg) const {
+        int result;
+
+        foreach (size_t i, const T value; _dataTable) {
+            result = dlg(tuple!(const size_t, const T)(i, value));
+
+            if (result)
+                break;
+        }
+
+        return result;
+    }
+
+    /// Accède à un élément
+    T opIndex(size_t index) {
+        return _dataTable[index];
+    }
+
+    /// Ditto
+    T opIndexAssign(T value, size_t index) {
+        return _dataTable[index] = value;
+    }
+
+    /// L’index est-il valide ?
+    bool has(size_t index) {
+        return index < _dataTable.length;
+    }
+
+    /// Returne le premier élément dans la liste
+    T front() {
+        assert(_dataTable.length > 0);
+        return _dataTable[0];
+    }
+
+    /// Returne le dernier élément dans la liste
+    T back() {
+        assert(_dataTable.length > 0);
+        return _dataTable[$ - 1];
     }
 }

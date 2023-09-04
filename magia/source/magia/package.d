@@ -1,10 +1,11 @@
 module magia;
 
 public {
-    import magia.main;
+    import magia.audio;
     import magia.core;
+    import magia.input;
+    import magia.main;
     import magia.render;
     import magia.shape;
     import magia.ui;
-    import magia.input;
 }

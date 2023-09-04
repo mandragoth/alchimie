@@ -6,6 +6,7 @@ import std.conv;
 import std.datetime;
 import std.stdio;
 
+import magia.audio;
 import magia.core;
 import magia.input;
 import magia.render;
@@ -24,6 +25,7 @@ class Application {
         float _currentFps;
         long _tickStartFrame;
         uint _ticksPerSecond = 60u;
+        ulong _currentTick;
         double _accumulator = 0.0;
 
         // @TODO handle several scene (Ressource?)
@@ -63,6 +65,16 @@ class Application {
         Scene scene() {
             return _scene;
         }
+
+        /// Ticks écoulés depuis le début
+        ulong currentTick() const {
+            return _currentTick;
+        }
+
+        /// Nombre de ticks présents dans une seconde
+        uint ticksPerSecond() const {
+            return _ticksPerSecond;
+        }
     }
 
     /// Constructor
@@ -76,6 +88,7 @@ class Application {
 
         // Load internal libs
         loadSDLOpenGL();
+        openAudio();
         initFont();
 
         // Create window
@@ -114,6 +127,7 @@ class Application {
             update();
             draw();
         }
+        closeAudio();
     }
 
     private {
@@ -134,6 +148,8 @@ class Application {
                 _uiManager.update();
                 _scene.update();
                 window.update();
+
+                _currentTick ++;
 
                 
                 // @TODO: Traiter Status.error en affichant le message d’erreur ?

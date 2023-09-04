@@ -19,6 +19,9 @@ import magia.render.window;
 // @TODO remove or improve traces
 import std.stdio;
 
+///Temporaire
+import magia.audio;
+
 /// Global renderer
 Renderer renderer;
 
@@ -58,7 +61,10 @@ class Renderer {
         Pour l’instant, il me permet surtout d’afficher les instances 2d sans interférer avec les caméras 3d.
         **/
         bool _is3d = false;
+
     }
+        ///Temporaire, doit être associé à une Scene
+        AudioContext _audioContext;
 
     @property {
         /// Set background color
@@ -137,6 +143,9 @@ class Renderer {
             camera.update();
         }
         _camera2d.update();
+
+        if(_audioContext)
+            _audioContext.update();
     }
     
     /// Render line @TODO factorize mesh and use transform to parametrize line?
