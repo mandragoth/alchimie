@@ -9,24 +9,30 @@ import std.traits;
 
 /// Generic vector class
 struct Vector(type, uint dimension_) {
-    static assert(dimension > 0, "0 dimensional vectors don't exist.");
-
-    /// Vector dimension
-    static const uint dimension = dimension_;
+    static assert(dimension > 0, "0 dimensional vectors don't exist");
 
     /// Vector data
     type[dimension] data;
-
-    /// All dimensions set to 0
-    enum zero = Vector(0);
-
-    /// All dimensions set to 1
-    enum one = Vector(1);
 
     /// Expose vector type
     alias vectorType = type;
 
     @property {
+        /// Vector with all dimensions set to 0
+        static Vector!(type, dimension_) zero() {
+            return Vector(0);
+        }
+
+        /// Vector with all dimensions set to 1
+        static Vector!(type, dimension_) one() {
+            return Vector(1);
+        }
+
+        /// Returns dimension of vector
+        static uint dimension() {
+            return dimension_;
+        }
+
         /// Returns pointer to data in memory
         auto value_ptr() {
             return data.ptr;
@@ -213,10 +219,10 @@ struct Vector(type, uint dimension_) {
     }
 
     /// Cast operation
-    Vector!(newType, dimension) opCast(V : Vector!(newType, dimension), newType)() const {
-        Vector!(newType, dimension) toReturn;
+    Vector!(newType, dimension_) opCast(V : Vector!(newType, dimension_), newType)() const {
+        Vector!(newType, dimension_) toReturn;
 
-        static foreach(i; TupleRange!(0, dimension)) {
+        static foreach(i; TupleRange!(0, dimension_)) {
             toReturn.data[i] = cast(newType)(data[i]);
         }
 

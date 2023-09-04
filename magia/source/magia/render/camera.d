@@ -9,10 +9,9 @@ import std.stdio;
 import magia.core;
 import magia.render.entity;
 import magia.render.shader;
-import magia.render.window;
 
 /// Global camera class
-abstract class Camera : Instance {
+abstract class Camera : Instance3D {
     protected {
         /// Rotation around Z axis
         float _zRotation = 0f;
@@ -110,8 +109,8 @@ class OrthographicCamera : Camera {
     }
 
     /// Constructor
-    this() {
-        _aspectRatio = window.getAspectRatio();
+    this(float aspectRatio) {
+        _aspectRatio = aspectRatio;
         computeProjectionMatrix();
     }
 
@@ -192,13 +191,9 @@ class PerspectiveCamera : Camera {
 
     /// Setting up camera matrices operations
     void updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
-        _view = mat4.look_at(position, position + _target, _up);
+        _view = mat4.look_at(globalPosition, globalPosition + _target, _up);
         _projection = mat4.perspective(_width, _height, FOVdeg, nearPlane, farPlane);
         _matrix = _projection * _view;
-
-        /// TEMP: voir en bas ligne 210
-        TMP_AUDIO_CAMFORWARD = _target;
-        TMP_AUDIO_CAMUP = _up;
     }
 
     /// Update the camera @TODO only recomputed when needed
@@ -206,9 +201,3 @@ class PerspectiveCamera : Camera {
         updateMatrix(45f, 0.1f, 1000f);
     }
 }
-
-/// TEMP: J’ai besoin d’obtenir ces info d’une manière ou d’une autre
-/// Sans quoi pas de spacialisation du son.
-vec3 TMP_AUDIO_CAMFORWARD = vec3.zero;
-/// Ditto
-vec3 TMP_AUDIO_CAMUP = vec3.zero;

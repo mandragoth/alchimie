@@ -20,16 +20,19 @@ final class Voice {
     }
 
     @property {
+        /// Le son est-il en train de se jouer ?
         bool isPlaying() {
             int value = void;
             alGetSourcei(_id, AL_SOURCE_STATE, &value);
             return value != AL_STOPPED;
         }
 
+        /// Recuperer la position du son dans la scene
         vec3 position() const {
             return _position;
         }
 
+        /// Ajuster la position du son dans la scene
         vec3 position(vec3 position_) {
             _lastPosition = _position;
             _position = position_;
@@ -41,7 +44,7 @@ final class Voice {
     /// Init
     this(Sound sound) {
         alGenSources(cast(ALuint) 1, &_id);
-        _tick = currentApplication.currentTick;
+        _tick = application.currentTick;
 
         alSourcef(_id, AL_PITCH, 1);
         alSourcef(_id, AL_GAIN, 1);
@@ -52,14 +55,15 @@ final class Voice {
         alSourcei(_id, AL_BUFFER, sound.id);
     }
 
+    /// Update
     void update(AudioContext context) {
         if (!_hasPlayed) {
-            double deltaTime = (cast(double) currentApplication.currentTick - cast(double) _tick) / cast(
-                double) currentApplication.ticksPerSecond;
+            double deltaTime = (cast(double) application.currentTick - cast(double) _tick) / cast(
+                double) application.ticksPerSecond;
 
-            double speedOfSound = 340.3;
+            const double speedOfSound = 340.3;
 
-            double dist = (context.position - _position).length;
+            const double dist = (context.position - _position).length;
 
             if (dist <= deltaTime * speedOfSound) {
                 alSourcePlay(_id);

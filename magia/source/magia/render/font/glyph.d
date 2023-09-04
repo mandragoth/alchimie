@@ -2,6 +2,7 @@ module magia.render.font.glyph;
 
 import magia.core;
 import magia.render.material;
+import magia.render.renderer;
 import magia.render.sprite;
 import magia.render.window;
 
@@ -49,13 +50,13 @@ struct Glyph {
     }
 
     /// Render glyph (@TODO rewrite?)
-    void draw(Transform transform, float posX, float posY, float scale, Color color, float alpha) {
+    void draw(Renderer2D renderer, Transform2D transform, float posX, float posY, float scale, Color color, float alpha) {
         _sprite.transform = transform;
         _sprite.position = vec2(posX, posY);
         //_sprite.scale = scale; @TODO forward scale to sprite properly
         _sprite.material.clip = vec4i(_packX, _packY, _packWidth, _packHeight);
         _sprite.material.color = color;
         _sprite.material.alpha = alpha;
-        _sprite.draw();
+        _sprite.draw(renderer);
     }
 }

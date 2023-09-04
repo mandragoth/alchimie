@@ -4,6 +4,7 @@ import magia.core;
 import magia.render.buffer;
 import magia.render.material;
 import magia.render.mesh;
+import magia.render.shader;
 import magia.render.texture;
 import magia.render.vertex;
 
@@ -14,19 +15,34 @@ BufferLayout layout3D;
 BufferLayout layout3DAnimated;
 
 /// Rect mesh
-Mesh rectMesh;
+Mesh2D rectMesh;
 
 /// Quad mesh
-Mesh quadMesh;
+Mesh3D quadMesh;
 
 /// Skybox mesh
-Mesh skyboxMesh;
+Mesh3D skyboxMesh;
 
 /// Default texture
 Texture defaultTexture;
 
 /// Default material
 Material defaultMaterial;
+
+/// Line shader
+Shader lineShader;
+
+/// Quad shader
+Shader quadShader;
+
+/// Circle shader
+Shader circleShader;
+
+/// Model shader
+Shader modelShader;
+
+/// Animated model shader
+Shader animatedShader;
 
 /// Load all shapes at runtime
 void loadShapes() {
@@ -39,7 +55,7 @@ void loadShapes() {
         BufferElement("a_TexCoords", LayoutType.ltFloat2)
     ]);
 
-    rectMesh = new Mesh(new VertexBuffer([
+    rectMesh = new Mesh2D(new VertexBuffer([
        -1f, -1f, 0f, 0f, // 3-----2
         1f, -1f, 1f, 0f, // |     |
         1f,  1f, 1f, 1f, // |     |
@@ -65,7 +81,7 @@ void loadShapes() {
         BufferElement("a_Weights", LayoutType.ltFloat4)
     ]);
 
-    quadMesh = new Mesh(new VertexBuffer([
+    quadMesh = new Mesh3D(new VertexBuffer([
         // Coordinates (x, z)      TexCoords     Normals    
         Vertex(vec3(-1f, 0f,  1f), vec2(0f, 0f), vec3.up), // 0-----3
         Vertex(vec3(-1f, 0f, -1f), vec2(0f, 1f), vec3.up), // |     |
@@ -80,7 +96,7 @@ void loadShapes() {
         BufferElement("a_Position", LayoutType.ltFloat3)
     ]);
 
-    skyboxMesh = new Mesh(new VertexBuffer([
+    skyboxMesh = new Mesh3D(new VertexBuffer([
         // Coordinates (x, y, z)
        -1f, -1f,  1f,   //      7---------6
         1f, -1f,  1f,   //     /|        /|
@@ -110,4 +126,11 @@ void loadShapes() {
         3, 7, 6,
         6, 2, 3 
     ]));
+
+    // Load shaders for draw calls
+    lineShader = fetchPrototype!Shader("line");
+    quadShader = fetchPrototype!Shader("quad");
+    circleShader = fetchPrototype!Shader("circle");
+    modelShader = fetchPrototype!Shader("model");
+    animatedShader = fetchPrototype!Shader("animated");
 }

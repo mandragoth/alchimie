@@ -2,58 +2,49 @@ module magia.core.transform;
 
 import magia.core.mat;
 import magia.core.quat;
+import magia.core.rot;
 import magia.core.vec;
 import magia.core.util;
 
-/// Identity transform
-Transform identity = Transform.identity;
-
 /// Transform structure
-struct Transform {
+struct Transform(uint dimension_) {
+    alias vec = Vector!(float, dimension_);
+    alias rot = Rotor!(float, dimension_);
+
     /// Object position
-    vec3 position = vec3.zero;
+    vec position = vec.zero;
 
     /// Object rotation
-    quat rotation = quat.identity;
+    rot rotation = rot.zero;
 
     /// Object scale
-    vec3 scale = vec3.one;
+    vec scale = vec.one;
 
     @property {
         /// Default transform
-        static @property Transform identity() {
-            return Transform(vec3.zero);
-        }
-
-        /// Get model
-        mat4 model() const {
-            return combineModel(position, rotation, scale);
-        }
-
-        /// Get 2D position
-        vec2 position2D() const {
-            return vec2(position.x, position.y);
+        static Transform identity() {
+            return Transform(vec.zero);
         }
 
         /// Setup internal quaternion given euler angles
-        void rotationFromEuler(vec3 eulerAngles) {
+        /*void rotationFromEuler(vec3 eulerAngles) {
             rotation = quat.euler_rotation(eulerAngles.x, eulerAngles.y, eulerAngles.z);
         }
 
         /// Get euler rotation given a quaternion
         vec3 rotationToEuler() const {
             return vec3(rotation.roll, rotation.pitch, rotation.yaw) * radToDeg;
-        }
+        }*/
     }
 
     /// Constructor given position, scale
-    this(vec3 position_, vec3 scale_) {
+    this(vec position_, vec scale_) {
         position = position_;
         scale = scale_;
     }
 
     /// Constructor given position, rotation, scale
-    this(vec3 position_, quat rotation_ = quat.identity, vec3 scale_ = vec3.one) {
+    this(vec position_, rot rotation_ = rot.zero, vec scale_ = vec.one) {
         position = position_;
         rotation = rotation_;
         scale = scale_;
@@ -67,6 +58,10 @@ struct Transform {
     }
 }
 
+alias Transform2D = Transform!(2);
+alias Transform3D = Transform!(3);
+
+
 /// Combine translation, rotation and scale into model matrix
 mat4 combineModel(vec3 translation, quat rotation, vec3 scale) {
     mat4 mTranslation = mat4.identity.translate(translation);
@@ -76,7 +71,24 @@ mat4 combineModel(vec3 translation, quat rotation, vec3 scale) {
     return mTranslation * mRotation * mScale;
 }
 
+/// Combine translation, rotation and scale into model matrix
+mat4 combineModel(vec3 translation, rot3 rotation, vec3 scale) {
+    mat4 mTranslation = mat4.identity.translate(translation);
+    mat4 mRotation = rotation.toMatrix();
+    mat4 mScale = mat4.identity.scale(scale);
+
+    return mTranslation * mRotation * mScale;
+}
+
 /// Combine model from transform position, rotation, scale
-mat4 combineModel(Transform transform) {
+mat4 combineModel(Transform3D transform) {
     return combineModel(transform.position, transform.rotation, transform.scale);
+}
+
+/// Combine model from transform position, rotation, scale
+mat4 combineModel(Transform2D transform) {
+    vec3 position = vec3(transform.position.x, transform.position.y, 0f);
+    quat rotation = quat.euler_rotation(0f, 0f, transform.rotation.rotation);
+    vec3 scale    = vec3(transform.scale.x, transform.scale.y, 0f);
+    return combineModel(position, rotation, scale);
 }

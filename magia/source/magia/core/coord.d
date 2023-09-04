@@ -18,13 +18,13 @@ struct CoordinateSystem {
     static CoordinateSystem topLeft = CoordinateSystem(vec2.topLeft, vec2.bottomRight);
 
     /// Compute transform for renderer given a set of positions and size
-    Transform toRenderSpace(vec2 position, vec2 size, vec2 spaceSize) {
+    Transform2D toRenderSpace(vec2 position, vec2 size, vec2 spaceSize) {
         size = size / spaceSize;
 
         // Express position as ratio of position and screen size
         position = origin + position / spaceSize * 2 * axis + size * axis;
 
         // Set transform
-        return Transform(vec3(position, 0), vec3(size, 0));
+        return Transform2D(position, size);
     }
 }

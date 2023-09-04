@@ -40,40 +40,25 @@ final class AudioContext2D : AudioContext {
     }
 }*/
 
-private {
-    AudioContext _currentContext;
-}
-
-void setCurrentAudioContext(AudioContext context) {
-    _currentContext = context;
-}
-
-/// Joue le son
-Voice playSound(Sound sound) {
-    if (!_currentContext)
-        return null;
-
-    return _currentContext.play(sound);
-}
-
 /// Contexte audio 3D
 final class AudioContext {
     private {
         ALCcontext* _context;
         Array!Voice _voices;
-        Camera _camera;
+        PerspectiveCamera _camera;
 
         vec3 _lastPosition;
     }
 
     @property {
+        /// Get position
         vec3 position() const {
             return _camera ? _camera.transform.position : vec3.zero;
         }
     }
 
     /// Init
-    this(Camera camera) {
+    this(PerspectiveCamera camera) {
         _voices = new Array!Voice;
         _camera = camera;
         _context = alcCreateContext(_device, null);
@@ -81,26 +66,7 @@ final class AudioContext {
         check();
     }
 
-    private void check() {
-        ALCenum error = alcGetError(_context);
-        switch (error) {
-        case ALC_NO_ERROR:
-            return;
-        case ALC_INVALID_DEVICE:
-            throw new Exception("ALC: matériel invalide");
-        case ALC_INVALID_CONTEXT:
-            throw new Exception("ALC: contexte invalide");
-        case ALC_INVALID_ENUM:
-            throw new Exception("ALC: énum invalide");
-        case ALC_INVALID_VALUE:
-            throw new Exception("ALC: valeur invalide");
-        case ALC_OUT_OF_MEMORY:
-            throw new Exception("ALC: mémoire manquante");
-        default:
-            throw new Exception("ALC: erreur inconnue");
-        }
-    }
-
+    /// Update
     void update() {
         enforce(alcMakeContextCurrent(_context), "[Audio] impossible de mettre à jour le contexte");
 
@@ -109,8 +75,8 @@ final class AudioContext {
         vec3 deltaPosition = (_camera.transform.position - _lastPosition) * 60f;
         _lastPosition = _camera.transform.position;
 
-        vec3 forward = TMP_AUDIO_CAMFORWARD;
-        vec3 up = TMP_AUDIO_CAMFORWARD;
+        const vec3 forward = _camera.forward;
+        const vec3 up = _camera.up;
 
         float[] listenerOri = [forward.x, forward.y, forward.z, up.x, up.y, up.z];
 
@@ -134,5 +100,25 @@ final class AudioContext {
         _voices.push(voice);
         check();
         return voice;
+    }
+
+    private void check() {
+        const ALCenum error = alcGetError(_context);
+        switch (error) {
+        case ALC_NO_ERROR:
+            return;
+        case ALC_INVALID_DEVICE:
+            throw new Exception("ALC: matériel invalide");
+        case ALC_INVALID_CONTEXT:
+            throw new Exception("ALC: contexte invalide");
+        case ALC_INVALID_ENUM:
+            throw new Exception("ALC: énum invalide");
+        case ALC_INVALID_VALUE:
+            throw new Exception("ALC: valeur invalide");
+        case ALC_OUT_OF_MEMORY:
+            throw new Exception("ALC: mémoire manquante");
+        default:
+            throw new Exception("ALC: erreur inconnue");
+        }
     }
 }

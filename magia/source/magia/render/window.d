@@ -19,9 +19,6 @@ enum DisplayMode {
     desktop
 }
 
-/// Main window
-Window window;
-
 /// Window class
 class Window {
     private {
@@ -39,6 +36,9 @@ class Window {
 
         /// Dipslay mode
         DisplayMode _displayMode = DisplayMode.windowed;
+
+        /// Cameras
+        Camera[] _cameras;
 
         /// Window size as ints
         vec2u _windowSize;
@@ -91,6 +91,10 @@ class Window {
             _icon = IMG_Load(toStringz(path));
             SDL_SetWindowIcon(_sdlWindow, _icon);
         }
+        /// Add camera
+        void addCamera(Camera camera) {
+            _cameras ~= camera;
+        }
     }
 
     /// Constructor
@@ -105,7 +109,13 @@ class Window {
         _glContext = SDL_GL_CreateContext(_sdlWindow);
         enforce(loadOpenGL() == glSupport, "Failed to load opengl");
 
+        // Bind openGL context to window
         SDL_GL_MakeCurrent(_sdlWindow, _glContext);
+
+        // Setup opengl debug
+        glDebugMessageCallback(&openGLLogMessage, null);
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
         // By default set viewport to screen size and clip control 
         glViewport(0, 0, windowSize.x, windowSize.y);
@@ -159,7 +169,7 @@ class Window {
 
         glViewport(0, 0, windowSize.x, windowSize.y);
 
-        foreach (Camera camera; renderer.cameras) {
+        foreach (Camera camera; _cameras) {
             camera.aspectRatio = getAspectRatio();
         }
     }

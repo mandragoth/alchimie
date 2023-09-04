@@ -5,9 +5,10 @@ import std.conv : to;
 import magia.core;
 import magia.render.font;
 import magia.render.postprocess;
+import magia.render.renderer;
 
 /// Render text on screen
-void drawText(Transform transform, string text, float x, float y, Font font = null) {
+void drawText(Renderer2D renderer, Transform2D transform, string text, float x, float y, Font font = null) {
     if (!font) {
         font = getDefaultFont();
     }
@@ -33,7 +34,7 @@ void drawText(Transform transform, string text, float x, float y, Font font = nu
             
             const float drawPosX = pos.x + metrics.offsetX * _charScale;
             const float drawPosY = pos.y - metrics.offsetY * _charScale;
-            metrics.draw(transform, drawPosX, drawPosY, _charScale, bgColor, bgAlpha);
+            metrics.draw(renderer, transform, drawPosX, drawPosY, _charScale, bgColor, bgAlpha);
 
             // Update char position
             pos.x += (metrics.advance + _charSpacing) * _charScale;

@@ -20,7 +20,7 @@ import magia.render.texture;
 import magia.render.vertex;
 
 /// Class handling skybox data and draw call
-final class Skybox : Entity {
+final class Skybox : Entity3D {
     private {
         Shader _shader;
         Material _material;
@@ -44,7 +44,7 @@ final class Skybox : Entity {
     }
 
     /// Draw call
-    override void draw() {
+    override void draw(Renderer3D renderer) {
         glDepthFunc(GL_LEQUAL);
 
         skyboxMesh.bindData(_shader, _material);

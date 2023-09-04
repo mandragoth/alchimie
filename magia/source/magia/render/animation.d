@@ -93,7 +93,7 @@ class Animation {
             scale = computeInterpolatedVec3(_scales);
         }
 
-        return combineModel(translation, rotation, scale);
+        return combineModel(translation, rot3(rotation), scale);
     }
 
     private {

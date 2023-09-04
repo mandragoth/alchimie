@@ -16,7 +16,7 @@ import magia.render.texture;
 import magia.render.window;
 
 /// Base rendering class.
-final class Sprite : Entity {
+final class Sprite : Entity2D {
     /// Alignment used to render the sprites
     CoordinateSystem alignment;
 
@@ -61,7 +61,7 @@ final class Sprite : Entity {
 
     /// Constructor given an image path
     this(string fileName, vec4i clip = vec4i.zero) {
-        transform = Transform.identity;
+        transform = Transform2D.identity;
         Texture texture = fetchPrototype!Texture(fileName);
         material = new Material(texture);
         material.clip = clip;
@@ -69,8 +69,8 @@ final class Sprite : Entity {
     }
 
     /// Draw the sprite on the screen
-    override void draw() {
-        Transform worldTransfrom = alignment.toRenderSpace(position2D, size, window.screenSize);
+    override void draw(Renderer2D renderer) {
+        Transform2D worldTransfrom = alignment.toRenderSpace(globalPosition, size, renderer.window.screenSize);
         renderer.drawMaterial(material, worldTransfrom);
     }
 }

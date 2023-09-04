@@ -4,9 +4,6 @@ __dummy.html
 docs/
 *.so
 *.dylib
-*.dll
-*.a
-*.lib
 *.exe
 *.o
 *.obj

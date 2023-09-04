@@ -11,6 +11,12 @@ import std.stdio;
 class UIManager {
     private {
         UIElement[] _roots;
+        Renderer2D _renderer;
+    }
+
+    /// Constructor
+    this(Renderer2D renderer) {
+        _renderer = renderer;
     }
 
     /// Update
@@ -47,29 +53,29 @@ class UIManager {
     /// Draw
     void draw() {
         // Top left corner
-        vec3 position = vec3(-1f, -1f, 0f);
+        vec2 position = vec2(-1f, -1f);
 
         // Window ratio
-        vec3 size = vec3(1f / window.screenSize().x, 1f / window.screenSize().y, 1.0f);
+        vec2 size = vec2(1f / _renderer.window.screenSize().x, 1f / _renderer.window.screenSize().y);
 
-        Transform transform = Transform(position, size);
+        Transform2D transform = Transform2D(position, size);
         foreach (UIElement element; _roots) {
             draw(transform, element);
         }
     }
 
-    private void draw(Transform transform, UIElement element, UIElement parent = null) {
+    private void draw(Transform2D transform, UIElement element, UIElement parent = null) {
         // Scale
-        vec3 scale = vec3(element.scaleX, element.scaleY, 1f);
+        vec2 scale = vec2(element.scaleX, element.scaleY);
 
         // Rotation
-        quat rotation = quat.euler_rotation(0f, 0f, element.angle);
+        rot2 rotation = rot2(element.angle);
 
         float x = element.posX + element.offsetX;
         float y = element.posY + element.offsetY;
         
-        const float parentW = parent ? parent.sizeX : window.screenWidth();
-        const float parentH = parent ? parent.sizeY : window.screenHeight();
+        const float parentW = parent ? parent.sizeX : _renderer.window.screenWidth();
+        const float parentH = parent ? parent.sizeY : _renderer.window.screenHeight();
 
         final switch (element.alignX) with (UIElement.AlignX) {
             case left:
@@ -94,10 +100,10 @@ class UIManager {
         }
 
         // Position
-        vec3 position = vec3(x * 2f, y * 2f, 0f);
-        transform = transform * Transform(position, rotation, scale);
+        vec2 position = vec2(x * 2f, y * 2f);
+        transform = transform * Transform2D(position, rotation, scale);
 
-        element.draw(transform);
+        element.draw(_renderer, transform);
         foreach (UIElement child; element._children) {
             draw(transform, child, element);
         }

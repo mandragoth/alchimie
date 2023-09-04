@@ -15,7 +15,7 @@ import magia.ui;
 import grimoire;
 
 /// Current application being tracked
-Application currentApplication;
+Application application;
 
 /// Application class
 class Application {
@@ -28,10 +28,25 @@ class Application {
         ulong _currentTick;
         double _accumulator = 0.0;
 
+        // Main window
+        Window _window;
+
+        /// Audio context
+        AudioContext _audioContext;
+
+        /// Lighting manager
+        LightingManager _lightingManager;
+
+        // Renderer for 2D, 3D
+        Renderer2D _renderer2D;
+        Renderer3D _renderer3D;
+
         // @TODO handle several scene (Ressource?)
-        Scene _scene;
+        Scene3D _scene3D;
+        Scene2D _scene2D;
 
         // @TODO merge UIManager with scene / hierarchy
+        // To be specific the UIManager ought to be a Scene2D?
         UIManager _uiManager;
 
         // @TODO move ?
@@ -51,6 +66,16 @@ class Application {
             return !_inputManager.hasQuit();
         }
 
+        /// Fenetre
+        Window window() {
+            return _window;
+        }
+
+        /// Renderer 2D
+        Renderer2D renderer2D() {
+            return _renderer2D;
+        }
+
         /// Module d’entrées
         InputManager inputManager() {
             return _inputManager;
@@ -61,9 +86,51 @@ class Application {
             return _uiManager;
         }
 
-        /// Scene actuelle
-        Scene scene() {
-            return _scene;
+        /// Set audio context
+        void audioContext(AudioContext audioContext) {
+            _audioContext = audioContext;
+        }
+
+        /// Get audio context
+        AudioContext audioContext() {
+            return _audioContext;
+        }
+
+        /// Add 2D camera
+        void addCamera2D(OrthographicCamera camera) {
+            _window.addCamera(camera);
+            _renderer2D.cameras ~= camera;
+        }
+
+        /// Add 3D camera
+        void addCamera3D(PerspectiveCamera camera) {
+            _window.addCamera(camera);
+            _renderer3D.cameras ~= camera;
+        }
+
+        /// Add 2D entity
+        void addEntity(Entity2D entity) {
+            _scene2D.addEntity(entity);
+        }
+
+        /// Add 3D entity
+        void addEntity(Entity3D entity) {
+            _scene3D.addEntity(entity);
+        }
+
+        /// Set directional light
+        void directionalLight(DirectionalLight directionalLight) {
+            _lightingManager.directionalLight = directionalLight;
+        }
+
+        /// Add point light
+        void addPointLight(PointLight pointLight) {
+            _lightingManager.addPointLight(pointLight);
+        }
+
+        /// Add spot light
+        void addSpotLight(SpotLight spotLight) {
+            _lightingManager.addSpotLight(spotLight);
         }
 
         /// Ticks écoulés depuis le début
@@ -92,10 +159,10 @@ class Application {
         initFont();
 
         // Create window
-        window = new Window(size, title);
+        _window = new Window(size, title);
         _tickStartFrame = Clock.currStdTime();
 
-        currentApplication = this;
+        application = this;
     }
 
     /// Récupère les événements (clavier/souris/manette/etc)
@@ -112,15 +179,20 @@ class Application {
             return;
         }
 
-        // Create renderer
-        renderer = new Renderer();
+        // Lighting manager
+        _lightingManager = new LightingManager();
+
+        // Create renderers and their associated coordinate system and camera
+        _renderer3D = new Renderer3D(_window, CoordinateSystem.center);
+        _renderer2D = new Renderer2D(_window, CoordinateSystem.topLeft);
         
-        // Create rendering stacks
-        _scene = new Scene();
-        _uiManager = new UIManager();
+        // Create scenes (@TODO and associate renderers to them)
+        _scene3D = new Scene3D(_renderer3D);
+        _scene2D = new Scene2D(_renderer2D);
+        _uiManager = new UIManager(_renderer2D);
 
         // Create input handlers
-        _inputManager = new InputManager;
+        _inputManager = new InputManager(_window);
 
         _tickStartFrame = Clock.currStdTime();
         while (isRunning()) {
@@ -145,12 +217,25 @@ class Application {
             while (_accumulator >= 1.0) {
                 _accumulator -= 1.0;
 
+                // Update audio
+                if (_audioContext) {
+                    _audioContext.update();
+                }
+
+                // Update rendering stacks
+                _renderer3D.update();
+                _renderer2D.update();
+
+                // Update 3D, 2D and UI draw stacks
+                _scene3D.update();
+                _scene2D.update();
                 _uiManager.update();
-                _scene.update();
-                window.update();
 
-                _currentTick ++;
+                // Update window
+                _window.update();
 
+                // Update tick
+                _currentTick++;
                 
                 // @TODO: Traiter Status.error en affichant le message d’erreur ?
                 if (Status.ok != tick()) {
@@ -161,17 +246,20 @@ class Application {
 
         /// Render application
         void draw() {
-            // Draw scene
-            _scene.draw();
+            // Setup light
+            _lightingManager.setup();
 
-            // Draw UI
+            // Draw 3D, then 2D, then UI
+            _scene3D.draw();
+            _scene2D.draw();
             _uiManager.draw();
 
             // Render all draw calls on window
-            window.render();
+            _window.render();
 
-            // Clear up screen
-            renderer.clear();
+            // Clear renderers
+            _renderer3D.clear();
+            _renderer2D.clear();
         }
     }
 

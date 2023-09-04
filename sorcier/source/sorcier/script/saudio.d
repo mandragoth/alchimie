@@ -22,17 +22,18 @@ private void _sound_ctor(GrCall call) {
     call.setNative(sound);
 }
 
+/// @TODO
 private void _sound_play(GrCall call) {
     Sound sound = call.getNative!Sound(0);
-    //sound.play();
 }
 
+/// @TODO
 private void _sound_playAt(GrCall call) {
     Sound sound = call.getNative!Sound(0);
 }
 
 private void _sound_playOn(GrCall call) {
     Sound sound = call.getNative!Sound(0);
-    Instance instance = call.getNative!ModelInstance(1);
+    Instance3D instance = call.getNative!ModelInstance(1);
     sound.play(instance.transform.position);
 }

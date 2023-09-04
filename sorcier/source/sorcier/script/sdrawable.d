@@ -25,21 +25,23 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     // Entity constructors
     library.addConstructor(&_newSprite, spriteType, [grString]);
     library.addConstructor(&_newSprite2, spriteType, [grString, vec4iType]);
-    library.addConstructor(&_newSkybox, skyboxType, [grString]);
+    library.addConstructor(&_newSkybox, skyboxType, []);
     library.addConstructor(&_newModel, modelType, [grString]);
     library.addConstructor(&_newQuad, quadType);
 
-    // Entity operations
-    library.addFunction(&_getPosition, "position", [instanceType], [vec3Type]);
+    // Instance operations
+    library.addFunction(&_getGlobalPosition, "globalPosition", [instanceType], [vec3Type]);
+    library.addFunction(&_getLocalPosition, "localPosition", [instanceType], [vec3Type]);
     library.addFunction(&_setPosition2D, "position2D", [instanceType, vec2Type]);
     library.addFunction(&_setPosition, "position", [instanceType, vec3Type]);
     library.addFunction(&_setRotation, "rotation", [instanceType, vec3Type]);
     library.addFunction(&_setScale, "scale", [instanceType, vec3Type]);
-    library.addFunction(&_addTexture, "addTexture", [entityType, grString]);
-    library.addFunction(&_draw, "draw", [entityType]);
-    library.addFunction(&_update, "update", [entityType]);
+    library.addFunction(&_addChild, "addChild", [instanceType, instanceType]);
 
-    // Entity draw commands
+    // Entity operations
+    library.addFunction(&_addTexture, "addTexture", [entityType, grString]);
+
+    // Global draw commands
     library.addFunction(&_drawFilledRect, "drawFilledRect", [vec2Type, vec2Type, colorType]);
     library.addFunction(&_drawFilledCircle, "drawFilledCircle", [vec2Type, grFloat, colorType]);
 
@@ -59,33 +61,45 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addFunction(&_setDisplayBoneId, "displayBoneId", [modelType, grInt], []);
 }
 
-private void _getPosition(GrCall call) {
-    Instance instance = call.getNative!Instance(0);
-    call.setNative(toSVec3f(instance.position));
+private void _getGlobalPosition(GrCall call) {
+    Instance3D instance = call.getNative!Instance3D(0);
+    call.setNative(toSVec3f(instance.globalPosition));
+}
+
+private void _getLocalPosition(GrCall call) {
+    Instance3D instance = call.getNative!Instance3D(0);
+    call.setNative(toSVec3f(instance.localPosition));
 }
 
 private void _setPosition2D(GrCall call) {
-    Instance instance = call.getNative!Instance(0);
+    Instance2D instance = call.getNative!Instance2D(0);
     instance.position = cast(vec2) call.getNative!SVec2f(1);
 }
 
 private void _setPosition(GrCall call) {
-    Instance instance = call.getNative!Instance(0);
+    Instance3D instance = call.getNative!Instance3D(0);
     instance.position = cast(vec3) call.getNative!SVec3f(1);
 }
 
 private void _setRotation(GrCall call) {
-    Instance instance = call.getNative!Instance(0);
-    instance.rotation = cast(vec3) call.getNative!SVec3f(1);
+    Instance3D instance = call.getNative!Instance3D(0);
+    vec3 eulerAngles = cast(vec3) call.getNative!SVec3f(1);
+    instance.rotation = rot3(eulerAngles);
 }
 
 private void _setScale(GrCall call) {
-    Instance instance = call.getNative!Instance(0);
+    Instance3D instance = call.getNative!Instance3D(0);
     instance.scale = cast(vec3) call.getNative!SVec3f(1);
 }
 
+private void _addChild(GrCall call) {
+    Instance3D current = call.getNative!Instance3D(0);
+    Instance3D child   = call.getNative!Instance3D(1);
+    current.addChild(child);
+}
+
 private void _addTexture(GrCall call) {
-    Entity entity = call.getNative!Entity(0);
+    Entity3D entity = call.getNative!Entity3D(0);
     Texture texture = fetchPrototype!Texture(call.getString(1));
 
     if (!entity.material) {
@@ -95,36 +109,27 @@ private void _addTexture(GrCall call) {
     }
 }
 
-private void _draw(GrCall call) {
-    Entity entity = call.getNative!Entity(0);
-    entity.draw();
-}
-
-private void _update(GrCall call) {
-    Entity entity = call.getNative!Entity(0);
-    entity.update();
-}
-
 private void _newSprite(GrCall call) {
     Sprite sprite = new Sprite(call.getString(0));
+    application.addEntity(sprite);
     call.setNative(sprite);
 }
 
 private void _newSprite2(GrCall call) {
     Sprite sprite = new Sprite(call.getString(0), call.getNative!SVec4i(1));
+    application.addEntity(sprite);
     call.setNative(sprite);
 }
 
-// @TODO handle currentApplication.scene.addEntity(sprite); and related callbacks
-
 private void _newSkybox(GrCall call) {
-    Skybox skybox = new Skybox( /*call.getString(0)*/ );
+    Skybox skybox = new Skybox();
+    application.addEntity(skybox);
     call.setNative(skybox);
 }
 
 private void _newModel(GrCall call) {
     ModelInstance modelInstance = new ModelInstance(call.getString(0));
-    currentApplication.scene.addEntity(modelInstance);
+    application.addEntity(modelInstance);
     call.setNative(modelInstance);
 }
 
@@ -149,7 +154,7 @@ private void _drawFilledRect(GrCall call) {
     vec2 size = call.getNative!SVec2f(1);
     SColor color = call.getNative!SColor(2);
 
-    renderer.drawFilledRect(position, size, color);
+    application.renderer2D.drawFilledRect(position, size, color);
 }
 
 // @TODO fix this
@@ -157,18 +162,18 @@ private void _drawFilledCircle(GrCall call) {
     vec2 position = call.getNative!SVec2f(0);
     SColor color = call.getNative!SColor(2);
 
-    renderer.drawFilledCircle(position, call.getFloat(1), color);
+    application.renderer2D.drawFilledCircle(position, call.getFloat(1), color);
 }
 
 private void _newDirectionalLight(GrCall call) {
     DirectionalLight directionalLight = new DirectionalLight();
 
-    directionalLight.direction = call.getNative!SVec3f(0);
+    directionalLight.direction = cast(vec3) call.getNative!SVec3f(0);
     directionalLight.ambientIntensity = call.getFloat(1);
     directionalLight.diffuseIntensity = call.getFloat(2);
 
     // Register light in the renderer
-    renderer.lightingManager.directionalLight = directionalLight;
+    application.directionalLight = directionalLight;
 
     call.setNative(directionalLight);
 }
@@ -182,7 +187,7 @@ private void _newPointLight(GrCall call) {
     pointLight.diffuseIntensity = call.getFloat(3);
 
     // Register light in the renderer
-    renderer.lightingManager.addPointLight(pointLight);
+    application.addPointLight(pointLight);
 
     call.setNative(pointLight);
 }
@@ -198,7 +203,7 @@ private void _newSpotLight(GrCall call) {
     spotLight.diffuseIntensity = call.getFloat(5);
 
     // Register light in the renderer
-    renderer.lightingManager.addSpotLight(spotLight);
+    application.addSpotLight(spotLight);
 
     call.setNative(spotLight);
 }

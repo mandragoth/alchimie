@@ -9,9 +9,9 @@ import std.stdio;
 
 // @TODO move to shape
 /// Instance of sphere
-class Sphere : Entity {
+class Sphere : Entity3D {
     protected {
-        Mesh[] _meshes;
+        Mesh3D[] _meshes;
 
         // Sphere parameters
         int   _resolution;
@@ -23,7 +23,7 @@ class Sphere : Entity {
 
     /// Constructor
     this(int resolution, float radius) {
-        transform = Transform.identity;
+        transform = Transform3D.identity;
 
         _resolution = resolution;
         _radius = radius;
@@ -78,7 +78,7 @@ class Sphere : Entity {
             }
         }
 
-        _meshes ~= new Mesh(new VertexBuffer(vertices, layout3D), new IndexBuffer(indices));
+        _meshes ~= new Mesh3D(new VertexBuffer(vertices, layout3D), new IndexBuffer(indices));
     }
 
     /// Generate a point on the sphere's surface
@@ -112,7 +112,7 @@ class Sphere : Entity {
 
     /// Render the sphere
     void draw(Shader shader) {
-        foreach(Mesh mesh; _meshes) {
+        foreach(Mesh3D mesh; _meshes) {
             mesh.draw(shader, defaultMaterial, transform);
         }
     }
