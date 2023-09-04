@@ -1,6 +1,7 @@
 module sorcier.script.sloader;
 
 import grimoire;
+import sorcier.script.saudio;
 import sorcier.script.scamera;
 import sorcier.script.scommon;
 import sorcier.script.sdrawable;
@@ -26,7 +27,7 @@ GrLibrary loadAlchimieLibrary() {
 GrLibLoader[] getAlchimieLibraryLoaders() {
     return [
         &loadAlchimieLibCommon, &loadAlchimieLibMath, &loadAlchimieLibVec,
-        &loadAlchimieLibColor, &loadAlchimieLibDrawable,
+        &loadAlchimieLibColor, &loadAlchimieLibDrawable, &loadAlchimieLibAudio,
         &loadAlchimieLibCamera, &loadAlchimieLibInput, &loadAlchimieLibUI
     ];
 }

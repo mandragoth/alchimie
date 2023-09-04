@@ -5,7 +5,8 @@
  */
 module magia.render.font.bitmap;
 
-import bindbc.sdl, bindbc.sdl.ttf;
+import bindbc.sdl;
+
 import magia.core;
 import magia.render.sprite;
 import magia.render.font.font, magia.render.font.glyph;

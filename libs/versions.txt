@@ -1,0 +1,4 @@
+SDL: v2.26.4
+SDL_image: v2.6.3
+SDL_mixer: v2.6.3
+SDL_ttf: v2.20.2

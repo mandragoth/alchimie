@@ -43,7 +43,7 @@ class Animation {
         _translations = translations;
         _rotations = rotations;
         _scales = scales;
-        _trace = trace;
+        _trace = false;
 
         if (_trace) {
             writeln("  New animation");

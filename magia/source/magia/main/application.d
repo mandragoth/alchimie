@@ -6,6 +6,7 @@ import std.conv;
 import std.datetime;
 import std.stdio;
 
+import magia.audio;
 import magia.core;
 import magia.input;
 import magia.render;
@@ -24,10 +25,14 @@ class Application {
         float _currentFps;
         long _tickStartFrame;
         uint _ticksPerSecond = 60u;
+        ulong _currentTick;
         double _accumulator = 0.0;
 
         // Main window
         Window _window;
+
+        /// Audio context
+        AudioContext _audioContext;
 
         /// Lighting manager
         LightingManager _lightingManager;
@@ -81,6 +86,16 @@ class Application {
             return _uiManager;
         }
 
+        /// Set audio context
+        void audioContext(AudioContext audioContext) {
+            _audioContext = audioContext;
+        }
+
+        /// Get audio context
+        AudioContext audioContext() {
+            return _audioContext;
+        }
+
         /// Add 2D camera
         void addCamera2D(OrthographicCamera camera) {
             _window.addCamera(camera);
@@ -104,7 +119,7 @@ class Application {
         }
 
         /// Set directional light
-        void setDirectionalLight(DirectionalLight directionalLight) {
+        void directionalLight(DirectionalLight directionalLight) {
             _lightingManager.directionalLight = directionalLight;
         }
 
@@ -116,6 +131,16 @@ class Application {
         /// Add spot light
         void addSpotLight(SpotLight spotLight) {
             _lightingManager.addSpotLight(spotLight);
+        }
+
+        /// Ticks écoulés depuis le début
+        ulong currentTick() const {
+            return _currentTick;
+        }
+
+        /// Nombre de ticks présents dans une seconde
+        uint ticksPerSecond() const {
+            return _ticksPerSecond;
         }
     }
 
@@ -130,6 +155,7 @@ class Application {
 
         // Load internal libs
         loadSDLOpenGL();
+        openAudio();
         initFont();
 
         // Create window
@@ -173,6 +199,7 @@ class Application {
             update();
             draw();
         }
+        closeAudio();
     }
 
     private {
@@ -190,6 +217,9 @@ class Application {
             while (_accumulator >= 1.0) {
                 _accumulator -= 1.0;
 
+                // Update audio
+                _audioContext.update();
+
                 // Update rendering stacks
                 _renderer3D.update();
                 _renderer2D.update();
@@ -201,6 +231,9 @@ class Application {
 
                 // Update window
                 _window.update();
+
+                // Update tick
+                _currentTick++;
                 
                 // @TODO: Traiter Status.error en affichant le message d’erreur ?
                 if (Status.ok != tick()) {

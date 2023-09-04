@@ -173,7 +173,7 @@ private void _newDirectionalLight(GrCall call) {
     directionalLight.diffuseIntensity = call.getFloat(2);
 
     // Register light in the renderer
-    application.setDirectionalLight(directionalLight);
+    application.directionalLight = directionalLight;
 
     call.setNative(directionalLight);
 }

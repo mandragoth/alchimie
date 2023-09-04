@@ -7,7 +7,9 @@ module magia.render.font.truetype;
 
 import std.conv : to;
 import std.string : toStringz, fromStringz;
-import bindbc.sdl, bindbc.sdl.ttf;
+
+import bindbc.sdl;
+
 import magia.core;
 import magia.render.sprite;
 import magia.render.font.font;
