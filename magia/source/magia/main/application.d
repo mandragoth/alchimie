@@ -218,7 +218,9 @@ class Application {
                 _accumulator -= 1.0;
 
                 // Update audio
-                _audioContext.update();
+                if (_audioContext) {
+                    _audioContext.update();
+                }
 
                 // Update rendering stacks
                 _renderer3D.update();

@@ -22,11 +22,12 @@ private void _sound_ctor(GrCall call) {
     call.setNative(sound);
 }
 
+/// @TODO
 private void _sound_play(GrCall call) {
     Sound sound = call.getNative!Sound(0);
-    //sound.play();
 }
 
+/// @TODO
 private void _sound_playAt(GrCall call) {
     Sound sound = call.getNative!Sound(0);
 }

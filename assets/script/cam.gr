@@ -42,6 +42,8 @@ task camera3D() {
     var camera = @PerspectiveCamera();
     camera.position = @vec3f(0f, .5f, 2f);
 
+    @AudioContext(camera);
+
     var moveSpeed = .05f;
     var zoomSpeed = .15f;
     var mouseSensitivity = .5f;

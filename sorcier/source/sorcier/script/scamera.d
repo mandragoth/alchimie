@@ -15,12 +15,16 @@ void loadAlchimieLibCamera(GrLibDefinition library) {
     GrType pCameraType = library.addNative("PerspectiveCamera", [], "Camera");
     GrType oCameraType = library.addNative("OrthographicCamera", [], "Camera");
 
+    // AudioContext type
+    GrType audioContextType = library.addNative("AudioContext");
+
     // Camera constructors
     library.addConstructor(&_newPerspectiveCamera, pCameraType);
-    library.addConstructor(&_newPerspectiveCamera2, pCameraType, [
-            grUInt, grUInt, vec3Type, vec3Type, vec3Type
-        ]);
+    library.addConstructor(&_newPerspectiveCamera2, pCameraType, [grUInt, grUInt, vec3Type, vec3Type, vec3Type]);
     library.addConstructor(&_newOrthographicCamera, oCameraType);
+
+    // AudioContext constructor
+    library.addConstructor(&_newAudioContext, audioContextType, [pCameraType]);
 
     // Camera properties
     library.addProperty(&_getRotation, null, "rotation", cameraType, grFloat);
@@ -44,9 +48,6 @@ private void _newPerspectiveCamera(GrCall call) {
     PerspectiveCamera camera = new PerspectiveCamera(application.window.screenWidth, application.window.screenHeight);
     application.addCamera3D(camera);
     call.setNative(camera);
-
-    //Temp
-    _setupAudioContext(camera);
 }
 
 private void _newPerspectiveCamera2(GrCall call) {
@@ -59,16 +60,12 @@ private void _newPerspectiveCamera2(GrCall call) {
     PerspectiveCamera camera = new PerspectiveCamera(width, height, position, target, up);
     application.addCamera3D(camera);
     call.setNative(camera);
-
-    //Temp
-    _setupAudioContext(camera);
 }
 
-void _setupAudioContext(Camera camera) {
-    import magia.audio;
-
-    application.audioContext = new AudioContext(camera);
-    setCurrentAudioContext(application.audioContext);
+private void _newAudioContext(GrCall call) {
+    AudioContext context = new AudioContext(call.getNative!PerspectiveCamera(0));
+    application.audioContext = context;
+    call.setNative(context);
 }
 
 private void _newOrthographicCamera(GrCall call) {

@@ -4,10 +4,19 @@ import audioformats;
 
 import bindbc.openal;
 
-import magia.core;
-
 import magia.audio.context;
 import magia.audio.voice;
+import magia.core;
+import magia.main.application;
+
+/// Play a sound
+Voice playSound(Sound sound) {
+    if (!application.audioContext) {
+        return null;
+    }
+
+    return application.audioContext.play(sound);
+}
 
 /// Représente les données d’un son
 final class Sound {
@@ -20,6 +29,7 @@ final class Sound {
     }
 
     @property {
+        /// Indice du son
         ALuint id() const {
             return _id;
         }
@@ -35,7 +45,7 @@ final class Sound {
 
         _buffer = new float[_samples * _channels];
 
-        int framesRead = stream.readSamplesFloat(_buffer);
+        const int framesRead = stream.readSamplesFloat(_buffer);
         assert(framesRead == stream.getLengthInFrames());
         _sampleRate = cast(int) stream.getSamplerate();
 
@@ -46,6 +56,7 @@ final class Sound {
         toMono();
     }
 
+    /// Convertir en mono
     void toMono() {
         if(_channels != 2)
             return;
@@ -60,6 +71,7 @@ final class Sound {
             cast(int)(_buffer.length * float.sizeof), _sampleRate);
     }
 
+    /// Convertir en stereo
     void toStereo() {
         if(_channels != 1)
             return;
@@ -77,7 +89,11 @@ final class Sound {
     /// Joue le son
     Voice play(vec3 position) {
         Voice voice = playSound(this);
-        voice.position = position;
+
+        if (voice) {
+            voice.position = position;
+        }
+
         return voice;
     }
 }
