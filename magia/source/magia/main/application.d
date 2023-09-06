@@ -27,6 +27,7 @@ class Application {
         uint _ticksPerSecond = 60u;
         ulong _currentTick;
         double _accumulator = 0.0;
+        bool _hasQuit;
 
         // Main window
         Window _window;
@@ -63,7 +64,7 @@ class Application {
     @property {
         /// Est-ce que magia tourne toujours ?
         bool isRunning() const {
-            return !_inputManager.hasQuit();
+            return !(_inputManager.hasQuit() || _hasQuit);
         }
 
         /// Fenetre
@@ -239,6 +240,7 @@ class Application {
                 
                 // @TODO: Traiter Status.error en affichant le message d’erreur ?
                 if (Status.ok != tick()) {
+                    _hasQuit = true;
                     return;
                 }
             }
