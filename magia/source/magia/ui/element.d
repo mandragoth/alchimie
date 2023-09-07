@@ -4,7 +4,7 @@ import magia.core;
 import magia.render.renderer;
 
 /// Abstract class representing an UI element
-/// @TODO remake with Element2D inheritance for position, scale and angle
+/// @TODO remake with Entity2D inheritance for position, scale and angle
 abstract class UIElement {
     public {
         /// Children elements
