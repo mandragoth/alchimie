@@ -37,6 +37,7 @@ final class Voice {
             _lastPosition = _position;
             _position = position_;
             alSource3f(_id, AL_POSITION, _position.x, _position.y, _position.z);
+        //import std.stdio;writeln("pos: ", _position);
             return _position;
         }
     }

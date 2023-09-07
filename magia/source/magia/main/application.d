@@ -33,6 +33,7 @@ class Application {
         Window _window;
 
         /// Audio context
+        AudioDevice _audioDevice;
         AudioContext _audioContext;
 
         /// Lighting manager
@@ -97,6 +98,11 @@ class Application {
             return _audioContext;
         }
 
+        /// Le périphérique audio
+        AudioDevice audioDevice() {
+            return _audioDevice;
+        }
+
         /// Add 2D camera
         void addCamera2D(OrthographicCamera camera) {
             _window.addCamera(camera);
@@ -156,8 +162,10 @@ class Application {
 
         // Load internal libs
         loadSDLOpenGL();
-        openAudio();
         initFont();
+
+        // Initialisation du périphérique audio
+        _audioDevice = new AudioDevice();
 
         // Create window
         _window = new Window(size, title);
@@ -200,7 +208,6 @@ class Application {
             update();
             draw();
         }
-        closeAudio();
     }
 
     private {

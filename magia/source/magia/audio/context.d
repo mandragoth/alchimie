@@ -58,30 +58,35 @@ final class AudioContext {
     }
 
     /// Init
-    this(PerspectiveCamera camera) {
+    this(AudioDevice device, PerspectiveCamera camera) {
         _voices = new Array!Voice;
         _camera = camera;
-        _context = alcCreateContext(_device, null);
         _lastPosition = _camera.transform.position;
-        check();
+
+        _context = alcCreateContext(device.handle, null);
+        _assertAlc();
+        enforce(_context, "[Audio] impossible de créer le contexte");
     }
 
     /// Update
     void update() {
-        enforce(alcMakeContextCurrent(_context), "[Audio] impossible de mettre à jour le contexte");
+        enforce(alcMakeContextCurrent(_context) == ALC_TRUE, "[Audio] impossible de mettre à jour le contexte");
+        _assertAlc();
 
         alListener3f(AL_POSITION, _camera.transform.position.x,
             _camera.transform.position.y, _camera.transform.position.y);
         vec3 deltaPosition = (_camera.transform.position - _lastPosition) * 60f;
         _lastPosition = _camera.transform.position;
 
-        const vec3 forward = _camera.forward;
-        const vec3 up = _camera.up;
+        const vec3 forward = _camera.forward.normalized();
+        const vec3 up = _camera.up.normalized();
 
         float[] listenerOri = [forward.x, forward.y, forward.z, up.x, up.y, up.z];
 
         alListener3f(AL_VELOCITY, deltaPosition.x, deltaPosition.y, deltaPosition.z);
         alListenerfv(AL_ORIENTATION, listenerOri.ptr);
+
+        //import std.stdio;writeln("forward: ", forward, "\t up: ", up, "\t pos: ", _camera.transform.position, "\t vit: ", deltaPosition);
 
         foreach (i, voice; _voices) {
             if (!voice.isPlaying) {
@@ -91,18 +96,18 @@ final class AudioContext {
             voice.update(this);
         }
         _voices.sweep();
-        check();
+        _assertAlc();
     }
 
     /// Joue le son
     Voice play(Sound sound) {
         Voice voice = new Voice(sound);
         _voices.push(voice);
-        check();
+        _assertAlc();
         return voice;
     }
 
-    private void check() {
+    private void _assertAlc() {
         const ALCenum error = alcGetError(_context);
         switch (error) {
         case ALC_NO_ERROR:
