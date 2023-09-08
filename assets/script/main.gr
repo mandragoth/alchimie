@@ -14,10 +14,18 @@ event onLoad() {
 
 task runtime() {
     var remilia = @Sprite("remilia", @vec4i(0, 0, 32, 48));
-    remilia:position2D(@vec2f(12.5f, 0f));
+    remilia:position(@vec2f(12.5f, 0f));
 
-    var remilia2 = @Sprite("remilia", @vec4i(96, 48, 32, 48));
-    remilia2:position2D(@vec2f(12.5f + 32f, 0f));
+    task() {
+        var angle = 0f;
+        loop yield {
+            remilia:rotation(angle);
+            angle -= rad(1f);
+        }
+    }();
+
+    /*var remilia2 = @Sprite("remilia", @vec4i(96, 48, 32, 48));
+    remilia2:position(@vec2f(12.5f + 32f, 0f));*/
 
     var skybox = @Skybox(); // @TODO fix
     var globalLight = @DirectionalLight(@vec3f(0f, -10f, 0f), .2f, .01f);
@@ -93,7 +101,7 @@ task testUI() {
     state.spline = Spline.sineInOut;
     state.alpha = 0f;
     state.offsetX = -100f;
-    state.angle = rad(45f);
+    //state.angle = rad(45f);
     label.addState(state);
 
     sleep(2.seconds);

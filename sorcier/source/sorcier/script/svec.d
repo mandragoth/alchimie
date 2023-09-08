@@ -73,7 +73,7 @@ private void _loadVec(int dimension)(GrLibDefinition library) {
 
         // Angle
         static if (dimension == 2 || dimension == 3) {
-            mixin("library.addFunction(&_angle!(dimension, type), \"angle\", [vec",
+            mixin("library.addFunction(&_angleBetween!(dimension, type), \"angleBetween\", [vec",
                 type, "Type, vec", type, "Type], [grFloat]);");
         }
 
@@ -141,7 +141,7 @@ private void _scalarLeftOp(int dimension, string op, string type)(GrCall call) {
     call.setNative(vec);
 }
 
-private void _angle(int dimension, string type)(GrCall call) {
+private void _angleBetween(int dimension, string type)(GrCall call) {
     mixin("vec", dimension, " v1 = cast(vec", dimension,
         ") call.getNative!(SVec", dimension, "!Gr", type, ")(0);");
     mixin("vec", dimension, " v2 = cast(vec", dimension,

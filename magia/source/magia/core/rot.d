@@ -11,16 +11,26 @@ struct Rotor(type, uint dimension_) {
 
     static if(dimension_ == 2) {
         /// Rotation in 2D can be defined by a single angle
-        float rotation = 0f;
+        float angle = 0f;
 
         /// Constructor
-        this(float rotation_) {
-            rotation = rotation_ % pi2;
+        this(float angle_) {
+            // Keep it in [0; range
+            while(angle_ < 0) {
+                angle_ += pi2;
+            }
+
+            // Keep it in ;2π] range
+            while(angle_ > pi2) {
+                angle_ -= pi2;
+            }
+
+            angle = angle_;
         }
 
         /// Composition of two rotations
         Rotor opBinary(string op : "*")(Rotor other) const {
-            return Rotor(rotation + other.rotation);
+            return Rotor(angle + other.angle);
         }
     } else static if(dimension_ == 3) {
         /// Rotation in 3D can be defined by 3 euler angles or a quat
