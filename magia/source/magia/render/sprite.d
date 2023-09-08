@@ -70,7 +70,7 @@ final class Sprite : Entity2D {
 
     /// Draw the sprite on the screen
     override void draw(Renderer2D renderer) {
-        Transform2D worldTransfrom = alignment.toRenderSpace(globalPosition, size, renderer.window.screenSize);
+        Transform2D worldTransfrom = alignment.toRenderSpace(globalPosition, size, renderer.window.screenSize, angle);
         renderer.drawMaterial(material, worldTransfrom);
     }
 }

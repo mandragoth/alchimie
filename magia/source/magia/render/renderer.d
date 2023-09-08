@@ -132,6 +132,7 @@ class Renderer(uint dimension_) {
             }
 
             quadShader.uploadUniformVec2("u_Flip", flipf);
+            quadShader.uploadUniformMat4("u_Transform", combineModel(transform));
 
             setupQuadShader(material.color, material.alpha);
             drawIndexed(rectMesh, quadShader, material, transform);

@@ -25,16 +25,6 @@ struct Transform(uint dimension_) {
         static Transform identity() {
             return Transform(vec.zero);
         }
-
-        /// Setup internal quaternion given euler angles
-        /*void rotationFromEuler(vec3 eulerAngles) {
-            rotation = quat.euler_rotation(eulerAngles.x, eulerAngles.y, eulerAngles.z);
-        }
-
-        /// Get euler rotation given a quaternion
-        vec3 rotationToEuler() const {
-            return vec3(rotation.roll, rotation.pitch, rotation.yaw) * radToDeg;
-        }*/
     }
 
     /// Constructor given position, scale
@@ -88,7 +78,7 @@ mat4 combineModel(Transform3D transform) {
 /// Combine model from transform position, rotation, scale
 mat4 combineModel(Transform2D transform) {
     vec3 position = vec3(transform.position.x, transform.position.y, 0f);
-    quat rotation = quat.euler_rotation(0f, 0f, transform.rotation.rotation);
+    quat rotation = quat.euler_rotation(0f, 0f, transform.rotation.angle);
     vec3 scale    = vec3(transform.scale.x, transform.scale.y, 0f);
     return combineModel(position, rotation, scale);
 }

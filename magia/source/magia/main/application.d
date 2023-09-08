@@ -171,6 +171,21 @@ class Application {
         _window = new Window(size, title);
         _tickStartFrame = Clock.currStdTime();
 
+        // Lighting manager
+        _lightingManager = new LightingManager();
+
+        // Create renderers and their associated coordinate system and camera
+        _renderer3D = new Renderer3D(_window, CoordinateSystem.center);
+        _renderer2D = new Renderer2D(_window, CoordinateSystem.topLeft);
+
+        // Create scenes (@TODO and associate renderers to them)
+        _scene3D = new Scene3D(_renderer3D);
+        _scene2D = new Scene2D(_renderer2D);
+        _uiManager = new UIManager(_renderer2D);
+
+        // Create input handlers
+        _inputManager = new InputManager(_window);
+
         application = this;
     }
 
@@ -187,21 +202,6 @@ class Application {
         if (Status.ok != load()) {
             return;
         }
-
-        // Lighting manager
-        _lightingManager = new LightingManager();
-
-        // Create renderers and their associated coordinate system and camera
-        _renderer3D = new Renderer3D(_window, CoordinateSystem.center);
-        _renderer2D = new Renderer2D(_window, CoordinateSystem.topLeft);
-        
-        // Create scenes (@TODO and associate renderers to them)
-        _scene3D = new Scene3D(_renderer3D);
-        _scene2D = new Scene2D(_renderer2D);
-        _uiManager = new UIManager(_renderer2D);
-
-        // Create input handlers
-        _inputManager = new InputManager(_window);
 
         _tickStartFrame = Clock.currStdTime();
         while (isRunning()) {

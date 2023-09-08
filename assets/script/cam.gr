@@ -72,8 +72,8 @@ task camera3D() {
         var newZAxis = rotate(zAxis, xAxis, rad(-rotY));
 
         // New angle between (z, y)
-        var angleUp = angle(newZAxis, yAxis);
-        var angleDown = angle(newZAxis, -yAxis);
+        var angleUp = angleBetween(newZAxis, yAxis);
+        var angleDown = angleBetween(newZAxis, -yAxis);
 
         // Limit rotation around X
         if (angleUp > minRotX && angleDown > minRotX) {

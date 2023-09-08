@@ -54,6 +54,13 @@ abstract class Instance(uint dimension_) {
             transform.rotation = rotation_;
         }
 
+        static if (dimension_ == 2) {
+            /// Get angle
+            float angle() {
+                return transform.rotation.angle;
+            }
+        }
+
         /// Set scale
         void scale(vec scale_) {
             transform.scale = scale_;

@@ -30,12 +30,14 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addConstructor(&_newQuad, quadType);
 
     // Instance operations
-    library.addFunction(&_getGlobalPosition, "globalPosition", [instanceType], [vec3Type]);
-    library.addFunction(&_getLocalPosition, "localPosition", [instanceType], [vec3Type]);
-    library.addFunction(&_setPosition2D, "position2D", [instanceType, vec2Type]);
-    library.addFunction(&_setPosition, "position", [instanceType, vec3Type]);
-    library.addFunction(&_setRotation, "rotation", [instanceType, vec3Type]);
-    library.addFunction(&_setScale, "scale", [instanceType, vec3Type]);
+    library.addFunction(&_getGlobalPosition3D, "globalPosition", [instanceType], [vec3Type]);
+    library.addFunction(&_getLocalPosition3D, "localPosition", [instanceType], [vec3Type]);
+    library.addFunction(&_setPosition2D, "position", [instanceType, vec2Type]);
+    library.addFunction(&_setPosition3D, "position", [instanceType, vec3Type]);
+    library.addFunction(&_setRotation2D, "rotation", [instanceType, grFloat]);
+    library.addFunction(&_setRotation3D, "rotation", [instanceType, vec3Type]);
+    library.addFunction(&_setScale2D, "scale", [instanceType, vec2Type]);
+    library.addFunction(&_setScale3D, "scale", [instanceType, vec3Type]);
     library.addFunction(&_addChild, "addChild", [instanceType, instanceType]);
 
     // Entity operations
@@ -61,12 +63,12 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addFunction(&_setDisplayBoneId, "displayBoneId", [modelType, grInt], []);
 }
 
-private void _getGlobalPosition(GrCall call) {
+private void _getGlobalPosition3D(GrCall call) {
     Instance3D instance = call.getNative!Instance3D(0);
     call.setNative(toSVec3f(instance.globalPosition));
 }
 
-private void _getLocalPosition(GrCall call) {
+private void _getLocalPosition3D(GrCall call) {
     Instance3D instance = call.getNative!Instance3D(0);
     call.setNative(toSVec3f(instance.localPosition));
 }
@@ -76,18 +78,28 @@ private void _setPosition2D(GrCall call) {
     instance.position = cast(vec2) call.getNative!SVec2f(1);
 }
 
-private void _setPosition(GrCall call) {
+private void _setPosition3D(GrCall call) {
     Instance3D instance = call.getNative!Instance3D(0);
     instance.position = cast(vec3) call.getNative!SVec3f(1);
 }
 
-private void _setRotation(GrCall call) {
+private void _setRotation2D(GrCall call) {
+    Instance2D instance = call.getNative!Instance2D(0);
+    instance.rotation = rot2(call.getFloat(1));
+}
+
+private void _setRotation3D(GrCall call) {
     Instance3D instance = call.getNative!Instance3D(0);
     vec3 eulerAngles = cast(vec3) call.getNative!SVec3f(1);
     instance.rotation = rot3(eulerAngles);
 }
 
-private void _setScale(GrCall call) {
+private void _setScale2D(GrCall call) {
+    Instance2D instance = call.getNative!Instance2D(0);
+    instance.scale = cast(vec2) call.getNative!SVec2f(1);
+}
+
+private void _setScale3D(GrCall call) {
     Instance3D instance = call.getNative!Instance3D(0);
     instance.scale = cast(vec3) call.getNative!SVec3f(1);
 }
