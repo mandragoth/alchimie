@@ -57,6 +57,8 @@ final class AudioDevice {
 
         enforce(_device, "[Audio] impossible de charger le périphérique " ~ deviceName);
         //assertAL();
+
+        writeln(getDevices());
     }
 
     /// Ferme le module audio

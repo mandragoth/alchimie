@@ -10,7 +10,7 @@ import magia.audio.sound;
 import magia.audio.source;
 
 /// Instance d’un son
-final class Voice {
+final class Voice(uint Dim = 3u) {
     private {
         ALuint _id;
         Sound _sound;
@@ -57,7 +57,7 @@ final class Voice {
     }
 
     /// Update
-    void update(AudioContext context) {
+    void update(AudioContext3D context) {
         if (!_hasPlayed) {
             double deltaTime = (cast(double) application.currentTick - cast(double) _tick) / cast(
                 double) application.ticksPerSecond;
@@ -77,3 +77,6 @@ final class Voice {
         _lastPosition = _position;
     }
 }
+
+alias Voice3D = Voice!3u;
+alias Voice2D = Voice!2u;
