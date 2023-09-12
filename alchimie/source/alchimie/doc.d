@@ -1,4 +1,4 @@
-module sorcier.cli.doc;
+module alchimie.doc;
 
 import std.stdio : writeln, write;
 import std.string;
@@ -7,10 +7,7 @@ import std.conv : to;
 import std.path;
 import std.file;
 
-import grimoire;
-
-import sorcier.script;
-
+/*
 /// Generate documentation
 void generateDoc() {
     const GrLocale locale = GrLocale.fr_FR;
@@ -52,3 +49,4 @@ void generate(GrLocale locale) {
         i++;
     }
 }
+*/

@@ -22,9 +22,9 @@ void bootUp(string[] args) {
         string exeDir = dirName(exePath);
         string exeName = stripExtension(baseName(exePath));
 
-        bootFile = buildNormalizedPath(exeDir, setExtension(exeName, Alchimie_BootExt));
+        bootFile = buildNormalizedPath(exeDir, setExtension(exeName, Sorcier_GrimoireCompiledExt));
     } else {
-        bootFile = setExtension("boot", Alchimie_BootExt);
+        bootFile = setExtension("boot", Sorcier_GrimoireCompiledExt);
     }
 
     Runtime rt = new Runtime(bootFile);
@@ -63,7 +63,7 @@ final class Runtime : Application {
         _stdLib = grLoadStdLibrary();
         _alchimieLib = loadAlchimieLibrary();
 
-        version (AlchimieRT) {
+        version (SorcierRT) {
             _bytecode = new GrBytecode(_filePath);
         } else {
             GrCompiler compiler = new GrCompiler;

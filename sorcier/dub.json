@@ -25,25 +25,22 @@
             "targetPath": "../bin",
             "dflags": ["-gf"],
             "versions": [
-                "AlchimieDebug"
+                "SorcierDebug"
             ],
-            "targetName": "alchimie-dbg"
+            "targetName": "sorcier-dbg"
         },
         {
             "name": "export_dev",
             "versions": [
-                "AlchimieDev"
+                "SorcierDev"
             ],
             "targetPath": "../export",
-            "targetName": "alchimie"
+            "targetName": "sorcierdev"
         },
         {
             "name": "export_rt",
-            "versions": [
-                "AlchimieRT"
-            ],
             "targetPath": "../export",
-            "targetName": "alchimie-rt"
+            "targetName": "sorcier"
         }
     ]
 }

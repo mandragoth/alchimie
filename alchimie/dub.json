@@ -1,0 +1,32 @@
+{
+    "authors": [
+        "Enalye",
+        "Jonath"
+    ],
+    "copyright": "Copyright © 2022, Enalye, Jonath",
+    "description": "Moteur 2D/3D",
+    "license": "Zlib",
+    "name": "alchimie",
+    "targetType": "executable",
+    "targetName": "alchimie",
+    "targetPath": "../bin",
+    "configurations": [
+        {
+            "name": "debug",
+            "targetPath": "../bin",
+            "dflags": ["-gf"],
+            "versions": [
+                "AlchimieDebug"
+            ],
+            "targetName": "alchimie-dbg"
+        },
+        {
+            "name": "export",
+            "versions": [
+                "AlchimieExport"
+            ],
+            "targetPath": "../export",
+            "targetName": "alchimie"
+        }
+    ]
+}

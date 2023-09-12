@@ -1,9 +1,9 @@
-module sorcier.cli.help;
+module alchimie.help;
 
 import std.stdio : writeln;
 import std.conv : to;
 
-import sorcier.common;
+enum Alchimie_Version = 0;
 
 void displayHelp() {
     string txt = "Alchimie version " ~ to!string(Alchimie_Version) ~ "
