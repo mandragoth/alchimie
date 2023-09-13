@@ -8,7 +8,7 @@ import magia.render.array;
 import magia.render.buffer;
 import magia.render.frame;
 import magia.render.shader;
-import magia.render.rbo;
+import magia.render.render;
 
 /// Controls the gamma function
 static float gamma = 2.2f;
@@ -64,15 +64,15 @@ static uint nbSamples = 8;
         _vertexArray.linkAttributes(vertexBuffer, 1, 2, GL_FLOAT, 4 * float.sizeof, cast(void*)(2 * float.sizeof));
 
         _multiSampleFBO = new FrameBuffer(FBOType.Multisample, _size, nbSamples);
-        RBO RBO_ = new RBO(_size, nbSamples);
-        RBO_.attachFBO();
+        RenderBuffer renderBuffer = new RenderBuffer(_size, nbSamples);
+        renderBuffer.attachFBO();
         FrameBuffer.check("multisample");
 
         _postProcessFBO = new FrameBuffer(FBOType.Postprocess, _size);
         FrameBuffer.check("postprocess");
 
         FrameBuffer.unbind();
-        RBO.unbind();
+        renderBuffer.unbind();
         VertexArray.unbind();
     }
 

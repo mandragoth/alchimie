@@ -3,6 +3,7 @@ module magia.render.animation;
 import std.stdio;
 
 import magia.core;
+import magia.main.application;
 
 /// Type of interpolation
 enum Interpolation {
@@ -15,11 +16,11 @@ enum Interpolation {
 class Animation {
     private {
         // Start of the animation
-        float _start;
+        int _start;
         // End of the animation
-        float _end;
+        int _end;
         // Keyframes times in seconds
-        float[] _keyTimes;
+        int[] _keyTimes;
         // Array of translations to interpolate between
         vec3[] _translations;
         // Array of rotations to interpolate between
@@ -29,21 +30,21 @@ class Animation {
         // Interpolation function used
         Interpolation _interpolation;
         // Timer used to run the animation
-        Timer timer;
+        Timer _timer;
         // Trace mechanism
         bool _trace;
     }
     
-    /// Constructor
+    /// Constructor given times in seconds
     this(float start, float end, float[] keyTimes, string interpolation, vec3[] translations, quat[] rotations, vec3[] scales, bool trace = false) {
-        _start = start;
-        _end = end;
-        _keyTimes = keyTimes;
+        _start = secondsToTicks(start);
+        _end = secondsToTicks(end);
+        _keyTimes = secondsToTicks(keyTimes);
         _interpolation = buildInterpolation(interpolation);
         _translations = translations;
         _rotations = rotations;
         _scales = scales;
-        _trace = false;
+        _trace = trace;
 
         if (_trace) {
             writeln("  New animation");
@@ -60,20 +61,35 @@ class Animation {
         }
     }
 
+    /// Convert seconds to ticks
+    int secondsToTicks(float seconds) {
+        return cast(int)(seconds * application.ticksPerSecond);
+    }
+
+    /// Convert seconds to ticks
+    int[] secondsToTicks(float[] aSeconds) {
+        int[] aTicks;
+        foreach (float seconds; aSeconds) {
+            aTicks ~= secondsToTicks(seconds);
+        }
+
+        return aTicks;
+    }
+
     /// Update animation
     void update() {
         // Start timer if not yet done
-        if (!timer.isRunning) {
-            timer.mode = Timer.Mode.loop;
-            timer.start(cast(int) _end); //@TODO: Flemme de changer ça maintenant, mais faut plus travailler avec des secondes, mais des ticks dorénavant
+        if (!_timer.isRunning) {
+            _timer.mode = Timer.Mode.loop;
+            _timer.start(_end);
         } else {
-            timer.update();
+            _timer.update();
         }
     }
 
     /// Are we looking at a valid animation time?
     bool validTime() {
-        return timer.value >= _start && timer.value <= _end;
+        return _timer.value >= _start && _timer.value <= _end;
     }
 
     /// Interpolate translations
@@ -112,7 +128,7 @@ class Animation {
 
         vec3 computeInterpolatedVec3(vec3[] values) {
             // Compute current time
-            const float currentTime = timer.value;
+            const float currentTime = _timer.value;
 
             // Times and values need to be aligned
             assert(values.length == _keyTimes.length);
@@ -145,7 +161,7 @@ class Animation {
 
         quat computeInterpolatedQuat(quat[] values) {
             // Compute current time
-            const float currentTime = timer.value;
+            const float currentTime = _timer.value;
 
             // Times and values need to be aligned
             assert(values.length == _keyTimes.length);

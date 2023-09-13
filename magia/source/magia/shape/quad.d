@@ -25,7 +25,7 @@ final class QuadInstance : Entity3D {
             new Texture(buildNormalizedPath("assets", "texture", "planksSpec.png"), TextureType.specular, 1)
         ];
 
-        _shader = fetchPrototype!Shader("model");
+        _shader = modelShader;
     }
 
     /// Render the quad

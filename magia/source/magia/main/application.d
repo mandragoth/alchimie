@@ -103,6 +103,11 @@ class Application {
             return _audioDevice;
         }
 
+        /// Get ticks for each second
+        uint ticksPerSecond() {
+            return _ticksPerSecond;
+        }
+
         /// Add 2D camera
         void addCamera2D(OrthographicCamera camera) {
             _window.addCamera(camera);
