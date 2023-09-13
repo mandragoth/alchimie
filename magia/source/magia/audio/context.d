@@ -41,10 +41,10 @@ final class AudioContext2D : AudioContext {
 }*/
 
 /// Contexte audio 3D
-final class AudioContext {
+final class AudioContext(uint Dim = 3u) {
     private {
         ALCcontext* _context;
-        Array!Voice _voices;
+        Array!(Voice!Dim) _voices;
         PerspectiveCamera _camera;
 
         vec3 _lastPosition;
@@ -59,7 +59,7 @@ final class AudioContext {
 
     /// Init
     this(AudioDevice device, PerspectiveCamera camera) {
-        _voices = new Array!Voice;
+        _voices = new Array!(Voice!Dim);
         _camera = camera;
         _lastPosition = _camera.transform.position;
 
@@ -68,40 +68,49 @@ final class AudioContext {
         enforce(_context, "[Audio] impossible de créer le contexte");
     }
 
-    /// Update
-    void update() {
-        enforce(alcMakeContextCurrent(_context) == ALC_TRUE, "[Audio] impossible de mettre à jour le contexte");
-        _assertAlc();
+    static if (Dim == 3u) {
+        /// Update
+        void update() {
+            enforce(alcMakeContextCurrent(_context) == ALC_TRUE,
+                "[Audio] impossible de mettre à jour le contexte");
+            _assertAlc();
 
-        alListener3f(AL_POSITION, _camera.transform.position.x,
-            _camera.transform.position.y, _camera.transform.position.y);
-        vec3 deltaPosition = (_camera.transform.position - _lastPosition) * 60f;
-        _lastPosition = _camera.transform.position;
+            alListener3f(AL_POSITION, _camera.transform.position.x,
+                _camera.transform.position.y, _camera.transform.position.y);
+            vec3 deltaPosition = (_camera.transform.position - _lastPosition) * 60f;
+            _lastPosition = _camera.transform.position;
 
-        const vec3 forward = _camera.forward.normalized();
-        const vec3 up = _camera.up.normalized();
+            const vec3 forward = _camera.forward.normalized();
+            const vec3 up = _camera.up.normalized();
 
-        float[] listenerOri = [forward.x, forward.y, forward.z, up.x, up.y, up.z];
+            float[] listenerOri = [
+                forward.x, forward.y, forward.z, up.x, up.y, up.z
+            ];
 
-        alListener3f(AL_VELOCITY, deltaPosition.x, deltaPosition.y, deltaPosition.z);
-        alListenerfv(AL_ORIENTATION, listenerOri.ptr);
+            alListener3f(AL_VELOCITY, deltaPosition.x, deltaPosition.y, deltaPosition.z);
+            alListenerfv(AL_ORIENTATION, listenerOri.ptr);
 
-        //import std.stdio;writeln("forward: ", forward, "\t up: ", up, "\t pos: ", _camera.transform.position, "\t vit: ", deltaPosition);
+            //import std.stdio;writeln("forward: ", forward, "\t up: ", up, "\t pos: ", _camera.transform.position, "\t vit: ", deltaPosition);
 
-        foreach (i, voice; _voices) {
-            if (!voice.isPlaying) {
-                _voices.mark(i);
-                continue;
+            foreach (i, voice; _voices) {
+                if (!voice.isPlaying) {
+                    _voices.mark(i);
+                    continue;
+                }
+                voice.update(this);
             }
-            voice.update(this);
+            _voices.sweep();
+            _assertAlc();
         }
-        _voices.sweep();
-        _assertAlc();
+    }
+    else {
+        /// Update
+        void update() {}
     }
 
     /// Joue le son
-    Voice play(Sound sound) {
-        Voice voice = new Voice(sound);
+    Voice!Dim play(Sound sound) {
+        Voice!Dim voice = new Voice!Dim(sound);
         _voices.push(voice);
         _assertAlc();
         return voice;
@@ -127,3 +136,6 @@ final class AudioContext {
         }
     }
 }
+
+alias AudioContext3D = AudioContext!3u;
+alias AudioContext2D = AudioContext!2u;

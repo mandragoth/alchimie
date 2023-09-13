@@ -34,7 +34,7 @@ class Application {
 
         /// Audio context
         AudioDevice _audioDevice;
-        AudioContext _audioContext;
+        AudioContext3D _audioContext;
 
         /// Lighting manager
         LightingManager _lightingManager;
@@ -89,12 +89,12 @@ class Application {
         }
 
         /// Set audio context
-        void audioContext(AudioContext audioContext) {
+        void audioContext(AudioContext3D audioContext) {
             _audioContext = audioContext;
         }
 
         /// Get audio context
-        AudioContext audioContext() {
+        AudioContext3D audioContext() {
             return _audioContext;
         }
 

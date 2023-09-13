@@ -63,7 +63,7 @@ private void _newPerspectiveCamera2(GrCall call) {
 }
 
 private void _newAudioContext(GrCall call) {
-    AudioContext context = new AudioContext(application.audioDevice, call.getNative!PerspectiveCamera(0));
+    AudioContext3D context = new AudioContext3D(application.audioDevice, call.getNative!PerspectiveCamera(0));
     application.audioContext = context;
     call.setNative(context);
 }
