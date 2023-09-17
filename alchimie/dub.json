@@ -10,11 +10,18 @@
     "targetType": "executable",
     "targetName": "alchimie",
     "targetPath": "../bin",
+    "dependencies": {
+        "magia": {
+            "path": "../magia"
+        }
+    },
     "configurations": [
         {
             "name": "debug",
             "targetPath": "../bin",
-            "dflags": ["-gf"],
+            "dflags": [
+                "-gf"
+            ],
             "versions": [
                 "AlchimieDebug"
             ],

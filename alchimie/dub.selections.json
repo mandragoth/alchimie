@@ -1,0 +1,12 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"audio-formats": "2.2.1",
+		"bindbc-loader": "1.0.3",
+		"bindbc-openal": "1.0.1",
+		"bindbc-opengl": "1.0.5",
+		"bindbc-sdl": "1.3.6",
+		"grimoire": {"path":"../grimoire"},
+		"magia": {"path":"../magia"}
+	}
+}

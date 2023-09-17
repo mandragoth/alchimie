@@ -10,9 +10,11 @@ module magia.core;
 
 public {
     import magia.core.array;
+    import magia.core.cli;
     import magia.core.color;
     import magia.core.coord;
     import magia.core.json;
+    import magia.core.json_old;
     import magia.core.mat;
     import magia.core.quat;
     import magia.core.resource;

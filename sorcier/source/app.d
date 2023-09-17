@@ -8,6 +8,11 @@ import magia, grimoire;
 
 import sorcier.script, sorcier.common, sorcier.runtime;
 
+/// Configuration du ramasse-miettes
+extern (C) __gshared string[] rt_options = [
+	"gcopt=initReserve:128 minPoolSize:256 parallel:2 profile:0"
+];
+
 void main(string[] args) {
     version (Windows) {
         import core.sys.windows.windows : SetConsoleOutputCP;

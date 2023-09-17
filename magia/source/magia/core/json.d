@@ -1,113 +1,227 @@
-/**
-    Json
-
-    Copyright: (c) Enalye 2017
-    License: Zlib
-    Authors: Enalye
-*/
-
 module magia.core.json;
 
-public import std.json;
 import std.conv;
-import std.regex, std.path;
-import std.stdio;
+import std.exception;
+import std.file;
+import std.json;
+import std.path;
 
-/// Transform your path in a system agnostic path.
-string convertPathToExport(string path) {
-    return replaceAll(path, regex(r"\\/|/|\\"), "/");
-}
-
-/// Transform the path in your path system.
-string convertPathToImport(string path) {
-    return replaceAll(path, regex(r"\\/|/|\\"), dirSeparator);
-}
-
-/// Does the node exist?
-bool hasJson(JSONValue json, string tag) {
-    return ((tag in json.object) !is null);
-}
-
-/// Asset JSON tag exists, otherwise throw "tag does not exist in JSON" error
-void assetJSONTagExists(JSONValue json, string tag) {
-    if (!(tag in json.object)) {
-        throw new Exception("JSON: \'" ~ tag ~ "\' does not exist in JSON.");
-    }
-}
-
-/// Get the node
-JSONValue getJson(JSONValue json, string tag) {
-    assetJSONTagExists(json, tag);
-    return json.object[tag];
-}
-
-/// Get a JSONValue array associated to tag (throws if not found)
-JSONValue[] getJsonArray(JSONValue json, string tag) {
-    if (!(tag in json.object)) {
-        return [];
+/// Représente un nœud json
+final class Json {
+    private {
+        JSONValue _json;
     }
 
-    return json.object[tag].array;
-}
-
-/// Get a string array associated to tag (default if not found)
-string[] getJsonArrayStr(JSONValue json, string tag, string[] defaultValue) {
-    if (!(tag in json.object)) {
-        return defaultValue;
+    /// Ctor
+    this() {
     }
 
-    string[] array;
-    foreach (JSONValue value; json.object[tag].array) {
-        writeln("value: ", value);
-        array ~= value.str;
+    /// Charge depuis un fichier
+    this(string path) {
+        load(path);
     }
 
-    return array;
-}
+    private this(JSONValue node) {
+        _json = node;
+    }
 
-/// Get a int array associated to tag (throws if not found)
-int[] getJsonArrayInt(JSONValue json, string tag) {
-    assetJSONTagExists(json, tag);
+    /// Charge depuis un fichier
+    void load(string path) {
+        _json = parseJSON(readText(path));
+    }
 
-    int[] array;
-    foreach (JSONValue value; json.object[tag].array) {
-        if (value.type() == JSONType.integer) {
-            array ~= cast(int) value.integer;
-        } else {
-            array ~= to!int(value.str);
+    /// Enregistre vers un fichier
+    void save(string path, bool readable = true) {
+        std.file.write(path, toJSON(_json, readable));
+    }
+
+    /// Vérifie l’existence d’une clé
+    bool has(string key) {
+        return ((key in _json.object) !is null);
+    }
+
+    /// S’assure de l’existence d’une clé
+    private void _assert(string key) {
+        enforce(key in _json.object, "la clé `" ~ key ~ "` n’est pas définie");
+    }
+
+    /// Récupère le nœud associé à la clé
+    Json getObject(string key) {
+        _assert(key);
+        return new Json(_json.object[key]);
+    }
+
+    /// Récupère le texte associé à la clé
+    string getString(string key) {
+        _assert(key);
+        return _json.object[key].str;
+    }
+
+    /// Ditto
+    string getString(string key, string defaultValue) {
+        if (!(key in _json.object)) {
+            return defaultValue;
+        }
+
+        return _json.object[key].str;
+    }
+
+    /// Récupère l’entier associé à la clé
+    int getInt(string key) {
+        _assert(key);
+
+        JSONValue value = _json.object[key];
+        switch (value.type()) with (JSONType) {
+        case integer:
+            return cast(int) value.integer;
+        case uinteger:
+            return cast(int) value.uinteger;
+        case float_:
+            return cast(int) value.floating;
+        case string:
+            return to!int(value.str);
+        default:
+            throw new Exception("la clé `" ~ key ~ "` n’est pas convertissable en int");
         }
     }
 
-    return array;
-}
+    /// Ditto
+    int getInt(string key, int defaultValue) {
+        if (!(key in _json.object)) {
+            return defaultValue;
+        }
 
-/// Get a int array associated to tag (default if not found)
-int[] getJsonArrayInt(JSONValue json, string tag, int[] defaultValue = []) {
-    if (!(tag in json.object)) {
-        return defaultValue;
+        return getInt(key);
     }
 
-    int[] array;
-    foreach (JSONValue value; json.object[tag].array) {
-        if (value.type() == JSONType.integer) {
-            array ~= cast(int) value.integer;
-        } else {
-            array ~= to!int(value.str);
+    /// Récupère le flottant associé à la clé
+    float getFloat(string key) {
+        _assert(key);
+
+        JSONValue value = _json.object[key];
+        switch (value.type()) with (JSONType) {
+        case integer:
+            return cast(float) value.integer;
+        case uinteger:
+            return cast(float) value.uinteger;
+        case float_:
+            return value.floating;
+        case string:
+            try
+                return to!float(value.str);
+            catch (Exception e) {
+                throw new Exception("la clé `" ~ key ~ "` n’est pas convertissable en float");
+            }
+        default:
+            throw new Exception("la clé `" ~ key ~ "` n’est pas convertissable en float");
         }
     }
 
-    return array;
-}
+    /// Ditto
+    float getFloat(string key, float defaultValue) {
+        if (!(key in _json.object)) {
+            return defaultValue;
+        }
 
-/// Get a int array associated to tag (default if not found)
-float[] getJsonArrayFloat(JSONValue json, string tag, float[] defaultValue = []) {
-    if (!(tag in json.object)) {
-        return defaultValue;
+        return getFloat(key);
     }
 
-    float[] array;
-    foreach (JSONValue value; json.object[tag].array) {
-        switch(value.type()) {
+    /// Récupère le booléen associé à la clé
+    bool getBool(string key) {
+        _assert(key);
+
+        JSONValue value = _json.object[key];
+        if (value.type() == JSONType.true_) {
+            return true;
+        } else if (value.type() == JSONType.false_) {
+            return false;
+        } else {
+            throw new Exception("la clé `" ~ key ~ "` n’est pas un booléen");
+        }
+    }
+
+    /// Ditto
+    bool getBool(string key, bool defaultValue) {
+        if (!(key in _json.object)) {
+            return defaultValue;
+        }
+
+        return getBool(key);
+    }
+
+    /// Récupère les nœuds associés à la clé
+    Json[] getObjects(string key) {
+        _assert(key);
+
+        Json[] array;
+        foreach (ref JSONValue node; _json.object[key].array) {
+            array ~= new Json(node);
+        }
+        return array;
+    }
+
+    /// Ditto
+    Json[] getObjects(string key, Json[] defaultValue) {
+        if (!(key in _json.object)) {
+            return defaultValue;
+        }
+
+        return getObjects(key);
+    }
+
+    /// Récupères les textes associés à la clé
+    string[] getStrings(string key) {
+        _assert(key);
+
+        string[] array;
+        foreach (JSONValue value; _json.object[key].array) {
+            array ~= value.str;
+        }
+
+        return array;
+    }
+
+    /// Ditto
+    string[] getStrings(string key, string[] defaultValue) {
+        if (!(key in _json.object)) {
+            return defaultValue;
+        }
+
+        return getStrings(key);
+    }
+
+    /// Récupère les entiers associés à la clé
+    int[] getInts(string key) {
+        _assert(key);
+
+        int[] array;
+        foreach (JSONValue value; _json.object[key].array) {
+            if (value.type() == JSONType.integer) {
+                array ~= cast(int) value.integer;
+            } else {
+                array ~= to!int(value.str);
+            }
+        }
+
+        return array;
+    }
+
+    /// Ditto
+    int[] getInts(string key, int[] defaultValue = []) {
+        if (!(key in _json.object)) {
+            return defaultValue;
+        }
+
+        return getInts(key);
+    }
+
+    /// Récupère les flottants associés à la clé
+    float[] getFloats(string key) {
+        _assert(key);
+
+        float[] array;
+        foreach (JSONValue value; _json.object[key].array) {
+            switch (value.type()) {
             case JSONType.string:
                 array ~= to!float(value.str);
                 break;
@@ -119,133 +233,51 @@ float[] getJsonArrayFloat(JSONValue json, string tag, float[] defaultValue = [])
                 break;
             default:
                 break;
+            }
         }
+
+        return array;
     }
 
-    return array;
-}
+    /// Ditto
+    float[] getFloats(string key, float[] defaultValue = []) {
+        if (!(key in _json.object)) {
+            return defaultValue;
+        }
 
-/// Get a string associated to tag (throws if not found)
-string getJsonStr(JSONValue json, string tag) {
-    assetJSONTagExists(json, tag);
-    return json.object[tag].str;
-}
-
-/// Get a string associated to tag (default if not found)
-string getJsonStr(JSONValue json, string tag, string defaultValue) {
-    if (!(tag in json.object)) {
-        return defaultValue;
+        return getFloats(key);
     }
 
-    return json.object[tag].str;
-}
+    /// Récupère les booléens associés à la clé
+    bool[] getBools(string key) {
+        _assert(key);
 
-/// Get a int associated to tag (throws if not found)
-int getJsonInt(JSONValue json, string tag) {
-    assetJSONTagExists(json, tag);
+        bool[] array;
+        foreach (size_t i, JSONValue value; _json.object[key].array) {
+            if (value.type() == JSONType.true_) {
+                array ~= true;
+            } else if (value.type() == JSONType.false_) {
+                array ~= false;
+            } else {
+                enforce(false, "l’élément à l’index " ~ to!string(
+                        i) ~ " clé `" ~ key ~ "` n’est pas un booléen");
+            }
+        }
 
-    JSONValue value = json.object[tag];
-    switch (value.type()) with (JSONType) {
-        case integer:
-            return cast(int) value.integer;
-        case uinteger:
-            return cast(int) value.uinteger;
-        case float_:
-            return cast(int) value.floating;
-        case string:
-            return to!int(value.str);
-        default:
-            throw new Exception("JSON: No integer value in \'" ~ tag ~ "\'.");
-    }
-}
-
-/// Get a int associated to tag (default if not found)
-int getJsonInt(JSONValue json, string tag, int defaultValue) {
-    if (!(tag in json.object)) {
-        return defaultValue;
+        return array;
     }
 
-    JSONValue value = json.object[tag];
-    switch (value.type()) with (JSONType) {
-        case integer:
-            return cast(int) value.integer;
-        case uinteger:
-            return cast(int) value.uinteger;
-        case float_:
-            return cast(int) value.floating;
-        case string:
-            return to!int(value.str);
-        default:
-            throw new Exception("JSON: No integer value in \'" ~ tag ~ "\'.");
-    }
-}
+    /// Ditto
+    bool[] getBools(string key, bool[] defaultValue) {
+        if (!(key in _json.object)) {
+            return defaultValue;
+        }
 
-/// Get a float associated to tag (throws if not found)
-float getJsonFloat(JSONValue json, string tag) {
-    assetJSONTagExists(json, tag);
-
-    JSONValue value = json.object[tag];
-    switch (value.type()) with (JSONType) {
-    case integer:
-        return cast(float) value.integer;
-    case uinteger:
-        return cast(float) value.uinteger;
-    case float_:
-        return value.floating;
-    case string:
-        return to!float(value.str);
-    default:
-        throw new Exception("JSON: No floating value in \'" ~ tag ~ "\'.");
-    }
-}
-
-/// Get a default associated to tag (default if not found)
-float getJsonFloat(JSONValue json, string tag, float defaultValue) {
-    if (!(tag in json.object)) {
-        return defaultValue;
+        return getBools(key);
     }
 
-    JSONValue value = json.object[tag];
-    switch (value.type()) with (JSONType) {
-    case integer:
-        return cast(float) value.integer;
-    case uinteger:
-        return cast(float) value.uinteger;
-    case float_:
-        return value.floating;
-    case string:
-        return to!float(value.str);
-    default:
-        throw new Exception("JSON: No floating value in \'" ~ tag ~ "\'.");
-    }
-}
-
-/// Get a bool associated to tag (throws if not found)
-bool getJsonBool(JSONValue json, string tag) {
-    assetJSONTagExists(json, tag);
-
-    JSONValue value = json.object[tag];
-    if (value.type() == JSONType.true_) {
-        return true;
-    } else if (value.type() == JSONType.false_) {
-        return false;
-    } else {
-        throw new Exception("JSON: \'" ~ tag ~ "\' is not a boolean value.");
-    }
-}
-
-/// Get a bool associated to tag (default if not found)
-bool getJsonBool(JSONValue json, string tag, bool defaultValue) {
-    if (!(tag in json.object)) {
-        return defaultValue;
-    }
-
-    JSONValue value = json.object[tag];
-    if (value.type() == JSONType.true_) {
-        return true;
-    } else if (value.type() == JSONType.false_) {
-        return false;
-    } else {
-        throw new Exception("JSON: \'" ~ tag ~ "\' is not a boolean value.");
+    /// Assigne une valeur à la clé
+    void set(T)(string key, T value) {
+        _json[key] = JSONValue(value);
     }
 }
