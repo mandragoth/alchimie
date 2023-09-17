@@ -36,7 +36,7 @@ void main() {
                          u_BoneMatrix[a_BoneIDs[3]] * a_Weights[3];
 
     /// Apply bone matrix, then transform, then camera matrix
-    vec4 bonePosition  = vec4(a_Position, 1.0);
+    vec4 bonePosition  = boneTransform * vec4(a_Position, 1.0);
     vec4 localPosition = u_Transform * bonePosition;
     vec4 worldPosition = u_CamMatrix * localPosition;
 

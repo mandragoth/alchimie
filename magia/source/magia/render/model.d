@@ -18,11 +18,13 @@ import magia.core;
 import magia.render.animation;
 import magia.render.buffer;
 import magia.render.camera;
+import magia.render.bone;
 import magia.render.data;
 import magia.render.entity;
 import magia.render.joint;
 import magia.render.material;
 import magia.render.mesh;
+import magia.render.node;
 import magia.render.renderer;
 import magia.render.shader;
 import magia.render.texture;
@@ -34,9 +36,10 @@ enum uint uintDefault = -1;
 
 private {
     // File to debug + should we trace deep layers?
-    string s_DebugFile = "rigged.gltf";
-    bool s_TraceDeep = false;
-    bool s_TraceData = false;
+    string s_DebugFile = "skin.gltf";
+    bool s_Trace = true;
+    bool s_TraceDeep = true;
+    bool s_TraceData = true;
 }
 
 /// Class handling model data and draw call
@@ -71,7 +74,10 @@ final class Model {
         // Transformations
         Transform3D[] _transforms;
 
-        // Bones
+        // Nodes
+        Node[] _nodes;
+
+        // Bones (indexed by node index)
         Bone[uint] _bones;
 
         // Animations
@@ -84,7 +90,6 @@ final class Model {
         bool _trace;
         bool _traceDeep;
         bool _traceData;
-        bool _traceNormals;
     }
 
     @property {
@@ -97,7 +102,7 @@ final class Model {
     /// Constructor
     this(string fileName) {
         if (baseName(fileName) == s_DebugFile) {
-            _trace = false;
+            _trace = s_Trace;
             _traceDeep = s_TraceDeep;
             _traceData = s_TraceData;
         }
@@ -405,7 +410,7 @@ final class Model {
                 }
 
                 // Create new bone and index it internally by its node index
-                _bones[nodeId] = new Bone(boneId, name, boneMatrices[boneId]);
+                _bones[nodeId] = Bone(boneId, name, boneMatrices[boneId]);
             }
         }
 
@@ -478,7 +483,7 @@ final class Model {
                     // Pack all bones into global array
                     assembleBones(boneNodeIds, boneMatrices);
 
-                    // Pack vertex and joints as animation data @TODO
+                    // Pack vertex and joints as animation data
                     for (uint i = 0; i < vertices.length; ++i) {
                         animatedVertices ~= AnimatedVertex(vertices[i], joints[i]);
                     }
@@ -624,6 +629,9 @@ final class Model {
                 globalModel.print();
             }
 
+            // Save node for future use
+            _nodes ~= Node(nodeId, globalModel);
+
             // Load current node mesh if any
             if (hasJson(jsonNode, "mesh")) {
                 if (_trace) {
@@ -651,26 +659,8 @@ final class Model {
                 isRoot = false;
                 for (uint i = 0; i < children.length; ++i) {
                     const uint childrenId = children[i].get!uint;
-                    traverseNode(childrenId, globalModel, isRoot);
+                    traverseNode(childrenId, currentModel, isRoot);
                 }
-            }
-
-            if (_traceDeep) {
-                writeln("HERE");
-                writeln("nodeId: ", nodeId);
-                writeln("Bones: ", _bones);
-            }
-
-            // @TODO we need to loop through mesh, THEN bones as we could visit bones before they are marked as joints of a skin
-            // Maybe avoid performing a recursive call ?
-            // If this node is a bone, compute its final transform
-            if (nodeId in _bones) {
-                if (_traceDeep) {
-                    writefln("  This node is a bone");
-                }
-
-                Bone bone = _bones[nodeId];
-                bone.computeBindPose(globalModel);
             }
         }
 
@@ -737,28 +727,31 @@ final class Model {
                                                         interpolation,
                                                         translations,
                                                         rotations,
-                                                        scales);
+                                                        scales,
+                                                        _traceDeep);
                 }
             }
         }
 
         /// Update all animations
-        void updateAnimations() {
+        void uploadBoneTransforms(Shader shader) {
             // Loop through all bones
             foreach (nodeId, bone; _bones) {
+                mat4 nodeModel = _nodes[nodeId].model;
+
                 // If this bone has an animation
+                /*mat4 bonePose;
                 if (nodeId in _animations) {
                     Animation animation = _animations[nodeId];
-                    bone.computeAnimatedPose(animation);
-                }
-            }
-        }
+                    bonePose = bone.computeAnimatedPose(nodeModel, animation);
+                } else {
+                    bonePose = bone.computeBindPose(nodeModel);
+                }*/
 
-        /// Upload bone transformations to shader
-        void uploadBoneTransforms(Shader shader) {
-            foreach (bone; _bones) {
+                mat4 bonePose = bone.computeBindPose(nodeModel);
+
                 const char* uniformName = toStringz(format("u_BoneMatrix[%u]", bone.id));
-                shader.uploadUniformMat4(uniformName, bone.model);
+                shader.uploadUniformMat4(uniformName, bonePose);
             }
         }
     }
@@ -787,17 +780,15 @@ final class ModelInstance : Entity3D {
         _model = fetchPrototype!Model(fileName);
 
         if (nbBones == 0) {
-            _shader = fetchPrototype!Shader("model");
+            _shader = modelShader;
         } else {
-            _shader = fetchPrototype!Shader("animated");
+            _shader = animatedShader;
         }
     }
 
     /// Render the model
     override void draw(Renderer3D renderer) {
         _shader.activate();
-
-        //_model.updateAnimations();
         _model.uploadBoneTransforms(_shader);
 
         if (nbBones) {

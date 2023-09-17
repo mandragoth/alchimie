@@ -1,9 +1,9 @@
-module magia.render.rbo;
+module magia.render.render;
 
 import bindbc.opengl;
 
 /// Class holding a Render Buffer Object
-class RBO {
+class RenderBuffer {
     /// Index
     GLuint id;
 
