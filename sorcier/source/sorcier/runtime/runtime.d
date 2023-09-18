@@ -13,80 +13,33 @@ import sorcier.common;
 import sorcier.loader;
 import sorcier.script;
 
-void bootUp(string[] args) {
-    string bootFile;
-
-    if (args.length) {
-        string exePath = args[0];
-
-        string exeDir = dirName(exePath);
-        string exeName = stripExtension(baseName(exePath));
-
-        bootFile = buildNormalizedPath(exeDir, setExtension(exeName, Sorcier_GrimoireCompiledExt));
-    } else {
-        bootFile = setExtension("boot", Sorcier_GrimoireCompiledExt);
-    }
-
-    Runtime rt = new Runtime(bootFile);
-
-    rt.run();
-}
-
-void launchProject(string path) {
-    Runtime rt = new Runtime(path);
-
-    rt.run();
-}
+import sorcier.runtime.compiler;
 
 final class Runtime : Application {
     private {
-        string _filePath;
-
         // Grimoire
         GrEngine _engine;
-        GrLibrary _stdLib;
-        GrLibrary _alchimieLib;
         GrBytecode _bytecode;
 
         // Événements
         GrEvent _inputEvent, _lateInputEvent;
     }
 
-    this(string filePath) {
-        _filePath = filePath;
-        enforce(exists(_filePath), "boot file does not exist `" ~ _filePath ~ "`");
+    this(GrBytecode bytecode) {
+        _bytecode = bytecode;
+        enforce(_bytecode, "le bytecode n’a pas pu être chargé");
 
         super(vec2u(800, 800), "Alchimie");
     }
 
     override Status load() {
-        _stdLib = grLoadStdLibrary();
-        _alchimieLib = loadAlchimieLibrary();
+        _engine = new GrEngine(Sorcier_Version);
 
-        version (SorcierRT) {
-            _bytecode = new GrBytecode(_filePath);
-        } else {
-            GrCompiler compiler = new GrCompiler;
-            compiler.addLibrary(_stdLib);
-            compiler.addLibrary(_alchimieLib);
-
-            compiler.addFile(_filePath);
-
-            _bytecode = compiler.compile(GrOption.profile | GrOption.symbols | GrOption.safe,
-                GrLocale.fr_FR);
-
-            if (!_bytecode) {
-                writeln(compiler.getError().prettify(GrLocale.fr_FR));
-                return Status.error;
-            }
-
-            //writeln(_bytecode.prettify());
+        foreach (GrLibrary lib; getLibraries()) {
+            _engine.addLibrary(lib);
         }
 
-        _engine = new GrEngine;
-        _engine.addLibrary(_stdLib);
-        _engine.addLibrary(_alchimieLib);
-        _engine.load(_bytecode);
+        enforce(_engine.load(_bytecode), "version du bytecode invalide");
 
         _engine.callEvent("onLoad");
 

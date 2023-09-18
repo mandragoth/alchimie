@@ -1,11 +1,11 @@
-module alchimie.cmd_export;
+module alchimie.cli_export;
 
 import std.exception;
 import std.path;
 
 import magia;
 
-void _cmdExport(Cli.Result result) {
+void cliExport(Cli.Result cli) {
     //_compileScript(path, name, locale);
     //_compileRessource(path, locale);
 }

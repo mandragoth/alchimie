@@ -1,4 +1,4 @@
-module alchimie.cmd_init;
+module alchimie.cli_init;
 
 import std.stdio, std.file, std.path;
 import std.exception;
@@ -21,14 +21,19 @@ export/
 *.grc
 `;
 
-void _cmdInit(Cli.Result result) {
+void cliInit(Cli.Result cli) {
+    if (cli.hasOption("help")) {
+        writeln(cli.getHelp(cli.name));
+        return;
+    }
+
     string dir = getcwd();
     string name = baseName(dir);
 
-    if (result.optionalParams.length == 1) {
-        enforce(isValidPath(result.optionalParams[0]), "chemin non valide");
-        name = baseName(result.optionalParams[0]);
-        dir = buildNormalizedPath(dir, result.optionalParams[0]);
+    if (cli.optionalParams.length == 1) {
+        enforce(isValidPath(cli.optionalParams[0]), "chemin non valide");
+        name = baseName(cli.optionalParams[0]);
+        dir = buildNormalizedPath(dir, cli.optionalParams[0]);
 
         if (!exists(dir))
             mkdir(dir);
