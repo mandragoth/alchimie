@@ -91,36 +91,38 @@ final class Mesh(uint dimension_) {
         }
     }
 
-    /// Draw call
+    /// Draw call with transform
     void draw(Shader shader, Material material, Transform!(dimension_) transform = Transform!(dimension_).identity) {
+        draw(shader, material, combineModel(transform));
+    }
+
+    /// Draw call with model
+    void draw(Shader shader, Material material, mat4 model) {
         bindData(shader, material);
         
         // Index buffer: defer to glDrawElements* methods
         if (_vertexArray.elementCount) {
-            drawElements(shader, transform);
+            drawElements(shader, model);
         }
         // No index buffer, defer to glDrawArrays* methods
         else {
-            drawArrays(shader, transform);
-        }
+            drawArrays(shader, model);
+        } 
     }
 
-    private void drawElements(Shader shader, Transform!(dimension_) transform) {
+    private void drawElements(Shader shader, mat4 model) {
         if (_instances == 1) {
-            shader.uploadUniformMat4("u_Transform", combineModel(transform));
+            shader.uploadUniformMat4("u_Transform", model);
             glDrawElements(_drawMode, _vertexArray.elementCount, GL_UNSIGNED_INT, null);
         } else {
             shader.uploadUniformMat4("u_Transform", mat4.identity);
             glDrawElementsInstanced(_drawMode, _vertexArray.elementCount, GL_UNSIGNED_INT, null, _instances);
         }
-
-        // Debug: normals
     }
 
-    private void drawArrays(Shader shader, Transform!(dimension_)  transform) {
+    private void drawArrays(Shader shader, mat4 model) {
         if (_instances == 1) {
-            shader.uploadUniformMat4("u_Transform", combineModel(transform));
-            //glDrawArrays(_drawMode, 0, );
+            shader.uploadUniformMat4("u_Transform", model);
         }
     }
 }

@@ -36,10 +36,10 @@ enum uint uintDefault = -1;
 
 private {
     // File to debug + should we trace deep layers?
-    string s_DebugFile = "skin.gltf";
-    bool s_Trace = true;
-    bool s_TraceDeep = true;
-    bool s_TraceData = true;
+    string s_DebugFile = "rigged.gltf";
+    bool s_Trace = false;
+    bool s_TraceDeep = false;
+    bool s_TraceData = false;
 }
 
 /// Class handling model data and draw call
@@ -72,6 +72,7 @@ final class Model {
         AnimatedVertex[] _animatedVertices;
 
         // Transformations
+        // @TODO absorb these transforms with a MeshInstance class?
         Transform3D[] _transforms;
 
         // Nodes
@@ -150,13 +151,13 @@ final class Model {
     }
 
     /// Draw the model (by default with its preloaded material)
-    void draw(Shader shader, Material material, Transform3D transform) {
+    void draw(Shader shader, Material material, mat4 model) {
         // Model culling is the opposite of usual objects
         glCullFace(GL_BACK);
 
         for (uint meshId = 0; meshId < _meshes.length; ++meshId) {
-            Transform3D meshTransform = _transforms[meshId] * transform;
-            _meshes[meshId].draw(shader, material, meshTransform);
+            mat4 meshModel = combineModel(_transforms[meshId]) * model;
+            _meshes[meshId].draw(shader, material, meshModel);
         }
 
         // Revert to usual culling
@@ -164,8 +165,8 @@ final class Model {
     }
 
     /// Draw the model (with its preloaded material)
-    void draw(Shader shader, Transform3D transform) {
-        draw(shader, _material, transform);
+    void draw(Shader shader, mat4 model) {
+        draw(shader, _material, model);
     }
 
     private {
@@ -735,6 +736,9 @@ final class Model {
 
         /// Update all animations
         void uploadBoneTransforms(Shader shader) {
+            mat4[] aBonePose;
+            aBonePose.length = _bones.length;
+
             // Loop through all bones
             foreach (nodeId, bone; _bones) {
                 mat4 nodeModel = _nodes[nodeId].model;
@@ -752,7 +756,22 @@ final class Model {
 
                 const char* uniformName = toStringz(format("u_BoneMatrix[%u]", bone.id));
                 shader.uploadUniformMat4(uniformName, bonePose);
+
+                aBonePose[bone.id] = bonePose;
             }
+
+            // Debug: compute locally bind transforms
+            /*foreach (jointId, animatedVertex; _animatedVertices) {
+                mat4 boneTransform = aBonePose[animatedVertex.boneIds[0]] * animatedVertex.weights[0] +
+                                     aBonePose[animatedVertex.boneIds[1]] * animatedVertex.weights[1] +
+                                     aBonePose[animatedVertex.boneIds[2]] * animatedVertex.weights[2] +
+                                     aBonePose[animatedVertex.boneIds[3]] * animatedVertex.weights[3];
+
+                writeln("Bone transform for joint#", jointId);
+                boneTransform.print();
+            }
+
+            throw new Exception("Stopping debug here");*/
         }
     }
 }
@@ -801,9 +820,9 @@ final class ModelInstance : Entity3D {
             _shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
 
             if (material) {
-                _model.draw(_shader, material, globalTransform);
+                _model.draw(_shader, material, globalModel);
             } else {
-                _model.draw(_shader, globalTransform);
+                _model.draw(_shader, globalModel);
             }
         }
     }

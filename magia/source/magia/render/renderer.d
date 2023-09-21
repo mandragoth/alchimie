@@ -89,8 +89,8 @@ class Renderer(uint dimension_) {
 
         /// Render a texture at given location
         void drawTexture(Texture texture, vec2 position, vec2 size,
-                        vec4i clip = vec4i.zero, Flip flip = Flip.none, Blend blend = Blend.alpha,
-                        Color color = Color.white, float alpha = 1f) {
+                         vec4i clip = vec4i.zero, Flip flip = Flip.none, Blend blend = Blend.alpha,
+                         Color color = Color.white, float alpha = 1f) {
             Transform2D transform = _coordinateSystem.toRenderSpace(position, size, window.screenSize);
             Material material = new Material(texture, color, alpha, blend, flip, clip);
             drawMaterial(material, transform);

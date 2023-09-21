@@ -10,6 +10,7 @@ import magia.core.util;
 struct Transform(uint dimension_) {
     alias vec = Vector!(float, dimension_);
     alias rot = Rotor!(float, dimension_);
+    alias mat = Matrix!(float, dimension_ + 1, dimension_ + 1);
 
     /// Object position
     vec position = vec.zero;
@@ -19,6 +20,9 @@ struct Transform(uint dimension_) {
 
     /// Object scale
     vec scale = vec.one;
+
+    /// Object model
+    mat model = mat.identity;
 
     @property {
         /// Default transform
@@ -33,24 +37,25 @@ struct Transform(uint dimension_) {
         scale = scale_;
     }
 
-    /// Constructor given position, rotation, scale
-    this(vec position_, rot rotation_ = rot.zero, vec scale_ = vec.one) {
+    /// Constructor given position, rotation, scale, model
+    this(vec position_, rot rotation_ = rot.zero, vec scale_ = vec.one, mat model_ = mat.identity) {
         position = position_;
         rotation = rotation_;
         scale = scale_;
+        model = model_;
     }
 
     /// Combine two transforms
     Transform opBinary(string op : "*")(Transform other) const {
         return Transform(other.position + position,
                          other.rotation * rotation,
-                         other.scale * scale);
+                         other.scale * scale,
+                         other.model * model);
     }
 }
 
 alias Transform2D = Transform!(2);
 alias Transform3D = Transform!(3);
-
 
 /// Combine translation, rotation and scale into model matrix
 mat4 combineModel(vec3 translation, quat rotation, vec3 scale) {
@@ -70,15 +75,16 @@ mat4 combineModel(vec3 translation, rot3 rotation, vec3 scale) {
     return mTranslation * mRotation * mScale;
 }
 
-/// Combine model from transform position, rotation, scale
-mat4 combineModel(Transform3D transform) {
-    return combineModel(transform.position, transform.rotation, transform.scale);
+/// Combine translation, rotation and scale into model matrix
+mat4 combineModel(vec2 translation, rot2 rotation, vec2 scale) {
+    vec3 mTranslation = vec3(translation.x, translation.y, 0f);
+    quat mRotation = quat.euler_rotation(0f, 0f, rotation.angle);
+    vec3 mScale    = vec3(scale.x, scale.y, 0f);
+
+    return combineModel(mTranslation, mRotation, mScale);
 }
 
 /// Combine model from transform position, rotation, scale
-mat4 combineModel(Transform2D transform) {
-    vec3 position = vec3(transform.position.x, transform.position.y, 0f);
-    quat rotation = quat.euler_rotation(0f, 0f, transform.rotation.angle);
-    vec3 scale    = vec3(transform.scale.x, transform.scale.y, 0f);
-    return combineModel(position, rotation, scale);
+mat4 combineModel(uint dimension_)(Transform!(dimension_) transform) {
+    return combineModel(transform.position, transform.rotation, transform.scale);
 }
