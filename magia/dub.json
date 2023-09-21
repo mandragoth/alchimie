@@ -26,7 +26,7 @@
 			]
 		}
 	},
-	"copyFiles": [
+	"copyFiles-windows": [
 		"../libs/$PLATFORM/$ARCH/SDL2.dll",
 		"../libs/$PLATFORM/$ARCH/SDL2_image.dll",
 		"../libs/$PLATFORM/$ARCH/SDL2_ttf.dll",
