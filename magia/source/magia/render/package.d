@@ -6,6 +6,7 @@ public {
     import magia.render.data; // @TODO remove
     import magia.render.entity;
     import magia.render.font;
+    import magia.render.instance;
     import magia.render.light;
     import magia.render.material;
     import magia.render.mesh; // @TODO remove

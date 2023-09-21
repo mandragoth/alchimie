@@ -42,3 +42,10 @@ final class SColor {
     Color _vectorData;
     alias _vectorData this;
 }
+
+final class SMat4(T) {
+    Matrix!(T, 4, 4) _matrixData;
+    alias _matrixData this;
+}
+
+alias SMat4f = SMat4!GrFloat;

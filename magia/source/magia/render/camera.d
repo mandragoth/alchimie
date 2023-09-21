@@ -7,7 +7,7 @@ import std.math;
 import std.stdio;
 
 import magia.core;
-import magia.render.entity;
+import magia.render.instance;
 import magia.render.shader;
 
 /// Global camera class

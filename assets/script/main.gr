@@ -53,9 +53,9 @@ task runtime() {
     /*var skin = @Model("skin");
     skin:position(@vec3f(0f, -1f, 0f));*/
 
-    var rig = @Model("riggedsimple");
+    /*var rig = @Model("riggedsimple");
     rig:rotation(@vec3f(0f, 90f, 0f));
-    rig:scale(@vec3f(0.1f, 0.1f, 0.1f));
+    rig:scale(@vec3f(0.1f, 0.1f, 0.1f));*/
 
     /*task() {
         var sound = @Sound("assets/sound/wind.wav");

@@ -13,6 +13,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     GrType vec3Type = grGetNativeType("vec3", [grFloat]);
     GrType colorType = grGetNativeType("color");
     GrType vec4iType = grGetNativeType("vec4", [grInt]);
+    GrType mat4Type = grGetNativeType("mat4");
 
     // Entity types
     GrType instanceType = library.addNative("Instance");
@@ -21,6 +22,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     GrType skyboxType = library.addNative("Skybox", [], "Entity");
     GrType modelType = library.addNative("Model", [], "Entity");
     GrType quadType = library.addNative("Quad", [], "Entity");
+    GrType sphereType = library.addNative("Sphere", [], "Entity");
 
     // Entity constructors
     library.addConstructor(&_newSprite, spriteType, [grString]);
@@ -28,6 +30,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addConstructor(&_newSkybox, skyboxType, []);
     library.addConstructor(&_newModel, modelType, [grString]);
     library.addConstructor(&_newQuad, quadType);
+    library.addConstructor(&_newSphere, sphereType);
 
     // Instance operations
     library.addFunction(&_getGlobalPosition3D, "globalPosition", [instanceType], [vec3Type]);
@@ -38,6 +41,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addFunction(&_setRotation3D, "rotation", [instanceType, vec3Type]);
     library.addFunction(&_setScale2D, "scale", [instanceType, vec2Type]);
     library.addFunction(&_setScale3D, "scale", [instanceType, vec3Type]);
+    library.addFunction(&_setModel, "model", [instanceType, mat4Type]);
     library.addFunction(&_addChild, "addChild", [instanceType, instanceType]);
 
     // Entity operations
@@ -104,6 +108,11 @@ private void _setScale3D(GrCall call) {
     instance.scale = cast(vec3) call.getNative!SVec3f(1);
 }
 
+private void _setModel(GrCall call) {
+    Instance3D instance = call.getNative!Instance3D(0);
+    instance.model = cast(mat4) call.getNative!SMat4f(1);
+}
+
 private void _addChild(GrCall call) {
     Instance3D current = call.getNative!Instance3D(0);
     Instance3D child   = call.getNative!Instance3D(1);
@@ -148,6 +157,11 @@ private void _newModel(GrCall call) {
 private void _newQuad(GrCall call) {
     QuadInstance quadInstance = new QuadInstance();
     call.setNative(quadInstance);
+}
+
+private void _newSphere(GrCall call) {
+    Sphere sphere = new Sphere(100, 10);
+    call.setNative(sphere);
 }
 
 private void _packInstanceMatrix(GrCall call) {
