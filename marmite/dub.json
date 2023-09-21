@@ -1,0 +1,21 @@
+{
+	"authors": [
+		"Enalye"
+	],
+	"copyright": "Copyright © 2023, Enalye",
+	"description": "Transpileur Grimoire pour Alchimie",
+	"license": "Zlib",
+	"name": "marmite",
+    "targetType": "executable",
+    "targetName": "marmite",
+    "targetPath": "../bin",
+    "workingDirectory": "..",
+    "dependencies": {
+        "magia": {
+            "path": "../magia"
+        },
+        "grimoire": {
+            "path": "../grimoire"
+        }
+    }
+}
