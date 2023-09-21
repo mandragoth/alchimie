@@ -25,7 +25,7 @@ GrLibrary[] getLibraries() {
     return _libraries;
 }
 
-GrBytecode compileSource(string inputFile, GrLocale locale) {
+GrBytecode compileSource(string inputFile, int options, GrLocale locale) {
     GrCompiler compiler = new GrCompiler(Sorcier_Version);
 
     foreach (GrLibrary lib; getLibraries()) {
@@ -34,26 +34,8 @@ GrBytecode compileSource(string inputFile, GrLocale locale) {
 
     compiler.addFile(inputFile);
 
-    GrBytecode bytecode = compiler.compile(
-        GrOption.profile | GrOption.safe | GrOption.symbols, locale);
+    GrBytecode bytecode = compiler.compile(options, locale);
     enforce(bytecode, compiler.getError().prettify(locale));
-
-    return bytecode;
-}
-
-GrBytecode compileSource(string inputFile, string outputFile, GrLocale locale) {
-    GrCompiler compiler = new GrCompiler(Sorcier_Version);
-
-    foreach (GrLibrary lib; getLibraries()) {
-        compiler.addLibrary(lib);
-    }
-
-    compiler.addFile(inputFile);
-
-    GrBytecode bytecode = compiler.compile(GrOption.none, locale);
-    enforce(bytecode, compiler.getError().prettify(locale));
-
-    bytecode.save(outputFile);
 
     return bytecode;
 }

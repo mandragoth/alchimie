@@ -7,4 +7,6 @@ enum Sorcier_Version = Sorcier_Version_Major * 1000 + Sorcier_Version_Minor;
 
 enum Sorcier_GrimoireSourceExt = "gr";
 
-enum Sorcier_GrimoireCompiledExt = "grc";
+enum Sorcier_GrimoireCompiledExt = "alc";
+
+enum Sorcier_ArchiveExt = "arc";

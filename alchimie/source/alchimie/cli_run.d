@@ -7,16 +7,15 @@ import std.process;
 import magia;
 
 void cliRun(Cli.Result cli) {
+    if (cli.hasOption("help")) {
+        writeln(cli.getHelp(cli.name));
+        return;
+    }
+
     string dir = getcwd();
     string name = baseName(dir);
 
     string sorcierPath = buildNormalizedPath(dirName(thisExePath()), "sorcierdev.exe");
-
-    if (cli.optionalParams.length == 1) {
-        enforce(isValidPath(cli.optionalParams[0]), "chemin non valide");
-        name = baseName(cli.optionalParams[0]);
-        dir = buildNormalizedPath(dir, cli.optionalParams[0]);
-    }
 
     string configFile = buildNormalizedPath(dir, "alchimie.json");
     enforce(exists(configFile),
@@ -24,15 +23,45 @@ void cliRun(Cli.Result cli) {
 
     Json json = new Json(configFile);
 
-    string sourceFile = buildNormalizedPath(dir, json.getString("source"));
+    string sourceFile;
+    string appName = "app";
+
+    if (cli.optionalParams.length >= 1) {
+        Json appNode = json.getObject("app");
+        appName = cli.optionalParams[0];
+        if (appNode.getString("name") == appName) {
+            sourceFile = buildNormalizedPath(dir, appNode.getString("source"));
+        } else {
+            Json[] programNodes = json.getObjects("programs", []);
+            bool found;
+            foreach (node; programNodes) {
+                if (node.getString("name") == appName) {
+                    found = true;
+                    sourceFile = buildNormalizedPath(dir, node.getString("source"));
+                    break;
+                }
+            }
+
+            enforce(found, "aucun programme `" ~ sourceFile ~ "` défini dans `alchimie.json`");
+        }
+
+    } else {
+        Json appNode = json.getObject("app");
+        appName = json.getString("name");
+        sourceFile = buildNormalizedPath(dir, appNode.getString("source"));
+    }
+
     enforce(exists(sourceFile),
         "le fichier source `" ~ sourceFile ~ "` référencé dans `alchimie.json` n’existe pas");
-        
+
     string resFolder = buildNormalizedPath(dir, json.getString("resources"));
     enforce(exists(resFolder),
-        "le dossier de ressources `" ~ resFolder ~ "` référencé dans `alchimie.json` n’existe pas");
+        "le dossier de ressources `" ~ resFolder ~
+        "` référencé dans `alchimie.json` n’existe pas");
 
-    string ret = execute([sorcierPath, "run", sourceFile, "––res", resFolder]).output;
+    string ret = execute([
+        sorcierPath, "run", sourceFile, "––res", resFolder
+    ]).output;
 
     writeln(ret);
 }

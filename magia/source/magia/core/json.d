@@ -278,6 +278,16 @@ final class Json {
 
     /// Assigne une valeur à la clé
     void set(T)(string key, T value) {
-        _json[key] = JSONValue(value);
+        static if (is(T == Json)) {
+            _json[key] = JSONValue(value._json);
+        } else static if (is(T == Json[])) {
+            JSONValue[] array;
+            foreach (element; value) {
+                array ~= element._json;
+            }
+            _json[key] = JSONValue(array);
+        } else {
+            _json[key] = JSONValue(value);
+        }
     }
 }

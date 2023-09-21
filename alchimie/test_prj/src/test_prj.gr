@@ -1,0 +1,5 @@
+
+event app {
+    // Début du programme
+    print("Hello World !");
+}

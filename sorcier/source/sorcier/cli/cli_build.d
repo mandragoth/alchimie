@@ -27,5 +27,18 @@ void cliBuild(Cli.Result cli) {
         return;
     }
 
-    compileSource(inputFile, outputFile, GrLocale.fr_FR);
+    int options = GrOption.none;
+
+    if (cli.hasOption("profile")) {
+        options |= GrOption.profile;
+    }
+    if (cli.hasOption("safe")) {
+        options |= GrOption.safe;
+    }
+    if (cli.hasOption("symbols")) {
+        options |= GrOption.symbols;
+    }
+
+    GrBytecode bytecode = compileSource(inputFile, options, GrLocale.fr_FR);
+    bytecode.save(outputFile);
 }

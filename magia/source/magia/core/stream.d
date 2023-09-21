@@ -1,83 +1,77 @@
-/**
-    Stream
-
-    Copyright: (c) Enalye 2017
-    License: Zlib
-    Authors: Enalye
-*/
-
 module magia.core.stream;
 
 import std.array;
-import std.conv;
-import std.string;
 import std.bitmanip;
+import std.conv;
+import std.exception : enforce;
+import std.string;
+import std.traits;
 
-/// Binary stream to write onto.
+/// Sérialiseur
 class OutStream {
     private Appender!(const ubyte[]) _buffer;
 
-    /// Ctor.
+    /// Init
     this() {
         _buffer = appender!(const ubyte[])();
     }
 
     @property {
-        /// Raw buffer.
+        /// Données internes
         const(ubyte)[] data() const {
             return _buffer.data;
         }
-        /// Total size of the buffer.
+        /// Taille des données
         size_t length() const {
             return _buffer.data.length;
         }
     }
 
-    /// Append a string.
+    /// Ajoute un string
     void write(string values) {
         write!(char[])(cast(char[]) values);
     }
 
-    /// Append a wstring.
+    /// Ajoute un wstring
     void write(wstring values) {
         write!(wchar[])(cast(wchar[]) values);
     }
 
-    /// Append a dstring.
+    /// Ajoute un dstring
     void write(dstring values) {
         write!(dchar[])(cast(dchar[]) values);
     }
 
-    /// Append an array.
-    void write(T : T[])(T[] values) {
-        //Values size.
-        ubyte[ushort.sizeof] sizeValues = nativeToBigEndian!ushort(cast(ushort) values.length);
+    /// Ajoute une liste
+    void write(T : T[])(T[] values) if (isScalarType!T) {
+        // Taille de la liste
+        ubyte[size_t.sizeof] sizeValues = nativeToBigEndian!size_t(values.length);
         foreach (ubyte b; sizeValues)
             _buffer.append!ubyte(b);
-        //Values array.
+        // Liste des valeurs
         foreach (T v; values)
             foreach (ubyte b; nativeToBigEndian(v))
                 _buffer.append!ubyte(b);
     }
 
-    /// Append a value.
-    void write(T)(T value) {
-        //Value size.
-        ubyte[ushort.sizeof] sizeValues = nativeToBigEndian!ushort(1u);
+    /// Ajoute une valeur
+    void write(T)(T value) if (isScalarType!T) {
+        // Taille de la valeur
+        ubyte[size_t.sizeof] sizeValues = nativeToBigEndian!size_t(1u);
         foreach (ubyte b; sizeValues)
             _buffer.append!ubyte(b);
-        //Value array.
+        // Liste des valeurs
         foreach (ubyte b; nativeToBigEndian(value))
             _buffer.append!ubyte(b);
     }
 }
 
-/// Binary stream to read from.
+/// Désérialiseur
 class InStream {
     private ubyte[] _buffer;
 
     @property {
-        /// Raw buffer.
+        /// Données internes
         void data(ubyte[] buffer) {
             _buffer = buffer;
         }
@@ -86,7 +80,7 @@ class InStream {
             return _buffer;
         }
 
-        /// Total size of the buffer.
+        /// Taille des données
         size_t length(size_t len) {
             return _buffer.length = len;
         }
@@ -96,30 +90,30 @@ class InStream {
         }
     }
 
-    /// Sets a raw buffer.
+    /// Prend les données
     void set(const ubyte[] buffer) {
         _buffer = buffer.dup;
     }
 
-    /// Extract a string.
+    /// Extrait un string
     string read(T : string)() {
         return read!(char[])();
     }
 
-    /// Extract a wstring.
+    /// Extrait un wstring
     wstring read(T : wstring)() {
         return read!(wchar[])();
     }
 
-    /// Extract a dstring.
+    /// Extrait un dstring
     dstring read(T : dstring)() {
         return read!(dchar[])();
     }
 
-    /// Extract an array.
-    T[] read(T : T[])() {
+    /// Extrait une liste
+    T[] read(T : T[])() if (isScalarType!T) {
         T[] values;
-        const ushort size = _buffer.read!ushort();
+        const size_t size = _buffer.read!size_t();
         if (size == 0)
             return values;
         foreach (_; 0 .. size)
@@ -127,11 +121,10 @@ class InStream {
         return values;
     }
 
-    /// Extract a value.
-    T read(T)() {
-        const ushort size = _buffer.read!ushort();
-        if (size != 1uL)
-            throw new Exception("Stream data does not match.");
+    /// Extrait une valeur
+    T read(T)() if (isScalarType!T) {
+        const size_t size = _buffer.read!size_t();
+        enforce(size == 1uL, "impossible de désérialiser");
         return _buffer.read!T();
     }
 }
@@ -146,8 +139,8 @@ unittest {
     o.write!bool(true);
     i.set(o.data);
 
-    assert(i.read!int() == 179, "Stream module failure");
-    assert(i.read!(int[])() == [1, 2, 3, 0, 4, 5], "Stream module failure");
-    assert(i.read!string() == "hello", "Stream module failure");
-    assert(i.read!bool() == true, "Stream module failure");
+    assert(i.read!int() == 179, "échec de sérialisation");
+    assert(i.read!(int[])() == [1, 2, 3, 0, 4, 5], "échec de sérialisation");
+    assert(i.read!string() == "hello", "échec de sérialisation");
+    assert(i.read!bool() == true, "échec de sérialisation");
 }

@@ -6,32 +6,47 @@ import std.path;
 import magia;
 
 void cliExport(Cli.Result cli) {
-    //_compileScript(path, name, locale);
-    //_compileRessource(path, locale);
+    if (cli.hasOption("help")) {
+        writeln(cli.getHelp(cli.name));
+        return;
+    }
+
+    string dir = getcwd();
+    string name = baseName(dir);
+    string sorcierPath = buildNormalizedPath(dirName(thisExePath()), "sorcierdev.exe");
+
+    string configFile = buildNormalizedPath(dir, "alchimie.json");
+    enforce(exists(configFile),
+        "aucun fichier de project `alchimie.json` de trouvé à l’emplacement `" ~ dir ~ "`");
+
+    Json json = new Json(configFile);
+
+    Json configNode = json.getObject("config");
+
+    string resPath = buildNormalizedPath(dir, configNode.getString("resources"));
+    enforce(exists(resPath),
+        "le dossier de ressources `" ~ resPath ~
+        "` référencé dans `alchimie.json` n’existe pas");
+
+    string exportPath = buildNormalizedPath(dir, configNode.getString("resources"));
+    if (!exists(exportPath))
+        mkdir(exportPath);
+
+    string archivePath = setExtension(exportPath, "arc");
+    Archive archive = new Archive;
+
+    archive.pack(resPath);
+    archive.save(archivePath);
+
+    writeln("Le dossier `" ~ resPath ~ "` a été archivé dans `" ~ archivePath ~ "`");
+
+    Json appNode = json.getObject("app");
+    string appName = json.getString("name");
+    string sourceFile = buildNormalizedPath(dir, appNode.getString("source"));
+
+    string ret = execute([
+        sorcierPath, "build", sourceFile]).output;
+    writeln(ret);
+
+    writeln("Export terminé");
 }
-/*
-private void _compileScript(string path, string name, GrLocale locale) {
-    const string scriptFile = buildNormalizedPath(path, Alchimie_ScriptDir,
-        setExtension(Alchimie_InitScript, Sorcier_GrimoireSourceExt));
-    const string bootFile = buildNormalizedPath(path, Alchimie_ExportDir,
-        setExtension(name, Sorcier_GrimoireCompiledExt));
-
-    GrLibrary stdLib = grLoadStdLibrary();
-    GrLibrary alchimieLib = loadAlchimieLibrary();
-
-    GrCompiler compiler = new GrCompiler(Sorcier_Version);
-    compiler.addLibrary(stdLib);
-    compiler.addLibrary(alchimieLib);
-
-    compiler.addFile(scriptFile);
-
-    GrBytecode bytecode = compiler.compile(GrOption.safe | GrOption.symbols, locale);
-    enforce(bytecode, compiler.getError().prettify(locale));
-
-    bytecode.save(bootFile);
-}
-
-private void _compileRessource(string path, GrLocale locale) {
-
-}
-*/
