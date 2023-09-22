@@ -41,35 +41,33 @@ task runtime() {
     jupiter:position(@vec3f(0f, 0f, -2f));
     jupiter:scale(@vec3f(.05f, .05f, .05f));*/
 
-    var reimu = @Model("reimu");
+    /*var reimu = @Model("reimu");
     reimu:position(@vec3f(0f, -1f, 0f));
     reimu:scale(@vec3f(0.1f, 0.1f, 0.1f));
     reimu:addTexture("reimu_body");
 
     var reimuHair = @Model("reimu_hair");
-    reimuHair:position(@vec3f(0f, -1f, 0f));
-    reimuHair:scale(@vec3f(0.1f, 0.1f, 0.1f));
     reimuHair:addTexture("reimu_hair");
-    //reimu:addChild(reimuHair);
+    reimu:addChild(reimuHair);
 
     var reimuHairPos = reimuHair:globalPosition();
-    print("Reimu hair global position: " ~ reimuHairPos);
+    print("Reimu hair global position: " ~ reimuHairPos);*/
 
     /*var skin = @Model("skin");
     skin:position(@vec3f(0f, -1f, 0f));*/
 
-    /*var rig = @Model("riggedsimple");
+    var rig = @Model("riggedsimple");
     rig:rotation(@vec3f(0f, 90f, 0f));
-    rig:scale(@vec3f(0.1f, 0.1f, 0.1f));*/
+    rig:scale(@vec3f(0.1f, 0.1f, 0.1f));
 
     /*task() {
         var sound = @Sound("assets/sound/wind.wav");
         sound.play(jupiter);
     }();*/
 
-    /*loop yield {
-        skin:updateDisplayBoneId();
-    }*/
+    loop yield {
+        rig:updateDisplayBoneId();
+    }
 }
 
 func updateDisplayBoneId(model: Model) {

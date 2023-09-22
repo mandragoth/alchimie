@@ -36,9 +36,9 @@ abstract class Instance(uint dimension_) {
             mat globalModel() {
                 Transform!(dimension_) globalTransform = globalTransform();
 
-                if (globalTransform.model != mat.identity) {
+                /*if (globalTransform.model != mat.identity) {
                     return globalTransform.model;
-                }
+                }*/
 
                 return combineModel!(dimension_)(globalTransform);
             }

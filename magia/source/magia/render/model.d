@@ -150,14 +150,14 @@ final class Model {
         _fileDirectory = other._fileDirectory;
     }
 
-    /// Draw the model (by default with its preloaded material)
-    void draw(Shader shader, Material material, mat4 model) {
+    /// Draw the model with a dedicated material
+    void draw(Shader shader, Material material, Transform3D transform) {
         // Model culling is the opposite of usual objects
         glCullFace(GL_BACK);
 
         for (uint meshId = 0; meshId < _meshes.length; ++meshId) {
-            mat4 meshModel = combineModel(_transforms[meshId]) * model;
-            _meshes[meshId].draw(shader, material, meshModel);
+            Transform3D meshTransform = _transforms[meshId] * transform;
+            _meshes[meshId].draw(shader, material, meshTransform);
         }
 
         // Revert to usual culling
@@ -165,8 +165,8 @@ final class Model {
     }
 
     /// Draw the model (with its preloaded material)
-    void draw(Shader shader, mat4 model) {
-        draw(shader, _material, model);
+    void draw(Shader shader, Transform3D transform) {
+        draw(shader, _material, transform);
     }
 
     private {
@@ -800,9 +800,9 @@ final class ModelInstance : Entity3D {
             _shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
 
             if (material) {
-                _model.draw(_shader, material, globalModel);
+                _model.draw(_shader, material, globalTransform);
             } else {
-                _model.draw(_shader, globalModel);
+                _model.draw(_shader, globalTransform);
             }
         }
     }

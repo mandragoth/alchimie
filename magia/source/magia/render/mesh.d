@@ -97,7 +97,7 @@ final class Mesh(uint dimension_) {
     }
 
     /// Draw call with model
-    void draw(Shader shader, Material material, mat4 model) {
+    private void draw(Shader shader, Material material, mat4 model) {
         bindData(shader, material);
         
         // Index buffer: defer to glDrawElements* methods
