@@ -15,7 +15,7 @@ void cliRun(Cli.Result cli) {
     string dir = getcwd();
     string name = baseName(dir);
 
-    string sorcierPath = buildNormalizedPath(dirName(thisExePath()), "sorcierdev.exe");
+    string almaPath = buildNormalizedPath(dirName(thisExePath()), "almadev.exe");
 
     string configFile = buildNormalizedPath(dir, "alchimie.json");
     enforce(exists(configFile),
@@ -60,7 +60,7 @@ void cliRun(Cli.Result cli) {
         "` référencé dans `alchimie.json` n’existe pas");
 
     string ret = execute([
-        sorcierPath, "run", sourceFile, "––res", resFolder
+        almaPath, "run", sourceFile, "––res", resFolder
     ]).output;
 
     writeln(ret);

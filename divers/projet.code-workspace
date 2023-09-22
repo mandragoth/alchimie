@@ -4,23 +4,22 @@
 			"path": "../assets"
 		},
 		{
-			"path": "../alchimie"
-		},
-		{
-			"path": "../atelier"
+			"path": "../grimoire"
 		},
 		{
 			"path": "../magia"
 		},
 		{
-			"path": "../sorcier"
+			"path": "../atelier"
 		},
 		{
-			"path": "../grimoire"
+			"path": "../alchimie"
+		},
+		{
+			"path": "../alma"
 		}
     ],
     "settings": {
-        "python.languageServer": "Pylance",
         "dfmt.braceStyle": "otbs"
     }
 }

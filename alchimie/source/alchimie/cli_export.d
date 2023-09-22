@@ -14,7 +14,7 @@ void cliExport(Cli.Result cli) {
 
     string dir = getcwd();
     string name = baseName(dir);
-    string sorcierPath = buildNormalizedPath(dirName(thisExePath()), "sorcierdev.exe");
+    string almaPath = buildNormalizedPath(dirName(thisExePath()), "almadev.exe");
 
     string configFile = buildNormalizedPath(dir, "alchimie.json");
     enforce(exists(configFile),
@@ -46,7 +46,7 @@ void cliExport(Cli.Result cli) {
     string sourceFile = buildNormalizedPath(dir, appNode.getString("source"));
 
     string ret = execute([
-        sorcierPath, "build", sourceFile]).output;
+        almaPath, "build", sourceFile]).output;
     writeln(ret);
 
     writeln("Export terminé");

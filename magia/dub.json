@@ -32,7 +32,7 @@
 		"../libs/$PLATFORM/$ARCH/SDL2_ttf.dll",
 		"../libs/$PLATFORM/$ARCH/OpenAL32.dll"
 	],
-	"copyright": "Copyright © 2022, Jonath, Enalye",
+	"copyright": "Copyright © 2022, Mandragoth",
 	"dependencies": {
 		"audio-formats": "~>2.2.0",
 		"bindbc-openal": "~>1.0.0",

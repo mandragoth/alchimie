@@ -3,16 +3,28 @@
 		"Enalye",
 		"Jonath"
 	],
-	"copyright": "Copyright © 2022, Enalye, Jonath",
-	"description": "Éditeur de Magia",
+	"copyright": "Copyright © 2022, Mandragoth",
+	"description": "Éditeur d’Alchimie",
 	"license": "Zlib",
 	"name": "atelier",
     "targetType": "executable",
     "targetName": "atelier",
-    "targetPath": "./bin$ARCH",
     "dependencies": {
         "magia": {
             "path": "../magia"
         }
-    }
+    },
+    "configurations": [
+        {
+            "name": "debug",
+            "targetPath": "../bin",
+            "dflags": ["-gf"],
+            "targetName": "atelier-dbg"
+        },
+        {
+            "name": "export",
+            "targetPath": "../export",
+            "targetName": "atelier"
+        }
+    ]
 }
