@@ -8,25 +8,30 @@ import std.exception;
 final class Cli {
     /// Résultat de l’analyse des arguments
     final class Result {
-        private class Option {
+        /// Modifieur de commande
+        final class Option {
             private {
                 string _shortName, _longName;
                 string[] _requiredParams, _optionalParams;
             }
 
             @property {
+                /// Nom sous format `-x` sans le `-`
                 string shortName() const {
                     return _shortName;
                 }
 
+                /// Nom sous format `--xxxx` sans le `--`
                 string longName() const {
                     return _longName;
                 }
 
+                /// Liste des paramètres obligatoires
                 const(string[]) requiredParams() const {
                     return _requiredParams;
                 }
 
+                /// Liste des paramètres optionnels
                 const(string[]) optionalParams() const {
                     return _optionalParams;
                 }

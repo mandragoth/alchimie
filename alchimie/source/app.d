@@ -2,10 +2,13 @@ import std.stdio;
 
 import magia;
 
+import alchimie.cli_add;
+import alchimie.cli_create;
 import alchimie.cli_default;
 import alchimie.cli_export;
-import alchimie.cli_init;
 import alchimie.cli_run;
+import alchimie.cli_pack;
+import alchimie.cli_unpack;
 
 void main(string[] args) {
     version (Windows) {
@@ -14,7 +17,10 @@ void main(string[] args) {
         SetConsoleOutputCP(65_001);
     }
 
-    args = [args[0], "run"];
+    import std.file, std.path;
+    chdir("test_prj");
+    args = [args[0], "unpack"];
+
     try {
         Cli cli = new Cli("alchimie");
         cli.setDefault(&cliDefault);
@@ -23,17 +29,26 @@ void main(string[] args) {
         cli.addCommand(&cliVersion, "version", "Affiche la version du programme");
         cli.addCommand(&cliHelp, "help", "Affiche l’aide", [], ["command"]);
 
-        cli.addCommand(&cliInit, "init", "Initialise un projet vide", [], [
+        cli.addCommand(&cliCreate, "create", "Crée un projet vide", [], [
                 "directory"
             ]);
-        cli.addCommandOption("init", "h", "help", "Affiche l’aide de la commande");
-
-        cli.addCommand(&cliRun, "run", "Exécute un projet", [], ["project"]);
-        cli.addCommand(&cliExport, "export", "Exporte un projet", [], [
-                "project"
+        cli.addCommandOption("create", "h", "help", "Affiche l’aide de la commande");
+        cli.addCommandOption("create", "a", "app", "Change le nom de l’application", [
+                "name"
             ]);
-        cli.addCommand(&cliExport, "pack", "Archive les ressources");
-        cli.addCommand(&cliExport, "unpack", "Désarchive les ressources");
+        cli.addCommandOption("create", "s", "source",
+            "Change le chemin du fichier source", ["path"]);
+
+        cli.addCommand(&cliAdd, "add", "Ajoute un programme au projet", ["name"]);
+        cli.addCommandOption("add", "h", "help", "Affiche l’aide de la commande");
+        cli.addCommandOption("add", "s", "source", "Change le chemin du fichier source", [
+                "path"
+            ]);
+
+        cli.addCommand(&cliRun, "run", "Exécute un programme", [], ["name"]);
+        cli.addCommand(&cliExport, "export", "Exporte un projet", [], ["name"]);
+        cli.addCommand(&cliPack, "pack", "Archive les ressources");
+        cli.addCommand(&cliUnpack, "unpack", "Désarchive les ressources");
         cli.parse(args);
     } catch (Exception e) {
         writeln(e.msg);

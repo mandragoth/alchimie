@@ -38,10 +38,23 @@ void main(string[] args) {
             cli.addCommand(&cliRun, "run", "Exécute un fichier source", [
                     "source"
                 ]);
+            cli.addCommandOption("run", "b", "symbols",
+                "Génère des symboles de débogage dans le bytecode");
+            cli.addCommandOption("run", "p", "profile",
+                "Ajoute des commandes de profilage dans le bytecode");
+            cli.addCommandOption("run", "s", "safe",
+                "Change certaines instructions par des versions plus sécurisés");
+
             cli.addCommand(&cliBuild, "build",
                 "Compile un fichier source en bytecode", ["source"], [
                     "bytecode"
                 ]);
+            cli.addCommandOption("build", "b", "symbols",
+                "Génère des symboles de débogage dans le bytecode");
+            cli.addCommandOption("build", "p", "profile",
+                "Ajoute des commandes de profilage dans le bytecode");
+            cli.addCommandOption("build", "s", "safe",
+                "Change certaines instructions par des versions plus sécurisés");
 
             cli.parse(args);
         } else {
@@ -50,7 +63,8 @@ void main(string[] args) {
             version (SorcierDebug) {
                 string filePath = buildNormalizedPath("assets", "script", "main.gr");
                 enforce(exists(filePath), "le fichier source `" ~ filePath ~ "` n’existe pas");
-                bytecode = compileSource(filePath, GrLocale.fr_FR);
+                bytecode = compileSource(filePath,
+                    GrOption.safe | GrOption.profile | GrOption.symbols, GrLocale.fr_FR);
             } else {
                 string filePath = withExtension(thisExePath(), Sorcier_GrimoireCompiledExt);
                 enforce(exists(filePath), "le fichier bytecode `" ~ filePath ~ "` n’existe pas");

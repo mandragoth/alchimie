@@ -15,7 +15,19 @@ void cliRun(Cli.Result cli) {
 
     string inputFile = cli.requiredParams[0];
 
-    GrBytecode bytecode = compileSource(inputFile, GrLocale.fr_FR);
+    int options = GrOption.none;
+
+    if (cli.hasOption("profile")) {
+        options |= GrOption.profile;
+    }
+    if (cli.hasOption("safe")) {
+        options |= GrOption.safe;
+    }
+    if (cli.hasOption("symbols")) {
+        options |= GrOption.symbols;
+    }
+
+    GrBytecode bytecode = compileSource(inputFile, options, GrLocale.fr_FR);
 
     Runtime rt = new Runtime(bytecode);
     rt.run();
