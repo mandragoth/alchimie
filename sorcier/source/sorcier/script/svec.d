@@ -2,8 +2,9 @@ module sorcier.script.svec;
 
 import magia;
 import grimoire;
-
 import sorcier.script.common;
+
+import std.conv;
 
 package void loadAlchimieLibVec(GrLibDefinition library) {
     static foreach (dimension; [2, 3, 4]) {
@@ -85,6 +86,9 @@ private void _loadVec(int dimension)(GrLibDefinition library) {
             mixin("library.addFunction(&_rotate3!(type), \"rotate\", [vec",
                 type, "Type, vec", type, "Type, grFloat], [vecFloatType]);");
         }
+
+        // Conversion to string
+        mixin("library.addCast(&_toString!(dimension, type), vec", type, "Type, grString);");
     }
 }
 
@@ -153,4 +157,20 @@ private void _rotate3(string type)(GrCall call) {
     mixin("vec3 v1 = cast(vec3) call.getNative!(SVec3!Gr", type, ")(0);");
     mixin("vec3 v2 = cast(vec3) call.getNative!(SVec3!Gr", type, ")(1);");
     call.setNative(toSVec3f(rotate(v1, v2, call.getFloat(2))));
+}
+
+private void _toString(int dimension, string type)(GrCall call) {
+    mixin("SVec", dimension, "!Gr", type, " v = call.getNative!(SVec", dimension, "!Gr", type, ")(0);");
+
+    string str = "{";
+    for (int i = 0; i < dimension; ++i) {
+        str ~= to!string(v[i]);
+
+        if (i + 1 < dimension) {
+            str ~= ", ";
+        }
+    }
+    str ~= "}";
+
+    call.setString(str);
 }
