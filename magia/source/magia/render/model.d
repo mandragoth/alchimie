@@ -607,7 +607,7 @@ final class Model {
                 uint arrayId = 0;
                 for (uint i = 0 ; i < 4; ++i) {
                     for (uint j = 0 ; j < 4; ++j) {
-                        matNode[i][j] = matrixArray[arrayId];
+                        matNode[j][i] = matrixArray[arrayId];
                         ++arrayId;
                     }
                 }
@@ -736,42 +736,22 @@ final class Model {
 
         /// Update all animations
         void uploadBoneTransforms(Shader shader) {
-            mat4[] aBonePose;
-            aBonePose.length = _bones.length;
-
             // Loop through all bones
             foreach (nodeId, bone; _bones) {
                 mat4 nodeModel = _nodes[nodeId].model;
 
                 // If this bone has an animation
-                /*mat4 bonePose;
+                mat4 bonePose;
                 if (nodeId in _animations) {
                     Animation animation = _animations[nodeId];
                     bonePose = bone.computeAnimatedPose(nodeModel, animation);
                 } else {
                     bonePose = bone.computeBindPose(nodeModel);
-                }*/
-
-                mat4 bonePose = bone.computeBindPose(nodeModel);
+                }
 
                 const char* uniformName = toStringz(format("u_BoneMatrix[%u]", bone.id));
                 shader.uploadUniformMat4(uniformName, bonePose);
-
-                aBonePose[bone.id] = bonePose;
             }
-
-            // Debug: compute locally bind transforms
-            /*foreach (jointId, animatedVertex; _animatedVertices) {
-                mat4 boneTransform = aBonePose[animatedVertex.boneIds[0]] * animatedVertex.weights[0] +
-                                     aBonePose[animatedVertex.boneIds[1]] * animatedVertex.weights[1] +
-                                     aBonePose[animatedVertex.boneIds[2]] * animatedVertex.weights[2] +
-                                     aBonePose[animatedVertex.boneIds[3]] * animatedVertex.weights[3];
-
-                writeln("Bone transform for joint#", jointId);
-                boneTransform.print();
-            }
-
-            throw new Exception("Stopping debug here");*/
         }
     }
 }

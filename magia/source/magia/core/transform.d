@@ -31,18 +31,18 @@ struct Transform(uint dimension_) {
         }
     }
 
-    /// Constructor given position, scale
-    this(vec position_, vec scale_) {
-        position = position_;
-        scale = scale_;
-    }
-
     /// Constructor given position, rotation, scale, model
     this(vec position_, rot rotation_ = rot.zero, vec scale_ = vec.one, mat model_ = mat.identity) {
         position = position_;
         rotation = rotation_;
         scale = scale_;
         model = model_;
+    }
+
+    /// Constructor given position, scale
+    this(vec position_, vec scale_) {
+        position = position_;
+        scale = scale_;
     }
 
     /// Combine two transforms
