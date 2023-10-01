@@ -7,9 +7,27 @@ import std.exception : enforce;
 
 import magia.core.stream;
 
-/// Conteneur permettant de sérialiser des ressources
-final class Archive {
-    private enum magicWord = "arc";
+/// Modèle d’archivage
+interface IArchive {
+    /// Charge un dossier
+    void pack(string);
+
+    /// Enregistre un dossier
+    void unpack(string);
+
+    /// Charge une archive
+    void load(string);
+
+    /// Enregistre une archive
+    void save(string);
+}
+
+/// Conteneur permettant de sérialiser des fichiers
+final class Archive : IArchive {
+    private enum MagicWord = "ArchiveMagia";
+
+    /// ARC: **ARC**chive
+    enum Ext = ".arc";
 
     private final class Directory {
         private {
@@ -95,6 +113,7 @@ final class Archive {
         }
     }
 
+    /// Fichier
     private final class File {
         private {
             string _name;
@@ -132,7 +151,7 @@ final class Archive {
         Directory _rootDir;
     }
 
-    /// Ctor
+    /// Init
     this() {
     }
 
@@ -151,7 +170,7 @@ final class Archive {
     /// Charge une archive
     void load(string path) {
         InStream stream = new InStream;
-        enforce(stream.read!string() == magicWord);
+        enforce(stream.read!string() == MagicWord);
         stream.data = cast(ubyte[]) std.file.read(path);
         _rootDir = new Directory(baseName(path));
         _rootDir.load(stream);
@@ -160,7 +179,7 @@ final class Archive {
     /// Enregistre une archive
     void save(string path) {
         OutStream stream = new OutStream;
-        stream.write(magicWord);
+        stream.write(MagicWord);
         if (_rootDir)
             _rootDir.save(stream);
         std.file.write(path, stream.data);

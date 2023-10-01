@@ -5,6 +5,7 @@ import std.exception;
 import std.process;
 
 import magia;
+import alchimie.constants;
 
 void cliRun(Cli.Result cli) {
     if (cli.hasOption("help")) {
@@ -15,53 +16,53 @@ void cliRun(Cli.Result cli) {
     string dir = getcwd();
     string name = baseName(dir);
 
-    string almaPath = buildNormalizedPath(dirName(thisExePath()), "almadev.exe");
+    string almaPath = buildNormalizedPath(dirName(thisExePath()), Alchimie_Alma_Exe);
 
-    string configFile = buildNormalizedPath(dir, "alchimie.json");
-    enforce(exists(configFile),
-        "aucun fichier de project `alchimie.json` de trouvé à l’emplacement `" ~ dir ~ "`");
+    string projectFile = buildNormalizedPath(dir, Alchimie_Project_File);
+    enforce(exists(projectFile),
+        "aucun fichier de project `" ~ Alchimie_Project_File ~
+        "` de trouvé à l’emplacement `" ~ dir ~ "`");
 
-    Json json = new Json(configFile);
+    Json json = new Json(projectFile);
 
     string sourceFile;
-    string appName = "app";
+    string appName = Alchimie_Project_App;
 
     if (cli.optionalParams.length >= 1) {
-        Json appNode = json.getObject("app");
+        Json appNode = json.getObject(Alchimie_Project_App);
         appName = cli.optionalParams[0];
-        if (appNode.getString("name") == appName) {
-            sourceFile = buildNormalizedPath(dir, appNode.getString("source"));
+        if (appNode.getString(Alchimie_Project_Name) == appName) {
+            sourceFile = buildNormalizedPath(dir, appNode.getString(Alchimie_Project_Source));
         } else {
-            Json[] programNodes = json.getObjects("programs", []);
+            Json[] programNodes = json.getObjects(Alchimie_Project_Programs, []);
             bool found;
             foreach (node; programNodes) {
-                if (node.getString("name") == appName) {
+                if (node.getString(Alchimie_Project_Name) == appName) {
                     found = true;
-                    sourceFile = buildNormalizedPath(dir, node.getString("source"));
+                    sourceFile = buildNormalizedPath(dir, node.getString(Alchimie_Project_Source));
                     break;
                 }
             }
 
-            enforce(found, "aucun programme `" ~ sourceFile ~ "` défini dans `alchimie.json`");
+            enforce(found,
+                "aucun programme `" ~ sourceFile ~ "` défini dans `" ~ Alchimie_Project_File ~ "`");
         }
 
     } else {
-        Json appNode = json.getObject("app");
-        appName = json.getString("name");
-        sourceFile = buildNormalizedPath(dir, appNode.getString("source"));
+        Json appNode = json.getObject(Alchimie_Project_App);
+        appName = json.getString(Alchimie_Project_Name);
+        sourceFile = buildNormalizedPath(dir, appNode.getString(Alchimie_Project_Source));
     }
 
     enforce(exists(sourceFile),
-        "le fichier source `" ~ sourceFile ~ "` référencé dans `alchimie.json` n’existe pas");
+        "le fichier source `" ~ sourceFile ~ "` référencé dans `" ~
+        Alchimie_Project_File ~ "` n’existe pas");
 
-    string resFolder = buildNormalizedPath(dir, json.getString("resources"));
-    enforce(exists(resFolder),
-        "le dossier de ressources `" ~ resFolder ~
-        "` référencé dans `alchimie.json` n’existe pas");
+    string resFolder = buildNormalizedPath(dir, json.getString(Alchimie_Project_Resources));
+    enforce(exists(resFolder), "le dossier de ressources `" ~ resFolder ~
+            "` référencé dans `" ~ Alchimie_Project_File ~ "` n’existe pas");
 
-    string ret = execute([
-        almaPath, "run", sourceFile, "––res", resFolder
-    ]).output;
+    string ret = execute([almaPath, "run", sourceFile, "––res", resFolder]).output;
 
     writeln(ret);
 }

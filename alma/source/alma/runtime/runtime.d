@@ -25,15 +25,15 @@ final class Runtime : Application {
         GrEvent _inputEvent, _lateInputEvent;
     }
 
-    this(GrBytecode bytecode) {
+    this(GrBytecode bytecode, uint width, uint height, string name) {
         _bytecode = bytecode;
         enforce(_bytecode, "le bytecode n’a pas pu être chargé");
 
-        super(vec2u(800, 800), "Alchimie");
+        super(vec2u(width, height), name);
     }
 
     override Status load() {
-        _engine = new GrEngine(Alma_Version);
+        _engine = new GrEngine(Alma_Version_ID);
 
         foreach (GrLibrary lib; getLibraries()) {
             _engine.addLibrary(lib);

@@ -33,20 +33,20 @@ void main(string[] args) {
                 "directory"
             ]);
         cli.addCommandOption("create", "h", "help", "Affiche l’aide de la commande");
-        cli.addCommandOption("create", "a", "app", "Change le nom de l’application", [
-                "name"
+        cli.addCommandOption("create", "a", Alchimie_Project_App, "Change le nom de l’application", [
+                Alchimie_Project_Name
             ]);
         cli.addCommandOption("create", "s", "source",
             "Change le chemin du fichier source", ["path"]);
 
-        cli.addCommand(&cliAdd, "add", "Ajoute un programme au projet", ["name"]);
+        cli.addCommand(&cliAdd, "add", "Ajoute un programme au projet", [Alchimie_Project_Name]);
         cli.addCommandOption("add", "h", "help", "Affiche l’aide de la commande");
         cli.addCommandOption("add", "s", "source", "Change le chemin du fichier source", [
                 "path"
             ]);
 
-        cli.addCommand(&cliRun, "run", "Exécute un programme", [], ["name"]);
-        cli.addCommand(&cliExport, "export", "Exporte un projet", [], ["name"]);
+        cli.addCommand(&cliRun, "run", "Exécute un programme", [], [Alchimie_Project_Name]);
+        cli.addCommand(&cliExport, "export", "Exporte un projet", [], [Alchimie_Project_Name]);
         cli.addCommand(&cliPack, "pack", "Archive les ressources");
         cli.addCommand(&cliUnpack, "unpack", "Désarchive les ressources");
         cli.parse(args);

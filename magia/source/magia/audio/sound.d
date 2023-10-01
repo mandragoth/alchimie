@@ -26,10 +26,30 @@ final class Sound {
         }
     }
 
+    /// Copie
+    this(Sound sound) {
+        _id = sound._id;
+        _buffer = sound._buffer;
+        _channels = sound._channels;
+        _samples = sound._samples;
+        _sampleRate = sound._sampleRate;
+    }
+
     /// Charge depuis un fichier
     this(string filePath) {
         AudioStream stream;
         stream.openFromFile(filePath);
+        this(stream);
+    }
+
+    /// Charge depuis la mémoire
+    this(const(ubyte[]) data) {
+        AudioStream stream;
+        stream.openFromMemory(data);
+        this(stream);
+    }
+
+    private this(AudioStream stream) {
         _channels = stream.getNumChannels();
         _samples = stream.getLengthInFrames();
         assert(_samples != audiostreamUnknownLength);

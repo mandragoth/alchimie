@@ -41,30 +41,30 @@ void cliCreate(Cli.Result cli) {
     enforce(!extension(dirName).length, "le nom du projet ne peut pas être un fichier");
 
     string appName = dirName;
-    string srcPath = setExtension("app", "gr");
+    string srcPath = setExtension(Alchimie_Project_App, "gr");
 
-    if (cli.hasOption("app")) {
-        Cli.Result.Option option = cli.getOption("app");
+    if (cli.hasOption(Alchimie_Project_App)) {
+        Cli.Result.Option option = cli.getOption(Alchimie_Project_App);
         appName = option.requiredParams[0];
     }
 
-    if (cli.hasOption("source")) {
-        Cli.Result.Option option = cli.getOption("source");
+    if (cli.hasOption(Alchimie_Project_Source)) {
+        Cli.Result.Option option = cli.getOption(Alchimie_Project_Source);
         srcPath = buildNormalizedPath(option.requiredParams[0]);
     }
 
     Json json = new Json;
     {
         Json configNode = new Json;
-        configNode.set("resources", "res");
+        configNode.set(Alchimie_Project_Resources, "res");
         configNode.set("export", "export");
         json.set("config", configNode);
     }
 
     {
         Json appNode = new Json;
-        appNode.set("name", appName);
-        appNode.set("source", srcPath);
+        appNode.set(Alchimie_Project_Name, appName);
+        appNode.set(Alchimie_Project_Source, srcPath);
 
         {
             Json windowNode = new Json;
@@ -74,10 +74,10 @@ void cliCreate(Cli.Result cli) {
             appNode.set("window", windowNode);
         }
 
-        json.set("app", appNode);
+        json.set(Alchimie_Project_App, appNode);
     }
 
-    json.save(buildNormalizedPath(dir, "alchimie.json"));
+    json.save(buildNormalizedPath(dir, Alchimie_Project_File));
 
     foreach (subDir; ["res", "src", "export"]) {
         string resDir = buildNormalizedPath(dir, subDir);

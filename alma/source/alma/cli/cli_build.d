@@ -16,7 +16,7 @@ void cliBuild(Cli.Result cli) {
     }
 
     string inputFile = cli.requiredParams[0];
-    string outputFile = withExtension(inputFile, Alma_GrimoireCompiledExt).array;
+    string outputFile = withExtension(inputFile, Alma_Bytecode_Extension).array;
 
     if (cli.optionalParams.length >= 1) {
         outputFile = cli.optionalParams[0];

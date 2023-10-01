@@ -14,28 +14,28 @@ void cliAdd(Cli.Result cli) {
     string dir = getcwd();
     string dirName = baseName(dir);
 
-    string jsonPath = buildNormalizedPath(dir, "alchimie.json");
-    enforce(exists(jsonPath), "aucun projet `alchimie.json` trouvable dans `" ~ dir ~ "`");
+    string jsonPath = buildNormalizedPath(dir, Alchimie_Project_File);
+    enforce(exists(jsonPath), "aucun projet `" ~ Alchimie_Project_File ~ "` trouvable dans `" ~ dir ~ "`");
 
     Json json = new Json(jsonPath);
 
     string appName = cli.requiredParams[0];
     string srcPath = setExtension(appName, "gr");
 
-    if (cli.hasOption("source")) {
-        Cli.Result.Option option = cli.getOption("source");
+    if (cli.hasOption(Alchimie_Project_Source)) {
+        Cli.Result.Option option = cli.getOption(Alchimie_Project_Source);
         srcPath = buildNormalizedPath(option.requiredParams[0]);
     }
 
     {
-        Json appNode = json.getObject("app");
-        enforce(appNode.getString("name") != appName, "le nom `" ~ appName ~ "` est déjà utilisé");
+        Json appNode = json.getObject(Alchimie_Project_App);
+        enforce(appNode.getString(Alchimie_Project_Name) != appName, "le nom `" ~ appName ~ "` est déjà utilisé");
     }
 
     {
         Json programNode = new Json;
-        programNode.set("name", appName);
-        programNode.set("source", srcPath);
+        programNode.set(Alchimie_Project_Name, appName);
+        programNode.set(Alchimie_Project_Source, srcPath);
 
         {
             Json windowNode = new Json;
@@ -45,14 +45,14 @@ void cliAdd(Cli.Result cli) {
             programNode.set("window", windowNode);
         }
 
-        Json[] programNodes = json.getObjects("programs", []);
+        Json[] programNodes = json.getObjects(Alchimie_Project_Programs, []);
 
         foreach (Json node; programNodes) {
-            enforce(node.getString("name") != appName, "le nom `" ~ appName ~
+            enforce(node.getString(Alchimie_Project_Name) != appName, "le nom `" ~ appName ~
                     "` est déjà utilisé");
         }
         programNodes ~= programNode;
-        json.set("programs", programNodes);
+        json.set(Alchimie_Project_Programs, programNodes);
     }
 
     json.save(jsonPath);

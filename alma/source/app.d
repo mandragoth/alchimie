@@ -1,13 +1,6 @@
 import std.stdio;
 
-import std.algorithm.mutation : remove;
-import std.conv : to;
-import std.path : buildNormalizedPath;
-import std.file : exists;
-import std.exception : enforce;
-
 import magia, grimoire;
-
 import alma.script, alma.common, alma.runtime;
 import alma.cli;
 
@@ -24,13 +17,7 @@ void main(string[] args) {
     }
     try {
         version (AlmaDebug) {
-            string filePath = buildNormalizedPath("assets", "script", "main.gr");
-            enforce(exists(filePath), "le fichier source `" ~ filePath ~ "` n’existe pas");
-            GrBytecode bytecode = compileSource(filePath,
-                GrOption.safe | GrOption.profile | GrOption.symbols, GrLocale.fr_FR);
-
-            Runtime rt = new Runtime(bytecode);
-            rt.run();
+            boot();
         } else {
             if (!args.length)
                 return;

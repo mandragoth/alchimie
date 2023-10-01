@@ -26,7 +26,7 @@ GrLibrary[] getLibraries() {
 }
 
 GrBytecode compileSource(string inputFile, int options, GrLocale locale) {
-    GrCompiler compiler = new GrCompiler(Alma_Version);
+    GrCompiler compiler = new GrCompiler(Alma_Version_ID);
 
     foreach (GrLibrary lib; getLibraries()) {
         compiler.addLibrary(lib);

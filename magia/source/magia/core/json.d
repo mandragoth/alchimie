@@ -1,10 +1,11 @@
 module magia.core.json;
 
-import std.conv;
-import std.exception;
+import std.conv : to;
+import std.exception : enforce;
 import std.file;
 import std.json;
 import std.path;
+import std.utf : validate;
 
 /// Représente un nœud json
 final class Json {
@@ -21,6 +22,11 @@ final class Json {
         load(path);
     }
 
+    /// Charge depuis des données bruts
+    this(const(ubyte[]) data) {
+        load(data);
+    }
+
     private this(JSONValue node) {
         _json = node;
     }
@@ -28,6 +34,13 @@ final class Json {
     /// Charge depuis un fichier
     void load(string path) {
         _json = parseJSON(readText(path));
+    }
+
+    /// Charge depuis des données bruts
+    void load(const(ubyte[]) data) {
+        string text = cast(string) data;
+        validate(text);
+        _json = parseJSON(text);
     }
 
     /// Enregistre vers un fichier

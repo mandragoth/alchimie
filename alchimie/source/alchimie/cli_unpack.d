@@ -15,20 +15,20 @@ void cliUnpack(Cli.Result cli) {
     string dir = getcwd();
     string name = baseName(dir);
 
-    string configFile = buildNormalizedPath(dir, "alchimie.json");
+    string configFile = buildNormalizedPath(dir, Alchimie_Project_File);
     enforce(exists(configFile),
-        "aucun fichier de project `alchimie.json` de trouvé à l’emplacement `" ~ dir ~ "`");
+        "aucun fichier de project `" ~ Alchimie_Project_File ~ "` de trouvé à l’emplacement `" ~ dir ~ "`");
 
     Json json = new Json(configFile);
 
     Json configNode = json.getObject("config");
 
-    string resPath = buildNormalizedPath(dir, configNode.getString("resources"));
+    string resPath = buildNormalizedPath(dir, configNode.getString(Alchimie_Project_Resources));
     enforce(exists(resPath),
         "le dossier de ressources `" ~ resPath ~
-        "` référencé dans `alchimie.json` n’existe pas");
+        "` référencé dans `" ~ Alchimie_Project_File ~ "` n’existe pas");
 
-    string archivePath = buildNormalizedPath(dir, setExtension(resPath, "arc"));
+    string archivePath = buildNormalizedPath(dir, setExtension(resPath, ResourceArchive.defaultExt));
     Archive archive = new Archive;
     
     resPath = buildNormalizedPath(dir, "res_result"); //Temp

@@ -146,7 +146,7 @@ class Window {
 
     /// Compute framerate and display window content
     void render() {
-        _currentTime = getCurrentTimeInMilliseconds() / 1000f;
+        /*_currentTime = getCurrentTimeInMilliseconds() / 1000f;
         _deltaTime = _currentTime - _previousTime;
         counter++;
 
@@ -157,7 +157,7 @@ class Window {
 
             _previousTime = _currentTime;
             counter = 0;
-        }
+        }*/
 
         SDL_GL_SwapWindow(_sdlWindow);
     }

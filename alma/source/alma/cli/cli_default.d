@@ -12,7 +12,7 @@ import alma.runtime;
 
 void cliDefault(Cli.Result cli) {
     if (cli.hasOption("version")) {
-        writeln("alma version " ~ Alma_Version_Display);
+        writeln("Alchimie Machine version " ~ Alma_Version_Display);
         return;
     } else if (cli.hasOption("help")) {
         if (cli.optionalParams.length >= 1)
@@ -22,16 +22,11 @@ void cliDefault(Cli.Result cli) {
         return;
     }
 
-    string filePath = setExtension(thisExePath(), Alma_GrimoireCompiledExt);
-    enforce(exists(filePath), "le fichier bytecode `" ~ filePath ~ "` n’existe pas");
-    GrBytecode bytecode = new GrBytecode(filePath);
-
-    Runtime rt = new Runtime(bytecode);
-    rt.run();
+    boot();
 }
 
 void cliVersion(Cli.Result cli) {
-    writeln("alma version " ~ Alma_Version_Display);
+    writeln("Alchimie Machine version " ~ Alma_Version_Display);
 }
 
 void cliHelp(Cli.Result cli) {

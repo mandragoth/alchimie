@@ -125,6 +125,7 @@ class Texture {
     }
 
     /// Constructor for usual 2D texture from path
+    deprecated("Les ressources doivent utiliser le loader au lieu de charger les fichier soi-même")
     this(string fileName, TextureType type = TextureType.sprite, GLuint slot = 0) {
         // Set name as file name
         _name = fileName;
