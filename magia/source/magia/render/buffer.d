@@ -199,31 +199,39 @@ class VertexBuffer {
     BufferLayout layout;
 
     /// Constructor given vertex buffer
-    this(float[] vertices, BufferLayout layout_ = null) {
+    this(float[] vertices, BufferLayout layout_) {
         layout = layout_;
         glCreateBuffers(1, &id);
         glBindBuffer(GL_ARRAY_BUFFER, id);
         glBufferData(GL_ARRAY_BUFFER, vertices.length * float.sizeof, vertices.ptr, GL_STATIC_DRAW);
     }
 
-    /// Constructor given 3D vertices
-    this(vec3[] vertices, BufferLayout layout_ = null) {
-        layout = layout_;
-        glCreateBuffers(1, &id);
-        glBindBuffer(GL_ARRAY_BUFFER, id);
-        glBufferData(GL_ARRAY_BUFFER, vertices.length * vec3.sizeof, vertices.ptr, GL_STATIC_DRAW);
-    }
-
     /// Constructor given 2D vertices
-    this(vec2[] vertices, BufferLayout layout_ = null) {
+    this(vec2[] vertices, BufferLayout layout_) {
         layout = layout_;
         glCreateBuffers(1, &id);
         glBindBuffer(GL_ARRAY_BUFFER, id);
         glBufferData(GL_ARRAY_BUFFER, vertices.length * vec2.sizeof, vertices.ptr, GL_STATIC_DRAW);
     }
 
+    /// Constructor given 3D vertices
+    this(vec3[] vertices, BufferLayout layout_) {
+        layout = layout_;
+        glCreateBuffers(1, &id);
+        glBindBuffer(GL_ARRAY_BUFFER, id);
+        glBufferData(GL_ARRAY_BUFFER, vertices.length * vec3.sizeof, vertices.ptr, GL_STATIC_DRAW);
+    }
+
+    /// Constructor given mat4 array
+    this(mat4[] mat4s, BufferLayout layout_) {
+        layout = layout_;
+        glCreateBuffers(1, &id);
+        glBindBuffer(GL_ARRAY_BUFFER, id);
+        glBufferData(GL_ARRAY_BUFFER, mat4s.length * mat4.sizeof, mat4s.ptr, GL_STATIC_DRAW);
+    }
+
     /// Constructor given vertices
-    this(Vertex[] vertices, BufferLayout layout_ = null) {
+    this(Vertex[] vertices, BufferLayout layout_) {
         layout = layout_;
         glCreateBuffers(1, &id);
         glBindBuffer(GL_ARRAY_BUFFER, id);
@@ -231,19 +239,11 @@ class VertexBuffer {
     }
 
     /// Constructor given vertices and joints
-    this(AnimatedVertex[] animatedVertices, BufferLayout layout_ = null) {
+    this(AnimatedVertex[] animatedVertices, BufferLayout layout_) {
         layout = layout_;
         glCreateBuffers(1, &id);
         glBindBuffer(GL_ARRAY_BUFFER, id);
         glBufferData(GL_ARRAY_BUFFER, animatedVertices.length * AnimatedVertex.sizeof, animatedVertices.ptr, GL_STATIC_DRAW);
-    }
-
-    /// Constructor given mat4 array
-    this(mat4[] mat4s, BufferLayout layout_ = null) {
-        layout = layout_;
-        glCreateBuffers(1, &id);
-        glBindBuffer(GL_ARRAY_BUFFER, id);
-        glBufferData(GL_ARRAY_BUFFER, mat4s.length * mat4.sizeof, mat4s.ptr, GL_STATIC_DRAW);
     }
 
     /// Destructor

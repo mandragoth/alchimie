@@ -613,12 +613,18 @@ final class Model {
                 }
 
                 if (_traceDeep) {
-                    writeln("  Matrix: ", matNode);
+                    writeln("  Matrix: ");
+                    matNode.print();
                 }
             }
 
             // Compute current node model
             const mat4 currentModel = matNode * combineModel(translation, rotation, scale);
+
+            if (_traceDeep) {
+                writeln("  CurrentModel: ");
+                currentModel.print();
+            }
 
             // Combine parent and current transform matrices
             const mat4 globalModel = parentModel * currentModel;
@@ -741,13 +747,15 @@ final class Model {
                 mat4 nodeModel = _nodes[nodeId].model;
 
                 // If this bone has an animation
-                mat4 bonePose;
+                /*mat4 bonePose;
                 if (nodeId in _animations) {
                     Animation animation = _animations[nodeId];
                     bonePose = bone.computeAnimatedPose(nodeModel, animation);
                 } else {
                     bonePose = bone.computeBindPose(nodeModel);
-                }
+                }*/
+
+                mat4 bonePose = bone.computeBindPose(nodeModel);
 
                 const char* uniformName = toStringz(format("u_BoneMatrix[%u]", bone.id));
                 shader.uploadUniformMat4(uniformName, bonePose);
