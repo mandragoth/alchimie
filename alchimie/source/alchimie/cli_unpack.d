@@ -5,6 +5,7 @@ import std.exception;
 import std.process;
 
 import magia;
+import alchimie.constants;
 
 void cliUnpack(Cli.Result cli) {
     if (cli.hasOption("help")) {
@@ -28,7 +29,7 @@ void cliUnpack(Cli.Result cli) {
         "le dossier de ressources `" ~ resPath ~
         "` référencé dans `" ~ Alchimie_Project_File ~ "` n’existe pas");
 
-    string archivePath = buildNormalizedPath(dir, setExtension(resPath, ResourceArchive.defaultExt));
+    string archivePath = buildNormalizedPath(dir, setExtension(resPath, ResourceArchive.Ext));
     Archive archive = new Archive;
     
     resPath = buildNormalizedPath(dir, "res_result"); //Temp

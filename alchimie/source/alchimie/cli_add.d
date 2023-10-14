@@ -4,6 +4,7 @@ import std.stdio, std.file, std.path;
 import std.exception;
 
 import magia;
+import alchimie.constants;
 
 void cliAdd(Cli.Result cli) {
     if (cli.hasOption("help")) {

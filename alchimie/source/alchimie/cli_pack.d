@@ -5,6 +5,7 @@ import std.exception;
 import std.process;
 
 import magia;
+import alchimie.constants;
 
 void cliPack(Cli.Result cli) {
     if (cli.hasOption("help")) {

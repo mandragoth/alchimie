@@ -4,6 +4,7 @@ import std.stdio, std.file, std.path;
 import std.exception;
 
 import magia;
+import alchimie.constants;
 
 private enum Default_SourceFileContent = `
 event app {
