@@ -5,6 +5,7 @@ import alma.script.saudio;
 import alma.script.scamera;
 import alma.script.scommon;
 import alma.script.sdrawable;
+import alma.script.sgraphics;
 import alma.script.sinput;
 import alma.script.smath;
 import alma.script.common;
@@ -27,7 +28,8 @@ GrLibrary loadAlchimieLibrary() {
 GrLibLoader[] getAlchimieLibraryLoaders() {
     return [
         &loadAlchimieLibCommon, &loadAlchimieLibMath, &loadAlchimieLibVec,
-        &loadAlchimieLibColor, &loadAlchimieLibDrawable, &loadAlchimieLibAudio,
-        &loadAlchimieLibCamera, &loadAlchimieLibInput, &loadAlchimieLibUI
+        &loadAlchimieLibColor, &loadAlchimieLibGraphics, &loadAlchimieLibDrawable,
+        &loadAlchimieLibAudio, &loadAlchimieLibCamera, &loadAlchimieLibInput,
+        &loadAlchimieLibUI
     ];
 }
