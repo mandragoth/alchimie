@@ -53,8 +53,11 @@ void boot() {
         bytecode = new GrBytecode(bytecodePath);
     }
 
-    Runtime rt = new Runtime(bytecode, windowWidth, windowHeight, windowName);
+    Alma alma = new Alma(bytecode, windowWidth, windowHeight, windowName);
     if (windowIcon.length)
-        rt.window.icon = windowIcon;
-    rt.run();
+        alma.window.icon = windowIcon;
+
+    alma.loadResources("assets");
+
+    alma.run();
 }

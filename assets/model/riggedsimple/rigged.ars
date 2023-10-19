@@ -1,0 +1,9 @@
+{
+    "resources": [
+        {
+            "type": "model",
+            "name": "riggedsimple",
+            "file": "rigged.gltf"
+        }
+    ]
+}

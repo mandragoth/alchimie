@@ -45,7 +45,7 @@ final class Voice(uint Dim = 3u) {
     /// Init
     this(Sound sound) {
         alGenSources(cast(ALuint) 1, &_id);
-        _tick = application.currentTick;
+        _tick = Magia.currentTick;
 
         alSourcef(_id, AL_PITCH, 1);
         alSourcef(_id, AL_GAIN, 1);
@@ -59,8 +59,8 @@ final class Voice(uint Dim = 3u) {
     /// Update
     void update(AudioContext3D context) {
         if (!_hasPlayed) {
-            double deltaTime = (cast(double) application.currentTick - cast(double) _tick) / cast(
-                double) application.ticksPerSecond;
+            double deltaTime = (cast(double) Magia.currentTick - cast(double) _tick) / cast(
+                double) Magia.ticksPerSecond;
 
             const double speedOfSound = 340.3;
 

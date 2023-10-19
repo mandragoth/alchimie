@@ -15,7 +15,7 @@ import alma.script;
 
 import alma.runtime.compiler;
 
-final class Runtime : Application {
+final class Alma : Magia {
     private {
         // Grimoire
         GrEngine _engine;
@@ -23,6 +23,8 @@ final class Runtime : Application {
 
         // Événements
         GrEvent _inputEvent, _lateInputEvent;
+
+        const(Archive.File)[] _resourceFiles;
     }
 
     this(GrBytecode bytecode, uint width, uint height, string name) {
@@ -33,6 +35,17 @@ final class Runtime : Application {
     }
 
     override Status load() {
+        foreach (const Archive.File file; _resourceFiles) {
+            Json json = new Json(file.data);
+            Json[] resNodes = json.getObjects("resources", []);
+            foreach (resNode; resNodes) {
+                string resType = resNode.getString("type");
+                auto parser = res.getParser(resType);
+                parser(dirName(file.path), resNode);
+            }
+        }
+        _resourceFiles.length = 0;
+
         _engine = new GrEngine(Alma_Version_ID);
 
         foreach (GrLibrary lib; getLibraries()) {
@@ -50,10 +63,28 @@ final class Runtime : Application {
 
         grSetOutputFunction(&print);
 
-        // Load resources
-        loadResources();
-
         return Status.ok;
+    }
+
+    void loadResources(string path) {
+        Archive archive = new Archive;
+
+        if (isDir(path)) {
+            enforce(exists(path), "le dossier `" ~ path ~ "` n’existe pas");
+            archive.pack(path);
+        }
+        if (extension(path) == Archive.Ext) {
+            enforce(exists(path), "l’archive `" ~ path ~ "` n’existe pas");
+            archive.load(path);
+        }
+
+        foreach (file; archive) {
+            if (extension(file.name) == ".ars") {
+                _resourceFiles ~= file;
+            } else {
+                res.write(file.path, file.data);
+            }
+        }
     }
 
     override Status tick() {

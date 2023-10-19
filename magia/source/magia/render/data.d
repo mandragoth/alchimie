@@ -1,6 +1,7 @@
 module magia.render.data;
 
 import magia.core;
+import magia.main;
 import magia.render.buffer;
 import magia.render.material;
 import magia.render.mesh;
@@ -126,11 +127,14 @@ void loadShapes() {
         3, 7, 6,
         6, 2, 3 
     ]));
+}
 
+/// Electric Bungalows
+void loadShapes2() {
     // Load shaders for draw calls
-    lineShader = fetchPrototype!Shader("line");
-    quadShader = fetchPrototype!Shader("quad");
-    circleShader = fetchPrototype!Shader("circle");
-    modelShader = fetchPrototype!Shader("model");
-    animatedShader = fetchPrototype!Shader("animated");
+    lineShader = Magia.res.get!Shader("line");
+    quadShader = Magia.res.get!Shader("quad");
+    circleShader = Magia.res.get!Shader("circle");
+    modelShader = Magia.res.get!Shader("model");
+    animatedShader = Magia.res.get!Shader("animated");
 }

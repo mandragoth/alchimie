@@ -5,15 +5,16 @@ import std.file;
 import std.path;
 import std.stdio;
 import std.string;
+import std.typecons : Flag;
 
 import bindbc.opengl;
 
-import magia.core.mat;
-import magia.core.vec;
+import magia.core;
+import magia.main;
 import magia.render.window;
 
 /// Class holding a shader
-class Shader {
+class Shader : Resource {
     /// Index
     GLuint id;
 
@@ -23,15 +24,14 @@ class Shader {
     }
 
     /// Constructor given 1 file
-    this(string shaderPath) {
-        File shaderFile = File(shaderPath);
-
+    this(string filePath) {
+        string text = Magia.res.readText(filePath);
         string vertexData;
         string fragmentData;
 
         bool readingVertex = false;
         bool readingFragment = false;
-        foreach (string line; lines(shaderFile)) {
+        foreach (string line; text.splitLines(KeepTerminator.yes)) {
             if (startsWith(line, "#type")) {
                 line = strip(line);
 
@@ -49,7 +49,7 @@ class Shader {
             }
         }
 
-        setupShaders(shaderPath, shaderPath, vertexData, fragmentData);
+        setupShaders("vshaderPath", "fshaderPath", vertexData, fragmentData);
     }
 
     /// Constructor given 2 files
@@ -63,6 +63,11 @@ class Shader {
     this(Shader other) {
         _vertexShader = other._vertexShader;
         _fragmentShader = other._fragmentShader;
+    }
+
+    /// Ressources
+    Resource make() {
+        return this;
     }
 
     /// Shader turned on
@@ -120,7 +125,8 @@ class Shader {
     }
 
     private {
-        void setupShaders(string vertexPath, string fragmentPath, string vertexData, string fragmentData) {
+        void setupShaders(string vertexPath, string fragmentPath,
+            string vertexData, string fragmentData) {
             const char* vertexSource = toStringz(vertexData);
             const char* fragmentSource = toStringz(fragmentData);
 
@@ -144,7 +150,7 @@ class Shader {
             // Check if compilation OK
             GLint hasCompiled;
             glGetShaderiv(shaderId, GL_COMPILE_STATUS, &hasCompiled);
-                
+
             if (hasCompiled == GL_FALSE) {
                 // Get log size
                 GLint maxSize = 0;
@@ -156,10 +162,11 @@ class Shader {
 
                 // Log type, source, error info
                 glGetShaderInfoLog(shaderId, maxSize, &maxSize, infoLog.ptr);
-                write(type, " shader error for ", path, ": ", infoLog);
+                //write(type, " shader error for ", path, ": ", infoLog);
+                assert(false, type ~ " shader error for " ~ path ~ ": " ~ infoLog);
 
                 // Delete shader as we don't need it anymore
-                glDeleteShader(shaderId);
+                //glDeleteShader(shaderId);
             }
         }
 
@@ -167,8 +174,8 @@ class Shader {
             GLint labelId = glGetUniformLocation(id, label);
 
             if (labelId == GL_INVALID_VALUE || labelId == GL_INVALID_OPERATION) {
-                throw new Exception("Error " ~ to!string(labelId, 16) ~
-                                    ": unable to get location of uniform " ~ to!string(label));
+                throw new Exception("Error " ~ to!string(labelId,
+                        16) ~ ": unable to get location of uniform " ~ to!string(label));
             }
 
             return labelId;

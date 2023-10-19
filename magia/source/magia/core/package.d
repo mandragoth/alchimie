@@ -18,7 +18,6 @@ public {
     import magia.core.json_old;
     import magia.core.mat;
     import magia.core.quat;
-    import magia.core.resarchive;
     import magia.core.resource;
     import magia.core.ringbuffer;
     import magia.core.rot;

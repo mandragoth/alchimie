@@ -63,7 +63,7 @@ class Animation {
 
     /// Convert seconds to ticks
     int secondsToTicks(float seconds) {
-        return cast(int)(seconds * application.ticksPerSecond);
+        return cast(int)(seconds * Magia.ticksPerSecond);
     }
 
     /// Convert seconds to ticks

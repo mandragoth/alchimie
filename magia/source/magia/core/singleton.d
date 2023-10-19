@@ -1,27 +1,31 @@
-/**
-    Singleton
-
-    Copyright: (c) Enalye 2017
-    License: Zlib
-    Authors: Enalye
-*/
-
 module magia.core.singleton;
 
-/// Derivate from this class and use MyClass.get() to get your singleton.
-class Singleton(T) {
-    protected this() {
+/** Singleton
+Usage:
+```d
+class A {
+    mixin Singleton;
+
+    void foo() {
+
     }
+}
 
+void main() {
+    A().foo();
+}
+```
+*/
+template Singleton() {
     private static bool _isInstantiated;
-    private __gshared T _instance;
+    private __gshared typeof(this) _instance;
 
-    /// Returns the instance of the singleton.
-    static T get() {
+    /// Retourne l’instance du singleton
+    static typeof(this) opCall() {
         if (!_isInstantiated) {
-            synchronized (Singleton.classinfo) {
+            synchronized (typeof(this).classinfo) {
                 if (!_instance) {
-                    _instance = new T;
+                    _instance = new typeof(this)();
                 }
                 _isInstantiated = true;
             }

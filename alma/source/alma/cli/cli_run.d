@@ -53,6 +53,6 @@ void cliRun(Cli.Result cli) {
 
     GrBytecode bytecode = compileSource(inputFile, options, GrLocale.fr_FR);
 
-    Runtime rt = new Runtime(bytecode, windowWidth, windowHeight, windowName);
-    rt.run();
+    Alma alma = new Alma(bytecode, windowWidth, windowHeight, windowName);
+    alma.run();
 }

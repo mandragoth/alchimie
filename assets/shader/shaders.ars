@@ -1,0 +1,39 @@
+{
+    "resources": [
+        {
+            "file": "animated.glsl",
+            "name": "animated",
+            "type": "shader"
+        },
+        {
+            "file": "circle.glsl",
+            "name": "circle",
+            "type": "shader"
+        },
+        {
+            "file": "line.glsl",
+            "name": "line",
+            "type": "shader"
+        },
+        {
+            "file": "model.glsl",
+            "name": "model",
+            "type": "shader"
+        },
+        {
+            "file": "postprocess.glsl",
+            "name": "postprocess",
+            "type": "shader"
+        },
+        {
+            "file": "quad.glsl",
+            "name": "quad",
+            "type": "shader"
+        },
+        {
+            "file": "skybox.glsl",
+            "name": "skybox",
+            "type": "shader"
+        }
+    ]
+}

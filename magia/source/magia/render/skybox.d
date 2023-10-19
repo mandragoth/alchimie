@@ -7,6 +7,7 @@ import std.conv;
 import bindbc.opengl;
 
 import magia.core;
+import magia.main;
 import magia.render.array;
 import magia.render.buffer;
 import magia.render.camera;
@@ -31,7 +32,7 @@ final class Skybox : Entity3D {
 
     /// Constructor
     this() {
-        _shader = fetchPrototype!Shader("skybox");
+        _shader = Magia.res.get!Shader("skybox");
         _shader.activate();
         _shader.uploadUniformInt("u_Skybox", 0);
 

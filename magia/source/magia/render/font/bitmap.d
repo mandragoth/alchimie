@@ -9,6 +9,7 @@ import bindbc.sdl;
 
 import magia.core;
 import magia.render.sprite;
+import magia.render.texture;
 import magia.render.font.font, magia.render.font.glyph;
 
 /// Font from a texture atlas.
@@ -65,10 +66,10 @@ final class BitmapFont : Font {
     }
 
     /// Load from metrics and texture.
-    this(string name_, string texturePath, Metrics metrics) {
+    this(string name_, Texture texture, Metrics metrics) {
         _name = name_;
         _metrics = metrics;
-        _sprite = new Sprite(texturePath);
+        _sprite = new Sprite(texture);
     }
 
     /// Copy ctor
@@ -115,9 +116,9 @@ final class BitmapFont : Font {
         for (int i; i < _metrics.chars.length; ++i) {
             if (_metrics.chars[i] == character) {
                 Glyph metrics = Glyph(true, _metrics.advance[i], _metrics.offsetX[i],
-                        _metrics.offsetY[i], _metrics.width[i],
-                        _metrics.height[i], _metrics.packX[i], _metrics.packY[i],
-                        _metrics.width[i], _metrics.height[i], _sprite);
+                    _metrics.offsetY[i], _metrics.width[i], _metrics.height[i],
+                    _metrics.packX[i], _metrics.packY[i], _metrics.width[i],
+                    _metrics.height[i], _sprite);
                 return metrics;
             }
         }

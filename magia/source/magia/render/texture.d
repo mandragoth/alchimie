@@ -4,6 +4,7 @@ import bindbc.sdl;
 import bindbc.opengl;
 
 import magia.core;
+import magia.main;
 
 import std.exception;
 import std.conv;
@@ -30,7 +31,7 @@ private {
 }
 
 /// Class holding texture data
-class Texture {
+class Texture : Resource {
     /// Texture index
     GLuint id;
 
@@ -120,18 +121,20 @@ class Texture {
         _internalFormat = GL_RGBA;
 
         assert(data.sizeof == width * height * 4);
-        glTexImage2D(_target, 0, _internalFormat, _width, _height, 0, _dataFormat, GL_UNSIGNED_BYTE, &data);
+        glTexImage2D(_target, 0, _internalFormat, _width, _height, 0,
+            _dataFormat, GL_UNSIGNED_BYTE, &data);
         _nbTextures = 1;
     }
 
     /// Constructor for usual 2D texture from path
-    deprecated("Les ressources doivent utiliser le loader au lieu de charger les fichier soi-même")
     this(string fileName, TextureType type = TextureType.sprite, GLuint slot = 0) {
         // Set name as file name
         _name = fileName;
 
         // Get surface and process it
-        SDL_Surface* surface = IMG_Load(toStringz(fileName));
+        const(ubyte)[] data = Magia.res.read(fileName);
+        SDL_RWops* rw = SDL_RWFromConstMem(cast(const(void)*) data.ptr, cast(int) data.length);
+        SDL_Surface* surface = IMG_Load_RW(rw, 1);
         enforce(surface, "can't load image `" ~ fileName ~ "`");
 
         setupData(surface, type, slot);
@@ -141,7 +144,7 @@ class Texture {
     }
 
     /// Constructor for usual 2D texture from surface
-    this(string name, SDL_Surface *surface, TextureType type = TextureType.sprite, GLuint slot = 0) {
+    this(string name, SDL_Surface* surface, TextureType type = TextureType.sprite, GLuint slot = 0) {
         _name = name;
         setupData(surface, type, slot);
     }
@@ -157,8 +160,13 @@ class Texture {
         _nbTextures = texture_._nbTextures;
     }
 
+    /// Ressources
+    Resource make() {
+        return this;
+    }
+
     /// Setup data
-    void setupData(SDL_Surface *surface, TextureType type, GLuint slot) {
+    void setupData(SDL_Surface* surface, TextureType type, GLuint slot) {
         // Setup type
         _type = type;
 
@@ -184,8 +192,7 @@ class Texture {
             // Setup wrap
             glTexParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        }
-        else {
+        } else {
             // Setup filters
             glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -205,22 +212,20 @@ class Texture {
         if (nbChannels == 4) {
             _internalFormat = GL_RGBA;
             _dataFormat = GL_RGBA;
-        }
-        else if (nbChannels == 3) {
+        } else if (nbChannels == 3) {
             _internalFormat = GL_RGB;
             _dataFormat = GL_RGB;
-        }
-        else if (nbChannels == 1) {
+        } else if (nbChannels == 1) {
             _internalFormat = GL_RED;
             _dataFormat = GL_RED;
-        }
-        else {
+        } else {
             new Exception("Unsupported texture format for " ~ to!string(type) ~ " texture type");
         }
 
         // Generate texture image
         _memoryType = GL_UNSIGNED_BYTE;
-        glTexImage2D(_target, 0, _internalFormat, _width, _height, 0, _dataFormat, _memoryType, surface.pixels);
+        glTexImage2D(_target, 0, _internalFormat, _width, _height, 0,
+            _dataFormat, _memoryType, surface.pixels);
         _nbTextures = 1;
 
         // Generate mipmaps
@@ -266,8 +271,8 @@ class Texture {
             _width = surface.w;
             _height = surface.h;
 
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cubeMapId, 0, _internalFormat, _width,
-                         _height, 0, _dataFormat, _memoryType, surface.pixels);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cubeMapId, 0, _internalFormat,
+                _width, _height, 0, _dataFormat, _memoryType, surface.pixels);
             ++_nbTextures;
 
             SDL_FreeSurface(surface);
@@ -322,38 +327,39 @@ class FrameBufferTexture : Texture {
         _attachment = GL_COLOR_ATTACHMENT0;
         _wrapMode = GL_CLAMP_TO_EDGE;
 
-        switch(type) {
-            case TextureType.postprocess:
-                _internalFormat = GL_RGB16F;
-                _dataFormat = GL_RGB;
+        switch (type) {
+        case TextureType.postprocess:
+            _internalFormat = GL_RGB16F;
+            _dataFormat = GL_RGB;
             break;
             // Data format/memory type not used for multi sample texture
-            case TextureType.multisample:
-                _internalFormat = GL_RGB16F;
+        case TextureType.multisample:
+            _internalFormat = GL_RGB16F;
             break;
             // A shadow map uses a depth texture
-            case TextureType.shadowmap:
-            case TextureType.depth:
-                _internalFormat = GL_DEPTH_COMPONENT;
-                _dataFormat = GL_DEPTH_COMPONENT;
-                _memoryType = GL_FLOAT;
-                _attachment = GL_DEPTH_ATTACHMENT;
-                _wrapMode = GL_CLAMP_TO_BORDER;
+        case TextureType.shadowmap:
+        case TextureType.depth:
+            _internalFormat = GL_DEPTH_COMPONENT;
+            _dataFormat = GL_DEPTH_COMPONENT;
+            _memoryType = GL_FLOAT;
+            _attachment = GL_DEPTH_ATTACHMENT;
+            _wrapMode = GL_CLAMP_TO_BORDER;
             break;
-            case TextureType.picking:
-                _internalFormat = GL_RGB32UI;
-                _dataFormat = GL_RGB_INTEGER;
-                _memoryType = GL_UNSIGNED_INT;
+        case TextureType.picking:
+            _internalFormat = GL_RGB32UI;
+            _dataFormat = GL_RGB_INTEGER;
+            _memoryType = GL_UNSIGNED_INT;
             break;
-            default:
-                throw new Exception("Unsupported frame buffer type");
+        default:
+            throw new Exception("Unsupported frame buffer type");
         }
 
         // Generate parametrized texture
         if (type == TextureType.multisample) {
             glTexImage2DMultisample(_target, nbSamples, _internalFormat, _width, _height, GL_TRUE);
         } else {
-            glTexImage2D(_target, 0, _internalFormat, _width, _height, 0, _dataFormat, _memoryType, null);
+            glTexImage2D(_target, 0, _internalFormat, _width, _height, 0,
+                _dataFormat, _memoryType, null);
         }
 
         // Setup filters

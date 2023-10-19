@@ -9,7 +9,7 @@ import std.stdio;
 private {
     bool s_Trace = false;
 }
-
+/*
 void loadResources() {
     loadImages();
     loadTextures();
@@ -76,4 +76,4 @@ private void loadModels() {
 
         storePrototype!Model(name, new Model(file));
     }
-}
+}*/

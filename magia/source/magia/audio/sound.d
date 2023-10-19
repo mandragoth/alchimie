@@ -99,11 +99,11 @@ final class Sound {
 
     /// Joue le son
     Voice!Dim play(uint Dim = 3u)(Vector!(float, Dim) position) {
-        if (!application.audioContext) {
+        if (!Magia.audioContext) {
             return null;
         }
 
-        Voice!Dim voice = application.audioContext.play(this);
+        Voice!Dim voice = Magia.audioContext.play(this);
 
         if (voice) {
             voice.position = position;

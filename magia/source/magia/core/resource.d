@@ -1,94 +1,124 @@
-/**
-    Resource
-
-    Copyright: (c) Enalye 2017
-    License: Zlib
-    Authors: Enalye
-*/
-
 module magia.core.resource;
 
 import std.typecons;
 import std.algorithm : count;
 import std.conv : to;
+import std.exception : enforce;
 import std.traits : isCopyable;
 
-import magia.core;
-import magia.render;
+import magia.core.json;
 
-private {
-    void*[string] _caches;
-    string[string] _cachesSubFolder;
+/// Classe gérée par le système de ressource
+interface Resource {
+    /// Fabrique une ressource à partir du prototype
+    Resource make();
 }
 
-/// Cache pour les ressources d’un type donné
-private final class ResourceCache(T) {
+/// Gestionnaire des ressources
+final class ResourceManager {
+    private alias ParserFunc = void function(string, Json);
+    private alias FileData = const(ubyte)[];
+
     private {
-        T[string] _data;
+        FileData[string] _files;
+        ParserFunc[string] _parsers;
+        Cache[string] _caches;
     }
 
-    /// Ajoute le prototype d’une ressource
-    void setPrototype(string name, T value) {
-        _data[name] = value;
+    /// Cache pour les ressources d’un type donné
+    private final class Cache {
+        private {
+            Resource[string] _data;
+        }
+
+        /// Ajoute le prototype d’une ressource
+        void setPrototype(string name, Resource value) {
+            _data[name] = value;
+        }
+
+        /// Récupère le prototype d’une ressource
+        Resource getPrototype(string name) {
+            auto p = (name in _data);
+            enforce(p, "la ressource `" ~ name ~ "` n’existe pas");
+            return *p;
+        }
+
+        /// Récupère le prototype d’une ressource
+        Resource get(string name) {
+            auto p = getPrototype(name);
+            return p.make();
+        }
     }
 
-    /// Récupère le prototype d’une ressource
-    T getPrototype(string name) {
-        auto p = (name in _data);
-        assert(p, "Resource: no \'" ~ name ~ "\' loaded");
+    /// Init
+    this() {
+
+    }
+
+    /// Charge un fichier
+    void write(string path, FileData data) {
+        _files[path] = data;
+    }
+
+    /// Retourne les données d’un fichier chargé
+    FileData read(string path) const {
+        auto p = path in _files;
+        enforce(p, "le fichier `" ~ path ~ "` n’existe pas");
         return *p;
     }
 
-    /// Récupère le prototype d’une ressource
-    T getCopy(string name) {
-        auto p = getPrototype(name);
-        return new T(p);
-    }
-}
+    /// Ditto
+    string readText(string path) const {
+        import std.utf : validate;
 
-/// Crée un nouveau cache de ressources
-void createResourceCache(T)() {
-    static assert(!__traits(isAbstractClass, T),
-        "fetch cannot instanciate the abstract class " ~ T.stringof);
-
-    _caches[T.stringof] = cast(void*) new ResourceCache!T;
-}
-
-/// Ajoute un prototype dans le cache correspondant
-void storePrototype(T)(string name, T prototype) {
-    static assert(!__traits(isAbstractClass, T),
-        "fetch cannot instanciate the abstract class " ~ T.stringof);
-
-    auto p = T.stringof in _caches;
-    ResourceCache!T cache;
-
-    if (p) {
-        cache = cast(ResourceCache!T)(*p);
-    }
-    else {
-        cache = new ResourceCache!T;
-        _caches[T.stringof] = cast(void*) cache;
+        string text = cast(string) read(path);
+        validate(text);
+        return text;
     }
 
-    cache.setPrototype(name, prototype);
-}
+    /// Ajoute un type de ressource
+    void setParser(string type, ParserFunc callback) {
+        _parsers[type] = callback;
+    }
 
-/// Returne le prototype d’une ressource
-T fetchPrototype(T)(string name) {
-    static assert(!__traits(isAbstractClass, T),
-        "fetch cannot instanciate the abstract class " ~ T.stringof);
+    ParserFunc getParser(string type) const {
+        auto p = type in _parsers;
+        enforce(p, "aucune fonction de définie pour le type `" ~ type ~ "`");
+        return *p;
+    }
 
-    auto cache = T.stringof in _caches;
-    assert(cache, "No cache declared of type " ~ T.stringof);
-    return (cast(ResourceCache!T)*cache).getPrototype(name);
-}
+    /// Definit un prototype d’une ressource
+    void store(T : Resource)(string name, T prototype) {
+        static assert(!__traits(isAbstractClass, T), "`" ~ T.stringof ~ "` est une classe abstraite");
 
-/// Returne une copie d’une ressource
-T fetch(T)(string name) {
-    static assert(!__traits(isAbstractClass, T),
-        "fetch cannot instanciate the abstract class " ~ T.stringof);
+        auto p = T.stringof in _caches;
+        Cache cache;
 
-    auto cache = T.stringof in _caches;
-    assert(cache, "No cache declared of type " ~ T.stringof);
-    return (cast(ResourceCache!T)*cache).getCopy(name);
+        if (p) {
+            cache = *p;
+        } else {
+            cache = new Cache;
+            _caches[T.stringof] = cache;
+        }
+
+        cache.setPrototype(name, prototype);
+    }
+
+    /// Retourne le prototype d’une ressource
+    T getPrototype(T : Resource)(string name) {
+        static assert(!__traits(isAbstractClass, T), "`" ~ T.stringof ~ "` est une classe abstraite");
+
+        auto p = T.stringof in _caches;
+        enforce(p, "la ressource `" ~ name ~ "` n’existe pas");
+        return cast(T)(cast(Cache)*p).getPrototype(name);
+    }
+
+    /// Retourne une ressource
+    T get(T : Resource)(string name) {
+        static assert(!__traits(isAbstractClass, T), "`" ~ T.stringof ~ "` est une classe abstraite");
+
+        auto p = T.stringof in _caches;
+        enforce(p, "la ressource `" ~ name ~ "` n’existe pas");
+        return cast(T)(cast(Cache)*p).get(name);
+    }
 }

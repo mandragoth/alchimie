@@ -8,6 +8,7 @@ import bindbc.opengl;
 import bindbc.sdl;
 
 import magia.core;
+import magia.main;
 import magia.render.entity;
 import magia.render.material;
 import magia.render.renderer;
@@ -16,7 +17,7 @@ import magia.render.texture;
 import magia.render.window;
 
 /// Base rendering class.
-final class Sprite : Entity2D {
+final class Sprite : Entity2D, Resource {
     /// Alignment used to render the sprites
     CoordinateSystem alignment;
 
@@ -60,17 +61,22 @@ final class Sprite : Entity2D {
     }
 
     /// Constructor given an image path
-    this(string fileName, vec4i clip = vec4i.zero) {
+    this(Texture texture, vec4i clip = vec4i.zero) {
         transform = Transform2D.identity;
-        Texture texture = fetchPrototype!Texture(fileName);
         material = new Material(texture);
         material.clip = clip;
         alignment = CoordinateSystem.topLeft;
     }
 
+    /// Ressources
+    Resource make() {
+        return new Sprite(this);
+    }
+
     /// Draw the sprite on the screen
     override void draw(Renderer2D renderer) {
-        Transform2D worldTransfrom = alignment.toRenderSpace(globalPosition, size, renderer.window.screenSize, angle);
+        Transform2D worldTransfrom = alignment.toRenderSpace(globalPosition,
+            size, renderer.window.screenSize, angle);
         renderer.drawMaterial(material, worldTransfrom);
     }
 }

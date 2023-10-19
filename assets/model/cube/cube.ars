@@ -1,0 +1,9 @@
+{
+    "resources": [
+        {
+            "type": "model",
+            "name": "cube",
+            "file": "cube.gltf"
+        }
+    ]
+}

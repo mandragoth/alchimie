@@ -411,47 +411,47 @@ private void _makeDropFile(GrCall call) {
 }
 
 private void _isPressed(T)(GrCall call) {
-    call.setBool(application.inputManager.isPressed(call.getEnum!T(0)));
+    call.setBool(Magia.inputManager.isPressed(call.getEnum!T(0)));
 }
 
 private void _getAxis(GrCall call) {
-    call.setFloat(application.inputManager.getAxis(call.getEnum!(InputEvent.ControllerAxis.Axis)(0)));
+    call.setFloat(Magia.inputManager.getAxis(call.getEnum!(InputEvent.ControllerAxis.Axis)(0)));
 }
 
 // Action
 
 private void _addAction(GrCall call) {
-    application.inputManager.addAction(call.getString(0));
+    Magia.inputManager.addAction(call.getString(0));
 }
 
 private void _removeAction(GrCall call) {
-    application.inputManager.removeAction(call.getString(0));
+    Magia.inputManager.removeAction(call.getString(0));
 }
 
 private void _hasAction(GrCall call) {
-    call.setBool(application.inputManager.hasAction(call.getString(0)));
+    call.setBool(Magia.inputManager.hasAction(call.getString(0)));
 }
 
 private void _isAction(GrCall call) {
-    call.setBool(application.inputManager.isAction(call.getString(1), call.getNative!InputEvent(0)));
+    call.setBool(Magia.inputManager.isAction(call.getString(1), call.getNative!InputEvent(0)));
 }
 
 private void _addActionEvent(GrCall call) {
-    application.inputManager.addActionEvent(call.getString(0), call.getNative!InputEvent(1));
+    Magia.inputManager.addActionEvent(call.getString(0), call.getNative!InputEvent(1));
 }
 
 private void _removeActionEvents(GrCall call) {
-    application.inputManager.removeActionEvents(call.getString(0));
+    Magia.inputManager.removeActionEvents(call.getString(0));
 }
 
 private void _isActionActivated(GrCall call) {
-    call.setBool(application.inputManager.activated(call.getString(0)));
+    call.setBool(Magia.inputManager.activated(call.getString(0)));
 }
 
 private void _getActionStrength(GrCall call) {
-    call.setFloat(application.inputManager.getActionStrength(call.getString(0)));
+    call.setFloat(Magia.inputManager.getActionStrength(call.getString(0)));
 }
 
 private void _getActionAxis(GrCall call) {
-    call.setFloat(application.inputManager.getActionAxis(call.getString(0), call.getString(1)));
+    call.setFloat(Magia.inputManager.getActionAxis(call.getString(0), call.getString(1)));
 }

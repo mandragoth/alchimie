@@ -26,7 +26,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
 
     // Entity constructors
     library.addConstructor(&_newSprite, spriteType, [grString]);
-    library.addConstructor(&_newSprite2, spriteType, [grString, vec4iType]);
+    //library.addConstructor(&_newSprite2, spriteType, [grString, vec4iType]);
     library.addConstructor(&_newSkybox, skyboxType, []);
     library.addConstructor(&_newModel, modelType, [grString]);
     library.addConstructor(&_newQuad, quadType);
@@ -121,7 +121,7 @@ private void _addChild(GrCall call) {
 
 private void _addTexture(GrCall call) {
     Entity3D entity = call.getNative!Entity3D(0);
-    Texture texture = fetchPrototype!Texture(call.getString(1));
+    Texture texture = Magia.res.get!Texture(call.getString(1));
 
     if (!entity.material) {
         entity.material = new Material(texture);
@@ -131,26 +131,26 @@ private void _addTexture(GrCall call) {
 }
 
 private void _newSprite(GrCall call) {
-    Sprite sprite = new Sprite(call.getString(0));
-    application.addEntity(sprite);
+    Sprite sprite = Magia.res.get!Sprite(call.getString(0));
+    Magia.addEntity(sprite);
     call.setNative(sprite);
 }
-
+/*
 private void _newSprite2(GrCall call) {
     Sprite sprite = new Sprite(call.getString(0), call.getNative!SVec4i(1));
-    application.addEntity(sprite);
+    Magia.addEntity(sprite);
     call.setNative(sprite);
-}
+}*/
 
 private void _newSkybox(GrCall call) {
     Skybox skybox = new Skybox();
-    application.addEntity(skybox);
+    Magia.addEntity(skybox);
     call.setNative(skybox);
 }
 
 private void _newModel(GrCall call) {
     ModelInstance modelInstance = new ModelInstance(call.getString(0));
-    application.addEntity(modelInstance);
+    Magia.addEntity(modelInstance);
     call.setNative(modelInstance);
 }
 
@@ -180,7 +180,7 @@ private void _drawFilledRect(GrCall call) {
     vec2 size = call.getNative!SVec2f(1);
     SColor color = call.getNative!SColor(2);
 
-    application.renderer2D.drawFilledRect(position, size, color);
+    Magia.renderer2D.drawFilledRect(position, size, color);
 }
 
 // @TODO fix this
@@ -188,7 +188,7 @@ private void _drawFilledCircle(GrCall call) {
     vec2 position = call.getNative!SVec2f(0);
     SColor color = call.getNative!SColor(2);
 
-    application.renderer2D.drawFilledCircle(position, call.getFloat(1), color);
+    Magia.renderer2D.drawFilledCircle(position, call.getFloat(1), color);
 }
 
 private void _newDirectionalLight(GrCall call) {
@@ -199,7 +199,7 @@ private void _newDirectionalLight(GrCall call) {
     directionalLight.diffuseIntensity = call.getFloat(2);
 
     // Register light in the renderer
-    application.directionalLight = directionalLight;
+    Magia.directionalLight = directionalLight;
 
     call.setNative(directionalLight);
 }
@@ -213,7 +213,7 @@ private void _newPointLight(GrCall call) {
     pointLight.diffuseIntensity = call.getFloat(3);
 
     // Register light in the renderer
-    application.addPointLight(pointLight);
+    Magia.addPointLight(pointLight);
 
     call.setNative(pointLight);
 }
@@ -229,7 +229,7 @@ private void _newSpotLight(GrCall call) {
     spotLight.diffuseIntensity = call.getFloat(5);
 
     // Register light in the renderer
-    application.addSpotLight(spotLight);
+    Magia.addSpotLight(spotLight);
 
     call.setNative(spotLight);
 }

@@ -5,6 +5,7 @@ import core.thread;
 import std.conv;
 import std.datetime;
 import std.stdio;
+import std.exception : enforce;
 
 import magia.audio;
 import magia.core;
@@ -14,12 +15,11 @@ import magia.ui;
 
 import grimoire;
 
-/// Current application being tracked
-Application application;
+/// Magia class
+class Magia {
+    static private {
+        bool _isInitialized;
 
-/// Application class
-class Application {
-    private {
         TimeStep _timeStep;
 
         float _currentFps;
@@ -53,6 +53,8 @@ class Application {
 
         // @TODO move ?
         InputManager _inputManager;
+
+        ResourceManager _resourceManager;
     }
 
     /// État des opérations
@@ -62,9 +64,9 @@ class Application {
         ok
     }
 
-    @property {
+    static @property {
         /// Est-ce que magia tourne toujours ?
-        bool isRunning() const {
+        bool isRunning() {
             return !(_inputManager.hasQuit() || _hasQuit);
         }
 
@@ -88,6 +90,11 @@ class Application {
             return _uiManager;
         }
 
+        /// Gestionnaire de ressources
+        ResourceManager res() {
+            return _resourceManager;
+        }
+
         /// Set audio context
         void audioContext(AudioContext3D audioContext) {
             _audioContext = audioContext;
@@ -101,11 +108,6 @@ class Application {
         /// Le périphérique audio
         AudioDevice audioDevice() {
             return _audioDevice;
-        }
-
-        /// Get ticks for each second
-        uint ticksPerSecond() {
-            return _ticksPerSecond;
         }
 
         /// Add 2D camera
@@ -146,18 +148,21 @@ class Application {
         }
 
         /// Ticks écoulés depuis le début
-        ulong currentTick() const {
+        ulong currentTick() {
             return _currentTick;
         }
 
         /// Nombre de ticks présents dans une seconde
-        uint ticksPerSecond() const {
+        uint ticksPerSecond() {
             return _ticksPerSecond;
         }
     }
 
     /// Constructor
     this(vec2u size, string title) {
+        enforce(!_isInitialized, "magia ne peut être instiancié q’une seule fois");
+        _isInitialized = true;
+
         /// Setup console output properly for windows
         version (Windows) {
             import core.sys.windows.windows : SetConsoleOutputCP;
@@ -191,7 +196,13 @@ class Application {
         // Create input handlers
         _inputManager = new InputManager(_window);
 
-        application = this;
+        // Création du gestionnaire des ressources
+        _resourceManager = new ResourceManager();
+
+        _resourceManager.setParser("shader", &parseShader);
+        _resourceManager.setParser("diffuse", &parseDiffuse);
+        _resourceManager.setParser("sprite", &parseSprite);
+        _resourceManager.setParser("model", &parseModel);
     }
 
     /// Récupère les événements (clavier/souris/manette/etc)
@@ -203,10 +214,14 @@ class Application {
 
     /// Run application
     void run() {
+        loadShapes();
+
         // @TODO: Traiter Status.error en affichant le message d’erreur ?
         if (Status.ok != load()) {
             return;
         }
+
+        loadShapes2();
 
         _tickStartFrame = Clock.currStdTime();
         while (isRunning()) {
@@ -249,7 +264,7 @@ class Application {
 
                 // Update tick
                 _currentTick++;
-                
+
                 // @TODO: Traiter Status.error en affichant le message d’erreur ?
                 if (Status.ok != tick()) {
                     _hasQuit = true;
@@ -277,7 +292,6 @@ class Application {
         }
     }
 
-
     /// Set application icon
     void setIcon() {
 
@@ -293,4 +307,54 @@ class Application {
 
     /// Logique de l’application
     abstract Status tick();
+}
+
+/// Crée une ressource shader
+void parseShader(string path, Json json) {
+    string name = json.getString("name");
+    string file = path ~ Archive.Separator ~ json.getString("file");
+
+    Shader shader = new Shader(file);
+    Magia.res.store(name, shader);
+}
+
+/// Crée une texture diffuse
+void parseDiffuse(string path, Json json) {
+    string name = json.getString("name");
+    string file = path ~ Archive.Separator ~ json.getString("file");
+
+    Texture texture = new Texture(file, TextureType.diffuse);
+    Magia.res.store(name, texture);
+}
+
+/// Crée des sprites
+void parseSprite(string path, Json json) {
+    string file = path ~ Archive.Separator ~ json.getString("file");
+    Texture texture = new Texture(file, TextureType.sprite);
+
+    Json[] atlas = json.getObjects("atlas");
+    foreach (Json spriteNode; atlas) {
+        string name = spriteNode.getString("name");
+        vec4i clip = vec4i(0, 0, texture.width, texture.height);
+
+        if (spriteNode.has("clip")) {
+            Json clipNode = spriteNode.getObject("clip");
+            clip.x = clipNode.getInt("x", clip.x);
+            clip.y = clipNode.getInt("y", clip.y);
+            clip.z = clipNode.getInt("w", clip.z);
+            clip.w = clipNode.getInt("h", clip.w);
+        }
+
+        Sprite sprite = new Sprite(texture, clip);
+        Magia.res.store(name, sprite);
+    }
+}
+
+/// Crée un modèle
+void parseModel(string path, Json json) {
+    string name = json.getString("name");
+    string file = path ~ Archive.Separator ~ json.getString("file");
+
+    Model model = new Model(file);
+    Magia.res.store(name, model);
 }

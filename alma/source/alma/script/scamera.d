@@ -45,8 +45,8 @@ void loadAlchimieLibCamera(GrLibDefinition library) {
 }
 
 private void _newPerspectiveCamera(GrCall call) {
-    PerspectiveCamera camera = new PerspectiveCamera(application.window.screenWidth, application.window.screenHeight);
-    application.addCamera3D(camera);
+    PerspectiveCamera camera = new PerspectiveCamera(Magia.window.screenWidth, Magia.window.screenHeight);
+    Magia.addCamera3D(camera);
     call.setNative(camera);
 }
 
@@ -58,19 +58,19 @@ private void _newPerspectiveCamera2(GrCall call) {
     vec3 up = cast(vec3) call.getNative!SVec3f(4);
 
     PerspectiveCamera camera = new PerspectiveCamera(width, height, position, target, up);
-    application.addCamera3D(camera);
+    Magia.addCamera3D(camera);
     call.setNative(camera);
 }
 
 private void _newAudioContext(GrCall call) {
-    AudioContext3D context = new AudioContext3D(application.audioDevice, call.getNative!PerspectiveCamera(0));
-    application.audioContext = context;
+    AudioContext3D context = new AudioContext3D(Magia.audioDevice, call.getNative!PerspectiveCamera(0));
+    Magia.audioContext = context;
     call.setNative(context);
 }
 
 private void _newOrthographicCamera(GrCall call) {
-    OrthographicCamera camera = new OrthographicCamera(application.window.getAspectRatio());
-    application.addCamera2D(camera);
+    OrthographicCamera camera = new OrthographicCamera(Magia.window.getAspectRatio());
+    Magia.addCamera2D(camera);
     call.setNative(camera);
 }
 
@@ -120,9 +120,9 @@ private void _setForward(GrCall call) {
 }
 
 private void _getScreenWidth(GrCall call) {
-    call.setInt(cast(int) application.window.screenWidth);
+    call.setInt(cast(int) Magia.window.screenWidth);
 }
 
 private void _getScreenHeight(GrCall call) {
-    call.setInt(cast(int) application.window.screenHeight);
+    call.setInt(cast(int) Magia.window.screenHeight);
 }

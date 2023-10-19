@@ -492,7 +492,7 @@ private void _ui_append_root(GrCall call) {
         return;
     }
 
-    application.uiManager.appendRoot(ui);
+    Magia.uiManager.appendRoot(ui);
 }
 
 private void _ui_append_child(GrCall call) {

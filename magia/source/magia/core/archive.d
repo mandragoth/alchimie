@@ -22,61 +22,70 @@ interface IArchive {
     void save(string);
 }
 
-/// Conteneur permettant de sérialiser des fichiers
+/// Conteneur permettant de sérialiser les fichiers d’un dossier
 final class Archive : IArchive {
-    private enum MagicWord = "ArchiveMagia";
+    private enum MagicWord = "CodexMagicae";
 
     /// ARC: **ARC**chive
     enum Ext = ".arc";
+
+    /// Séparateur de chemin
+    enum Separator = "/";
 
     private final class Directory {
         private {
             Directory[string] _dirs;
             File[string] _files;
-            string _name;
+            string _path, _name;
         }
 
         @property {
+            string path() const {
+                return _path;
+            }
+
             string name() const {
                 return _name;
             }
         }
 
-        this(string name_) {
+        this(string path_, string name_) {
+            _path = path_;
             _name = name_;
         }
 
-        void pack(string path) {
-            auto entries = dirEntries(path, SpanMode.shallow);
+        void pack(string path_) {
+            auto entries = dirEntries(path_, SpanMode.shallow);
             foreach (entry; entries) {
                 string name = baseName(entry.name);
+                string subPath = _path ~ Separator ~ name;
 
                 try {
                     if (entry.isDir) {
-                        Directory subDir = new Directory(name);
-                        subDir.pack(buildNormalizedPath(path, entry.name));
+                        Directory subDir = new Directory(subPath, name);
+                        subDir.pack(entry.name);
                         _dirs[name] = subDir;
                     } else if (entry.isFile) {
-                        File file = new File(name);
+                        File file = new File(subPath, name);
                         file.pack(entry.name);
                         _files[name] = file;
                     }
                 } catch (Exception e) {
-                    writeln("Erreur d’archivage: ", entry.name);
+                    writeln("Erreur d’archivage: ", entry.name, " - ", e.msg);
                 }
             }
         }
 
-        void unpack(string path) {
-            if (!exists(path))
-                mkdir(path);
+        void unpack(string path_) {
+            if (!exists(path_))
+                mkdir(path_);
 
             foreach (file; _files) {
-                file.unpack(buildNormalizedPath(path, file.name));
+                file.unpack(buildNormalizedPath(path_, file.name));
             }
 
             foreach (dir; _dirs) {
-                dir.unpack(buildNormalizedPath(path, dir.name));
+                dir.unpack(buildNormalizedPath(path_, dir.name));
             }
         }
 
@@ -84,7 +93,7 @@ final class Archive : IArchive {
             size_t fileCount = stream.read!size_t();
             for (int i; i < fileCount; ++i) {
                 string name = stream.read!string();
-                File file = new File(name);
+                File file = new File(_path ~ Separator ~ name, name);
                 file.load(stream);
                 _files[name] = file;
             }
@@ -92,7 +101,7 @@ final class Archive : IArchive {
             size_t dirCount = stream.read!size_t();
             for (int i; i < dirCount; ++i) {
                 string name = stream.read!string();
-                Directory dir = new Directory(name);
+                Directory dir = new Directory(_path ~ Separator ~ name, name);
                 dir.load(stream);
                 _dirs[name] = dir;
             }
@@ -111,38 +120,71 @@ final class Archive : IArchive {
                 dir.save(stream);
             }
         }
+
+        /// Itérateur
+        int opApply(int delegate(const ref File) dlg) const {
+            int result;
+
+            foreach (file; _files) {
+                result = dlg(file);
+
+                if (result)
+                    return result;
+            }
+
+            foreach (dir; _dirs) {
+                result = dir.opApply(dlg);
+
+                if (result)
+                    return result;
+            }
+
+            return result;
+        }
     }
 
     /// Fichier
-    private final class File {
+    final class File {
         private {
-            string _name;
+            string _path, _name;
             ubyte[] _data;
         }
 
         @property {
+            /// Chemin du fichier
+            string path() const {
+                return _path;
+            }
+
+            /// Nom du fichier
             string name() const {
                 return _name;
             }
+
+            /// Données
+            const(ubyte)[] data() const {
+                return _data;
+            }
         }
 
-        this(string name_) {
+        private this(string path_, string name_) {
+            _path = path_;
             _name = name_;
         }
 
-        void pack(string path) {
-            _data = cast(ubyte[]) std.file.read(path);
+        private void pack(string path_) {
+            _data = cast(ubyte[]) std.file.read(path_);
         }
 
-        void unpack(string path) {
-            std.file.write(path, _data);
+        private void unpack(string path_) {
+            std.file.write(path_, _data);
         }
 
-        void load(InStream stream) {
+        private void load(InStream stream) {
             _data = stream.read!(ubyte[])();
         }
 
-        void save(OutStream stream) {
+        private void save(OutStream stream) {
             stream.write!(ubyte[])(_data);
         }
     }
@@ -157,7 +199,8 @@ final class Archive : IArchive {
 
     /// Charge un dossier
     void pack(string path) {
-        _rootDir = new Directory(baseName(path));
+        string name = baseName(path);
+        _rootDir = new Directory(name, name);
         _rootDir.pack(path);
     }
 
@@ -172,7 +215,8 @@ final class Archive : IArchive {
         InStream stream = new InStream;
         enforce(stream.read!string() == MagicWord);
         stream.data = cast(ubyte[]) std.file.read(path);
-        _rootDir = new Directory(baseName(path));
+        string name = stream.read!string();
+        _rootDir = new Directory(name, name);
         _rootDir.load(stream);
     }
 
@@ -180,8 +224,18 @@ final class Archive : IArchive {
     void save(string path) {
         OutStream stream = new OutStream;
         stream.write(MagicWord);
-        if (_rootDir)
+        if (_rootDir) {
+            stream.write(_rootDir.name);
             _rootDir.save(stream);
+        }
         std.file.write(path, stream.data);
+    }
+
+    /// Itérateur
+    int opApply(int delegate(const ref File) dlg) const {
+        if (_rootDir)
+            return _rootDir.opApply(dlg);
+
+        return 0;
     }
 }

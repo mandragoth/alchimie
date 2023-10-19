@@ -13,7 +13,7 @@ event onLoad() {
 }
 
 task runtime() {
-    var remilia = @Sprite("remilia", @vec4i(0, 0, 32, 48));
+    var remilia = @Sprite("remilia");
     remilia:position(@vec2f(12.5f, 0f));
 
     task() {
