@@ -49,13 +49,13 @@ class Shader : Resource {
             }
         }
 
-        setupShaders("vshaderPath", "fshaderPath", vertexData, fragmentData);
+        setupShaders(filePath, filePath, vertexData, fragmentData);
     }
 
     /// Constructor given 2 files
     this(string vertexFile, string fragmentFile) {
-        string vertexData = readText(buildNormalizedPath("assets", "shader", vertexFile));
-        string fragmentData = readText(buildNormalizedPath("assets", "shader", fragmentFile));
+        string vertexData = Magia.res.readText(vertexFile);
+        string fragmentData = Magia.res.readText(fragmentFile);
         setupShaders(vertexFile, fragmentFile, vertexData, fragmentData);
     }
 

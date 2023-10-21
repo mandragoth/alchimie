@@ -16,12 +16,12 @@ interface Resource {
 
 /// Gestionnaire des ressources
 final class ResourceManager {
-    private alias ParserFunc = void function(string, Json);
+    private alias LoaderFunc = void function(string, Json);
     private alias FileData = const(ubyte)[];
 
     private {
         FileData[string] _files;
-        ParserFunc[string] _parsers;
+        LoaderFunc[string] _loaders;
         Cache[string] _caches;
     }
 
@@ -77,12 +77,12 @@ final class ResourceManager {
     }
 
     /// Ajoute un type de ressource
-    void setParser(string type, ParserFunc callback) {
-        _parsers[type] = callback;
+    void setLoader(string type, LoaderFunc callback) {
+        _loaders[type] = callback;
     }
 
-    ParserFunc getParser(string type) const {
-        auto p = type in _parsers;
+    LoaderFunc getLoader(string type) const {
+        auto p = type in _loaders;
         enforce(p, "aucune fonction de définie pour le type `" ~ type ~ "`");
         return *p;
     }

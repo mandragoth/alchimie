@@ -1,0 +1,14 @@
+{
+    "resources": [
+        {
+            "type": "sound",
+            "name": "test",
+            "file": "test.wav"
+        },
+        {
+            "type": "sound",
+            "name": "wind",
+            "file": "wind.wav"
+        }
+    ]
+}

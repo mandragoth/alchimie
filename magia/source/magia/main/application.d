@@ -12,6 +12,7 @@ import magia.core;
 import magia.input;
 import magia.render;
 import magia.ui;
+import magia.main.loader;
 
 import grimoire;
 
@@ -199,10 +200,7 @@ class Magia {
         // Création du gestionnaire des ressources
         _resourceManager = new ResourceManager();
 
-        _resourceManager.setParser("shader", &parseShader);
-        _resourceManager.setParser("diffuse", &parseDiffuse);
-        _resourceManager.setParser("sprite", &parseSprite);
-        _resourceManager.setParser("model", &parseModel);
+        setupDefaultResourceLoaders();
     }
 
     /// Récupère les événements (clavier/souris/manette/etc)
@@ -307,54 +305,4 @@ class Magia {
 
     /// Logique de l’application
     abstract Status tick();
-}
-
-/// Crée une ressource shader
-void parseShader(string path, Json json) {
-    string name = json.getString("name");
-    string file = path ~ Archive.Separator ~ json.getString("file");
-
-    Shader shader = new Shader(file);
-    Magia.res.store(name, shader);
-}
-
-/// Crée une texture diffuse
-void parseDiffuse(string path, Json json) {
-    string name = json.getString("name");
-    string file = path ~ Archive.Separator ~ json.getString("file");
-
-    Texture texture = new Texture(file, TextureType.diffuse);
-    Magia.res.store(name, texture);
-}
-
-/// Crée des sprites
-void parseSprite(string path, Json json) {
-    string file = path ~ Archive.Separator ~ json.getString("file");
-    Texture texture = new Texture(file, TextureType.sprite);
-
-    Json[] atlas = json.getObjects("atlas");
-    foreach (Json spriteNode; atlas) {
-        string name = spriteNode.getString("name");
-        vec4i clip = vec4i(0, 0, texture.width, texture.height);
-
-        if (spriteNode.has("clip")) {
-            Json clipNode = spriteNode.getObject("clip");
-            clip.x = clipNode.getInt("x", clip.x);
-            clip.y = clipNode.getInt("y", clip.y);
-            clip.z = clipNode.getInt("w", clip.z);
-            clip.w = clipNode.getInt("h", clip.w);
-        }
-
-        Sprite sprite = new Sprite(texture, clip);
-        Magia.res.store(name, sprite);
-    }
-}
-
-/// Crée un modèle
-void parseModel(string path, Json json) {
-    string name = json.getString("name");
-    string file = path ~ Archive.Separator ~ json.getString("file");
-
-    Model model = new Model(file);
-    Magia.res.store(name, model);
 }

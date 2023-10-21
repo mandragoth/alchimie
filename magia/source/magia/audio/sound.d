@@ -10,13 +10,14 @@ import magia.core;
 import magia.main.application;
 
 /// Représente les données d’un son
-final class Sound {
+final class Sound : Resource {
     private {
         ALuint _id;
         float[] _buffer;
         int _channels;
         ulong _samples;
         int _sampleRate;
+        float _volume = 1f;
     }
 
     @property {
@@ -24,6 +25,24 @@ final class Sound {
         ALuint id() const {
             return _id;
         }
+
+        /// Volume entre 0 et 1
+        float volume() const {
+            return _volume;
+        }
+
+        /// Ditto
+        float volume(float volume_) {
+            return _volume = clamp(volume_, 0f, 1f);
+        }
+    }
+
+    /// Charge depuis un fichier
+    this(string filePath) {
+        AudioStream stream;
+        const(ubyte)[] data = Magia.res.read(filePath);
+        stream.openFromMemory(data);
+        this(stream);
     }
 
     /// Copie
@@ -33,20 +52,6 @@ final class Sound {
         _channels = sound._channels;
         _samples = sound._samples;
         _sampleRate = sound._sampleRate;
-    }
-
-    /// Charge depuis un fichier
-    this(string filePath) {
-        AudioStream stream;
-        stream.openFromFile(filePath);
-        this(stream);
-    }
-
-    /// Charge depuis la mémoire
-    this(const(ubyte[]) data) {
-        AudioStream stream;
-        stream.openFromMemory(data);
-        this(stream);
     }
 
     private this(AudioStream stream) {
@@ -65,6 +70,11 @@ final class Sound {
             cast(int)(_buffer.length * float.sizeof), _sampleRate);
 
         toMono();
+    }
+
+    /// Accès à la ressource
+    Resource make() {
+        return this;
     }
 
     /// Convertir en mono

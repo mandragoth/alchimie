@@ -40,7 +40,7 @@ final class Alma : Magia {
             Json[] resNodes = json.getObjects("resources", []);
             foreach (resNode; resNodes) {
                 string resType = resNode.getString("type");
-                auto parser = res.getParser(resType);
+                auto parser = res.getLoader(resType);
                 parser(dirName(file.path), resNode);
             }
         }

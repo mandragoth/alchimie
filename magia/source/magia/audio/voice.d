@@ -17,6 +17,7 @@ final class Voice(uint Dim = 3u) {
         vec3 _position, _lastPosition;
         ulong _tick;
         bool _hasPlayed;
+        float _volume = 1f;
     }
 
     @property {
@@ -40,6 +41,18 @@ final class Voice(uint Dim = 3u) {
         //import std.stdio;writeln("pos: ", _position);
             return _position;
         }
+
+        /// Volume entre 0 et 1
+        float volume() const {
+            return _volume;
+        }
+
+        /// Ditto
+        float volume(float volume_) {
+            _volume = clamp(volume_, 0f, 1f);
+            alSourcef(_id, AL_GAIN, _volume);
+            return _volume;
+        }
     }
 
     /// Init
@@ -48,7 +61,7 @@ final class Voice(uint Dim = 3u) {
         _tick = Magia.currentTick;
 
         alSourcef(_id, AL_PITCH, 1);
-        alSourcef(_id, AL_GAIN, 1);
+        alSourcef(_id, AL_GAIN, sound.volume);
         alSource3f(_id, AL_POSITION, 0, 0, 0);
         alSource3f(_id, AL_VELOCITY, 0, 0, 0);
         alSourcei(_id, AL_LOOPING, AL_FALSE);
