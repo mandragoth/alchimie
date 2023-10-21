@@ -42,19 +42,7 @@ final class Sound : Resource {
         AudioStream stream;
         const(ubyte)[] data = Magia.res.read(filePath);
         stream.openFromMemory(data);
-        this(stream);
-    }
 
-    /// Copie
-    this(Sound sound) {
-        _id = sound._id;
-        _buffer = sound._buffer;
-        _channels = sound._channels;
-        _samples = sound._samples;
-        _sampleRate = sound._sampleRate;
-    }
-
-    private this(AudioStream stream) {
         _channels = stream.getNumChannels();
         _samples = stream.getLengthInFrames();
         assert(_samples != audiostreamUnknownLength);
@@ -70,6 +58,18 @@ final class Sound : Resource {
             cast(int)(_buffer.length * float.sizeof), _sampleRate);
 
         toMono();
+    }
+
+    /// Copie
+    this(Sound sound) {
+        _id = sound._id;
+        _buffer = sound._buffer;
+        _channels = sound._channels;
+        _samples = sound._samples;
+        _sampleRate = sound._sampleRate;
+    }
+
+    private this(AudioStream stream) {
     }
 
     /// Accès à la ressource

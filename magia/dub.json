@@ -34,7 +34,7 @@
 	],
 	"copyright": "Copyright © 2022, Mandragoth",
 	"dependencies": {
-		"audio-formats": "~>2.2.0",
+		"audio-formats": "~>3.0.1",
 		"bindbc-openal": "~>1.0.0",
 		"bindbc-opengl": "~>1.0.0",
 		"bindbc-sdl": "~>1.3.3",
