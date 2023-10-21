@@ -59,7 +59,7 @@ final class Sound : Resource {
         _samples = stream.getLengthInFrames();
         assert(_samples != audiostreamUnknownLength);
 
-        _buffer = new float[_samples * _channels];
+        _buffer = new float[cast(size_t)(_samples * _channels)];
 
         const int framesRead = stream.readSamplesFloat(_buffer);
         assert(framesRead == stream.getLengthInFrames());
@@ -82,7 +82,7 @@ final class Sound : Resource {
         if (_channels != 2)
             return;
 
-        float[] buffer = new float[_samples];
+        float[] buffer = new float[cast(size_t) _samples];
         for (size_t i; i < _samples; ++i) {
             buffer[i] = (_buffer[i << 1] + _buffer[(i << 1) + 1]) / 2f;
         }
@@ -97,7 +97,7 @@ final class Sound : Resource {
         if (_channels != 1)
             return;
 
-        float[] buffer = new float[_samples << 1];
+        float[] buffer = new float[cast(size_t)(_samples << 1)];
         for (size_t i; i < _samples; ++i) {
             buffer[i << 1] = buffer[(i << 1) + 1] = _buffer[i];
         }
