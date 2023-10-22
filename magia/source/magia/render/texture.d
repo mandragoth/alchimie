@@ -57,9 +57,6 @@ class Texture : Resource {
         // Internal texture type
         GLenum _memoryType;
 
-        // Name
-        string _name;
-
         // Nb textures internally loaded
         uint _nbTextures = 0;
     }
@@ -127,15 +124,12 @@ class Texture : Resource {
     }
 
     /// Constructor for usual 2D texture from path
-    this(string fileName, TextureType type = TextureType.sprite, GLuint slot = 0) {
-        // Set name as file name
-        _name = fileName;
-
+    this(string filePath, TextureType type = TextureType.sprite, GLuint slot = 0) {
         // Get surface and process it
-        const(ubyte)[] data = Magia.res.read(fileName);
+        const(ubyte)[] data = Magia.res.read(filePath);
         SDL_RWops* rw = SDL_RWFromConstMem(cast(const(void)*) data.ptr, cast(int) data.length);
         SDL_Surface* surface = IMG_Load_RW(rw, 1);
-        enforce(surface, "can't load image `" ~ fileName ~ "`");
+        enforce(surface, "can't load image `" ~ filePath ~ "`");
 
         setupData(surface, type, slot);
 
@@ -144,8 +138,7 @@ class Texture : Resource {
     }
 
     /// Constructor for usual 2D texture from surface
-    this(string name, SDL_Surface* surface, TextureType type = TextureType.sprite, GLuint slot = 0) {
-        _name = name;
+    this(SDL_Surface* surface, TextureType type = TextureType.sprite, GLuint slot = 0) {
         setupData(surface, type, slot);
     }
 
@@ -205,7 +198,7 @@ class Texture : Resource {
         const uint nbChannels = surface.format.BytesPerPixel;
 
         if (s_Trace) {
-            writeln("Loaded texture ", _name, " with ", nbChannels, " channels");
+            writeln("Loaded texture with ", nbChannels, " channels");
         }
 
         // For now, consider diffuses as RGBA, speculars as R
@@ -262,9 +255,10 @@ class Texture : Resource {
         _memoryType = GL_UNSIGNED_BYTE;
 
         for (int cubeMapId = 0; cubeMapId < filePaths.length; ++cubeMapId) {
-            string filePath = buildNormalizedPath("assets", "skybox", filePaths[cubeMapId]);
-
-            SDL_Surface* surface = IMG_Load(toStringz(filePath));
+            string filePath = filePaths[cubeMapId];
+            const(ubyte)[] data = Magia.res.read(filePath);
+            SDL_RWops* rw = SDL_RWFromConstMem(cast(const(void)*) data.ptr, cast(int) data.length);
+            SDL_Surface* surface = IMG_Load_RW(rw, 1);
             enforce(surface, "can't load image `" ~ filePath ~ "`");
 
             // Read data from handler

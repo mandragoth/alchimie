@@ -10,7 +10,6 @@ import std.datetime, core.thread;
 import grimoire;
 import magia;
 import alma.common;
-import alma.loader;
 import alma.script;
 
 import alma.runtime.compiler;

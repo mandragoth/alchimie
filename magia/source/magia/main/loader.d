@@ -1,5 +1,6 @@
 module magia.main.loader;
 
+import std.conv : to;
 import std.exception : enforce;
 
 import magia.core;
@@ -11,6 +12,7 @@ import magia.main.application;
 void setupDefaultResourceLoaders() {
     Magia.res.setLoader("shader", &_parseShader);
     Magia.res.setLoader("diffuse", &_parseDiffuse);
+    Magia.res.setLoader("skybox", &_parseSkybox);
     Magia.res.setLoader("sprite", &_parseSprite);
     Magia.res.setLoader("model", &_parseModel);
     Magia.res.setLoader("sound", &_parseSound);
@@ -32,6 +34,22 @@ private void _parseDiffuse(string path, Json json) {
 
     Texture texture = new Texture(file, TextureType.diffuse);
     Magia.res.store(name, texture);
+}
+
+/// Crée une boîte à ciel
+private void _parseSkybox(string path, Json json) {
+    string name = json.getString("name");
+
+    string[6] filePaths;
+    string[] files = json.getStrings("files");
+
+    enforce(files.length == 6, "une skybox doit avoir 6 côtés et non " ~ to!string(files.length));
+    foreach (size_t i, string file; files) {
+        filePaths[i] = path ~ Archive.Separator ~ file;
+    }
+
+    Skybox skybox = new Skybox(filePaths);
+    Magia.res.store(name, skybox);
 }
 
 /// Crée des sprites

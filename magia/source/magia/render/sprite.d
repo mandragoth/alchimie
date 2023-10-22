@@ -54,8 +54,8 @@ final class Sprite : Entity2D, Resource {
     }
 
     /// Constructor given an SDL surface
-    this(string name, SDL_Surface* surface) {
-        Texture texture = new Texture(name, surface);
+    this(SDL_Surface* surface) {
+        Texture texture = new Texture(surface);
         material = new Material(texture);
         /// @TODO pass UIElement alignment HERE!!!
     }

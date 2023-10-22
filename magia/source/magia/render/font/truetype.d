@@ -6,6 +6,7 @@
 module magia.render.font.truetype;
 
 import std.conv : to;
+import std.exception : enforce;
 import std.string : toStringz, fromStringz;
 
 import bindbc.sdl;
@@ -61,12 +62,12 @@ final class TrueTypeFont : Font {
     this(const string path, int size_ = 12u, int outline_ = 0) {
         _size = size_;
         _outline = outline_;
-        assert(_size != 0u, "can't render a font with no size");
+        enforce(_size != 0u, "can't render a font with no size");
         if (null != _trueTypeFont && _ownData)
             TTF_CloseFont(_trueTypeFont);
 
         _trueTypeFont = TTF_OpenFont(toStringz(path), _size);
-        assert(_trueTypeFont, "can't load \'" ~ path ~ "\' font");
+        enforce(_trueTypeFont, "can't load \'" ~ path ~ "\' font");
 
         TTF_SetFontKerning(_trueTypeFont, 1);
 
@@ -80,11 +81,11 @@ final class TrueTypeFont : Font {
         _size = size_;
         _outline = outline_;
 
-        assert(_size != 0u, "can't render a font with no size");
+        enforce(_size != 0u, "can't render a font with no size");
         if (null != _trueTypeFont && _ownData)
             TTF_CloseFont(_trueTypeFont);
         _trueTypeFont = TTF_OpenFontRW(rw, 1, _size);
-        assert(_trueTypeFont, "can't load font");
+        enforce(_trueTypeFont, "can't load font");
 
         TTF_SetFontKerning(_trueTypeFont, 1);
 
@@ -107,9 +108,9 @@ final class TrueTypeFont : Font {
             }
 
             SDL_Surface* surface = TTF_RenderGlyph_Blended(_trueTypeFont, cast(wchar) ch, Color.white.toSDL());
-            assert(surface);
-            Sprite sprite = new Sprite(to!string(ch), surface);
-            assert(sprite);
+            enforce(surface);
+            Sprite sprite = new Sprite(surface);
+            enforce(sprite);
             SDL_FreeSurface(surface);
 
             Glyph metrics = Glyph(true, advance, 0, 0, sprite.width, sprite.height,
@@ -125,21 +126,21 @@ final class TrueTypeFont : Font {
             TTF_SetFontOutline(_trueTypeFont, _outline);
             SDL_Surface* surfaceOutline = TTF_RenderGlyph_Blended(_trueTypeFont,
                     cast(wchar) ch, Color.black.toSDL());
-            assert(surfaceOutline);
+            enforce(surfaceOutline);
 
             TTF_SetFontOutline(_trueTypeFont, 0);
 
             SDL_Surface* surface = TTF_RenderGlyph_Blended(_trueTypeFont,
                     cast(wchar) ch, Color.white.toSDL());
-            assert(surface);
+            enforce(surface);
 
             SDL_Rect srcRect = {0, 0, surface.w, surface.h};
             SDL_Rect dstRect = {_outline, _outline, surface.w, surface.h};
 
             SDL_BlitSurface(surface, &srcRect, surfaceOutline, &dstRect);
 
-            Sprite sprite = new Sprite(to!string(ch), surfaceOutline);
-            assert(sprite);
+            Sprite sprite = new Sprite(surfaceOutline);
+            enforce(sprite);
             SDL_FreeSurface(surface);
             SDL_FreeSurface(surfaceOutline);
 

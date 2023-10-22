@@ -21,27 +21,26 @@ import magia.render.texture;
 import magia.render.vertex;
 
 /// Class handling skybox data and draw call
-final class Skybox : Entity3D {
+final class Skybox : Entity3D, Resource {
     private {
         Shader _shader;
         Material _material;
     }
 
-    // @TODO skybox resource cache?
     // @TODO use new layout architecture
 
     /// Constructor
-    this() {
+    this(string[6] files) {
         _shader = Magia.res.get!Shader("skybox");
         _shader.activate();
         _shader.uploadUniformInt("u_Skybox", 0);
 
-        string[6] faceCubemaps = [
-            "night/right.png", "night/left.png", "night/top.png",
-            "night/bottom.png", "night/front.png", "night/back.png"
-        ];
+        _material = new Material(new Texture(files));
+    }
 
-        _material = new Material(new Texture(faceCubemaps));
+    /// Ressource
+    Resource make() {
+        return this;
     }
 
     /// Draw call

@@ -27,7 +27,7 @@ task runtime() {
     /*var remilia2 = @Sprite("remilia", @vec4i(96, 48, 32, 48));
     remilia2:position(@vec2f(12.5f + 32f, 0f));*/
 
-    var skybox = @Skybox(); // @TODO fix
+    var skybox = @Skybox("night"); // @TODO fix
     var globalLight = @DirectionalLight(@vec3f(0f, -10f, 0f), .2f, .01f);
     //var pointLight1 = @PointLight(@vec3f(-1f, 0.5f, 0f), @color(1f, 0f, 0f), 0f, 0.3f);
     //var pointLight2 = @PointLight(@vec3f(1f, 0.5f, 0f), @color(0f, 1f, 0f), 0f, 0.3f);

@@ -1,0 +1,16 @@
+{
+    "resources": [
+        {
+            "name": "day",
+            "type": "skybox",
+            "files": [
+                "right.jpg",
+                "left.jpg",
+                "top.jpg",
+                "bottom.jpg",
+                "front.jpg",
+                "back.jpg"
+            ]
+        }
+    ]
+}
