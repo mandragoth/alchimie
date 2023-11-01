@@ -18,7 +18,7 @@ version (AlmaDebug) {
         uint windowWidth = Alchimie_Window_Width_Default;
         uint windowHeight = Alchimie_Window_Height_Default;
         bool windowEnabled = Alchimie_Window_Enabled_Default;
-        string windowIcon;
+        string windowIcon = Alchimie_Window_Icon_Default;
         string exeDir = dirName(thisExePath());
 
         enforce(exists(srcPath), "le fichier source `" ~ srcPath ~ "` n’existe pas");
@@ -27,13 +27,13 @@ version (AlmaDebug) {
             GrOption.safe | GrOption.profile | GrOption.symbols, GrLocale.fr_FR);
 
         Alma alma = new Alma(bytecode, windowWidth, windowHeight, windowTitle);
-        if (windowIcon.length)
-            alma.window.icon = windowIcon;
 
         foreach (string archive; archives) {
-            writeln("Archive chargé: ", archive);
             alma.loadResources(archive);
         }
+
+        if (windowIcon.length)
+            alma.window.icon = windowIcon;
 
         alma.run();
     }
@@ -44,7 +44,7 @@ version (AlmaDebug) {
         uint windowWidth = Alchimie_Window_Width_Default;
         uint windowHeight = Alchimie_Window_Height_Default;
         bool windowEnabled = Alchimie_Window_Enabled_Default;
-        string windowIcon;
+        string windowIcon = Alchimie_Window_Icon_Default;
         string[] archives;
         string exeDir = dirName(thisExePath());
         string envDir = exeDir;
@@ -72,7 +72,7 @@ version (AlmaDebug) {
 
             windowIcon = buildNormalizedPath(envDir, envStream.read!string());
             if (!exists(windowIcon))
-                windowIcon.length = 0;
+                windowIcon.length = Alchimie_Window_Icon_Default;
         }
 
         archives ~= Alchimie_StandardLibrary_Path;
@@ -93,12 +93,12 @@ version (AlmaDebug) {
         }
 
         Alma alma = new Alma(bytecode, windowWidth, windowHeight, windowTitle);
-        if (windowIcon.length)
-            alma.window.icon = windowIcon;
 
         foreach (string archive; archives) {
             alma.loadResources(archive);
         }
+        if (windowIcon.length)
+            alma.window.icon = windowIcon;
 
         alma.run();
     }

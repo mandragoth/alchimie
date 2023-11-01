@@ -31,6 +31,9 @@ final class Alma : Magia {
     }
 
     override Status load() {
+        writeln("[ALMA] Chargement des ressources...");
+        long startTime = Clock.currStdTime();
+
         foreach (const Archive.File file; _resourceFiles) {
             Json json = new Json(file.data);
             Json[] resNodes = json.getObjects("resources", []);
@@ -43,6 +46,12 @@ final class Alma : Magia {
         _resourceFiles.length = 0;
 
         res.make();
+        
+        double loadDuration = (cast(double)(Clock.currStdTime() - startTime) / 10_000_000.0);
+        writeln("  > Effectué en " ~ to!string(loadDuration) ~ "sec");
+
+        writeln("[ALMA] Initialisation de la machine virtuelle...");
+        startTime = Clock.currStdTime();
 
         _engine = new GrEngine(Alchimie_Version_ID);
 
@@ -52,7 +61,7 @@ final class Alma : Magia {
 
         enforce(_engine.load(_bytecode), "version du bytecode invalide");
 
-        _engine.callEvent("onLoad");
+        _engine.callEvent("app");
 
         _inputEvent = _engine.getEvent("input", [grGetNativeType("InputEvent")]);
         _lateInputEvent = _engine.getEvent("lateInput", [
@@ -61,10 +70,16 @@ final class Alma : Magia {
 
         grSetOutputFunction(&print);
 
+        loadDuration = (cast(double)(Clock.currStdTime() - startTime) / 10_000_000.0);
+        writeln("  > Effectué en " ~ to!string(loadDuration) ~ "sec");
+
         return Status.ok;
     }
 
     void loadResources(string path) {
+        writeln("[ALMA] Chargement de l’archive `" ~ path ~ "`...");
+        long startTime = Clock.currStdTime();
+
         Archive archive = new Archive;
 
         if (isDir(path)) {
@@ -83,6 +98,9 @@ final class Alma : Magia {
                 res.write(file.path, file.data);
             }
         }
+
+        double loadDuration = (cast(double)(Clock.currStdTime() - startTime) / 10_000_000.0);
+        writeln("  > Effectué en " ~ to!string(loadDuration) ~ "sec");
     }
 
     override Status tick() {

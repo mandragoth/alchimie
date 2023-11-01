@@ -9,6 +9,7 @@ import bindbc.opengl;
 import bindbc.sdl;
 
 import magia.core;
+import magia.main;
 import magia.render.camera;
 import magia.render.renderer;
 
@@ -88,7 +89,10 @@ class Window {
             }
 
             /// Load new icon and set it up
-            _icon = IMG_Load(toStringz(path));
+            const(ubyte)[] data = Magia.res.read(path);
+            SDL_RWops* rw = SDL_RWFromConstMem(cast(const(void)*) data.ptr, cast(int) data.length);
+            _icon = IMG_Load_RW(rw, 1);
+            enforce(_icon, "impossible de charger `" ~ path ~ "`");
             SDL_SetWindowIcon(_sdlWindow, _icon);
         }
         /// Add camera
@@ -101,8 +105,8 @@ class Window {
     this(const vec2u windowSize, string title) {
         // Create SDL window
         _sdlWindow = SDL_CreateWindow(toStringz(title), SDL_WINDOWPOS_CENTERED,
-                                      SDL_WINDOWPOS_CENTERED, windowSize.x, windowSize.y,
-                                      SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+            SDL_WINDOWPOS_CENTERED, windowSize.x, windowSize.y,
+            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
         enforce(_sdlWindow, "failed to create the window");
 
         // Create OpenGL context and load OpenGL
@@ -186,9 +190,8 @@ bool s_DebugLoad = false;
 /// Load SDL and OpenGL
 void loadSDLOpenGL() {
     /// Initilizations
-    enforce(SDL_Init(
-			SDL_INIT_TIMER    | SDL_INIT_VIDEO |
-			SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER |
-			SDL_INIT_EVENTS   | SDL_INIT_SENSOR) == 0, "Could not initialize SDL: " ~ fromStringz(SDL_GetError()));
+    enforce(SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC |
+            SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS | SDL_INIT_SENSOR) == 0,
+        "Could not initialize SDL: " ~ fromStringz(SDL_GetError()));
     enforce(TTF_Init() != -1, "Could not initialize TTF module");
 }

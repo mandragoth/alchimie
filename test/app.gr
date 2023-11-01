@@ -4,7 +4,7 @@ func randf() (float) {
     return rand(-1f, 1f);
 }
 
-event onLoad() {
+event app() {
     setupControls();
     setupCamera();
     yield;

@@ -50,6 +50,8 @@ enum Alchimie_Window_Height_Default = 600;
 
 enum Alchimie_Window_Enabled_Default = true;
 
+enum Alchimie_Window_Icon_Default = Alchimie_StandardLibrary_File ~ "/lapis.png";
+
 /// GRB: **GR**imoire **B**ytecode
 enum Alchimie_Bytecode_Extension = ".grb";
 
