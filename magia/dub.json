@@ -35,12 +35,9 @@
 	"copyright": "Copyright © 2022, Mandragoth",
 	"dependencies": {
 		"audio-formats": "~>3.0.1",
-		"bindbc-openal": "~>1.0.0",
-		"bindbc-opengl": "~>1.0.0",
-		"bindbc-sdl": "~>1.3.3",
-		"grimoire": {
-			"path": "../grimoire"
-		}
+		"bindbc-openal": "~>1.1.0",
+		"bindbc-opengl": "~>1.1.0",
+		"bindbc-sdl": "~>1.4.2"
 	},
 	"description": "Moteur de jeu Magia",
 	"lflags-posix": [
@@ -66,7 +63,7 @@
 		"bindbc-sdl": "static"
 	},
 	"targetName": "magia",
-	"targetPath": "./bin$ARCH",
+	"targetPath": "bin",
 	"targetType": "library",
 	"versions": [
 		"GL_41",

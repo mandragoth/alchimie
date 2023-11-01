@@ -14,8 +14,6 @@ import magia.render;
 import magia.ui;
 import magia.main.loader;
 
-import grimoire;
-
 /// Magia class
 class Magia {
     static private {

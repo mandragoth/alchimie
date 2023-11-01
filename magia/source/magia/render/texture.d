@@ -153,8 +153,12 @@ class Texture : Resource {
         _nbTextures = texture_._nbTextures;
     }
 
-    /// Ressources
-    Resource make() {
+    /// Initialisation de la ressource
+    void make() {
+    }
+
+    /// Accès à la ressource
+    Resource fetch() {
         return this;
     }
 

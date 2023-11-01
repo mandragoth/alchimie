@@ -7,11 +7,8 @@ import std.conv : to;
 import std.path, std.file;
 import std.datetime, core.thread;
 
-import grimoire;
-import magia;
-import alma.common;
+import magia, grimoire, config;
 import alma.script;
-
 import alma.runtime.compiler;
 
 final class Alma : Magia {
@@ -45,7 +42,9 @@ final class Alma : Magia {
         }
         _resourceFiles.length = 0;
 
-        _engine = new GrEngine(Alma_Version_ID);
+        res.make();
+
+        _engine = new GrEngine(Alchimie_Version_ID);
 
         foreach (GrLibrary lib; getLibraries()) {
             _engine.addLibrary(lib);
@@ -72,13 +71,13 @@ final class Alma : Magia {
             enforce(exists(path), "le dossier `" ~ path ~ "` n’existe pas");
             archive.pack(path);
         }
-        if (extension(path) == Archive.Ext) {
+        if (extension(path) == Alchimie_Archive_Extension) {
             enforce(exists(path), "l’archive `" ~ path ~ "` n’existe pas");
             archive.load(path);
         }
 
         foreach (file; archive) {
-            if (extension(file.name) == ".ars") {
+            if (extension(file.name) == Alchimie_Resource_Extension) {
                 _resourceFiles ~= file;
             } else {
                 res.write(file.path, file.data);

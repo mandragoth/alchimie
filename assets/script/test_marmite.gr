@@ -1,7 +1,0 @@
-
-
-event onLoad() {
-    1 + 1;
-
-    //print("Bonjour");
-}

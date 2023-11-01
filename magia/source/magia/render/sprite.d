@@ -68,8 +68,12 @@ final class Sprite : Entity2D, Resource {
         alignment = CoordinateSystem.topLeft;
     }
 
-    /// Ressources
-    Resource make() {
+    /// Initialisation de la ressource
+    void make() {
+    }
+
+    /// Accès à la ressource
+    Resource fetch() {
         return new Sprite(this);
     }
 

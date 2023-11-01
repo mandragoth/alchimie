@@ -2,7 +2,7 @@ module alchimie.cli_default;
 
 import std.stdio;
 
-import magia;
+import magia, config;
 
 enum Alchimie_Version = "0.1";
 

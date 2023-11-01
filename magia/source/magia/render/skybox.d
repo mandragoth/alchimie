@@ -31,15 +31,18 @@ final class Skybox : Entity3D, Resource {
 
     /// Constructor
     this(string[6] files) {
-        _shader = Magia.res.get!Shader("skybox");
-        _shader.activate();
-        _shader.uploadUniformInt("u_Skybox", 0);
-
         _material = new Material(new Texture(files));
     }
 
-    /// Ressource
-    Resource make() {
+    /// Initialisation de la ressource
+    void make() {
+        _shader = Magia.res.get!Shader("skybox");
+        _shader.activate();
+        _shader.uploadUniformInt("u_Skybox", 0);
+    }
+
+    /// Accès à la ressource
+    Resource fetch() {
         return this;
     }
 

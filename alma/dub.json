@@ -17,6 +17,9 @@
         },
         "grimoire": {
             "path": "../grimoire"
+        },
+        "config": {
+            "path": "../config"
         }
     },
     "configurations": [
@@ -26,13 +29,14 @@
             "dflags": ["-gf"],
             "versions": [
                 "AlmaDebug"
-            ],
-            "targetName": "alma-dbg"
+            ]
         },
         {
-            "name": "export_dev",
+            "name": "export",
             "targetPath": "../export",
-            "targetName": "alma"
+            "versions": [
+                "AlmaRuntime"
+            ]
         }
     ]
 }

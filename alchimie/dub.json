@@ -13,6 +13,9 @@
     "dependencies": {
         "magia": {
             "path": "../magia"
+        },
+        "config": {
+            "path": "../config"
         }
     },
     "configurations": [

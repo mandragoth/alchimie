@@ -72,8 +72,12 @@ final class Sound : Resource {
     private this(AudioStream stream) {
     }
 
+    /// Initialisation de la ressource
+    void make() {
+    }
+
     /// Accès à la ressource
-    Resource make() {
+    Resource fetch() {
         return this;
     }
 

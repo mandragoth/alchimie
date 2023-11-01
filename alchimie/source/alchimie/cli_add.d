@@ -3,8 +3,7 @@ module alchimie.cli_add;
 import std.stdio, std.file, std.path;
 import std.exception;
 
-import magia;
-import alchimie.constants;
+import magia, config;
 
 void cliAdd(Cli.Result cli) {
     if (cli.hasOption("help")) {
@@ -16,27 +15,29 @@ void cliAdd(Cli.Result cli) {
     string dirName = baseName(dir);
 
     string jsonPath = buildNormalizedPath(dir, Alchimie_Project_File);
-    enforce(exists(jsonPath), "aucun projet `" ~ Alchimie_Project_File ~ "` trouvable dans `" ~ dir ~ "`");
+    enforce(exists(jsonPath),
+        "aucun projet `" ~ Alchimie_Project_File ~ "` trouvable dans `" ~ dir ~ "`");
 
     Json json = new Json(jsonPath);
 
     string appName = cli.requiredParams[0];
     string srcPath = setExtension(appName, "gr");
 
-    if (cli.hasOption(Alchimie_Project_Source)) {
-        Cli.Result.Option option = cli.getOption(Alchimie_Project_Source);
+    if (cli.hasOption(Alchimie_Project_Source_Node)) {
+        Cli.Result.Option option = cli.getOption(Alchimie_Project_Source_Node);
         srcPath = buildNormalizedPath(option.requiredParams[0]);
     }
 
     {
-        Json appNode = json.getObject(Alchimie_Project_App);
-        enforce(appNode.getString(Alchimie_Project_Name) != appName, "le nom `" ~ appName ~ "` est déjà utilisé");
+        Json configurationsNode = json.getObject(Alchimie_Project_Configurations_Node);
+        enforce(configurationsNode.getString(Alchimie_Project_Name_Node) != appName,
+            "le nom `" ~ appName ~ "` est déjà utilisé");
     }
 
     {
         Json programNode = new Json;
-        programNode.set(Alchimie_Project_Name, appName);
-        programNode.set(Alchimie_Project_Source, srcPath);
+        programNode.set(Alchimie_Project_Name_Node, appName);
+        programNode.set(Alchimie_Project_Source_Node, srcPath);
 
         {
             Json windowNode = new Json;
@@ -46,14 +47,14 @@ void cliAdd(Cli.Result cli) {
             programNode.set("window", windowNode);
         }
 
-        Json[] programNodes = json.getObjects(Alchimie_Project_Programs, []);
+        Json[] programNodes = json.getObjects(Alchimie_Project_DefaultConfigurationName, []);
 
         foreach (Json node; programNodes) {
-            enforce(node.getString(Alchimie_Project_Name) != appName, "le nom `" ~ appName ~
-                    "` est déjà utilisé");
+            enforce(node.getString(Alchimie_Project_Name_Node) != appName,
+                "le nom `" ~ appName ~ "` est déjà utilisé");
         }
         programNodes ~= programNode;
-        json.set(Alchimie_Project_Programs, programNodes);
+        json.set(Alchimie_Project_DefaultConfigurationName, programNodes);
     }
 
     json.save(jsonPath);

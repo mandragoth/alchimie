@@ -10,8 +10,14 @@ import magia.core.json;
 
 /// Classe gérée par le système de ressource
 interface Resource {
+    /// Initialise la ressource
+    /// Si, par exemple la ressource requiert de charger une autre ressource,
+    /// le faire dans le constructeur peut engendrer une erreur car l’ordre de création
+    /// des ressources est indéterminé. À la place, on le fait dans cette fonction.
+    void make();
+
     /// Fabrique une ressource à partir du prototype
-    Resource make();
+    Resource fetch();
 }
 
 /// Gestionnaire des ressources
@@ -31,6 +37,13 @@ final class ResourceManager {
             Resource[string] _data;
         }
 
+        /// Initialise les ressources
+        void make() {
+            foreach (data; _data) {
+                data.make();
+            }
+        }
+
         /// Ajoute le prototype d’une ressource
         void setPrototype(string name, Resource value) {
             _data[name] = value;
@@ -46,7 +59,7 @@ final class ResourceManager {
         /// Récupère le prototype d’une ressource
         Resource get(string name) {
             auto p = getPrototype(name);
-            return p.make();
+            return p.fetch();
         }
     }
 
@@ -85,6 +98,13 @@ final class ResourceManager {
         auto p = type in _loaders;
         enforce(p, "aucune fonction de définie pour le type `" ~ type ~ "`");
         return *p;
+    }
+
+    /// Initialise les ressources
+    void make() {
+        foreach (cache; _caches) {
+            cache.make();
+        }
     }
 
     /// Definit un prototype d’une ressource

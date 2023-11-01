@@ -1,63 +1,105 @@
 module alma.runtime.boot;
 
 import std.exception : enforce;
-import std.file : exists, thisExePath;
+import std.file : exists, thisExePath, read;
 import std.path : dirName, buildNormalizedPath, setExtension;
 import std.stdio : writeln;
 
-import magia, grimoire;
-import alma.common;
+import magia, grimoire, config;
+
 import alma.runtime.compiler;
 import alma.runtime.runtime;
 
 /// Démarre la machine virtuelle
-void boot() {
-    GrBytecode bytecode;
-    string windowName = "Achimie Machine ~ v" ~ Alma_Version_Display;
-    uint windowWidth = 800;
-    uint windowHeight = 600;
-    string windowIcon;
+version (AlmaDebug) {
+    void boot(string srcPath, string[] archives) {
+        GrBytecode bytecode;
+        string windowTitle = "Alchimie Machine ~ v" ~ Alchimie_Version_Display ~ " (Debug)";
+        uint windowWidth = Alchimie_Window_Width_Default;
+        uint windowHeight = Alchimie_Window_Height_Default;
+        bool windowEnabled = Alchimie_Window_Enabled_Default;
+        string windowIcon;
+        string exeDir = dirName(thisExePath());
 
-    version (AlmaDebug) {
-        windowName ~= " (Debug)";
-        string filePath = buildNormalizedPath("assets", "script", "main.gr");
-        enforce(exists(filePath), "le fichier source `" ~ filePath ~ "` n’existe pas");
-        bytecode = compileSource(filePath,
+        enforce(exists(srcPath), "le fichier source `" ~ srcPath ~ "` n’existe pas");
+
+        bytecode = compileSource(srcPath,
             GrOption.safe | GrOption.profile | GrOption.symbols, GrLocale.fr_FR);
-    } else {
-        string dir = dirName(thisExePath());
-        string iniPath = setExtension(thisExePath(), Alma_Initialization_Extension);
-        enforce(exists(iniPath), "le fichier d’initialisation `" ~ iniPath ~ "` n’existe pas");
 
-        InStream iniStream = new InStream;
-        enforce(iniStream.read!string() == "ars", "le fichier `" ~ iniPath ~ "` est invalide");
-        enforce(iniStream.read!size_t() == Alma_Version_ID,
-            "le fichier `" ~ iniPath ~ "` est invalide");
+        Alma alma = new Alma(bytecode, windowWidth, windowHeight, windowTitle);
+        if (windowIcon.length)
+            alma.window.icon = windowIcon;
 
-        windowName = iniStream.read!string();
-        windowWidth = iniStream.read!uint();
-        windowHeight = iniStream.read!uint();
-
-        windowIcon = buildNormalizedPath(dir, iniStream.read!string());
-        if (!exists(windowIcon))
-            windowIcon.length = 0;
-
-        string[] archives;
-        size_t archiveCount = iniStream.read!size_t();
-        for (int i; i < archiveCount; ++i) {
-            archives ~= iniStream.read!string();
+        foreach (string archive; archives) {
+            writeln("Archive chargé: ", archive);
+            alma.loadResources(archive);
         }
 
-        string bytecodePath = setExtension(thisExePath(), Alma_Bytecode_Extension);
-        enforce(exists(bytecodePath), "le fichier bytecode `" ~ bytecodePath ~ "` n’existe pas");
-        bytecode = new GrBytecode(bytecodePath);
+        alma.run();
     }
+} else {
+    void boot(string envPath = "", string srcPath = "") {
+        GrBytecode bytecode;
+        string windowTitle = "Alchimie Machine ~ v" ~ Alchimie_Version_Display;
+        uint windowWidth = Alchimie_Window_Width_Default;
+        uint windowHeight = Alchimie_Window_Height_Default;
+        bool windowEnabled = Alchimie_Window_Enabled_Default;
+        string windowIcon;
+        string[] archives;
+        string exeDir = dirName(thisExePath());
+        string envDir = exeDir;
 
-    Alma alma = new Alma(bytecode, windowWidth, windowHeight, windowName);
-    if (windowIcon.length)
-        alma.window.icon = windowIcon;
+        if (envPath.length) {
+            envDir = dirName(envPath);
+        }
 
-    alma.loadResources("assets");
+        if (!envPath.length) {
+            envPath = setExtension(thisExePath(), Alchimie_Environment_Extension);
+        }
+        enforce(exists(envPath), "le fichier d’initialisation `" ~ envPath ~ "` n’existe pas");
 
-    alma.run();
+        InStream envStream = new InStream;
+        envStream.set(cast(const ubyte[]) read(envPath));
+        enforce(envStream.read!string() == "alma", "le fichier `" ~ envPath ~ "` est invalide");
+        enforce(envStream.read!size_t() == Alchimie_Version_ID,
+            "le fichier `" ~ envPath ~ "` est invalide");
+
+        windowEnabled = envStream.read!bool();
+        if (windowEnabled) {
+            windowTitle = envStream.read!string();
+            windowWidth = envStream.read!uint();
+            windowHeight = envStream.read!uint();
+
+            windowIcon = buildNormalizedPath(envDir, envStream.read!string());
+            if (!exists(windowIcon))
+                windowIcon.length = 0;
+        }
+
+        archives ~= Alchimie_StandardLibrary_Path;
+        size_t archiveCount = envStream.read!size_t();
+        for (int i; i < archiveCount; ++i) {
+            archives ~= envStream.read!string();
+        }
+
+        if (srcPath.length) {
+            enforce(exists(srcPath), "le fichier source `" ~ srcPath ~ "` n’existe pas");
+            bytecode = compileSource(srcPath,
+                GrOption.safe | GrOption.profile | GrOption.symbols, GrLocale.fr_FR);
+        } else {
+            string bytecodePath = setExtension(thisExePath(), Alchimie_Bytecode_Extension);
+            enforce(exists(bytecodePath), "le fichier bytecode `" ~ bytecodePath ~
+                    "` n’existe pas");
+            bytecode = new GrBytecode(bytecodePath);
+        }
+
+        Alma alma = new Alma(bytecode, windowWidth, windowHeight, windowTitle);
+        if (windowIcon.length)
+            alma.window.icon = windowIcon;
+
+        foreach (string archive; archives) {
+            alma.loadResources(archive);
+        }
+
+        alma.run();
+    }
 }

@@ -60,11 +60,6 @@ task runtime() {
     rig:rotation(@vec3f(0f, 90f, 0f));
     rig:scale(@vec3f(0.1f, 0.1f, 0.1f));
 
-    /*task() {
-        var sound = @Sound("assets/sound/wind.wav");
-        sound.play(jupiter);
-    }();*/
-
     loop yield {
         rig:updateDisplayBoneId();
     }

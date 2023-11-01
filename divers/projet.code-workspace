@@ -1,23 +1,37 @@
 {
 	"folders": [
-		{
-			"path": "../assets"
-		},
-		{
-			"path": "../grimoire"
-		},
-		{
-			"path": "../magia"
-		},
-		{
-			"path": "../atelier"
-		},
-		{
-			"path": "../alchimie"
-		},
-		{
-			"path": "../alma"
-		}
+        {
+            "name": "test",
+            "path": "../test"
+        },
+        {
+            "name": "codex",
+            "path": "../codex"
+        },
+        {
+            "name": "magia",
+            "path": "../magia"
+        },
+        {
+            "name": "config",
+            "path": "../config"
+        },
+        {
+            "name": "atelier",
+            "path": "../atelier"
+        },
+        {
+            "name": "alchimie",
+            "path": "../alchimie"
+        },
+        {
+            "name": "alma",
+            "path": "../alma"
+        },
+        {
+            "name": "grimoire",
+            "path": "../grimoire"
+        }
     ],
     "settings": {
         "dfmt.braceStyle": "otbs"

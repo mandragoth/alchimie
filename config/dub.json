@@ -1,0 +1,13 @@
+{
+    "authors": [
+        "Jonath",
+        "Enalye"
+    ],
+    "copyright": "Copyright © 2022, Mandragoth",
+    "description": "Paramètres de configuration commmuns pour Alchimie",
+    "license": "Zlib",
+    "name": "config",
+	"targetName": "config",
+	"targetPath": "bin",
+    "targetType": "library"
+}

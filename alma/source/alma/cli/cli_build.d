@@ -4,9 +4,8 @@ import std.array;
 import std.path;
 import std.stdio;
 
-import magia, grimoire;
+import magia, grimoire, config;
 
-import alma.common;
 import alma.runtime;
 
 void cliBuild(Cli.Result cli) {
@@ -16,7 +15,7 @@ void cliBuild(Cli.Result cli) {
     }
 
     string inputFile = cli.requiredParams[0];
-    string outputFile = withExtension(inputFile, Alma_Bytecode_Extension).array;
+    string outputFile = withExtension(inputFile, Alchimie_Bytecode_Extension).array;
 
     if (cli.optionalParams.length >= 1) {
         outputFile = cli.optionalParams[0];
@@ -38,6 +37,7 @@ void cliBuild(Cli.Result cli) {
     if (cli.hasOption("symbols")) {
         options |= GrOption.symbols;
     }
+        writeln("BUILD: ", inputFile, " vers ", outputFile);
 
     GrBytecode bytecode = compileSource(inputFile, options, GrLocale.fr_FR);
     bytecode.save(outputFile);

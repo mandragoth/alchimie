@@ -4,8 +4,7 @@ import std.stdio, std.file, std.path;
 import std.exception;
 import std.process;
 
-import magia;
-import alchimie.constants;
+import magia, config;
 
 void cliUnpack(Cli.Result cli) {
     if (cli.hasOption("help")) {
@@ -24,12 +23,12 @@ void cliUnpack(Cli.Result cli) {
 
     Json configNode = json.getObject("config");
 
-    string resPath = buildNormalizedPath(dir, configNode.getString(Alchimie_Project_Resources));
+    string resPath = buildNormalizedPath(dir, configNode.getString(Alchimie_Project_Resources_Node));
     enforce(exists(resPath),
         "le dossier de ressources `" ~ resPath ~
         "` référencé dans `" ~ Alchimie_Project_File ~ "` n’existe pas");
 
-    string archivePath = buildNormalizedPath(dir, setExtension(resPath, ResourceArchive.Ext));
+    string archivePath = buildNormalizedPath(dir, setExtension(resPath, Alchimie_Resource_Extension));
     Archive archive = new Archive;
     
     resPath = buildNormalizedPath(dir, "res_result"); //Temp

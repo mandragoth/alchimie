@@ -2,9 +2,9 @@ module alma.runtime.compiler;
 
 import std.exception;
 
-import magia, grimoire;
+import magia, grimoire, config;
 
-import alma.common, alma.script;
+import alma.script;
 
 private {
     bool _areLibLoaded;
@@ -26,7 +26,7 @@ GrLibrary[] getLibraries() {
 }
 
 GrBytecode compileSource(string inputFile, int options, GrLocale locale) {
-    GrCompiler compiler = new GrCompiler(Alma_Version_ID);
+    GrCompiler compiler = new GrCompiler(Alchimie_Version_ID);
 
     foreach (GrLibrary lib; getLibraries()) {
         compiler.addLibrary(lib);

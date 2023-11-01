@@ -151,8 +151,12 @@ final class Model : Resource {
         _fileDirectory = other._fileDirectory;
     }
 
-    /// Ressources
-    Resource make() {
+    /// Initialisation de la ressource
+    void make() {
+    }
+
+    /// Accès à la ressource
+    Resource fetch() {
         return this;
     }
 

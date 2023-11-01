@@ -289,6 +289,16 @@ final class Json {
         return getBools(key);
     }
 
+    /// Récupère les enfants d’un objet sous forme de tableau associatif
+    Json[string] getChildren() {
+        Json[string] result;
+        foreach (string key, ref JSONValue value; _json.object) {
+            result[key] = new Json(value);
+        }
+
+        return result;
+    }
+
     /// Assigne une valeur à la clé
     void set(T)(string key, T value) {
         static if (is(T == Json)) {

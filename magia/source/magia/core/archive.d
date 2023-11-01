@@ -26,9 +26,6 @@ interface IArchive {
 final class Archive : IArchive {
     private enum MagicWord = "CodexMagicae";
 
-    /// ARC: **ARC**chive
-    enum Ext = ".arc";
-
     /// Séparateur de chemin
     enum Separator = "/";
 
@@ -213,8 +210,8 @@ final class Archive : IArchive {
     /// Charge une archive
     void load(string path) {
         InStream stream = new InStream;
-        enforce(stream.read!string() == MagicWord);
         stream.data = cast(ubyte[]) std.file.read(path);
+        enforce(stream.read!string() == MagicWord);
         string name = stream.read!string();
         _rootDir = new Directory(name, name);
         _rootDir.load(stream);
@@ -223,7 +220,7 @@ final class Archive : IArchive {
     /// Enregistre une archive
     void save(string path) {
         OutStream stream = new OutStream;
-        stream.write(MagicWord);
+        stream.write!string(MagicWord);
         if (_rootDir) {
             stream.write(_rootDir.name);
             _rootDir.save(stream);

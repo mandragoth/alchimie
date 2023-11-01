@@ -97,17 +97,17 @@ class InStream {
 
     /// Extrait un string
     string read(T : string)() {
-        return read!(char[])();
+        return to!string(read!(char[])());
     }
 
     /// Extrait un wstring
     wstring read(T : wstring)() {
-        return read!(wchar[])();
+        return to!wstring(read!(wchar[])());
     }
 
     /// Extrait un dstring
     dstring read(T : dstring)() {
-        return read!(dchar[])();
+        return to!dstring(read!(dchar[])());
     }
 
     /// Extrait une liste
