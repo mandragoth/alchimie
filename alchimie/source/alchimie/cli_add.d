@@ -20,12 +20,12 @@ void cliAdd(Cli.Result cli) {
 
     Json json = new Json(jsonPath);
 
-    string appName = cli.requiredParams[0];
+    string appName = cli.getRequiredParam(0);
     string srcPath = setExtension(appName, "gr");
 
     if (cli.hasOption(Alchimie_Project_Source_Node)) {
         Cli.Result.Option option = cli.getOption(Alchimie_Project_Source_Node);
-        srcPath = buildNormalizedPath(option.requiredParams[0]);
+        srcPath = buildNormalizedPath(option.getRequiredParam(0));
     }
 
     {

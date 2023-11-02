@@ -18,10 +18,10 @@ void cliExport(Cli.Result cli) {
     string dir = getcwd();
     string dirBaseName = baseName(dir);
 
-    if (cli.optionalParams.length >= 1) {
-        enforce(isValidPath(cli.optionalParams[0]), "chemin non valide");
-        dirBaseName = baseName(cli.optionalParams[0]);
-        dir = buildNormalizedPath(dir, cli.optionalParams[0]);
+    if (cli.optionalParamCount() >= 1) {
+        enforce(isValidPath(cli.getOptionalParam(0)), "chemin non valide");
+        dirBaseName = baseName(cli.getOptionalParam(0));
+        dir = buildNormalizedPath(dir, cli.getOptionalParam(0));
     }
     enforce(!extension(dirBaseName).length, "le nom du projet ne peut pas être un fichier");
 
@@ -36,7 +36,7 @@ void cliExport(Cli.Result cli) {
     string configName = json.getString(Alchimie_Project_DefaultConfiguration_Node, "");
 
     if (cli.hasOption("config")) {
-        configName = cli.getOption("config").requiredParams[0];
+        configName = cli.getOption("config").getRequiredParam(0);
     }
 
     Json[] configsNode = json.getObjects(Alchimie_Project_Configurations_Node, [
@@ -103,7 +103,10 @@ void cliExport(Cli.Result cli) {
                     buildNormalizedPath(exportDir, windowIcon));
             }
 
-            foreach (fileName; [Alchimie_StandardLibrary_Path, "SDL2.dll", "SDL2_image.dll", "SDL2_ttf.dll", "OpenAL32.dll"]) {
+            foreach (fileName; [
+                    Alchimie_StandardLibrary_Path, "SDL2.dll",
+                    "SDL2_image.dll", "SDL2_ttf.dll", "OpenAL32.dll"
+                ]) {
                 string filePath = buildNormalizedPath(dirName(thisExePath()), fileName);
                 enforce(exists(filePath), "fichier manquant `" ~ filePath ~ "`");
 
@@ -115,7 +118,7 @@ void cliExport(Cli.Result cli) {
 
             {
                 OutStream envStream = new OutStream;
-                envStream.write!string("alma");
+                envStream.write!string(Alchimie_Environment_MagicWord);
                 envStream.write!size_t(Alchimie_Version_ID);
                 envStream.write!bool(windowEnabled);
 
@@ -133,8 +136,6 @@ void cliExport(Cli.Result cli) {
                 std.file.write(envPath, envStream.data);
             }
 
-            writeln("CMD: ", [almaPath, "build", sourceFile, bytecodePath]);
-
             string ret = execute([almaPath, "build", sourceFile, bytecodePath]).output;
 
             writeln(ret);
@@ -146,48 +147,3 @@ void cliExport(Cli.Result cli) {
     enforce(false,
         "aucune configuration `" ~ configName ~ "` défini dans `" ~ Alchimie_Project_File ~ "`");
 }
-/*{
-    if (cli.hasOption("help")) {
-        writeln(cli.getHelp(cli.name));
-        return;
-    }
-
-    string dir = getcwd();
-    string name = baseName(dir);
-    string almaPath = buildNormalizedPath(dirName(thisExePath()), "almadev.exe");
-
-    string configFile = buildNormalizedPath(dir, Alchimie_Project_File);
-    enforce(exists(configFile),
-        "aucun fichier de project `" ~ Alchimie_Project_File ~ "` de trouvé à l’emplacement `" ~ dir ~ "`");
-
-    Json json = new Json(configFile);
-
-    Json configNode = json.getObject("config");
-
-    string resPath = buildNormalizedPath(dir, configNode.getString(Alchimie_Project_Resources_Node));
-    enforce(exists(resPath),
-        "le dossier de ressources `" ~ resPath ~
-        "` référencé dans `" ~ Alchimie_Project_File ~ "` n’existe pas");
-
-    string exportPath = buildNormalizedPath(dir, configNode.getString(Alchimie_Project_Resources_Node));
-    if (!exists(exportPath))
-        mkdir(exportPath);
-
-    string archivePath = setExtension(exportPath, "arc");
-    Archive archive = new Archive;
-
-    archive.pack(resPath);
-    archive.save(archivePath);
-
-    writeln("Le dossier `" ~ resPath ~ "` a été archivé dans `" ~ archivePath ~ "`");
-
-    Json configurationsNode = json.getObject(Alchimie_Project_Configurations_Node);
-    string appName = json.getString(Alchimie_Project_Name_Node);
-    string sourceFile = buildNormalizedPath(dir, configurationsNode.getString(Alchimie_Project_Source_Node));
-
-    string ret = execute([
-        almaPath, "build", sourceFile]).output;
-    writeln(ret);
-
-    writeln("Export terminé");
-}*/

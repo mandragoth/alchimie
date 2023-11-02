@@ -1,8 +1,9 @@
 module magia.core.cli;
 
-import std.stdio;
+import std.conv : to;
+import std.exception : enforce;
+import std.stdio : writeln;
 import std.string;
-import std.exception;
 
 /// Outil de gestion de ligne de commande
 final class Cli {
@@ -26,14 +27,14 @@ final class Cli {
                     return _longName;
                 }
 
-                /// Liste des paramètres obligatoires
-                const(string[]) requiredParams() const {
-                    return _requiredParams;
+                /// Nombre de paramètres obligatoires
+                size_t requiredParamCount() const {
+                    return _requiredParams.length;
                 }
 
-                /// Liste des paramètres optionnels
-                const(string[]) optionalParams() const {
-                    return _optionalParams;
+                /// Nombre de paramètres optionnels
+                size_t optionalParamCount() const {
+                    return _optionalParams.length;
                 }
             }
 
@@ -43,6 +44,22 @@ final class Cli {
                 _longName = longName_;
                 _requiredParams = requiredParams_;
                 _optionalParams = optionalParams_;
+            }
+
+            /// Retourne le paramètre obligatoire demandé
+            string getRequiredParam(size_t index) const {
+                enforce(index < _requiredParams.length,
+                    "l’index `" ~ to!string(index) ~ "` dépasse le nombre de paramètres obligatoires `" ~ to!string(
+                        _requiredParams.length) ~ "`");
+                return _requiredParams[index];
+            }
+
+            /// Retourne le paramètre optionel demandé
+            string getOptionalParam(size_t index) const {
+                enforce(index < _optionalParams.length, "l’index `" ~ to!string(
+                        index) ~ "` dépasse le nombre de paramètres optionels `" ~ to!string(
+                        _requiredParams.length) ~ "`");
+                return _optionalParams[index];
             }
         }
 
@@ -59,14 +76,14 @@ final class Cli {
                 return _name;
             }
 
-            /// Paramètres obligatoires
-            const(string[]) requiredParams() const {
-                return _requiredParams;
+            /// Nombre de paramètres obligatoires
+            size_t requiredParamCount() const {
+                return _requiredParams.length;
             }
 
-            /// Paramètres optionnels
-            const(string[]) optionalParams() const {
-                return _optionalParams;
+            /// Nombre de paramètres optionnels
+            size_t optionalParamCount() const {
+                return _optionalParams.length;
             }
         }
 
@@ -89,6 +106,22 @@ final class Cli {
             enforce(!hasOption(longName), "une option est déjà définie pour `" ~ longName ~ "`");
 
             _options ~= new Option(shortName, longName, requiredParams_, optionalParams_);
+        }
+
+        /// Retourne le paramètre obligatoire demandé
+        string getRequiredParam(size_t index) const {
+            enforce(index < _requiredParams.length, "l’index `" ~ to!string(
+                    index) ~ "` dépasse le nombre de paramètres obligatoires `" ~ to!string(
+                    _requiredParams.length) ~ "`");
+            return _requiredParams[index];
+        }
+
+        /// Retourne le paramètre optionel demandé
+        string getOptionalParam(size_t index) const {
+            enforce(index < _optionalParams.length, "l’index `" ~ to!string(
+                    index) ~ "` dépasse le nombre de paramètres optionels `" ~ to!string(
+                    _requiredParams.length) ~ "`");
+            return _optionalParams[index];
         }
 
         /// Vérifie la présence d’une option

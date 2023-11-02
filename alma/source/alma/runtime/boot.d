@@ -60,7 +60,8 @@ version (AlmaDebug) {
 
         InStream envStream = new InStream;
         envStream.set(cast(const ubyte[]) read(envPath));
-        enforce(envStream.read!string() == "alma", "le fichier `" ~ envPath ~ "` est invalide");
+        enforce(envStream.read!string() == Alchimie_Environment_MagicWord,
+            "le fichier `" ~ envPath ~ "` est invalide");
         enforce(envStream.read!size_t() == Alchimie_Version_ID,
             "le fichier `" ~ envPath ~ "` est invalide");
 

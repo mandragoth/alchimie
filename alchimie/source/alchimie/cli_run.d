@@ -18,10 +18,10 @@ void cliRun(Cli.Result cli) {
     string dir = getcwd();
     string dirName = baseName(dir);
 
-    if (cli.optionalParams.length >= 1) {
-        enforce(isValidPath(cli.optionalParams[0]), "chemin non valide");
-        dirName = baseName(cli.optionalParams[0]);
-        dir = buildNormalizedPath(dir, cli.optionalParams[0]);
+    if (cli.optionalParamCount() >= 1) {
+        enforce(isValidPath(cli.getOptionalParam(0)), "chemin non valide");
+        dirName = baseName(cli.getOptionalParam(0));
+        dir = buildNormalizedPath(dir, cli.getOptionalParam(0));
     }
     enforce(!extension(dirName).length, "le nom du projet ne peut pas être un fichier");
 
@@ -36,7 +36,7 @@ void cliRun(Cli.Result cli) {
     string configName = json.getString(Alchimie_Project_DefaultConfiguration_Node, "");
 
     if (cli.hasOption("config")) {
-        configName = cli.getOption("config").requiredParams[0];
+        configName = cli.getOption("config").getRequiredParam(0);
     }
 
     Json[] configsNode = json.getObjects(Alchimie_Project_Configurations_Node, [
@@ -83,7 +83,7 @@ void cliRun(Cli.Result cli) {
 
             {
                 OutStream envStream = new OutStream;
-                envStream.write!string("alma");
+                envStream.write!string(Alchimie_Environment_MagicWord);
                 envStream.write!size_t(Alchimie_Version_ID);
                 envStream.write!bool(windowEnabled);
 

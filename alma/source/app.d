@@ -22,6 +22,7 @@ void main(string[] args) {
             if (args.length > 1) {
                 Cli cli = new Cli("alma");
 
+                // Default
                 cli.setDefault(&cliDefault);
                 cli.addOption("v", "version", "Affiche la version du programme");
                 cli.addOption("h", "help", "Affiche l’aide", [], ["command"]);
@@ -30,16 +31,18 @@ void main(string[] args) {
                         "command"
                     ]);
 
+                // Run
                 cli.addCommand(&cliRun, "run", "Exécute un fichier source",
                     ["environment", "source"]);
+                cli.addCommandOption("run", "h", "help", "Affiche l’aide");
                 cli.addCommandOption("run", "b", "symbols",
                     "Génère des symboles de débogage dans le bytecode");
-                cli.addCommandOption("run", "h", "help", "Affiche l’aide");
                 cli.addCommandOption("run", "p", "profile",
                     "Ajoute des commandes de profilage dans le bytecode");
                 cli.addCommandOption("run", "s", "safe",
                     "Change certaines instructions par des versions plus sécurisés");
 
+                // Build
                 cli.addCommand(&cliBuild, "build",
                     "Compile un fichier source en bytecode", ["source"], [
                         "bytecode"
@@ -51,6 +54,14 @@ void main(string[] args) {
                     "Ajoute des commandes de profilage dans le bytecode");
                 cli.addCommandOption("build", "s", "safe",
                     "Change certaines instructions par des versions plus sécurisés");
+
+                // Doc
+                cli.addCommand(&cliRun, "doc", "Exécute un fichier source", [], [
+                        "outputDir"
+                    ]);
+                cli.addCommandOption("doc", "h", "help", "Affiche l’aide");
+                cli.addCommandOption("doc", "l", "locale",
+                    "Langue dans laquelle la documentation est écrite");
 
                 cli.parse(args);
             } else {

@@ -13,28 +13,28 @@ void cliUnpack(Cli.Result cli) {
     }
 
     string dir = getcwd();
-    string name = baseName(dir);
 
-    string configFile = buildNormalizedPath(dir, Alchimie_Project_File);
-    enforce(exists(configFile),
-        "aucun fichier de project `" ~ Alchimie_Project_File ~ "` de trouvé à l’emplacement `" ~ dir ~ "`");
+    string srcPath = buildNormalizedPath(dir, cli.getRequiredParam(0));
+    enforce(exists(srcPath), "impossible d’ouvrir l’archive  `" ~ srcPath ~ "`");
 
-    Json json = new Json(configFile);
+    string dstPath = stripExtension(srcPath);
 
-    Json configNode = json.getObject("config");
+    if (cli.optionalParamCount()) {
+        dstPath = buildNormalizedPath(dir, cli.getOptionalParam(0));
+    }
 
-    string resPath = buildNormalizedPath(dir, configNode.getString(Alchimie_Project_Resources_Node));
-    enforce(exists(resPath),
-        "le dossier de ressources `" ~ resPath ~
-        "` référencé dans `" ~ Alchimie_Project_File ~ "` n’existe pas");
+    writeln("Extraction de l’archive `", srcPath, "`");
 
-    string archivePath = buildNormalizedPath(dir, setExtension(resPath, Alchimie_Resource_Extension));
     Archive archive = new Archive;
-    
-    resPath = buildNormalizedPath(dir, "res_result"); //Temp
 
-    archive.load(archivePath);
-    archive.unpack(resPath);
+    try {
+        archive.load(srcPath);
+    } catch (Exception e) {
+        writeln(e.msg);
+        writeln("erreur: le format de l’archive est invalide");
+        return;
+    }
+    archive.unpack(dstPath);
 
-    writeln("L’archive `" ~ archivePath ~ "` a été restauré dans `" ~ resPath ~ "`");
+    writeln("Archive extraite dans `" ~ dstPath ~ "`");
 }

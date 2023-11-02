@@ -14,19 +14,21 @@ void cliPack(Cli.Result cli) {
 
     string dir = getcwd();
 
-    string resPath = buildNormalizedPath(dir, cli.requiredParams[0]);
-    enforce(exists(resPath), "le dossier `" ~ resPath ~ "` n’existe pas");
+    string srcPath = buildNormalizedPath(dir, cli.getRequiredParam(0));
+    enforce(exists(srcPath), "impossible d’ouvrir le dossier `" ~ srcPath ~ "`");
 
-    string archivePath = buildNormalizedPath(dir, setExtension(resPath, "arc"));
+    string dstPath = buildNormalizedPath(dir, setExtension(srcPath, Alchimie_Archive_Extension));
 
-    if (cli.optionalParams.length) {
-        archivePath = buildNormalizedPath(dir, cli.optionalParams[0]);
+    if (cli.optionalParamCount()) {
+        dstPath = buildNormalizedPath(dir, cli.getOptionalParam(0));
     }
+
+    writeln("Génération de l’archive pour `", srcPath, "`");
 
     Archive archive = new Archive;
 
-    archive.pack(resPath);
-    archive.save(archivePath);
+    archive.pack(srcPath);
+    archive.save(dstPath);
 
-    writeln("Le dossier `" ~ resPath ~ "` a été archivé dans `" ~ archivePath ~ "`");
+    writeln("Dossier archivé dans `" ~ dstPath ~ "`");
 }

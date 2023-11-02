@@ -31,10 +31,10 @@ void cliCreate(Cli.Result cli) {
     string dir = getcwd();
     string dirName = baseName(dir);
 
-    if (cli.optionalParams.length == 1) {
-        enforce(isValidPath(cli.optionalParams[0]), "chemin non valide");
-        dirName = baseName(cli.optionalParams[0]);
-        dir = buildNormalizedPath(dir, cli.optionalParams[0]);
+    if (cli.optionalParamCount() == 1) {
+        enforce(isValidPath(cli.getOptionalParam(0)), "chemin non valide");
+        dirName = baseName(cli.getOptionalParam(0));
+        dir = buildNormalizedPath(dir, cli.getOptionalParam(0));
 
         if (!exists(dir))
             mkdir(dir);
@@ -46,12 +46,12 @@ void cliCreate(Cli.Result cli) {
 
     if (cli.hasOption("app")) {
         Cli.Result.Option option = cli.getOption("app");
-        appName = option.requiredParams[0];
+        appName = option.getRequiredParam(0);
     }
 
     if (cli.hasOption(Alchimie_Project_Source_Node)) {
         Cli.Result.Option option = cli.getOption(Alchimie_Project_Source_Node);
-        srcPath = buildNormalizedPath(option.requiredParams[0]);
+        srcPath = buildNormalizedPath(option.getRequiredParam(0));
     }
 
     Json json = new Json;

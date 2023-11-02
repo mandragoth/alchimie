@@ -21,7 +21,7 @@ version (AlmaRuntime) {
             return;
         }
 
-        boot("", "");
+        boot();
     }
 
     void cliVersion(Cli.Result cli) {

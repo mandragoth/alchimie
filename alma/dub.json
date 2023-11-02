@@ -8,8 +8,6 @@
     "license": "Zlib",
     "name": "alma",
     "targetType": "executable",
-    "targetName": "alma",
-    "targetPath": "../bin",
     "workingDirectory": "..",
     "dependencies": {
         "magia": {
@@ -26,7 +24,10 @@
         {
             "name": "debug",
             "targetPath": "../bin",
-            "dflags": ["-gf"],
+            "targetName": "alma-dbg",
+            "dflags": [
+                "-gf"
+            ],
             "versions": [
                 "AlmaDebug"
             ]
@@ -34,6 +35,7 @@
         {
             "name": "export",
             "targetPath": "../export",
+            "targetName": "alma",
             "versions": [
                 "AlmaRuntime"
             ]

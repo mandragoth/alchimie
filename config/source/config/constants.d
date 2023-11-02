@@ -70,3 +70,5 @@ enum Alchimie_Resource_Extension = ".ars";
 enum Alchimie_StandardLibrary_File = "codex";
 
 enum Alchimie_StandardLibrary_Path = Alchimie_StandardLibrary_File ~ Alchimie_Archive_Extension;
+
+enum Alchimie_Environment_MagicWord = "ame";
