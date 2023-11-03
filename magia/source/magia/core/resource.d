@@ -7,6 +7,7 @@ import std.exception : enforce;
 import std.traits : isCopyable;
 
 import magia.core.json;
+import magia.core.stream;
 
 /// Classe gérée par le système de ressource
 interface Resource {
@@ -22,12 +23,21 @@ interface Resource {
 
 /// Gestionnaire des ressources
 final class ResourceManager {
-    private alias LoaderFunc = void function(string, Json);
+    /// Logique de chargement d’une ressource d’un type donné
+    struct Loader {
+        alias CompilerFunc = void function(string, Json, OutStream);
+        alias LoaderFunc = void function(InStream);
+        /// Fonction de sérialisation
+        CompilerFunc compile;
+        /// Fonction de désérialisation
+        LoaderFunc load;
+    }
+
     private alias FileData = const(ubyte)[];
 
     private {
         FileData[string] _files;
-        LoaderFunc[string] _loaders;
+        Loader[string] _loaders;
         Cache[string] _caches;
     }
 
@@ -90,11 +100,14 @@ final class ResourceManager {
     }
 
     /// Ajoute un type de ressource
-    void setLoader(string type, LoaderFunc callback) {
-        _loaders[type] = callback;
+    void setLoader(string type, Loader.CompilerFunc compilerFunc, Loader.LoaderFunc loaderFunc) {
+        Loader loader;
+        loader.compile = compilerFunc;
+        loader.load = loaderFunc;
+        _loaders[type] = loader;
     }
 
-    LoaderFunc getLoader(string type) const {
+    Loader getLoader(string type) const {
         auto p = type in _loaders;
         enforce(p, "aucune fonction de définie pour le type `" ~ type ~ "`");
         return *p;

@@ -20,7 +20,7 @@ final class Alma : Magia {
         // Événements
         GrEvent _inputEvent, _lateInputEvent;
 
-        const(Archive.File)[] _resourceFiles;
+        Archive.File[] _resourceFiles, _compiledResourceFiles;
     }
 
     this(GrBytecode bytecode, uint width, uint height, string name) {
@@ -31,23 +31,60 @@ final class Alma : Magia {
     }
 
     override Status load() {
-        writeln("[ALMA] Chargement des ressources...");
+        writeln("[ALMA] Compilation des ressources...");
         long startTime = Clock.currStdTime();
 
-        foreach (const Archive.File file; _resourceFiles) {
+        foreach (Archive.File file; _resourceFiles) {
+            OutStream stream = new OutStream;
+            stream.write!string(Alchimie_Resource_Compiled_MagicWord);
+
             Json json = new Json(file.data);
             Json[] resNodes = json.getObjects("resources", []);
+
+            stream.write!uint(cast(uint) resNodes.length);
             foreach (resNode; resNodes) {
                 string resType = resNode.getString("type");
-                auto parser = res.getLoader(resType);
-                parser(dirName(file.path), resNode);
+                stream.write!string(resType);
+
+                ResourceManager.Loader loader = res.getLoader(resType);
+                loader.compile(dirName(file.path), resNode, stream);
             }
+
+            file.data = cast(ubyte[]) stream.data;
+            _compiledResourceFiles ~= file;
         }
         _resourceFiles.length = 0;
 
-        res.make();
-        
         double loadDuration = (cast(double)(Clock.currStdTime() - startTime) / 10_000_000.0);
+        writeln("  > Effectué en " ~ to!string(loadDuration) ~ "sec");
+
+        writeln("[ALMA] Chargement des ressources...");
+        startTime = Clock.currStdTime();
+
+        foreach (Archive.File file; _compiledResourceFiles) {
+            InStream stream = new InStream;
+            stream.data = cast(ubyte[]) file.data;
+            enforce(stream.read!string() == Alchimie_Resource_Compiled_MagicWord,
+                "format du fichier de ressource `" ~ file.path ~ "` invalide");
+
+            uint nbRes = stream.read!uint();
+            for (uint i; i < nbRes; ++i) {
+                string resType = stream.read!string();
+                ResourceManager.Loader loader = res.getLoader(resType);
+                loader.load(stream);
+            }
+        }
+        _compiledResourceFiles.length = 0;
+
+        loadDuration = (cast(double)(Clock.currStdTime() - startTime) / 10_000_000.0);
+        writeln("  > Effectué en " ~ to!string(loadDuration) ~ "sec");
+
+        writeln("[ALMA] Post-traitement des ressources...");
+        startTime = Clock.currStdTime();
+
+        res.make();
+
+        loadDuration = (cast(double)(Clock.currStdTime() - startTime) / 10_000_000.0);
         writeln("  > Effectué en " ~ to!string(loadDuration) ~ "sec");
 
         writeln("[ALMA] Initialisation de la machine virtuelle...");
@@ -92,10 +129,17 @@ final class Alma : Magia {
         }
 
         foreach (file; archive) {
-            if (extension(file.name) == Alchimie_Resource_Extension) {
+            const string ext = extension(file.name);
+            switch (ext) {
+            case Alchimie_Resource_Extension:
                 _resourceFiles ~= file;
-            } else {
+                break;
+            case Alchimie_Resource_Compiled_Extension:
+                _compiledResourceFiles ~= file;
+                break;
+            default:
                 res.write(file.path, file.data);
+                break;
             }
         }
 

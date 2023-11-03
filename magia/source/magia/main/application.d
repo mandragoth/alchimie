@@ -197,8 +197,7 @@ class Magia {
 
         // Création du gestionnaire des ressources
         _resourceManager = new ResourceManager();
-
-        setupDefaultResourceLoaders();
+        setupDefaultResourceLoaders(_resourceManager);
     }
 
     /// Récupère les événements (clavier/souris/manette/etc)

@@ -31,14 +31,14 @@ final class Archive : IArchive {
 
     private final class Directory {
         private {
-            Directory[string] _dirs;
-            File[string] _files;
+            Directory[] _dirs;
+            File[] _files;
             string _path, _name;
         }
 
         @property {
             string path() const {
-                return _path;
+                return _path.length ? (_path ~ Separator ~ _name) : _name;
             }
 
             string name() const {
@@ -54,18 +54,18 @@ final class Archive : IArchive {
         void pack(string path_) {
             auto entries = dirEntries(path_, SpanMode.shallow);
             foreach (entry; entries) {
-                string name = baseName(entry.name);
-                string subPath = _path ~ Separator ~ name;
+                string entryPath = path();
+                string entryName = baseName(entry.name);
 
                 try {
                     if (entry.isDir) {
-                        Directory subDir = new Directory(subPath, name);
+                        Directory subDir = new Directory(entryPath, entryName);
                         subDir.pack(entry.name);
-                        _dirs[name] = subDir;
+                        _dirs ~= subDir;
                     } else if (entry.isFile) {
-                        File file = new File(subPath, name);
+                        File file = new File(entryPath, entryName);
                         file.pack(entry.name);
-                        _files[name] = file;
+                        _files ~= file;
                     }
                 } catch (Exception e) {
                     writeln("Erreur d’archivage: ", entry.name, " - ", e.msg);
@@ -87,39 +87,61 @@ final class Archive : IArchive {
         }
 
         void load(InStream stream) {
-            size_t fileCount = stream.read!size_t();
-            for (int i; i < fileCount; ++i) {
+            uint fileCount = stream.read!uint();
+            string entryPath = path();
+            for (uint i; i < fileCount; ++i) {
                 string name = stream.read!string();
-                File file = new File(_path ~ Separator ~ name, name);
+                File file = new File(entryPath, name);
                 file.load(stream);
-                _files[name] = file;
+                _files ~= file;
             }
 
-            size_t dirCount = stream.read!size_t();
-            for (int i; i < dirCount; ++i) {
+            uint dirCount = stream.read!uint();
+            for (uint i; i < dirCount; ++i) {
                 string name = stream.read!string();
-                Directory dir = new Directory(_path ~ Separator ~ name, name);
+                Directory dir = new Directory(entryPath, name);
                 dir.load(stream);
-                _dirs[name] = dir;
+                _dirs ~= dir;
             }
         }
 
         void save(OutStream stream) {
-            stream.write(_files.length);
+            stream.write!uint(cast(uint) _files.length);
             foreach (file; _files) {
-                stream.write(file.name);
+                stream.write!string(file.name);
                 file.save(stream);
             }
 
-            stream.write(_dirs.length);
+            stream.write!uint(cast(uint) _dirs.length);
             foreach (dir; _dirs) {
-                stream.write(dir.name);
+                stream.write!string(dir.name);
                 dir.save(stream);
             }
         }
 
         /// Itérateur
         int opApply(int delegate(const ref File) dlg) const {
+            int result;
+
+            foreach (file; _files) {
+                result = dlg(file);
+
+                if (result)
+                    return result;
+            }
+
+            foreach (dir; _dirs) {
+                result = dir.opApply(dlg);
+
+                if (result)
+                    return result;
+            }
+
+            return result;
+        }
+
+        /// Ditto
+        int opApply(int delegate(ref File) dlg) {
             int result;
 
             foreach (file; _files) {
@@ -150,15 +172,25 @@ final class Archive : IArchive {
         @property {
             /// Chemin du fichier
             string path() const {
-                return _path;
+                return _path ~ Separator ~ _name;
             }
 
             /// Nom du fichier
+            string name(string name_) {
+                return _name = name_;
+            }
+
+            /// Ditto
             string name() const {
                 return _name;
             }
 
             /// Données
+            ubyte[] data(ubyte[] data_) {
+                return _data = data_;
+            }
+
+            /// Ditto
             const(ubyte)[] data() const {
                 return _data;
             }
@@ -197,7 +229,7 @@ final class Archive : IArchive {
     /// Charge un dossier
     void pack(string path) {
         string name = baseName(path);
-        _rootDir = new Directory(name, name);
+        _rootDir = new Directory("", name);
         _rootDir.pack(path);
     }
 
@@ -213,7 +245,7 @@ final class Archive : IArchive {
         stream.data = cast(ubyte[]) std.file.read(path);
         enforce(stream.read!string() == MagicWord);
         string name = stream.read!string();
-        _rootDir = new Directory(name, name);
+        _rootDir = new Directory("", name);
         _rootDir.load(stream);
     }
 
@@ -222,7 +254,7 @@ final class Archive : IArchive {
         OutStream stream = new OutStream;
         stream.write!string(MagicWord);
         if (_rootDir) {
-            stream.write(_rootDir.name);
+            stream.write!string(_rootDir.name);
             _rootDir.save(stream);
         }
         std.file.write(path, stream.data);
@@ -230,6 +262,14 @@ final class Archive : IArchive {
 
     /// Itérateur
     int opApply(int delegate(const ref File) dlg) const {
+        if (_rootDir)
+            return _rootDir.opApply(dlg);
+
+        return 0;
+    }
+
+    /// Ditto
+    int opApply(int delegate(ref File) dlg) {
         if (_rootDir)
             return _rootDir.opApply(dlg);
 

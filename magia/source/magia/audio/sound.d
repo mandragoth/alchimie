@@ -56,8 +56,6 @@ final class Sound : Resource {
         alGenBuffers(cast(ALuint) 1, &_id);
         alBufferData(_id, AL_FORMAT_STEREO_FLOAT32, _buffer.ptr,
             cast(int)(_buffer.length * float.sizeof), _sampleRate);
-
-        toMono();
     }
 
     /// Copie

@@ -66,6 +66,9 @@ void cliExport(Cli.Result cli) {
                 .getChildren();
             string[] archives;
 
+            ResourceManager res = new ResourceManager;
+            setupDefaultResourceLoaders(res);
+
             foreach (string resName, Json resNode; resourcesNode) {
                 string resFolder = buildNormalizedPath(dir, resNode.getString("path", resName));
                 enforce(exists(resFolder), "le dossier de ressources `" ~ resFolder ~
@@ -77,6 +80,29 @@ void cliExport(Cli.Result cli) {
                     string resDir = buildNormalizedPath(exportDir,
                         setExtension(resName, Alchimie_Archive_Extension));
                     writeln("Archivage de `" ~ resFolder ~ "` vers `", resDir, "`");
+
+                    foreach (file; archive) {
+                        if (extension(file.name) == Alchimie_Resource_Extension) {
+                            OutStream stream = new OutStream;
+                            stream.write!string(Alchimie_Resource_Compiled_MagicWord);
+
+                            Json resJson = new Json(file.data);
+                            Json[] resNodes = resJson.getObjects("resources", []);
+
+                            stream.write!uint(cast(uint) resNodes.length);
+                            foreach (resNode; resNodes) {
+                                string resType = resNode.getString("type");
+                                stream.write!string(resType);
+
+                                ResourceManager.Loader loader = res.getLoader(resType);
+                                loader.compile(dirName(file.path), resNode, stream);
+                            }
+
+                            file.name = setExtension(file.name, Alchimie_Resource_Compiled_Extension);
+                            file.data = cast(ubyte[]) stream.data;
+                        }
+                    }
+
                     archive.save(resDir);
                     archives ~= setExtension(resName, Alchimie_Archive_Extension);
                 } else {

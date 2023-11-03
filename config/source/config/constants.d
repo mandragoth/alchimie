@@ -67,8 +67,13 @@ enum Alchimie_Archive_Extension = ".pqt";
 /// ARS: **A**lchimie **R**e**S**source
 enum Alchimie_Resource_Extension = ".ars";
 
+/// ARSC: **A**lchimie **R**e**S**source **C**ompiled
+enum Alchimie_Resource_Compiled_Extension = ".arsc";
+
 enum Alchimie_StandardLibrary_File = "codex";
 
 enum Alchimie_StandardLibrary_Path = Alchimie_StandardLibrary_File ~ Alchimie_Archive_Extension;
 
 enum Alchimie_Environment_MagicWord = "ame";
+
+enum Alchimie_Resource_Compiled_MagicWord = "rscmp";
