@@ -10,21 +10,21 @@ import magia.core.json;
 import magia.core.stream;
 
 /// Classe gérée par le système de ressource
-interface Resource {
+interface Resource(T) {
     /// Initialise la ressource
     /// Si, par exemple la ressource requiert de charger une autre ressource,
     /// le faire dans le constructeur peut engendrer une erreur car l’ordre de création
     /// des ressources est indéterminé. À la place, on le fait dans cette fonction.
-    void make();
+    //void make();
 
     /// Fabrique une ressource à partir du prototype
-    Resource fetch();
+    T fetch();
 }
 
 /// Gestionnaire des ressources
 final class ResourceManager {
     /// Logique de chargement d’une ressource d’un type donné
-    struct Loader {
+    static struct Loader {
         alias CompilerFunc = void function(string, Json, OutStream);
         alias LoaderFunc = void function(InStream);
         /// Fonction de sérialisation
@@ -38,36 +38,42 @@ final class ResourceManager {
     private {
         FileData[string] _files;
         Loader[string] _loaders;
-        Cache[string] _caches;
+        void*[string] _caches;
+    }
+
+    /// Données d’une ressource
+    static struct ResourceData(T) if (is(T == class) && is(T : Resource!T)) {
+        /// Le prototype de la ressource mise en cache
+        T prototype;
+        /// Construit le prototype de la ressource
+        T delegate() builder;
     }
 
     /// Cache pour les ressources d’un type donné
-    private final class Cache {
+    static private final class Cache(T) if (is(T == class) && is(T : Resource!T)) {
         private {
-            Resource[string] _data;
+            ResourceData!(T)[string] _data;
         }
 
-        /// Initialise les ressources
-        void make() {
-            foreach (data; _data) {
-                data.make();
-            }
-        }
-
-        /// Ajoute le prototype d’une ressource
-        void setPrototype(string name, Resource value) {
-            _data[name] = value;
+        /// Ajoute le chargeur d’une ressource
+        void setBuilder(string name, T delegate() builder) {
+            ResourceData!T data;
+            data.builder = builder;
+            _data[name] = data;
         }
 
         /// Récupère le prototype d’une ressource
-        Resource getPrototype(string name) {
+        T getPrototype(string name) {
             auto p = (name in _data);
             enforce(p, "la ressource `" ~ name ~ "` n’existe pas");
-            return *p;
+            if (!p.prototype) {
+                p.prototype = p.builder();
+            }
+            return p.prototype;
         }
 
         /// Récupère le prototype d’une ressource
-        Resource get(string name) {
+        T get(string name) {
             auto p = getPrototype(name);
             return p.fetch();
         }
@@ -113,45 +119,39 @@ final class ResourceManager {
         return *p;
     }
 
-    /// Initialise les ressources
-    void make() {
-        foreach (cache; _caches) {
-            cache.make();
-        }
-    }
-
-    /// Definit un prototype d’une ressource
-    void store(T : Resource)(string name, T prototype) {
+    /// Definit une nouvelle ressource
+    void store(T)(string name, T delegate() builder)
+            if (is(T == class) && is(T : Resource!T)) {
         static assert(!__traits(isAbstractClass, T), "`" ~ T.stringof ~ "` est une classe abstraite");
 
         auto p = T.stringof in _caches;
-        Cache cache;
+        Cache!T cache;
 
         if (p) {
-            cache = *p;
+            cache = cast(Cache!T)*p;
         } else {
-            cache = new Cache;
-            _caches[T.stringof] = cache;
+            cache = new Cache!T;
+            _caches[T.stringof] = cast(void*) cache;
         }
 
-        cache.setPrototype(name, prototype);
+        cache.setBuilder(name, builder);
     }
 
     /// Retourne le prototype d’une ressource
-    T getPrototype(T : Resource)(string name) {
+    T getPrototype(T)(string name) if (is(T == class) && is(T : Resource!T)) {
         static assert(!__traits(isAbstractClass, T), "`" ~ T.stringof ~ "` est une classe abstraite");
 
         auto p = T.stringof in _caches;
         enforce(p, "la ressource `" ~ name ~ "` n’existe pas");
-        return cast(T)(cast(Cache)*p).getPrototype(name);
+        return cast(T)(cast(Cache!T)*p).getPrototype(name);
     }
 
     /// Retourne une ressource
-    T get(T : Resource)(string name) {
+    T get(T)(string name) if (is(T == class) && is(T : Resource!T)) {
         static assert(!__traits(isAbstractClass, T), "`" ~ T.stringof ~ "` est une classe abstraite");
 
         auto p = T.stringof in _caches;
         enforce(p, "la ressource `" ~ name ~ "` n’existe pas");
-        return cast(T)(cast(Cache)*p).get(name);
+        return cast(T)(cast(Cache!T)*p).get(name);
     }
 }

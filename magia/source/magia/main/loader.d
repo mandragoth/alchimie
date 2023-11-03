@@ -29,8 +29,7 @@ private void _loadShader(InStream stream) {
     string name = stream.read!string();
     string file = stream.read!string();
 
-    Shader shader = new Shader(file);
-    Magia.res.store(name, shader);
+    Magia.res.store(name, { return new Shader(file); });
 }
 
 /// Crée une texture diffuse
@@ -43,8 +42,7 @@ private void _loadDiffuse(InStream stream) {
     string name = stream.read!string();
     string file = stream.read!string();
 
-    Texture texture = new Texture(file, TextureType.diffuse);
-    Magia.res.store(name, texture);
+    Magia.res.store(name, { return new Texture(file, TextureType.diffuse); });
 }
 
 /// Crée une boîte à ciel
@@ -67,8 +65,7 @@ private void _loadSkybox(InStream stream) {
         filePaths[i] = stream.read!string();
     }
 
-    Skybox skybox = new Skybox(filePaths);
-    Magia.res.store(name, skybox);
+    Magia.res.store(name, { return new Skybox(filePaths); });
 }
 
 /// Crée des sprites
@@ -119,8 +116,7 @@ private void _loadSprite(InStream stream) {
         if (clip.w == -1)
             clip.w = texture.height;
 
-        Sprite sprite = new Sprite(texture, clip);
-        Magia.res.store(name, sprite);
+        Magia.res.store(name, { return new Sprite(texture, clip); });
     }
 }
 
@@ -134,8 +130,7 @@ private void _loadModel(InStream stream) {
     string name = stream.read!string();
     string file = stream.read!string();
 
-    Model model = new Model(file);
-    Magia.res.store(name, model);
+    Magia.res.store(name, { return new Model(file); });
 }
 
 /// Crée un son
@@ -148,8 +143,11 @@ private void _compileSound(string path, Json json, OutStream stream) {
 private void _loadSound(InStream stream) {
     string name = stream.read!string();
     string file = stream.read!string();
+    float volume = stream.read!float();
 
-    Sound sound = new Sound(file);
-    sound.volume = stream.read!float();
-    Magia.res.store(name, sound);
+    Magia.res.store(name, {
+        Sound sound = new Sound(file);
+        sound.volume = volume;
+        return sound;
+    });
 }

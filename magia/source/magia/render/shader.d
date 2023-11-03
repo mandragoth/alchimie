@@ -14,7 +14,7 @@ import magia.main;
 import magia.render.window;
 
 /// Class holding a shader
-class Shader : Resource {
+class Shader : Resource!Shader {
     /// Index
     GLuint id;
 
@@ -65,12 +65,8 @@ class Shader : Resource {
         _fragmentShader = other._fragmentShader;
     }
 
-    /// Initialisation de la ressource
-    void make() {
-    }
-
     /// Accès à la ressource
-    Resource fetch() {
+    Shader fetch() {
         return this;
     }
 

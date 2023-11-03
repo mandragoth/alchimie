@@ -79,14 +79,6 @@ final class Alma : Magia {
         loadDuration = (cast(double)(Clock.currStdTime() - startTime) / 10_000_000.0);
         writeln("  > Effectué en " ~ to!string(loadDuration) ~ "sec");
 
-        writeln("[ALMA] Post-traitement des ressources...");
-        startTime = Clock.currStdTime();
-
-        res.make();
-
-        loadDuration = (cast(double)(Clock.currStdTime() - startTime) / 10_000_000.0);
-        writeln("  > Effectué en " ~ to!string(loadDuration) ~ "sec");
-
         writeln("[ALMA] Initialisation de la machine virtuelle...");
         startTime = Clock.currStdTime();
 

@@ -44,7 +44,7 @@ private {
 }
 
 /// Class handling model data and draw call
-final class Model : Resource {
+final class Model : Resource!Model {
     /// Component POD type
     enum ComponentType {
         byte_t = 5120,
@@ -151,12 +151,8 @@ final class Model : Resource {
         _fileDirectory = other._fileDirectory;
     }
 
-    /// Initialisation de la ressource
-    void make() {
-    }
-
     /// Accès à la ressource
-    Resource fetch() {
+    Model fetch() {
         return this;
     }
 

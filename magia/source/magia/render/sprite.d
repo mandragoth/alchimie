@@ -17,7 +17,7 @@ import magia.render.texture;
 import magia.render.window;
 
 /// Base rendering class.
-final class Sprite : Entity2D, Resource {
+final class Sprite : Entity2D, Resource!Sprite {
     /// Alignment used to render the sprites
     CoordinateSystem alignment;
 
@@ -68,12 +68,8 @@ final class Sprite : Entity2D, Resource {
         alignment = CoordinateSystem.topLeft;
     }
 
-    /// Initialisation de la ressource
-    void make() {
-    }
-
     /// Accès à la ressource
-    Resource fetch() {
+    Sprite fetch() {
         return new Sprite(this);
     }
 

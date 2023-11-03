@@ -10,7 +10,7 @@ import magia.core;
 import magia.main.application;
 
 /// Représente les données d’un son
-final class Sound : Resource {
+final class Sound : Resource!Sound {
     private {
         ALuint _id;
         float[] _buffer;
@@ -70,12 +70,8 @@ final class Sound : Resource {
     private this(AudioStream stream) {
     }
 
-    /// Initialisation de la ressource
-    void make() {
-    }
-
     /// Accès à la ressource
-    Resource fetch() {
+    Sound fetch() {
         return this;
     }
 

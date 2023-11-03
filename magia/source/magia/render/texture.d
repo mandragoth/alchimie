@@ -31,7 +31,7 @@ private {
 }
 
 /// Class holding texture data
-class Texture : Resource {
+class Texture : Resource!Texture {
     /// Texture index
     GLuint id;
 
@@ -153,12 +153,8 @@ class Texture : Resource {
         _nbTextures = texture_._nbTextures;
     }
 
-    /// Initialisation de la ressource
-    void make() {
-    }
-
     /// Accès à la ressource
-    Resource fetch() {
+    Texture fetch() {
         return this;
     }
 

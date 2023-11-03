@@ -21,7 +21,7 @@ import magia.render.texture;
 import magia.render.vertex;
 
 /// Class handling skybox data and draw call
-final class Skybox : Entity3D, Resource {
+final class Skybox : Entity3D, Resource!Skybox {
     private {
         Shader _shader;
         Material _material;
@@ -31,18 +31,15 @@ final class Skybox : Entity3D, Resource {
 
     /// Constructor
     this(string[6] files) {
-        _material = new Material(new Texture(files));
-    }
-
-    /// Initialisation de la ressource
-    void make() {
         _shader = Magia.res.get!Shader("skybox");
         _shader.activate();
         _shader.uploadUniformInt("u_Skybox", 0);
+
+        _material = new Material(new Texture(files));
     }
 
     /// Accès à la ressource
-    Resource fetch() {
+    Skybox fetch() {
         return this;
     }
 
