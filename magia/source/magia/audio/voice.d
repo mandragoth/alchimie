@@ -10,36 +10,22 @@ import magia.audio.sound;
 import magia.audio.source;
 
 /// Instance d’un son
-final class Voice(uint Dim = 3u) {
+abstract class VoiceBase {
     private {
         ALuint _id;
-        Sound _sound;
-        vec3 _position, _lastPosition;
-        ulong _tick;
-        bool _hasPlayed;
         float _volume = 1f;
     }
 
     @property {
+        protected ALuint id() const {
+            return _id;
+        }
+
         /// Le son est-il en train de se jouer ?
-        bool isPlaying() {
+        bool isPlaying() const {
             int value = void;
             alGetSourcei(_id, AL_SOURCE_STATE, &value);
             return value != AL_STOPPED;
-        }
-
-        /// Recuperer la position du son dans la scene
-        vec3 position() const {
-            return _position;
-        }
-
-        /// Ajuster la position du son dans la scene
-        vec3 position(vec3 position_) {
-            _lastPosition = _position;
-            _position = position_;
-            alSource3f(_id, AL_POSITION, _position.x, _position.y, _position.z);
-        //import std.stdio;writeln("pos: ", _position);
-            return _position;
         }
 
         /// Volume entre 0 et 1
@@ -56,24 +42,73 @@ final class Voice(uint Dim = 3u) {
     }
 
     /// Init
-    this(Sound sound) {
+    this() {
         alGenSources(cast(ALuint) 1, &_id);
+
+        alSourcef(_id, AL_PITCH, 1f);
+        alSourcef(_id, AL_GAIN, 1f);
+        alSource3f(_id, AL_POSITION, 0f, 0f, 0f);
+        alSource3f(_id, AL_VELOCITY, 0f, 0f, 0f);
+        alSourcei(_id, AL_LOOPING, AL_FALSE);
+    }
+
+    /// Màj
+    void update(AudioContext);
+}
+
+/// Instance d’un son
+final class Voice : VoiceBase {
+    /// Init
+    this(Sound sound) {
+        alSourcei(_id, AL_BUFFER, sound.id);
+        volume = sound.volume;
+
+        alSourcePlay(_id);
+    }
+
+    /// Màj
+    override void update(AudioContext context) {
+
+    }
+}
+
+/// Instance d’un son
+final class Voice3D : VoiceBase {
+    private {
+        vec3 _position, _lastPosition;
+        ulong _tick;
+        bool _hasPlayed;
+    }
+
+    @property {
+        /// Recuperer la position du son dans la scene
+        vec3 position() const {
+            return _position;
+        }
+
+        /// Ajuster la position du son dans la scene
+        vec3 position(vec3 position_) {
+            _lastPosition = _position;
+            _position = position_;
+            alSource3f(_id, AL_POSITION, _position.x, _position.y, _position.z);
+            //import std.stdio;writeln("pos: ", _position);
+            return _position;
+        }
+    }
+
+    /// Init
+    this(Sound sound) {
         _tick = Magia.currentTick;
 
-        alSourcef(_id, AL_PITCH, 1);
-        alSourcef(_id, AL_GAIN, sound.volume);
-        alSource3f(_id, AL_POSITION, 0, 0, 0);
-        alSource3f(_id, AL_VELOCITY, 0, 0, 0);
-        alSourcei(_id, AL_LOOPING, AL_FALSE);
-
         alSourcei(_id, AL_BUFFER, sound.id);
+        volume = sound.volume;
     }
 
     /// Update
-    void update(AudioContext3D context) {
+    override void update(AudioContext context) {
         if (!_hasPlayed) {
-            double deltaTime = (cast(double) Magia.currentTick - cast(double) _tick) / cast(
-                double) Magia.ticksPerSecond;
+            double deltaTime = (cast(double) Magia.currentTick - cast(double) _tick) / cast(double) Magia
+                .ticksPerSecond;
 
             const double speedOfSound = 340.3;
 
@@ -90,6 +125,3 @@ final class Voice(uint Dim = 3u) {
         _lastPosition = _position;
     }
 }
-
-alias Voice3D = Voice!3u;
-alias Voice2D = Voice!2u;

@@ -9,15 +9,9 @@ import std.traits : isCopyable;
 import magia.core.json;
 import magia.core.stream;
 
-/// Classe gérée par le système de ressource
+/// Type gérée par le système de ressource
 interface Resource(T) {
-    /// Initialise la ressource
-    /// Si, par exemple la ressource requiert de charger une autre ressource,
-    /// le faire dans le constructeur peut engendrer une erreur car l’ordre de création
-    /// des ressources est indéterminé. À la place, on le fait dans cette fonction.
-    //void make();
-
-    /// Fabrique une ressource à partir du prototype
+    /// Donne accès à la ressource à partir du prototype
     T fetch();
 }
 

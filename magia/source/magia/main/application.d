@@ -31,9 +31,8 @@ class Magia {
         // Main window
         Window _window;
 
-        /// Audio context
-        AudioDevice _audioDevice;
-        AudioContext3D _audioContext;
+        /// Gestionnaire audio
+        AudioManager _audioManager;
 
         /// Lighting manager
         LightingManager _lightingManager;
@@ -80,12 +79,12 @@ class Magia {
         }
 
         /// Module d’entrées
-        InputManager inputManager() {
+        InputManager input() {
             return _inputManager;
         }
 
         /// Module d’interface
-        UIManager uiManager() {
+        UIManager ui() {
             return _uiManager;
         }
 
@@ -94,19 +93,14 @@ class Magia {
             return _resourceManager;
         }
 
-        /// Set audio context
-        void audioContext(AudioContext3D audioContext) {
-            _audioContext = audioContext;
+        /// Système d’illumination
+        LightingManager light() {
+            return _lightingManager;
         }
 
-        /// Get audio context
-        AudioContext3D audioContext() {
-            return _audioContext;
-        }
-
-        /// Le périphérique audio
-        AudioDevice audioDevice() {
-            return _audioDevice;
+        /// Le gestionnaire audio
+        AudioManager audio() {
+            return _audioManager;
         }
 
         /// Add 2D camera
@@ -129,21 +123,6 @@ class Magia {
         /// Add 3D entity
         void addEntity(Entity3D entity) {
             _scene3D.addEntity(entity);
-        }
-
-        /// Set directional light
-        void directionalLight(DirectionalLight directionalLight) {
-            _lightingManager.directionalLight = directionalLight;
-        }
-
-        /// Add point light
-        void addPointLight(PointLight pointLight) {
-            _lightingManager.addPointLight(pointLight);
-        }
-
-        /// Add spot light
-        void addSpotLight(SpotLight spotLight) {
-            _lightingManager.addSpotLight(spotLight);
         }
 
         /// Ticks écoulés depuis le début
@@ -173,8 +152,8 @@ class Magia {
         loadSDLOpenGL();
         initFont();
 
-        // Initialisation du périphérique audio
-        _audioDevice = new AudioDevice();
+        // Initialisation du gestionnaire audio
+        _audioManager = new AudioManager();
 
         // Create window
         _window = new Window(size, title);
@@ -241,9 +220,7 @@ class Magia {
                 _accumulator -= 1.0;
 
                 // Update audio
-                if (_audioContext) {
-                    _audioContext.update();
-                }
+                _audioManager.update();
 
                 // Update rendering stacks
                 _renderer3D.update();

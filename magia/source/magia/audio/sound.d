@@ -104,19 +104,4 @@ final class Sound : Resource!Sound {
         alBufferData(_id, AL_FORMAT_STEREO_FLOAT32, _buffer.ptr,
             cast(int)(_buffer.length * float.sizeof), _sampleRate);
     }
-
-    /// Joue le son
-    Voice!Dim play(uint Dim = 3u)(Vector!(float, Dim) position) {
-        if (!Magia.audioContext) {
-            return null;
-        }
-
-        Voice!Dim voice = Magia.audioContext.play(this);
-
-        if (voice) {
-            voice.position = position;
-        }
-
-        return voice;
-    }
 }

@@ -13,27 +13,41 @@ void loadAlchimieLibAudio(GrLibDefinition lib) {
 
     lib.addConstructor(&_sound_ctor, soundType, [grString]);
     lib.addFunction(&_sound_play, "play", [soundType]);
-    lib.addFunction(&_sound_playAt, "play", [soundType, vec3Type]);
-    lib.addFunction(&_sound_playOn, "play", [soundType, instanceType]);
+   /* lib.addFunction(&_sound_play2D, "play2D", [soundType, vec2Type]);
+    lib.addFunction(&_sound_play3D, "play3D", [soundType, vec3Type]);
+    lib.addFunction(&_sound_playOn, "play", [soundType, instanceType]);*/
 }
 
 private void _sound_ctor(GrCall call) {
-    Sound sound = new Sound(call.getString(0));
+    Sound sound = new Sound(Magia.res.get!Sound(call.getString(0)));
     call.setNative(sound);
 }
 
 /// @TODO
 private void _sound_play(GrCall call) {
     Sound sound = call.getNative!Sound(0);
+    Magia.audio.play(sound);
 }
 
 /// @TODO
-private void _sound_playAt(GrCall call) {
+/*private void _sound_play2D(GrCall call) {
     Sound sound = call.getNative!Sound(0);
-}
-
-private void _sound_playOn(GrCall call) {
+    Magia.audio.play2D(sound);
+}*/
+/*
+private void _sound_play2D_target(GrCall call) {
+    Sound sound = call.getNative!Sound(0);
+    Instance2D instance = call.getNative!ModelInstance(1);
+    Magia.audio.play2D(sound, instance);
+}*/
+/*
+private void _sound_play3D(GrCall call) {
+    Sound sound = call.getNative!Sound(0);
+    Magia.audio.play3D(sound, );
+}*/
+/*
+private void _sound_play3D_target(GrCall call) {
     Sound sound = call.getNative!Sound(0);
     Instance3D instance = call.getNative!ModelInstance(1);
-    sound.play(instance.transform.position);
-}
+    Magia.audio.play3D(sound, instance);
+}*/

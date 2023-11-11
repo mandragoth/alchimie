@@ -11,109 +11,72 @@ import magia.audio.device;
 import magia.audio.sound;
 import magia.audio.voice;
 
-/*
 /// Contexte audio
-abstract class AudioContext {
+final class AudioContext {
     private {
         ALCcontext* _context;
-    }
-
-    /// Met à jour les propriétés du contexte
-    void update();
-}
-
-/// Contexte audio 2D
-final class AudioContext2D : AudioContext {
-    private {
-        Voice2D[] _voices;
-    }
-
-    /// Init
-    this() {
-
-    }
-
-    override void update() {
-        alListener3f(AL_POSITION, 0, 0, 1.0f);
-        alListener3f(AL_VELOCITY, 0, 0, 0);
-        alListenerfv(AL_ORIENTATION, listenerOri.ptr);
-    }
-}*/
-
-/// Contexte audio 3D
-final class AudioContext(uint Dim = 3u) {
-    private {
-        ALCcontext* _context;
-        Array!(Voice!Dim) _voices;
+        Array!(VoiceBase) _voices;
         PerspectiveCamera _camera;
 
-        vec3 _lastPosition;
+        vec3 _position = vec3.zero, _lastPosition;
+        vec3 _forward = vec3(0f, 0f, 1.0f);
+        vec3 _up = vec3(0f, 0f, 0f);
     }
 
     @property {
         /// Get position
         vec3 position() const {
-            return _camera ? _camera.transform.position : vec3.zero;
+            return _position;
         }
     }
 
     /// Init
-    this(AudioDevice device, PerspectiveCamera camera) {
-        _voices = new Array!(Voice!Dim);
-        _camera = camera;
-        _lastPosition = _camera.transform.position;
+    this(AudioDevice device) {
+        _voices = new Array!(VoiceBase);
+        _lastPosition = _position;
 
         _context = alcCreateContext(device.handle, null);
         _assertAlc();
         enforce(_context, "[Audio] impossible de créer le contexte");
     }
 
-    static if (Dim == 3u) {
-        /// Update
-        void update() {
-            enforce(alcMakeContextCurrent(_context) == ALC_TRUE,
-                "[Audio] impossible de mettre à jour le contexte");
-            _assertAlc();
+    /// Update
+    void update() {
+        enforce(alcMakeContextCurrent(_context) == ALC_TRUE,
+            "[Audio] impossible de mettre à jour le contexte");
+        _assertAlc();
 
-            alListener3f(AL_POSITION, _camera.transform.position.x,
-                _camera.transform.position.y, _camera.transform.position.y);
-            vec3 deltaPosition = (_camera.transform.position - _lastPosition) * 60f;
-            _lastPosition = _camera.transform.position;
+        alListener3f(AL_POSITION, _position.x, _position.y, _position.y);
+        vec3 deltaPosition = (_position - _lastPosition) * 60f;
+        _lastPosition = _position;
 
-            const vec3 forward = _camera.forward.normalized();
-            const vec3 up = _camera.up.normalized();
+        const vec3 forward = _forward;
+        const vec3 up = _up;
 
-            float[] listenerOri = [
-                forward.x, forward.y, forward.z, up.x, up.y, up.z
-            ];
+        float[] listenerOri = [
+            forward.x, forward.y, forward.z, up.x, up.y, up.z
+        ];
 
-            alListener3f(AL_VELOCITY, deltaPosition.x, deltaPosition.y, deltaPosition.z);
-            alListenerfv(AL_ORIENTATION, listenerOri.ptr);
+        alListener3f(AL_VELOCITY, deltaPosition.x, deltaPosition.y, deltaPosition.z);
+        alListenerfv(AL_ORIENTATION, listenerOri.ptr);
 
-            //import std.stdio;writeln("forward: ", forward, "\t up: ", up, "\t pos: ", _camera.transform.position, "\t vit: ", deltaPosition);
+        //import std.stdio;writeln("forward: ", forward, "\t up: ", up, "\t pos: ", _position, "\t vit: ", deltaPosition);
 
-            foreach (i, voice; _voices) {
-                if (!voice.isPlaying) {
-                    _voices.mark(i);
-                    continue;
-                }
-                voice.update(this);
+        foreach (i, voice; _voices) {
+            if (!voice.isPlaying) {
+                _voices.mark(i);
+                continue;
             }
-            _voices.sweep();
-            _assertAlc();
+            voice.update(this);
         }
-    }
-    else {
-        /// Update
-        void update() {}
+        _voices.sweep();
+        _assertAlc();
     }
 
     /// Joue le son
-    Voice!Dim play(Sound sound) {
-        Voice!Dim voice = new Voice!Dim(sound);
+    void play(VoiceBase voice) {
         _voices.push(voice);
         _assertAlc();
-        return voice;
     }
 
     private void _assertAlc() {
@@ -136,6 +99,3 @@ final class AudioContext(uint Dim = 3u) {
         }
     }
 }
-
-alias AudioContext3D = AudioContext!3u;
-alias AudioContext2D = AudioContext!2u;

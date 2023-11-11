@@ -24,7 +24,7 @@ void loadAlchimieLibCamera(GrLibDefinition library) {
     library.addConstructor(&_newOrthographicCamera, oCameraType);
 
     // AudioContext constructor
-    library.addConstructor(&_newAudioContext, audioContextType, [pCameraType]);
+    //library.addConstructor(&_newAudioContext, audioContextType, [pCameraType]);
 
     // Camera properties
     library.addProperty(&_getRotation, null, "rotation", cameraType, grFloat);
@@ -61,12 +61,12 @@ private void _newPerspectiveCamera2(GrCall call) {
     Magia.addCamera3D(camera);
     call.setNative(camera);
 }
-
+/*
 private void _newAudioContext(GrCall call) {
     AudioContext3D context = new AudioContext3D(Magia.audioDevice, call.getNative!PerspectiveCamera(0));
     Magia.audioContext = context;
     call.setNative(context);
-}
+}*/
 
 private void _newOrthographicCamera(GrCall call) {
     OrthographicCamera camera = new OrthographicCamera(Magia.window.getAspectRatio());
