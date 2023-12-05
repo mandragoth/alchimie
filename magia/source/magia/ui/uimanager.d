@@ -52,6 +52,8 @@ class UIManager {
 
     /// Draw
     void draw() {
+        _renderer.setup();
+
         // Top left corner
         vec2 position = vec2(-1f, -1f);
 

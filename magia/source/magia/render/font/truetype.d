@@ -13,6 +13,7 @@ import bindbc.sdl;
 
 import magia.core;
 import magia.render.sprite;
+import magia.render.texture;
 import magia.render.font.font;
 import magia.render.font.glyph;
 
@@ -103,35 +104,37 @@ final class TrueTypeFont : Font {
         TTF_SetFontKerning(_trueTypeFont, 1);
 
         if (_outline == 0) {
-            if (-1 == TTF_GlyphMetrics(_trueTypeFont, cast(wchar) ch, &xmin, &xmax, &ymin, &ymax, &advance)) {
+            if (-1 == TTF_GlyphMetrics(_trueTypeFont, cast(wchar) ch, &xmin,
+                    &xmax, &ymin, &ymax, &advance)) {
                 return Glyph();
             }
 
-            SDL_Surface* surface = TTF_RenderGlyph_Blended(_trueTypeFont, cast(wchar) ch, Color.white.toSDL());
+            SDL_Surface* surface = TTF_RenderGlyph_Blended(_trueTypeFont,
+                cast(wchar) ch, Color.white.toSDL());
             enforce(surface);
-            Sprite sprite = new Sprite(surface);
+            Texture texture = new Texture(surface, TextureType.sprite);
+            Sprite sprite = new Sprite(texture, vec4i(0, 0, texture.width, texture.height));
             enforce(sprite);
             SDL_FreeSurface(surface);
 
-            Glyph metrics = Glyph(true, advance, 0, 0, sprite.width, sprite.height,
-                                  0, 0, sprite.width, sprite.height, sprite);
+            Glyph metrics = Glyph(true, advance, 0, 0, sprite.width,
+                sprite.height, 0, 0, sprite.width, sprite.height, sprite);
             _cache[ch] = metrics;
             return metrics;
-        }
-        else {
+        } else {
             if (-1 == TTF_GlyphMetrics(_trueTypeFont, cast(wchar) ch, &xmin,
                     &xmax, &ymin, &ymax, &advance))
                 return Glyph();
 
             TTF_SetFontOutline(_trueTypeFont, _outline);
             SDL_Surface* surfaceOutline = TTF_RenderGlyph_Blended(_trueTypeFont,
-                    cast(wchar) ch, Color.black.toSDL());
+                cast(wchar) ch, Color.black.toSDL());
             enforce(surfaceOutline);
 
             TTF_SetFontOutline(_trueTypeFont, 0);
 
             SDL_Surface* surface = TTF_RenderGlyph_Blended(_trueTypeFont,
-                    cast(wchar) ch, Color.white.toSDL());
+                cast(wchar) ch, Color.white.toSDL());
             enforce(surface);
 
             SDL_Rect srcRect = {0, 0, surface.w, surface.h};
@@ -139,13 +142,15 @@ final class TrueTypeFont : Font {
 
             SDL_BlitSurface(surface, &srcRect, surfaceOutline, &dstRect);
 
-            Sprite sprite = new Sprite(surfaceOutline);
+            Texture texture = new Texture(surfaceOutline, TextureType.sprite);
+            Sprite sprite = new Sprite(texture, vec4i(0, 0, texture.width, texture.height));
             enforce(sprite);
+
             SDL_FreeSurface(surface);
             SDL_FreeSurface(surfaceOutline);
 
-            Glyph metrics = Glyph(true, advance, 0, 0, sprite.width, sprite.height,
-                                  0, 0, sprite.width, sprite.height, sprite);
+            Glyph metrics = Glyph(true, advance, 0, 0, sprite.width,
+                sprite.height, 0, 0, sprite.width, sprite.height, sprite);
             _cache[ch] = metrics;
             return metrics;
         }
@@ -153,12 +158,12 @@ final class TrueTypeFont : Font {
 
     int getKerning(dchar prevChar, dchar currChar) {
         return TTF_GetFontKerningSizeGlyphs(_trueTypeFont,
-                cast(ushort) prevChar, cast(ushort) currChar);
+            cast(ushort) prevChar, cast(ushort) currChar);
     }
 
     Glyph getMetrics(dchar ch) {
         Glyph* metrics = ch in _cache;
-        
+
         if (metrics) {
             return *metrics;
         }

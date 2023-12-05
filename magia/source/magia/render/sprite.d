@@ -54,14 +54,6 @@ final class Sprite : Entity2D, Resource!Sprite {
         alignment = other.alignment;
     }
 
-    /// Constructor given an SDL surface
-    this(SDL_Surface* surface) {
-        Texture texture = new Texture(surface);
-        material = new Material(texture);
-        alignment = CoordinateSystem.topLeft;
-        /// @TODO pass UIElement alignment HERE!!!
-    }
-
     /// Constructor given an image path
     this(Texture texture, vec4i clip = vec4i.zero) {
         transform = Transform2D.identity;
