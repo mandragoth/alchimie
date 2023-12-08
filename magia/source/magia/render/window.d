@@ -170,17 +170,7 @@ class Window {
     void resizeWindow(const vec2u windowSize) {
         _windowSize = windowSize;
         _screenSize = cast(vec2)(windowSize);
-
         glViewport(0, 0, windowSize.x, windowSize.y);
-
-        foreach (Camera camera; _cameras) {
-            camera.aspectRatio = getAspectRatio();
-        }
-    }
-
-    /// Aspect ratio
-    float getAspectRatio() {
-        return _screenSize.x / _screenSize.y;
     }
 }
 

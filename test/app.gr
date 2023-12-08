@@ -14,15 +14,15 @@ event app() {
 
 task runtime() {
     var remilia = @Sprite("remilia");
-    remilia:position(@vec2f(12.5f, 0f));
+    remilia:position(@vec2f(12.5f, 100f));
 
-    task() {
+    /*task() {
         var angle = 0f;
         loop yield {
             remilia:rotation(angle);
             angle -= rad(1f);
         }
-    }();
+    }();*/
 
     /*var remilia2 = @Sprite("remilia", @vec4i(96, 48, 32, 48));
     remilia2:position(@vec2f(12.5f + 32f, 0f));*/
