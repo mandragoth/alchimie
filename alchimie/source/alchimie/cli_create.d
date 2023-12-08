@@ -77,8 +77,8 @@ void cliCreate(Cli.Result cli) {
         {
             Json windowNode = new Json;
             windowNode.set("enabled", true);
-            windowNode.set("width", 800);
-            windowNode.set("height", 600);
+            windowNode.set("width", Alchimie_Window_Width_Default);
+            windowNode.set("height", Alchimie_Window_Height_Default);
             appNode.set("window", windowNode);
         }
 
