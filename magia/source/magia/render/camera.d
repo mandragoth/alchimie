@@ -16,9 +16,6 @@ abstract class Camera : Instance3D {
         /// Rotation around Z axis
         float _zRotation = 0f;
 
-        /// Aspect ratio
-        float _aspectRatio = 1f;
-
         /// Zoom level
         float _zoomLevel = 1f;
 
@@ -57,11 +54,6 @@ abstract class Camera : Instance3D {
             _zRotation = zRotation_;
         }
 
-        /// Set aspect ratio
-        void aspectRatio(float aspectRatio_) {
-            _aspectRatio = aspectRatio_;
-        }
-
         /// Get zoom level
         float zoomLevel() {
             return _zoomLevel;
@@ -97,11 +89,6 @@ class OrthographicCamera : Camera {
             computeViewMatrix();
         }
 
-        override void aspectRatio(float aspectRatio_) {
-            _aspectRatio = aspectRatio_;
-            computeProjectionMatrix();
-        }
-
         override void zoomLevel(float zoomLevel_) {
             _zoomLevel = zoomLevel_;
             computeProjectionMatrix();
@@ -109,15 +96,14 @@ class OrthographicCamera : Camera {
     }
 
     /// Constructor
-    this(float aspectRatio) {
-        _aspectRatio = aspectRatio;
+    this() {
         computeProjectionMatrix();
     }
 
     /// Recompute projection and model matrices
     void computeProjectionMatrix() {
-        computeProjectionMatrix(-_aspectRatio * _zoomLevel,
-                                 _aspectRatio * _zoomLevel,
+        computeProjectionMatrix(-_zoomLevel,
+                                 _zoomLevel,
                                 -_zoomLevel,
                                  _zoomLevel);
     } 

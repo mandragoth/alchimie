@@ -69,7 +69,7 @@ private void _newAudioContext(GrCall call) {
 }*/
 
 private void _newOrthographicCamera(GrCall call) {
-    OrthographicCamera camera = new OrthographicCamera(Magia.window.getAspectRatio());
+    OrthographicCamera camera = new OrthographicCamera();
     Magia.addCamera2D(camera);
     call.setNative(camera);
 }
