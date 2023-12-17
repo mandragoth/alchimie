@@ -16,11 +16,10 @@ import magia.render.scene;
 import magia.render.texture;
 import magia.render.window;
 
+import std.stdio;
+
 /// Base rendering class.
 final class Sprite : Entity2D, Resource!Sprite {
-    /// Alignment used to render the sprites
-    CoordinateSystem alignment;
-
     @property {
         /// Temporary
         Texture texture() {
@@ -44,22 +43,20 @@ final class Sprite : Entity2D, Resource!Sprite {
 
         /// Underlying sprite size
         vec2 size() {
-            return vec2(material.clip.z, material.clip.w);
+            return vec2(material.clip.width, material.clip.height);
         }
     }
 
     /// Copy constructor
     this(Sprite other) {
         material = other.material;
-        alignment = other.alignment;
     }
 
     /// Constructor given an image path
-    this(Texture texture, vec4i clip = vec4i.zero) {
+    this(Texture texture, Clip clip = defaultClip) {
         transform = Transform2D.identity;
         material = new Material(texture);
         material.clip = clip;
-        alignment = CoordinateSystem.topLeft;
     }
 
     /// Accès à la ressource
@@ -69,8 +66,10 @@ final class Sprite : Entity2D, Resource!Sprite {
 
     /// Draw the sprite on the screen
     override void draw(Renderer2D renderer) {
-        Transform2D worldTransfrom = alignment.toRenderSpace(globalPosition,
-            size, renderer.window.screenSize, angle);
-        renderer.drawMaterial(material, worldTransfrom);
+        Transform2D targetTransform = globalTransform;
+        targetTransform.scale *= size;
+
+        Transform2D rendererTransform = renderer.toRenderSpace(targetTransform);
+        renderer.drawMaterial(material, rendererTransform.combineModel());
     }
 }

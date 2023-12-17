@@ -38,9 +38,9 @@ struct Quaternion(type) {
             return Quaternion(1, 0, 0, 0);
         }
 
-        /// Returns the yaw
-        real yaw() const {
-            return atan2(to!real(2.0 * (w * z + x * y)), to!real(1.0 - 2.0 * (y * y + z * z)));
+        /// Returns the roll
+        real roll() const {
+            return atan2(to!real(2.0 * (w * x + y * z)), to!real(1.0 - 2.0 * (x * x + y * y)));
         }
 
         /// Returns the pitch
@@ -48,9 +48,9 @@ struct Quaternion(type) {
             return asin(to!real(2.0 * (w * y - z * x)));
         }
 
-        /// Returns the roll
-        real roll() const {
-            return atan2(to!real(2.0 * (w * x + y * z)), to!real(1.0 - 2.0 * (x * x + y * y)));
+        /// Returns the yaw
+        real yaw() const {
+            return atan2(to!real(2.0 * (w * z + x * y)), to!real(1.0 - 2.0 * (y * y + z * z)));
         }
 
         /// Returns an inverted copy of the current quaternion
@@ -69,7 +69,7 @@ struct Quaternion(type) {
     }
 
     /// Instancing using euler angles
-    static Quaternion euler_rotation(real roll, real pitch, real yaw) {
+    static Quaternion eulerRotation(real roll, real pitch, real yaw) {
         Quaternion toReturn;
 
         const auto cr = cos(roll / 2.0);
@@ -88,8 +88,8 @@ struct Quaternion(type) {
     }
 
     /// Instancing using euler angles
-    static Quaternion euler_rotation(vec3 rotation) {
-        return euler_rotation(rotation.x, rotation.y, rotation.z);
+    static Quaternion eulerRotation(vec3 rotation) {
+        return eulerRotation(rotation.x, rotation.y, rotation.z);
     }
 
     /// Return the quaternion as a matrix

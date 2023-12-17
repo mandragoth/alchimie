@@ -166,6 +166,10 @@ struct Matrix(type, uint rows_, uint columns_) {
 
     // Operation for square matrices
     static if(rows == columns) {
+        static const uint dimension = rows - 1;
+
+        alias vec = Vector!(type, dimension);
+
         @property {
             /// Returns identity matrix
             static Matrix identity() {
@@ -193,6 +197,40 @@ struct Matrix(type, uint rows_, uint columns_) {
             data = transposed().data;
         }
 
+        /// Returns a translation matrix
+        static Matrix translation(vec v) {
+            Matrix toReturn = Matrix.identity;
+
+            static foreach(i; TupleRange!(0, dimension)) {
+                toReturn.data[i][columns-1] = v[i];
+            }
+
+            return toReturn;
+        }
+
+        /// Applies translation to current matrix
+        Matrix translate(vec v) {
+            this = Matrix.translation(v) * this;
+            return this;
+        }
+
+        /// Returns a scaling matrix
+        static Matrix scaling(vec v) {
+            Matrix toReturn = Matrix.identity;
+
+            static foreach(i; TupleRange!(0, dimension)) {
+                toReturn.data[i][i] = v[i];
+            }
+
+            return toReturn;
+        }
+
+        /// Applies scaling to current matrix
+        Matrix scale(vec v) {
+            this = Matrix.scaling(v) * this;
+            return this;
+        }
+
         /// Operation for square matrices of size bigger than 3
         static if (rows >= 3) {
             /// Returns an identity matrix with an applied rotation around the z-axis
@@ -217,60 +255,6 @@ struct Matrix(type, uint rows_, uint columns_) {
                     this = zrotation(alpha) * this;
                     return this;
                 }
-            }
-        }
-
-        /// Operation for square matrices of size 3 or 4
-        static if((rows >= 3) && (rows <= 4)) {
-            /// Returns a translation matrix
-            static Matrix translation(type x, type y, type z) {
-                Matrix toReturn = Matrix.identity;
-
-                toReturn.data[0][columns-1] = x;
-                toReturn.data[1][columns-1] = y;
-                toReturn.data[2][columns-1] = z;
-
-                return toReturn;
-            }
-
-            /// Override for vec3
-            static Matrix translation(vec3 v) {
-                return translation(v.x, v.y, v.z);
-            }
-
-            /// Applys a translation on the current matrix and returns it
-            Matrix translate(type x, type y, type z) {
-                this = Matrix.translation(x, y, z) * this;
-                return this;
-            }
-
-            /// Override for vec3
-            Matrix translate(vec3 v) {
-                this = Matrix.translation(v.x, v.y, v.z) * this;
-                return this;
-            }
-
-            /// Returns a scaling matrix
-            static Matrix scaling(type x, type y, type z) {
-                Matrix toReturn = Matrix.identity;
-
-                toReturn.data[0][0] = x;
-                toReturn.data[1][1] = y;
-                toReturn.data[2][2] = z;
-
-                return toReturn;
-            }
-
-            /// Applys a scale to the current matrix
-            Matrix scale(type x, type y, type z) {
-                this = Matrix.scaling(x, y, z) * this;
-                return this;
-            }
-
-            /// Override for vec3
-            Matrix scale(vec3 v) {
-                this = Matrix.scaling(v.x, v.y, v.z) * this;
-                return this;
             }
         }
 

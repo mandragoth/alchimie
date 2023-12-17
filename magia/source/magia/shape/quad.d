@@ -38,7 +38,7 @@ final class QuadInstance : Entity3D {
             _shader.uploadUniformVec3("u_CamPos", camera.globalPosition);
             _shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
 
-            quadMesh.draw(_shader, _material, transform);
+            quadMesh.draw(_shader, _material, globalModel);
         }
     }
 }

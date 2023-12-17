@@ -91,13 +91,8 @@ final class Mesh(uint dimension_) {
         }
     }
 
-    /// Draw call with transform
-    void draw(Shader shader, Material material, Transform!(dimension_) transform = Transform!(dimension_).identity) {
-        draw(shader, material, combineModel(transform));
-    }
-
     /// Draw call with model
-    private void draw(Shader shader, Material material, mat4 model) {
+    void draw(Shader shader, Material material, mat4 model) {
         bindData(shader, material);
         
         // Index buffer: defer to glDrawElements* methods

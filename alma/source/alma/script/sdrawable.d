@@ -26,7 +26,6 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
 
     // Entity constructors
     library.addConstructor(&_newSprite, spriteType, [grString]);
-    //library.addConstructor(&_newSprite2, spriteType, [grString, vec4iType]);
     library.addConstructor(&_newSkybox, skyboxType, [grString]);
     library.addConstructor(&_newModel, modelType, [grString]);
     library.addConstructor(&_newQuad, quadType);
@@ -46,10 +45,6 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
 
     // Entity operations
     library.addFunction(&_addTexture, "addTexture", [entityType, grString]);
-
-    // Global draw commands
-    library.addFunction(&_drawFilledRect, "drawFilledRect", [vec2Type, vec2Type, colorType]);
-    library.addFunction(&_drawFilledCircle, "drawFilledCircle", [vec2Type, grFloat, colorType]);
 
     // Light types
     GrType directionalLightType = library.addNative("DirectionalLight");
@@ -135,12 +130,6 @@ private void _newSprite(GrCall call) {
     Magia.addEntity(sprite);
     call.setNative(sprite);
 }
-/*
-private void _newSprite2(GrCall call) {
-    Sprite sprite = new Sprite(call.getString(0), call.getNative!SVec4i(1));
-    Magia.addEntity(sprite);
-    call.setNative(sprite);
-}*/
 
 private void _newSkybox(GrCall call) {
     Skybox skybox = Magia.res.get!Skybox(call.getString(0));
@@ -162,33 +151,6 @@ private void _newQuad(GrCall call) {
 private void _newSphere(GrCall call) {
     Sphere sphere = new Sphere(100, 10);
     call.setNative(sphere);
-}
-
-private void _packInstanceMatrix(GrCall call) {
-    SVec4f rotationObj = call.getNative!SVec4f(1);
-
-    vec3 position = cast(vec3) call.getNative!SVec3f(0);
-    quat rotation = quat(rotationObj.w, rotationObj.x, rotationObj.y, rotationObj.z);
-    vec3 scale = cast(vec3) call.getNative!SVec3f(2);
-    mat4 instanceMatrix = combineModel(position, rotation, scale);
-
-    call.setNative(instanceMatrix);
-}
-
-private void _drawFilledRect(GrCall call) {
-    vec2 position = call.getNative!SVec2f(0);
-    vec2 size = call.getNative!SVec2f(1);
-    SColor color = call.getNative!SColor(2);
-
-    Magia.renderer2D.drawFilledRect(position, size, color);
-}
-
-// @TODO fix this
-private void _drawFilledCircle(GrCall call) {
-    vec2 position = call.getNative!SVec2f(0);
-    SColor color = call.getNative!SColor(2);
-
-    Magia.renderer2D.drawFilledCircle(position, call.getFloat(1), color);
 }
 
 private void _newDirectionalLight(GrCall call) {
