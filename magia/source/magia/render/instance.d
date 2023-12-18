@@ -32,16 +32,9 @@ abstract class Instance(uint dimension_) {
         }
 
         /// Get global model
-        static if(dimension_ == 3) {
-            mat globalModel() {
-                Transform!(dimension_) globalTransform = globalTransform();
-
-                /*if (globalTransform.model != mat.identity) {
-                    return globalTransform.model;
-                }*/
-
-                return combineModel!(dimension_)(globalTransform);
-            }
+        mat4 globalModel() {
+            Transform!(dimension_) globalTransform = globalTransform();
+            return globalTransform.combineModel();
         }
 
         /// Set position

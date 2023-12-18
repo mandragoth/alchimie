@@ -61,26 +61,37 @@ class Window {
         uint screenWidth() const {
             return _windowSize.x;
         }
+
         /// Height of the window in pixels
         uint screenHeight() const {
             return _windowSize.y;
         }
+
         /// Maximum dimension of screen
         uint screenMaxDim() const {
             return max(screenWidth, screenHeight);
         }
+
         /// Size of the window in pixels
         vec2 screenSize() const {
             return _screenSize;
         }
+
+        /// Coordinates for the top left of the screen
+        vec2 topLeft() const {
+            return vec2(-_screenSize.x / 2f, _screenSize.y / 2f);
+        }
+
         /// Delta time
         float deltaTime() const {
             return _deltaTime;
         }
+
         /// Set title
         void title(string title) {
             SDL_SetWindowTitle(_sdlWindow, toStringz(title));
         }
+
         /// Set icon
         void icon(string path) {
             /// Free previous icon if needed
@@ -95,6 +106,7 @@ class Window {
             enforce(_icon, "impossible de charger `" ~ path ~ "`");
             SDL_SetWindowIcon(_sdlWindow, _icon);
         }
+
         /// Add camera
         void addCamera(Camera camera) {
             _cameras ~= camera;

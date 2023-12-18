@@ -163,8 +163,8 @@ class Magia {
         _lightingManager = new LightingManager();
 
         // Create renderers and their associated coordinate system and camera
-        _renderer3D = new Renderer3D(_window, CoordinateSystem.center);
-        _renderer2D = new Renderer2D(_window, CoordinateSystem.topLeft);
+        _renderer3D = new Renderer3D(_window, Cartesian3D.center);
+        _renderer2D = new Renderer2D(_window, Cartesian2D(_window.topLeft, vec2.bottomRight));
 
         // Create scenes (@TODO and associate renderers to them)
         _scene3D = new Scene3D(_renderer3D);

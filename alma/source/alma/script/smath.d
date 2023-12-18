@@ -150,18 +150,3 @@ private void _vec3ToString(GrCall call) {
     vec3 vector = vec3(vObj.getFloat("x"), vObj.getFloat("y"), vObj.getFloat("z"));
     call.setString(vector.toString);
 }
-
-private void _packInstanceMatrix(GrCall call) {
-    GrObject positionObj = call.getObject(0);
-    GrObject rotationObj = call.getObject(1);
-    GrObject scaleObj = call.getObject(2);
-
-    vec3 position = vec3(positionObj.getFloat("x"), positionObj.getFloat("y"),
-        positionObj.getFloat("z"));
-    quat rotation = quat(rotationObj.getFloat("w"), rotationObj.getFloat("x"),
-        rotationObj.getFloat("y"), rotationObj.getFloat("z"));
-    vec3 scale = vec3(scaleObj.getFloat("x"), scaleObj.getFloat("y"), scaleObj.getFloat("z"));
-    mat4 instanceMatrix = combineModel(position, rotation, scale);
-
-    call.setNative(instanceMatrix);
-}

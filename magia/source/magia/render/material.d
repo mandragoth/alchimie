@@ -24,30 +24,31 @@ enum Blend {
 }
 
 alias Clip = vec4i;
+alias defaultClip = vec4i.zero;
 
 /// Material structure
 class Material {
     /// How should we texture the rendered item?
-    Texture[] textures; // @TODO maybe only one texture per material?
+    Texture[] textures;
 
     /// How should we color the rendered item?
-    Color color; // @TODO bind to texture
+    Color color;
 
     /// What is the transparency for the item?
-    float alpha; // @TODO bind to texture
+    float alpha;
 
     /// How should we blend the rendered item?
-    Blend blend; // @TODO bind to texture
+    Blend blend;
 
     /// Do we need to flip the rendered item?
-    Flip flip; // @TODO bind to texture
+    Flip flip;
 
     /// What subset of the texture should we use?
-    Clip clip; // @TODO bind to texture
+    Clip clip;
 
     /// Constructor
     this(Texture texture_ = null, Color color_ = Color.white, float alpha_ = 1f, Blend blend_ = Blend.alpha,
-         Flip flip_ = Flip.none, Clip clip_ = vec4i.one) {
+         Flip flip_ = Flip.none, Clip clip_ = defaultClip) {
         color = color_;
         alpha = alpha_;
         blend = blend_;

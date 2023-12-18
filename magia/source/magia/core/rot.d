@@ -28,26 +28,36 @@ struct Rotor(type, uint dimension_) {
             angle = angle_;
         }
 
+        /// Matrix conversion
+        mat4 toMatrix() const {
+            return mat4.zrotation(angle);
+        }
+
         /// Composition of two rotations
         Rotor opBinary(string op : "*")(Rotor other) const {
             return Rotor(angle + other.angle);
         }
     } else static if(dimension_ == 3) {
-        /// Rotation in 3D can be defined by 3 euler angles or a quat
+        /// Quaternion
         quat rotation = quat.identity;
 
-        /// Constructor
+        /// If we manipulate euler angles, rot3 decays to euler mode
+        vec3 eulerAngles() const {
+            return vec3(rotation.roll, rotation.pitch, rotation.yaw);
+        }
+
+        /// Constructor given a quaternion
         this(quat rotation_) {
             rotation = rotation_;
         }
 
-        /// Constructor
+        /// Constructor given euler angles
         this(vec3 eulerAngles) {
-            rotation = quat.euler_rotation(eulerAngles.x, eulerAngles.y, eulerAngles.z);
+            rotation = quat.eulerRotation(eulerAngles);
         }
 
         /// Matrix conversion
-        mat4 toMatrix() {
+        mat4 toMatrix() const {
             return rotation.to_matrix!(4, 4);
         }
 

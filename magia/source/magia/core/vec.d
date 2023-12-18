@@ -60,11 +60,13 @@ struct Vector(type, uint dimension_) {
         static if (dimension >= 3) {
             alias z = at!2;
             alias b = z;
+            alias width = z;
         }
 
         static if (dimension >= 4) {
             alias w = at!3;
             alias a = w;
+            alias height = w;
         }
 
         /// Returns the squared magnitude of the vector
@@ -239,9 +241,9 @@ struct Vector(type, uint dimension_) {
     }
 
     /// Array assignment
-    Vector!(type, dimension) opOpAssign(string op, T)(Vector!(T, dimension) other) {
+    Vector!(type, dimension) opOpAssign(string op)(Vector!(type, dimension) other) {
         static foreach(i; TupleRange!(0, dimension)) {
-            mixin("data[i] ", op, "= cast(type)(other.data[i]);");
+            mixin("data[i] ", op, "= other.data[i];");
         }
 
         return this;

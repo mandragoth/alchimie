@@ -4,7 +4,6 @@ import bindbc.sdl;
 import bindbc.opengl;
 
 import std.math;
-import std.stdio;
 
 import magia.core;
 import magia.render.instance;
@@ -13,9 +12,6 @@ import magia.render.shader;
 /// Global camera class
 abstract class Camera : Instance3D {
     protected {
-        /// Rotation around Z axis
-        float _zRotation = 0f;
-
         /// Zoom level
         float _zoomLevel = 1f;
 
@@ -46,12 +42,15 @@ abstract class Camera : Instance3D {
 
         /// Get rotation along Z axis
         float zRotation() {
-            return _zRotation;
+            return transform.rotation.eulerAngles.z;
         }
 
         /// Set rotation along Z axis
         void zRotation(float zRotation_) {
-            _zRotation = zRotation_;
+            vec3 oldAngles = transform.rotation.eulerAngles;
+            vec3 newAngles = vec3(oldAngles.x, oldAngles.y, oldAngles.z);
+
+            transform.rotation = rot3(newAngles);
         }
 
         /// Get zoom level
@@ -85,8 +84,12 @@ class OrthographicCamera : Camera {
         }
 
         override void zRotation(float zRotation_) {
-            _zRotation = zRotation_;
+            zRotation(zRotation_);
             computeViewMatrix();
+        }
+
+        override float zRotation() {
+            return zRotation();
         }
 
         override void zoomLevel(float zoomLevel_) {
@@ -95,17 +98,20 @@ class OrthographicCamera : Camera {
         }
     }
 
-    /// Constructor
-    this() {
+    /// Default constructor
+    this(uint width, uint height) {
+        // Set aspect ratio and viewport
+        _viewport = vec4i(0, 0, width, height);
+
         computeProjectionMatrix();
     }
 
     /// Recompute projection and model matrices
     void computeProjectionMatrix() {
-        computeProjectionMatrix(-_zoomLevel,
-                                 _zoomLevel,
-                                -_zoomLevel,
-                                 _zoomLevel);
+        float halfWidth  = cast(float)_viewport.width / 2f; 
+        float halfHeight = cast(float)_viewport.height / 2f;
+        
+        computeProjectionMatrix(-halfWidth, halfWidth, -halfHeight, halfHeight);
     } 
 
     /// Recompute projection and model matrices
@@ -116,7 +122,7 @@ class OrthographicCamera : Camera {
 
     /// Recompute view and model matrices
     void computeViewMatrix() {
-        mat4 transform = mat4.translation(transform.position) * mat4.zrotation(_zRotation);
+        mat4 transform = mat4.translation(transform.position) * mat4.zrotation(zRotation);
         _view = transform.inverse();
         _matrix = _projection * _view;
     }
@@ -130,12 +136,6 @@ class PerspectiveCamera : Camera {
 
         /// Where is up?
         vec3 _up;
-
-        /// Width of the camera viewport
-        int _width;
-
-        /// Height of the camera viewport
-        int _height;
     }
 
     @property {
@@ -163,22 +163,18 @@ class PerspectiveCamera : Camera {
         // Setup position
         transform.position = position;
 
-        // Dimensions
-        _width = width;
-        _height = height;
-
         // Main axis for VP matrix
         _target = target;
         _up = up;
 
-        // Default viewport covers their dimensions
+        // Set aspect ratio and viewport
         _viewport = vec4i(0, 0, width, height);
     }
 
     /// Setting up camera matrices operations
     void updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
         _view = mat4.look_at(globalPosition, globalPosition + _target, _up);
-        _projection = mat4.perspective(_width, _height, FOVdeg, nearPlane, farPlane);
+        _projection = mat4.perspective(_viewport.width, _viewport.height, FOVdeg, nearPlane, farPlane);
         _matrix = _projection * _view;
     }
 

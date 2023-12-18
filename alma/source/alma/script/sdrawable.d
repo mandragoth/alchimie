@@ -154,6 +154,7 @@ version (AlmaMagia) {
         instance.scale = cast(vec2) call.getNative!SVec2f(1);
     }
 
+<<<<<<< HEAD
     private void _setScale3D(GrCall call) {
         Instance3D instance = call.getNative!Instance3D(0);
         instance.scale = cast(vec3) call.getNative!SVec3f(1);
@@ -186,6 +187,13 @@ private void _newSprite2(GrCall call) {
     Kernel.addEntity(sprite);
     call.setNative(sprite);
 }*/
+=======
+private void _newSprite(GrCall call) {
+    Sprite sprite = Magia.res.get!Sprite(call.getString(0));
+    Magia.addEntity(sprite);
+    call.setNative(sprite);
+}
+>>>>>>> experimental_runa_kernel
 
     private void _newSkybox(GrCall call) {
         Skybox skybox = Kernel.res.get!Skybox(call.getString(0));
@@ -209,6 +217,7 @@ private void _newSprite2(GrCall call) {
         call.setNative(sphere);
     }
 
+<<<<<<< HEAD
     private void _packInstanceMatrix(GrCall call) {
         SVec4f rotationObj = call.getNative!SVec4f(1);
 
@@ -238,6 +247,10 @@ private void _newSprite2(GrCall call) {
 
     private void _newDirectionalLight(GrCall call) {
         DirectionalLight directionalLight = new DirectionalLight();
+=======
+private void _newDirectionalLight(GrCall call) {
+    DirectionalLight directionalLight = new DirectionalLight();
+>>>>>>> experimental_runa_kernel
 
         directionalLight.direction = cast(vec3) call.getNative!SVec3f(0);
         directionalLight.ambientIntensity = call.getFloat(1);

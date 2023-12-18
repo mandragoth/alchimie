@@ -8,21 +8,30 @@ event app() {
     setupControls();
     setupCamera();
     yield;
-    testUI();
+    //testUI();
     runtime();
 }
 
 task runtime() {
     var remilia = @Sprite("remilia");
-    remilia:position(@vec2f(12.5f, 100f));
+    remilia:position(@vec2f(400f, 300f));
 
-    /*task() {
+    /*var remilia2 = @Sprite("remilia");
+    remilia2:position(@vec2f(-10f, 10f));
+
+    var remilia3 = @Sprite("remilia");
+    remilia3:position(@vec2f(10f, -10f));
+
+    var remilia4 = @Sprite("remilia");
+    remilia4:position(@vec2f(-10f, -10f));*/
+
+    task() {
         var angle = 0f;
         loop yield {
             remilia:rotation(angle);
             angle -= rad(1f);
         }
-    }();*/
+    }();
 
     /*var remilia2 = @Sprite("remilia", @vec4i(96, 48, 32, 48));
     remilia2:position(@vec2f(12.5f + 32f, 0f));*/

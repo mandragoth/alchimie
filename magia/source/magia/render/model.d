@@ -163,7 +163,7 @@ final class Model : Resource!Model {
 
         for (uint meshId = 0; meshId < _meshes.length; ++meshId) {
             Transform3D meshTransform = _transforms[meshId] * transform;
-            _meshes[meshId].draw(shader, material, meshTransform);
+            _meshes[meshId].draw(shader, material, meshTransform.combineModel());
         }
 
         // Revert to usual culling
@@ -627,6 +627,8 @@ final class Model : Resource!Model {
                 }
             }
 
+            const Transform3D nodeTransform = Transform3D(translation, rot3(rotation), scale);
+
             float[] matrixArray = getJsonArrayFloat(jsonNode, "matrix");
             if (matrixArray.length == 16) {
                 uint arrayId = 0;
@@ -644,7 +646,7 @@ final class Model : Resource!Model {
             }
 
             // Compute current node model
-            const mat4 currentModel = matNode * combineModel(translation, rotation, scale);
+            const mat4 currentModel = matNode * nodeTransform.combineModel();
 
             if (_traceDeep) {
                 writeln("  CurrentModel: ");

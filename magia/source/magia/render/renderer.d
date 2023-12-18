@@ -24,13 +24,13 @@ class Renderer(uint dimension_) {
     /// Active window
     Window window;
 
+    /// Coordinate system
+    Cartesian!(dimension_) cartesian;
+
     /// Active cameras
     Camera[] cameras;
 
     private {
-        // Coordinate system used for draws
-        CoordinateSystem _coordinateSystem;
-
         // Framebuffers for picking (@TODO pack?)
         FrameBuffer _pickingFrameBuffer;
     }
@@ -44,10 +44,10 @@ class Renderer(uint dimension_) {
     }
 
     /// Constructor
-    this(Window window_, CoordinateSystem coordinateSystem) {
+    this(Window window_, Cartesian!(dimension_) cartesian_) {
         // Set window and screen origin
         window = window_;
-        _coordinateSystem = coordinateSystem;
+        cartesian = cartesian_;
 
         // Load frame buffers for post process effects
         _pickingFrameBuffer = new FrameBuffer([TextureType.picking, TextureType.depth],
@@ -64,6 +64,11 @@ class Renderer(uint dimension_) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
+    /// Adjust a transform to render it
+    Transform!(dimension_) toRenderSpace(Transform!(dimension_) transform) {
+        return cartesian.toRenderSpace(transform);
+    }
+
     static if (dimension_ == 2) {
         /// Prepare to render 2D items
         void setup() {
@@ -74,7 +79,7 @@ class Renderer(uint dimension_) {
         }
 
         /// Render filled circle
-        void drawFilledCircle(vec2 position, float size, Color color = Color.white, float alpha = 1f) {
+        /*void drawFilledCircle(vec2 position, float size, Color color = Color.white, float alpha = 1f) {
             Transform2D transform = _coordinateSystem.toRenderSpace(position, vec2(size, size), window.screenSize);
             setupCircleShader(transform.position, transform.scale.x, color, alpha);
             drawIndexed(rectMesh, circleShader, defaultMaterial, transform);
@@ -94,10 +99,10 @@ class Renderer(uint dimension_) {
             Transform2D transform = _coordinateSystem.toRenderSpace(position, size, window.screenSize);
             Material material = new Material(texture, color, alpha, blend, flip, clip);
             drawMaterial(material, transform);
-        }
+        }*/
 
         /// Render a texture
-        void drawMaterial(Material material, Transform2D transform) {
+        void drawMaterial(Material material, mat4 model) {
             // Default clip has x, y = 0 and w, h = 1
             vec4 clipf = vec4(0f, 0f, 1f, 1f);
 
@@ -132,10 +137,9 @@ class Renderer(uint dimension_) {
             }
 
             quadShader.uploadUniformVec2("u_Flip", flipf);
-            quadShader.uploadUniformMat4("u_Transform", combineModel(transform));
 
             setupQuadShader(material.color, material.alpha);
-            drawIndexed(rectMesh, quadShader, material, transform);
+            drawIndexed(rectMesh, quadShader, material, model);
         }
     } else static if (dimension_ == 3) {
         /// Prepare to render 3D items
@@ -147,14 +151,14 @@ class Renderer(uint dimension_) {
         }
 
         /// Render line @TODO factorize mesh and use transform to parametrize line?
-        void drawLine(vec3 start, vec3 end, Color color = Color.white, float alpha = 1f) {
+        /*void drawLine(vec3 start, vec3 end, Color color = Color.white, float alpha = 1f) {
             Mesh3D lineMesh = new Mesh3D(new VertexBuffer([
                 start.x, start.y, start.z,
                 end.x, end.y, end.z    
             ], layout3D));
             setupLineShader(color, alpha);
-            drawIndexed(lineMesh, lineShader, defaultMaterial, Transform3D.identity);
-        }
+            drawIndexed(lineMesh, lineShader, defaultMaterial);
+        }*/
     }
 
     /// Update
@@ -228,11 +232,11 @@ class Renderer(uint dimension_) {
     }
 
     /// @TODO batching
-    private void drawIndexed(Mesh!(dimension_) mesh, Shader shader, Material material, Transform!(dimension_) transform) {
+    private void drawIndexed(Mesh!(dimension_) mesh, Shader shader, Material material, mat4 model) {
         // One draw call per camera
         foreach (Camera camera; cameras) {
             shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
-            mesh.draw(shader, material, transform);
+            mesh.draw(shader, material, model);
         }
     }
 }
