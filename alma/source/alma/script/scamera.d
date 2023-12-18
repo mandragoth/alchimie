@@ -61,23 +61,10 @@ private void _newPerspectiveCamera2(GrCall call) {
     Kernel.addCamera3D(camera);
     call.setNative(camera);
 }
-<<<<<<< HEAD
-/*
-private void _newAudioContext(GrCall call) {
-    AudioContext3D context = new AudioContext3D(Kernel.audioDevice, call.getNative!PerspectiveCamera(0));
-    Kernel.audioContext = context;
-    call.setNative(context);
-}*/
-
-private void _newOrthographicCamera(GrCall call) {
-    OrthographicCamera camera = new OrthographicCamera();
-    Kernel.addCamera2D(camera);
-=======
 
 private void _newOrthographicCamera(GrCall call) {
     OrthographicCamera camera = new OrthographicCamera(Magia.window.screenWidth, Magia.window.screenHeight);
     Magia.addCamera2D(camera);
->>>>>>> experimental_runa_kernel
     call.setNative(camera);
 }
 

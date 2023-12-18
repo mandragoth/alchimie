@@ -154,46 +154,11 @@ version (AlmaMagia) {
         instance.scale = cast(vec2) call.getNative!SVec2f(1);
     }
 
-<<<<<<< HEAD
-    private void _setScale3D(GrCall call) {
-        Instance3D instance = call.getNative!Instance3D(0);
-        instance.scale = cast(vec3) call.getNative!SVec3f(1);
-    }
-
-    private void _setModel(GrCall call) {
-        Instance3D instance = call.getNative!Instance3D(0);
-        instance.model = cast(mat4) call.getNative!SMat4f(1);
-    }
-
-    private void _addChild(GrCall call) {
-        Instance3D current = call.getNative!Instance3D(0);
-        Instance3D child = call.getNative!Instance3D(1);
-        current.addChild(child);
-    }
-
-    private void _addTexture(GrCall call) {
-        Entity3D entity = call.getNative!Entity3D(0);
-        Texture texture = Kernel.res.get!Texture(call.getString(1));
-
-        if (!entity.material) {
-            entity.material = new Material(texture);
-        } else {
-            entity.material.textures ~= texture;
-        }
-    }
-    /*
-private void _newSprite2(GrCall call) {
-    Sprite sprite = new Sprite(call.getString(0), call.getNative!SVec4i(1));
-    Kernel.addEntity(sprite);
-    call.setNative(sprite);
-}*/
-=======
 private void _newSprite(GrCall call) {
     Sprite sprite = Magia.res.get!Sprite(call.getString(0));
     Magia.addEntity(sprite);
     call.setNative(sprite);
 }
->>>>>>> experimental_runa_kernel
 
     private void _newSkybox(GrCall call) {
         Skybox skybox = Kernel.res.get!Skybox(call.getString(0));
@@ -217,40 +182,8 @@ private void _newSprite(GrCall call) {
         call.setNative(sphere);
     }
 
-<<<<<<< HEAD
-    private void _packInstanceMatrix(GrCall call) {
-        SVec4f rotationObj = call.getNative!SVec4f(1);
-
-        vec3 position = cast(vec3) call.getNative!SVec3f(0);
-        quat rotation = quat(rotationObj.w, rotationObj.x, rotationObj.y, rotationObj.z);
-        vec3 scale = cast(vec3) call.getNative!SVec3f(2);
-        mat4 instanceMatrix = combineModel(position, rotation, scale);
-
-        call.setNative(instanceMatrix);
-    }
-
-    private void _drawFilledRect(GrCall call) {
-        vec2 position = call.getNative!SVec2f(0);
-        vec2 size = call.getNative!SVec2f(1);
-        SColor color = call.getNative!SColor(2);
-
-        Kernel.renderer2D.drawFilledRect(position, size, color);
-    }
-
-    // @TODO fix this
-    private void _drawFilledCircle(GrCall call) {
-        vec2 position = call.getNative!SVec2f(0);
-        SColor color = call.getNative!SColor(2);
-
-        Kernel.renderer2D.drawFilledCircle(position, call.getFloat(1), color);
-    }
-
-    private void _newDirectionalLight(GrCall call) {
-        DirectionalLight directionalLight = new DirectionalLight();
-=======
 private void _newDirectionalLight(GrCall call) {
     DirectionalLight directionalLight = new DirectionalLight();
->>>>>>> experimental_runa_kernel
 
         directionalLight.direction = cast(vec3) call.getNative!SVec3f(0);
         directionalLight.ambientIntensity = call.getFloat(1);
