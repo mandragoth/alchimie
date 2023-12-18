@@ -89,7 +89,7 @@ abstract class UIElement {
     Timer timer;
 
     /// Propriétés
-    bool isHovered, isClicked;
+    bool isHovered, isPressed;
 
     /// Draw call to implement
     void draw(Renderer2D, Transform2D);

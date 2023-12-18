@@ -5,7 +5,7 @@ import std.file : exists, thisExePath, read;
 import std.path : dirName, buildNormalizedPath, setExtension;
 import std.stdio : writeln;
 
-import magia, grimoire, config;
+import grimoire, config;
 
 import alma.runtime.compiler;
 import alma.runtime.runtime;
@@ -32,8 +32,8 @@ version (AlmaDebug) {
             alma.loadResources(archive);
         }
 
-        if (windowIcon.length)
-            alma.window.icon = windowIcon;
+        /*if (windowIcon.length)
+            alma.window.icon = windowIcon;*/
 
         alma.run();
     }
@@ -98,8 +98,8 @@ version (AlmaDebug) {
         foreach (string archive; archives) {
             alma.loadResources(archive);
         }
-        if (windowIcon.length)
-            alma.window.icon = windowIcon;
+        /*if (windowIcon.length)
+            alma.window.icon = windowIcon;*/
 
         alma.run();
     }

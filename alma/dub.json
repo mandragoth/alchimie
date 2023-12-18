@@ -10,9 +10,6 @@
     "targetType": "executable",
     "workingDirectory": "..",
     "dependencies": {
-        "magia": {
-            "path": "../magia"
-        },
         "grimoire": {
             "path": "../grimoire"
         },
@@ -22,23 +19,62 @@
     },
     "configurations": [
         {
-            "name": "debug",
+            "name": "magia_debug",
             "targetPath": "../bin",
-            "targetName": "alma-dbg",
+            "targetName": "alma-dbg-magia",
             "dflags": [
                 "-gf"
             ],
             "versions": [
-                "AlmaDebug"
-            ]
+                "AlmaDebug", "AlmaMagia"
+            ],
+            "dependencies": {
+                "magia": {
+                    "path": "../magia"
+                }
+            }
         },
         {
-            "name": "export",
+            "name": "runa_debug",
+            "targetPath": "../bin",
+            "targetName": "alma-dbg-runa",
+            "dflags": [
+                "-gf"
+            ],
+            "versions": [
+                "AlmaDebug", "AlmaRuna"
+            ],
+            "dependencies": {
+                "runa": {
+                    "path": "../runa"
+                }
+            }
+        },
+        {
+            "name": "magia_export",
             "targetPath": "../export",
             "targetName": "alma",
             "versions": [
-                "AlmaRuntime"
-            ]
+                "AlmaRuntime", "AlmaMagia"
+            ],
+            "dependencies": {
+                "magia": {
+                    "path": "../magia"
+                }
+            }
+        },
+        {
+            "name": "runa_export",
+            "targetPath": "../export",
+            "targetName": "alma",
+            "versions": [
+                "AlmaRuntime", "AlmaRuna"
+            ],
+            "dependencies": {
+                "runa": {
+                    "path": "../runa"
+                }
+            }
         }
     ]
 }

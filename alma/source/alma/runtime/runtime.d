@@ -7,11 +7,12 @@ import std.conv : to;
 import std.path, std.file;
 import std.datetime, core.thread;
 
-import magia, grimoire, config;
+import grimoire, config;
+import alma.kernel;
 import alma.script;
 import alma.runtime.compiler;
 
-final class Alma : Magia {
+final class Alma : Kernel {
     private {
         // Grimoire
         GrEngine _engine;
@@ -46,8 +47,10 @@ final class Alma : Magia {
                 string resType = resNode.getString("type");
                 stream.write!string(resType);
 
-                ResourceManager.Loader loader = res.getLoader(resType);
-                loader.compile(dirName(file.path), resNode, stream);
+                if (res.hasLoader(resType)) {
+                    ResourceManager.Loader loader = res.getLoader(resType);
+                    loader.compile(dirName(file.path), resNode, stream);
+                }
             }
 
             file.data = cast(ubyte[]) stream.data;
@@ -70,8 +73,10 @@ final class Alma : Magia {
             uint nbRes = stream.read!uint();
             for (uint i; i < nbRes; ++i) {
                 string resType = stream.read!string();
-                ResourceManager.Loader loader = res.getLoader(resType);
-                loader.load(stream);
+                if (res.hasLoader(resType)) {
+                    ResourceManager.Loader loader = res.getLoader(resType);
+                    loader.load(stream);
+                }
             }
         }
         _compiledResourceFiles.length = 0;

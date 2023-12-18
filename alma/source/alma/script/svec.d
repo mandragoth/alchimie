@@ -1,9 +1,9 @@
 module alma.script.svec;
 
-import magia, grimoire;
-import alma.script.common;
-
 import std.conv;
+import grimoire;
+import alma.script.common;
+import alma.kernel;
 
 package void loadAlchimieLibVec(GrLibDefinition library) {
     static foreach (dimension; [2, 3, 4]) {
@@ -149,7 +149,7 @@ private void _angleBetween(int dimension, string type)(GrCall call) {
         ") call.getNative!(SVec", dimension, "!Gr", type, ")(0);");
     mixin("vec", dimension, " v2 = cast(vec", dimension,
         ") call.getNative!(SVec", dimension, "!Gr", type, ")(1);");
-    call.setFloat(angle(v1, v2));
+    call.setFloat(angleBetween(v1, v2));
 }
 
 private void _rotate3(string type)(GrCall call) {

@@ -107,6 +107,11 @@ final class ResourceManager {
         _loaders[type] = loader;
     }
 
+    bool hasLoader(string type) const {
+        auto p = type in _loaders;
+        return p != null;
+    }
+
     Loader getLoader(string type) const {
         auto p = type in _loaders;
         enforce(p, "aucune fonction de définie pour le type `" ~ type ~ "`");

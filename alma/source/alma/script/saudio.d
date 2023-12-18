@@ -1,8 +1,8 @@
 module alma.script.saudio;
 
 import grimoire;
-import magia;
 
+import alma.kernel;
 import alma.script.common;
 
 void loadAlchimieLibAudio(GrLibDefinition lib) {
@@ -19,35 +19,35 @@ void loadAlchimieLibAudio(GrLibDefinition lib) {
 }
 
 private void _sound_ctor(GrCall call) {
-    Sound sound = new Sound(Magia.res.get!Sound(call.getString(0)));
+    Sound sound = new Sound(Kernel.res.get!Sound(call.getString(0)));
     call.setNative(sound);
 }
 
 /// @TODO
 private void _sound_play(GrCall call) {
     Sound sound = call.getNative!Sound(0);
-    Magia.audio.play(sound);
+    Kernel.audio.play(sound);
 }
 
 /// @TODO
 /*private void _sound_play2D(GrCall call) {
     Sound sound = call.getNative!Sound(0);
-    Magia.audio.play2D(sound);
+    Kernel.audio.play2D(sound);
 }*/
 /*
 private void _sound_play2D_target(GrCall call) {
     Sound sound = call.getNative!Sound(0);
     Instance2D instance = call.getNative!ModelInstance(1);
-    Magia.audio.play2D(sound, instance);
+    Kernel.audio.play2D(sound, instance);
 }*/
 /*
 private void _sound_play3D(GrCall call) {
     Sound sound = call.getNative!Sound(0);
-    Magia.audio.play3D(sound, );
+    Kernel.audio.play3D(sound, );
 }*/
 /*
 private void _sound_play3D_target(GrCall call) {
     Sound sound = call.getNative!Sound(0);
     Instance3D instance = call.getNative!ModelInstance(1);
-    Magia.audio.play3D(sound, instance);
+    Kernel.audio.play3D(sound, instance);
 }*/

@@ -4,7 +4,7 @@ import std.array;
 import std.path;
 import std.stdio;
 
-import magia, grimoire, config;
+import grimoire, config;
 
 import alma.runtime;
 

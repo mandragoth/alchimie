@@ -1,6 +1,6 @@
 import std.stdio;
 
-import magia, grimoire, config;
+import grimoire, config;
 import alma.script, alma.runtime;
 import alma.cli;
 
@@ -17,7 +17,15 @@ void main(string[] args) {
     }
     try {
         version (AlmaDebug) {
-            boot("test/app.gr", [Alchimie_StandardLibrary_File, "test/assets"]);
+            version (AlmaRuna) {
+                boot("test/runa.gr", [
+                        Alchimie_StandardLibrary_File, "test/assets"
+                    ]);
+            } else {
+                boot("test/app.gr", [
+                        Alchimie_StandardLibrary_File, "test/assets"
+                    ]);
+            }
         } else {
             if (args.length > 1) {
                 Cli cli = new Cli("alma");

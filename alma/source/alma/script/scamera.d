@@ -1,11 +1,12 @@
 module alma.script.scamera;
 
 import grimoire;
-import magia;
 
+import alma.kernel;
 import alma.script.common;
 
 void loadAlchimieLibCamera(GrLibDefinition library) {
+    version(AlmaMagia) {
     // Fetch maths types
     GrType vec3Type = grGetNativeType("vec3", [grFloat]);
     GrType vec4iType = grGetNativeType("vec4", [grInt]);
@@ -42,11 +43,13 @@ void loadAlchimieLibCamera(GrLibDefinition library) {
     // Screen operations
     library.addFunction(&_getScreenWidth, "screenWidth", [], [grInt]);
     library.addFunction(&_getScreenHeight, "screenHeight", [], [grInt]);
+    }
 }
 
+version(AlmaMagia):
 private void _newPerspectiveCamera(GrCall call) {
-    PerspectiveCamera camera = new PerspectiveCamera(Magia.window.screenWidth, Magia.window.screenHeight);
-    Magia.addCamera3D(camera);
+    PerspectiveCamera camera = new PerspectiveCamera(Kernel.window.screenWidth, Kernel.window.screenHeight);
+    Kernel.addCamera3D(camera);
     call.setNative(camera);
 }
 
@@ -58,19 +61,19 @@ private void _newPerspectiveCamera2(GrCall call) {
     vec3 up = cast(vec3) call.getNative!SVec3f(4);
 
     PerspectiveCamera camera = new PerspectiveCamera(width, height, position, target, up);
-    Magia.addCamera3D(camera);
+    Kernel.addCamera3D(camera);
     call.setNative(camera);
 }
 /*
 private void _newAudioContext(GrCall call) {
-    AudioContext3D context = new AudioContext3D(Magia.audioDevice, call.getNative!PerspectiveCamera(0));
-    Magia.audioContext = context;
+    AudioContext3D context = new AudioContext3D(Kernel.audioDevice, call.getNative!PerspectiveCamera(0));
+    Kernel.audioContext = context;
     call.setNative(context);
 }*/
 
 private void _newOrthographicCamera(GrCall call) {
     OrthographicCamera camera = new OrthographicCamera();
-    Magia.addCamera2D(camera);
+    Kernel.addCamera2D(camera);
     call.setNative(camera);
 }
 
@@ -120,9 +123,9 @@ private void _setForward(GrCall call) {
 }
 
 private void _getScreenWidth(GrCall call) {
-    call.setInt(cast(int) Magia.window.screenWidth);
+    call.setInt(cast(int) Kernel.window.screenWidth);
 }
 
 private void _getScreenHeight(GrCall call) {
-    call.setInt(cast(int) Magia.window.screenHeight);
+    call.setInt(cast(int) Kernel.window.screenHeight);
 }

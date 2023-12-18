@@ -2,7 +2,7 @@ module alma.runtime.compiler;
 
 import std.exception;
 
-import magia, grimoire, config;
+import grimoire, config;
 
 import alma.script;
 

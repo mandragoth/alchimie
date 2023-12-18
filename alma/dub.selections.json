@@ -2,13 +2,14 @@
 	"fileVersion": 1,
 	"versions": {
 		"audio-formats": "3.0.1",
+		"bindbc-common": "0.1.2",
 		"bindbc-loader": "1.1.3",
 		"bindbc-openal": "1.1.0",
 		"bindbc-opengl": "1.1.0",
-		"bindbc-sdl": "1.4.2",
-		"bindbc-soloud": "0.1.3",
+		"bindbc-sdl": "1.4.4",
+		"config": {"path":"../config"},
 		"grimoire": {"path":"../grimoire"},
 		"magia": {"path":"../magia"},
-		"stb": "2.0.1"
+		"runa": {"path":"../runa"}
 	}
 }

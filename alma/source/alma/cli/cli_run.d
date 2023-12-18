@@ -3,7 +3,7 @@ module alma.cli.cli_run;
 import std.conv : to;
 import std.stdio;
 
-import magia, grimoire, config;
+import grimoire, config;
 import alma.runtime;
 
 version (AlmaRuntime) {

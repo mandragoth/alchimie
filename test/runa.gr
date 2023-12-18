@@ -1,0 +1,7 @@
+event app {
+    print("Bonjour");
+    var remilia = @Sprite("remilia");
+    remilia:position(@vec2f(12.5f, 100f));
+
+    loop yield {}
+}

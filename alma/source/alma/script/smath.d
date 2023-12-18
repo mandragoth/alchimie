@@ -1,7 +1,7 @@
 module alma.script.smath;
 
-import magia;
 import grimoire;
+import alma.kernel;
 
 package void loadAlchimieLibMath(GrLibDefinition library) {
     // Maths types
@@ -114,7 +114,7 @@ private void _angle(GrCall call) {
     vec3 v1 = vec3(v1Obj.getFloat("x"), v1Obj.getFloat("y"), v1Obj.getFloat("z"));
     vec3 v2 = vec3(v2Obj.getFloat("x"), v2Obj.getFloat("y"), v2Obj.getFloat("z"));
 
-    call.setFloat(angle(v1, v2));
+    call.setFloat(angleBetween(v1, v2));
 }
 
 private void _rotate(GrCall call) {

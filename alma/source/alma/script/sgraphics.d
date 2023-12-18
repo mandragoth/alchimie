@@ -1,9 +1,10 @@
 module alma.script.sgraphics;
 
-import magia;
 import grimoire;
+import alma.kernel;
 
 package void loadAlchimieLibGraphics(GrLibDefinition library) {
+    version(AlmaMagia) {
     // Maths types
     GrType vec2Type = grGetNativeType("vec2", [grFloat]);
     GrType vec3Type = grGetNativeType("vec3", [grFloat]);
@@ -33,8 +34,10 @@ package void loadAlchimieLibGraphics(GrLibDefinition library) {
     library.addConstructor(&_newIndexBuffer, indexBufferType, [grList(grUInt)]);
     library.addConstructor(&_newMesh2D, meshType, [vertexBufferType, indexBufferType]);
     library.addConstructor(&_newMesh3D, meshType, [vertexBufferType, indexBufferType]);
+    }
 }
 
+version(AlmaMagia):
 private void _newBufferElement(GrCall call) {
     BufferElement bufferElement = BufferElement(call.getString(0), call.getEnum!LayoutType(1), call.getInt(2));
     call.setNative(bufferElement);

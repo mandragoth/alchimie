@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/runa
+runa.so
+runa.dylib
+runa.dll
+runa.a
+runa.lib
+runa-test-*
+*.exe
+*.pdb
+*.o
+*.obj
+*.lst

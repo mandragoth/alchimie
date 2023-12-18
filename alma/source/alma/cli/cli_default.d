@@ -5,7 +5,7 @@ import std.file : exists, thisExePath;
 import std.path : setExtension;
 import std.stdio : writeln;
 
-import magia, grimoire, config;
+import grimoire, config;
 import alma.runtime;
 
 version (AlmaRuntime) {

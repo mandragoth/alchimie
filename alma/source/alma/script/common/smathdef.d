@@ -1,11 +1,18 @@
 module alma.script.common.smathdef;
 
-import magia;
 import grimoire;
+import alma.kernel;
 
 final class SVec2(T) {
     Vector!(T, 2) _vectorData;
     alias _vectorData this;
+}
+
+SVec2f toSVec2f(vec2 v_) {
+    auto v = new SVec2f;
+    v.x = v_.x;
+    v.y = v_.y;
+    return v;
 }
 
 alias SVec2f = SVec2!GrFloat;

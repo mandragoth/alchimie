@@ -13,6 +13,10 @@
             "path": "../magia"
         },
         {
+            "name": "runa",
+            "path": "../runa"
+        },
+        {
             "name": "config",
             "path": "../config"
         },

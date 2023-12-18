@@ -5,7 +5,7 @@ import std.math;
 import std.algorithm.comparison : min, max;
 
 import grimoire;
-import magia;
+import alma.kernel;
 
 package void loadAlchimieLibUI(GrLibDefinition library) {
     GrType splineType = grGetEnumType("Spline");
@@ -298,7 +298,7 @@ private void _ui_isClicked(GrCall call) {
         return;
     }
 
-    call.setBool(ui.isClicked);
+    call.setBool(ui.isPressed);
 }
 
 private void _ui_state_new(GrCall call) {
@@ -492,7 +492,7 @@ private void _ui_append_root(GrCall call) {
         return;
     }
 
-    Magia.ui.appendRoot(ui);
+    Kernel.ui.appendRoot(ui);
 }
 
 private void _ui_append_child(GrCall call) {
@@ -507,8 +507,8 @@ private void _ui_append_child(GrCall call) {
 }
 
 private void _label_new(GrCall call) {
-    Label label = new Label(call.getString(0));
-    call.setNative(label);
+    //Label label = new Label(call.getString(0));
+    //call.setNative(label);
 }
 
 private void _label_text(GrCall call) {

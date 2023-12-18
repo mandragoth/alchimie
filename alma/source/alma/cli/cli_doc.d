@@ -7,7 +7,7 @@ import std.conv : to;
 import std.path;
 import std.file;
 
-import magia, grimoire;
+import grimoire;
 import alma.script;
 
 version (AlmaRuntime) {

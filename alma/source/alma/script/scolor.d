@@ -1,8 +1,8 @@
 module alma.script.scolor;
 
-import magia;
 import grimoire;
 
+import alma.kernel;
 import alma.script.common;
 
 package void loadAlchimieLibColor(GrLibDefinition library) {

@@ -336,7 +336,7 @@ T.vectorType dot(T)(const T veca, const T vecb) @safe pure nothrow if(is_vector!
 }
 
 /// Returns the angle between two vectors
-T.vectorType angle(T)(const T veca, const T vecb) @safe pure nothrow if(is_vector!T) {
+T.vectorType angleBetween(T)(const T veca, const T vecb) @safe pure nothrow if(is_vector!T) {
     return acos(dot(veca.normalized, vecb.normalized));
 }
 

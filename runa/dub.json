@@ -1,0 +1,71 @@
+{
+	"authors": [
+		"Jonath",
+		"Enalye"
+	],
+	"buildTypes": {
+		"debug": {
+			"buildOptions": [
+				"debugMode",
+				"debugInfo"
+			]
+		},
+		"release": {
+			"buildOptions": [
+				"releaseMode",
+				"inline",
+				"noBoundsCheck",
+				"optimize"
+			]
+		},
+		"unittest": {
+			"buildOptions": [
+				"debugMode",
+				"debugInfo",
+				"unittests"
+			]
+		}
+	},
+	"copyFiles-windows": [
+		"../libs/$PLATFORM/$ARCH/SDL2.dll",
+		"../libs/$PLATFORM/$ARCH/SDL2_image.dll",
+		"../libs/$PLATFORM/$ARCH/SDL2_ttf.dll",
+		"../libs/$PLATFORM/$ARCH/OpenAL32.dll"
+	],
+	"copyright": "Copyright © 2022, Mandragoth",
+	"dependencies": {
+		"audio-formats": "~>3.0.1",
+		"bindbc-openal": "~>1.1.0",
+		"bindbc-sdl": "~>1.4.2"
+	},
+	"description": "Noyau pour le moteur Alchimie",
+	"lflags-posix": [
+		"-L-L../libs/$PLATFORM/$ARCH/",
+		"-L-lz"
+	],
+	"libs-posix": [
+		"SDL2",
+		"SDL2_image",
+		"SDL2_ttf"
+	],
+	"libs-windows": [
+		"../libs/$PLATFORM/$ARCH/SDL2",
+		"../libs/$PLATFORM/$ARCH/SDL2_image",
+		"../libs/$PLATFORM/$ARCH/SDL2_ttf",
+		"../libs/$PLATFORM/$ARCH/OpenAL32"
+	],
+	"license": "Zlib",
+	"name": "runa",
+	"subConfigurations": {
+		"bindbc-sdl": "static"
+	},
+	"targetName": "runa",
+	"targetPath": "bin",
+	"targetType": "library",
+	"versions": [
+		"BindSDL_Static",
+		"SDL_2_26",
+		"SDL_Image_2_6",
+		"SDL_TTF_2_20"
+	]
+}

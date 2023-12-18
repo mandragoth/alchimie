@@ -2,8 +2,8 @@ module alma.script.common.sutils;
 
 import std.stdio;
 
-import magia;
 import grimoire;
+import alma.kernel;
 
 void print(string message) {
     writeln(message);
