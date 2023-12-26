@@ -1,24 +1,17 @@
 module magia.ui.element;
 
 import magia.core;
+import magia.render.entity;
+import magia.render.instance;
 import magia.render.renderer;
 
 /// Abstract class representing an UI element
-/// @TODO remake with Entity2D inheritance for position, scale and angle
-abstract class UIElement {
-    public {
-        /// Children elements
-        UIElement[] _children;
-    }
-
-    /// Position
-    float posX = 0f, posY = 0f;
-
-    /// Scale
-    float sizeX = 0f, sizeY = 0f;
+abstract class UIElement : Entity2D {
+    /// Size
+    vec2 size = vec2.zero;
 
     /// Pivot point
-    float pivotX = .5f, pivotY = .5f;
+    vec2 pivot = vec2.one * .5f;
 
     /// X alignment
     enum AlignX {
@@ -41,30 +34,21 @@ abstract class UIElement {
     AlignY alignY = AlignY.top;
 
     /// Offset
-    float offsetX = 0f, offsetY = 0f;
-
-    /// Scale
-    float scaleX = 1f, scaleY = 1f;
+    vec2 offset = vec2.zero;
 
     /// Alpha
     float alpha = 1f;
-
-    /// Angle
-    float angle = 0f;
 
     /// State of element
     static final class State {
         /// Name of state
         string name;
 
+        /// Initial transform
+        Transform2D transform;
+
         /// Offset to set
-        float offsetX = 0f, offsetY = 0f;
-
-        /// Scale to set
-        float scaleX = 1f, scaleY = 1f;
-
-        /// Angle to set
-        float angle = 0f;
+        vec2 offset = vec2.zero;
 
         /// Alpha to set
         float alpha = 1f;
@@ -91,6 +75,73 @@ abstract class UIElement {
     /// Propriétés
     bool isHovered, isClicked;
 
-    /// Draw call to implement
-    void draw(Renderer2D, Transform2D);
+    /// Update
+    override void update() {
+        // Compute transitions
+        if (timer.isRunning) {
+            timer.update();
+
+            SplineFunc splineFunc = getSplineFunc(targetState.spline);
+            const float t = splineFunc(timer.value01);
+
+            offset.x = lerp(initState.offset.x, targetState.offset.x, t);
+            offset.y = lerp(initState.offset.y, targetState.offset.y, t);
+
+            transform.scale.x = lerp(initState.transform.scale.x, targetState.transform.scale.x, t);
+            transform.scale.y = lerp(initState.transform.scale.y, targetState.transform.scale.y, t);
+
+            transform.rotation.angle = lerp(initState.transform.rotation.angle, targetState.transform.rotation.angle, t);
+            alpha = lerp(initState.alpha, targetState.alpha, t);
+        }
+    }
+
+    override void draw(Renderer2D renderer) {
+        // Position
+        vec2 position = transform.position + offset;
+
+        // Rotation
+        rot2 rotation = transform.rotation;
+
+        // Scale
+        vec2 scale = transform.scale;
+
+        UIElement parentElement = cast(UIElement) parent;
+        
+        const float parentW = parentElement ? parentElement.size.x : renderer.window.screenWidth();
+        const float parentH = parentElement ? parentElement.size.y : renderer.window.screenHeight();
+
+        final switch (alignX) with (UIElement.AlignX) {
+            case left:
+                break;
+            case right:
+                position.x = parentW - (position.x + (size.x * scale.x));
+                break;
+            case center:
+                position.x = parentW / 2f + position.x;
+                break;
+        }
+
+        final switch (alignY) with (UIElement.AlignY) {
+            case bottom:
+                break;
+            case top:
+                position.y = parentH - (position.y + (size.y * scale.y));
+                break;
+            case center:
+                position.y = parentH / 2f + position.y;
+                break;
+        }
+
+        // Adjust position
+        position *= 2f;
+
+        // Set new transform
+        transform = Transform2D(position, rotation, scale);
+
+        // Prepare draw for children
+        foreach (Instance2D child; children) {
+            UIElement childElement = cast(UIElement) child;
+            childElement.draw(renderer);
+        }
+    }
 }

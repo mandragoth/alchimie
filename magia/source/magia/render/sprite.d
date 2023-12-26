@@ -31,17 +31,17 @@ final class Sprite : Entity2D, Resource!Sprite {
             return texture.id;
         }
 
-        /// Underlying texture width
+        /// Width
         uint width() {
-            return texture.width;
+            return material.clip.width;
         }
 
-        /// Underlying texture height
+        /// Height
         uint height() {
-            return texture.height;
+            return material.clip.height;
         }
 
-        /// Underlying sprite size
+        /// Size
         vec2 size() {
             return vec2(material.clip.width, material.clip.height);
         }
@@ -67,7 +67,7 @@ final class Sprite : Entity2D, Resource!Sprite {
     /// Draw the sprite on the screen
     override void draw(Renderer2D renderer) {
         Transform2D targetTransform = globalTransform;
-        targetTransform.scale *= size;
+        targetTransform.scale *= size / 2f;
 
         Transform2D rendererTransform = renderer.toRenderSpace(targetTransform);
         renderer.drawMaterial(material, rendererTransform.combineModel());

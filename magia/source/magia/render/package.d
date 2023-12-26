@@ -1,15 +1,15 @@
 module magia.render;
 
 public {
-    import magia.render.buffer; // @TODO remove
+    import magia.render.buffer;
     import magia.render.camera;
-    import magia.render.data; // @TODO remove
+    import magia.render.data;
     import magia.render.entity;
     import magia.render.font;
     import magia.render.instance;
     import magia.render.light;
     import magia.render.material;
-    import magia.render.mesh; // @TODO remove
+    import magia.render.mesh;
     import magia.render.model;
     import magia.render.postprocess;
     import magia.render.renderer;
@@ -17,8 +17,7 @@ public {
     import magia.render.skybox;
     import magia.render.scene;
     import magia.render.sprite;
-    import magia.render.text;
-    import magia.render.vertex; // @TODO remove
+    import magia.render.vertex;
     import magia.render.window;
     import magia.render.texture;
 }

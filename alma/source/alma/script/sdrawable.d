@@ -12,12 +12,14 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     GrType vec2Type = grGetNativeType("vec2", [grFloat]);
     GrType vec3Type = grGetNativeType("vec3", [grFloat]);
     GrType colorType = grGetNativeType("color");
-    GrType vec4iType = grGetNativeType("vec4", [grInt]);
+    GrType vec2iType = grGetNativeType("vec2i", [grInt]);
+    GrType vec4iType = grGetNativeType("vec4i", [grInt]);
     GrType mat4Type = grGetNativeType("mat4");
 
     // Entity types
     GrType instanceType = library.addNative("Instance");
     GrType entityType = library.addNative("Entity", [], "Instance");
+    GrType rectType = library.addNative("Rect", [], "Entity");
     GrType spriteType = library.addNative("Sprite", [], "Entity");
     GrType skyboxType = library.addNative("Skybox", [], "Entity");
     GrType modelType = library.addNative("Model", [], "Entity");
@@ -25,6 +27,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     GrType sphereType = library.addNative("Sphere", [], "Entity");
 
     // Entity constructors
+    library.addConstructor(&_newRect, rectType, [grInt, grInt, colorType]);
     library.addConstructor(&_newSprite, spriteType, [grString]);
     library.addConstructor(&_newSkybox, skyboxType, [grString]);
     library.addConstructor(&_newModel, modelType, [grString]);
@@ -36,6 +39,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addFunction(&_getLocalPosition3D, "localPosition", [instanceType], [vec3Type]);
     library.addFunction(&_setPosition2D, "position", [instanceType, vec2Type]);
     library.addFunction(&_setPosition3D, "position", [instanceType, vec3Type]);
+    library.addFunction(&_getRotation3D, "rotation", [instanceType], [vec3Type]);
     library.addFunction(&_setRotation2D, "rotation", [instanceType, grFloat]);
     library.addFunction(&_setRotation3D, "rotation", [instanceType, vec3Type]);
     library.addFunction(&_setScale2D, "scale", [instanceType, vec2Type]);
@@ -82,6 +86,11 @@ private void _setPosition3D(GrCall call) {
     instance.position = cast(vec3) call.getNative!SVec3f(1);
 }
 
+private void _getRotation3D(GrCall call) {
+    Instance3D instance = call.getNative!Instance3D(0);
+    call.setNative(toSVec3f(instance.transform.rotation.eulerAngles));
+}
+
 private void _setRotation2D(GrCall call) {
     Instance2D instance = call.getNative!Instance2D(0);
     instance.rotation = rot2(call.getFloat(1));
@@ -125,6 +134,12 @@ private void _addTexture(GrCall call) {
     }
 }
 
+private void _newRect(GrCall call) {
+    Rect rect = new Rect(vec2i(call.getInt(0), call.getInt(1)), call.getNative!SColor(2));
+    Magia.addEntity(rect);
+    call.setNative(rect);
+}
+
 private void _newSprite(GrCall call) {
     Sprite sprite = Magia.res.get!Sprite(call.getString(0));
     Magia.addEntity(sprite);
@@ -144,8 +159,8 @@ private void _newModel(GrCall call) {
 }
 
 private void _newQuad(GrCall call) {
-    QuadInstance quadInstance = new QuadInstance();
-    call.setNative(quadInstance);
+    Quad quad = new Quad();
+    call.setNative(quad);
 }
 
 private void _newSphere(GrCall call) {

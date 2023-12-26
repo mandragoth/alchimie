@@ -24,14 +24,12 @@ void loadAlchimieLibCamera(GrLibDefinition library) {
     library.addConstructor(&_newOrthographicCamera, oCameraType);
 
     // Camera properties
-    library.addProperty(&_getRotation, null, "rotation", cameraType, grFloat);
     library.addProperty(&_getZoom, null, "zoom", cameraType, grFloat);
     library.addProperty(&_getUp, null, "up", pCameraType, vec3Type);
     library.addProperty(&_getRight, null, "right", pCameraType, vec3Type);
     library.addProperty(&_getForward, null, "forward", pCameraType, vec3Type);
 
     // Camera operations
-    library.addFunction(&_setRotation, "rotation", [cameraType, grFloat]);
     library.addFunction(&_setZoom, "zoom", [cameraType, grFloat]);
     library.addFunction(&_setViewport, "viewport", [pCameraType, vec4iType]);
     library.addFunction(&_setForward, "forward", [pCameraType, vec3Type]);
@@ -65,11 +63,6 @@ private void _newOrthographicCamera(GrCall call) {
     call.setNative(camera);
 }
 
-private void _getRotation(GrCall call) {
-    Camera camera = call.getNative!Camera(0);
-    call.setFloat(camera.zRotation);
-}
-
 private void _getZoom(GrCall call) {
     Camera camera = call.getNative!Camera(0);
     call.setFloat(camera.zoomLevel);
@@ -88,11 +81,6 @@ private void _getRight(GrCall call) {
 private void _getForward(GrCall call) {
     PerspectiveCamera camera = call.getNative!PerspectiveCamera(0);
     call.setNative(toSVec3f(camera.forward));
-}
-
-private void _setRotation(GrCall call) {
-    Camera camera = call.getNative!Camera(0);
-    camera.zRotation(call.getFloat(1));
 }
 
 private void _setZoom(GrCall call) {

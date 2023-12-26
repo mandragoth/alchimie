@@ -7,7 +7,6 @@ import magia.render;
 
 import std.stdio;
 
-// @TODO move to shape
 /// Instance of sphere
 class Sphere : Entity3D {
     protected {

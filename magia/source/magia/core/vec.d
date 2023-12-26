@@ -240,6 +240,15 @@ struct Vector(type, uint dimension_) {
         return this;
     }
 
+    /// Vector scalar assignment operators
+    Vector!(type, dimension) opOpAssign(string op)(type scalar) {
+        static foreach(i; TupleRange!(0, dimension)) {
+            mixin("data[i] ", op, "= scalar;");
+        }
+
+        return this;
+    }
+
     /// Array assignment
     Vector!(type, dimension) opOpAssign(string op)(Vector!(type, dimension) other) {
         static foreach(i; TupleRange!(0, dimension)) {

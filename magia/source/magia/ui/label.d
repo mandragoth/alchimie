@@ -56,14 +56,16 @@ final class Label : UIElement {
         reload();
     }
 
-    override void draw(Renderer2D renderer, Transform2D transform) {
+    override void draw(Renderer2D renderer) {
+        UIElement.draw(renderer);
+
         Color color = Color.white;
         vec2 pos = vec2.zero;
 
         dchar prevChar;
         foreach (dchar ch; _text) {
             if (ch == '\n') {
-                pos.x = posX;
+                pos.x = transform.position.x;
                 pos.y += _font.lineSkip * _charScale;
                 prevChar = 0;
             }
@@ -71,9 +73,12 @@ final class Label : UIElement {
                 Glyph metrics = _font.getMetrics(ch);
                 pos.x += _font.getKerning(prevChar, ch) * _charScale;
 
-                const float drawPosX = pos.x + metrics.offsetX * _charScale;
-                const float drawPosY = pos.y - metrics.offsetY * _charScale;
-                metrics.draw(renderer, transform, drawPosX, drawPosY, _charScale, color, alpha);
+                Transform2D glyphTransform;
+                transform.position.x = pos.x + metrics.offsetX * _charScale;
+                transform.position.y = pos.y + metrics.offsetY * _charScale;
+                transform.scale *= _charScale;
+
+                metrics.draw(renderer, glyphTransform, color, alpha);
                 pos.x += (metrics.advance + _charSpacing) * _charScale;
                 prevChar = ch;
             }
@@ -100,7 +105,7 @@ final class Label : UIElement {
             }
         }
 
-        sizeX = totalSize_.x;
-        sizeY = totalSize_.y;
+        size.x = totalSize_.x;
+        size.y = totalSize_.y;
     }
 }

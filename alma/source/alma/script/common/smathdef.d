@@ -12,6 +12,13 @@ alias SVec2f = SVec2!GrFloat;
 alias SVec2i = SVec2!GrInt;
 alias SVec2u = SVec2!GrUInt;
 
+SVec2f toSVec2f(vec2 v_) {
+    auto v = new SVec2f;
+    v.x = v_.x;
+    v.y = v_.y;
+    return v;
+}
+
 final class SVec3(T) {
     Vector!(T, 3) _vectorData;
     alias _vectorData this;

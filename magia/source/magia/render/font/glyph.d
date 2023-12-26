@@ -50,10 +50,8 @@ struct Glyph {
     }
 
     /// Render glyph (@TODO rewrite?)
-    void draw(Renderer2D renderer, Transform2D transform, float posX, float posY, float scale, Color color, float alpha) {
+    void draw(Renderer2D renderer, Transform2D transform, Color color, float alpha) {
         _sprite.transform = transform;
-        _sprite.position = vec2(posX, posY);
-        _sprite.transform.scale = vec2.one * scale; // @TODO forward scale to sprite properly
         _sprite.material.clip = vec4i(_packX, _packY, _packWidth, _packHeight);
         _sprite.material.color = color;
         _sprite.material.alpha = alpha;

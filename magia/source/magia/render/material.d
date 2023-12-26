@@ -23,6 +23,7 @@ enum Blend {
     additive
 }
 
+// @TODO should be vec4u
 alias Clip = vec4i;
 alias defaultClip = vec4i.zero;
 

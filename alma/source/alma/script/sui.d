@@ -13,21 +13,13 @@ package void loadAlchimieLibUI(GrLibDefinition library) {
     GrType alignYType = library.addEnum("AlignY", ["top", "center", "bottom"]);
     GrType stateType = library.addNative("UIState");
 
-    GrType uiType = library.addNative("UI");
+    GrType uiType = library.addNative("UI", [], "Entity");
     GrType labelType = library.addNative("Label", [], "UI");
 
     // Commun aux UI
-    library.addFunction(&_ui_pos, "pos", [uiType, grFloat, grFloat]);
-    library.addProperty(&_ui_posX!"get", &_ui_posX!"set", "posX", uiType, grFloat);
-    library.addProperty(&_ui_posY!"get", &_ui_posY!"set", "posY", uiType, grFloat);
-
     library.addFunction(&_ui_size, "size", [uiType, grFloat, grFloat]);
     library.addProperty(&_ui_sizeX!"get", &_ui_sizeX!"set", "sizeX", uiType, grFloat);
     library.addProperty(&_ui_sizeY!"get", &_ui_sizeY!"set", "sizeY", uiType, grFloat);
-
-    library.addFunction(&_ui_scale, "scale", [uiType, grFloat, grFloat]);
-    library.addProperty(&_ui_scaleX!"get", &_ui_scaleX!"set", "scaleX", uiType, grFloat);
-    library.addProperty(&_ui_scaleY!"get", &_ui_scaleY!"set", "scaleY", uiType, grFloat);
 
     library.addFunction(&_ui_pivot, "pivot", [uiType, grFloat, grFloat]);
     library.addProperty(&_ui_pivotX!"get", &_ui_pivotX!"set", "pivotX", uiType, grFloat);
@@ -54,12 +46,6 @@ package void loadAlchimieLibUI(GrLibDefinition library) {
     library.addProperty(&_ui_state_offsetY!"get", &_ui_state_offsetY!"set",
         "offsetY", stateType, grFloat);
 
-    library.addFunction(&_ui_state_scale, "scale", [stateType, grFloat, grFloat]);
-    library.addProperty(&_ui_state_scaleX!"get", &_ui_state_scaleX!"set",
-        "scaleX", stateType, grFloat);
-    library.addProperty(&_ui_state_scaleY!"get", &_ui_state_scaleY!"set",
-        "scaleY", stateType, grFloat);
-
     library.addProperty(&_ui_state_angle!"get", &_ui_state_angle!"set",
         "angle", stateType, grFloat);
     library.addProperty(&_ui_state_alpha!"get", &_ui_state_alpha!"set",
@@ -82,41 +68,6 @@ package void loadAlchimieLibUI(GrLibDefinition library) {
     library.addFunction(&_label_text, "text", [labelType, grString]);
 }
 
-private void _ui_pos(GrCall call) {
-    UIElement ui = call.getNative!UIElement(0);
-    if (!ui) {
-        call.raise("NullError");
-        return;
-    }
-
-    ui.posX = call.getFloat(1);
-    ui.posY = call.getFloat(2);
-}
-
-private void _ui_posX(string op)(GrCall call) {
-    UIElement ui = call.getNative!UIElement(0);
-    if (!ui) {
-        call.raise("NullError");
-        return;
-    }
-    static if (op == "set") {
-        ui.posX = call.getFloat(1);
-    }
-    call.setFloat(ui.posX);
-}
-
-private void _ui_posY(string op)(GrCall call) {
-    UIElement ui = call.getNative!UIElement(0);
-    if (!ui) {
-        call.raise("NullError");
-        return;
-    }
-    static if (op == "set") {
-        ui.posY = call.getFloat(1);
-    }
-    call.setFloat(ui.posY);
-}
-
 private void _ui_size(GrCall call) {
     UIElement ui = call.getNative!UIElement(0);
     if (!ui) {
@@ -124,8 +75,8 @@ private void _ui_size(GrCall call) {
         return;
     }
 
-    ui.sizeX = call.getFloat(1);
-    ui.sizeY = call.getFloat(2);
+    ui.size.x = call.getFloat(1);
+    ui.size.y = call.getFloat(2);
 }
 
 private void _ui_sizeX(string op)(GrCall call) {
@@ -135,9 +86,9 @@ private void _ui_sizeX(string op)(GrCall call) {
         return;
     }
     static if (op == "set") {
-        ui.sizeX = call.getFloat(1);
+        ui.size.x = call.getFloat(1);
     }
-    call.setFloat(ui.sizeX);
+    call.setFloat(ui.size.x);
 }
 
 private void _ui_sizeY(string op)(GrCall call) {
@@ -147,44 +98,9 @@ private void _ui_sizeY(string op)(GrCall call) {
         return;
     }
     static if (op == "set") {
-        ui.sizeY = call.getFloat(1);
+        ui.size.y = call.getFloat(1);
     }
-    call.setFloat(ui.sizeY);
-}
-
-private void _ui_scale(GrCall call) {
-    UIElement ui = call.getNative!UIElement(0);
-    if (!ui) {
-        call.raise("NullError");
-        return;
-    }
-
-    ui.scaleX = call.getFloat(1);
-    ui.scaleY = call.getFloat(2);
-}
-
-private void _ui_scaleX(string op)(GrCall call) {
-    UIElement ui = call.getNative!UIElement(0);
-    if (!ui) {
-        call.raise("NullError");
-        return;
-    }
-    static if (op == "set") {
-        ui.scaleX = call.getFloat(1);
-    }
-    call.setFloat(ui.scaleX);
-}
-
-private void _ui_scaleY(string op)(GrCall call) {
-    UIElement ui = call.getNative!UIElement(0);
-    if (!ui) {
-        call.raise("NullError");
-        return;
-    }
-    static if (op == "set") {
-        ui.scaleY = call.getFloat(1);
-    }
-    call.setFloat(ui.scaleY);
+    call.setFloat(ui.size.y);
 }
 
 private void _ui_pivot(GrCall call) {
@@ -194,8 +110,8 @@ private void _ui_pivot(GrCall call) {
         return;
     }
 
-    ui.pivotX = call.getFloat(1);
-    ui.pivotY = call.getFloat(2);
+    ui.pivot.x = call.getFloat(1);
+    ui.pivot.y = call.getFloat(2);
 }
 
 private void _ui_pivotX(string op)(GrCall call) {
@@ -205,9 +121,9 @@ private void _ui_pivotX(string op)(GrCall call) {
         return;
     }
     static if (op == "set") {
-        ui.pivotX = call.getFloat(1);
+        ui.pivot.x = call.getFloat(1);
     }
-    call.setFloat(ui.pivotX);
+    call.setFloat(ui.pivot.x);
 }
 
 private void _ui_pivotY(string op)(GrCall call) {
@@ -217,9 +133,9 @@ private void _ui_pivotY(string op)(GrCall call) {
         return;
     }
     static if (op == "set") {
-        ui.pivotY = call.getFloat(1);
+        ui.pivot.y = call.getFloat(1);
     }
-    call.setFloat(ui.pivotY);
+    call.setFloat(ui.pivot.y);
 }
 
 private void _ui_angle(string op)(GrCall call) {
@@ -229,9 +145,9 @@ private void _ui_angle(string op)(GrCall call) {
         return;
     }
     static if (op == "set") {
-        ui.angle = call.getFloat(1);
+        ui.transform.rotation.angle = call.getFloat(1);
     }
-    call.setFloat(ui.angle);
+    call.setFloat(ui.transform.rotation.angle);
 }
 
 private void _ui_alpha(string op)(GrCall call) {
@@ -314,8 +230,8 @@ private void _ui_state_offset(GrCall call) {
         return;
     }
 
-    state.offsetX = call.getFloat(1);
-    state.offsetY = call.getFloat(2);
+    state.offset.x = call.getFloat(1);
+    state.offset.y = call.getFloat(2);
 }
 
 private void _ui_state_offsetX(string op)(GrCall call) {
@@ -325,9 +241,9 @@ private void _ui_state_offsetX(string op)(GrCall call) {
         return;
     }
     static if (op == "set") {
-        state.offsetX = call.getFloat(1);
+        state.offset.x = call.getFloat(1);
     }
-    call.setFloat(state.offsetX);
+    call.setFloat(state.offset.x);
 }
 
 private void _ui_state_offsetY(string op)(GrCall call) {
@@ -337,9 +253,9 @@ private void _ui_state_offsetY(string op)(GrCall call) {
         return;
     }
     static if (op == "set") {
-        state.offsetY = call.getFloat(1);
+        state.offset.y = call.getFloat(1);
     }
-    call.setFloat(state.offsetY);
+    call.setFloat(state.offset.y);
 }
 
 private void _ui_state_scale(GrCall call) {
@@ -349,8 +265,8 @@ private void _ui_state_scale(GrCall call) {
         return;
     }
 
-    state.scaleX = call.getFloat(1);
-    state.scaleY = call.getFloat(2);
+    state.transform.scale.x = call.getFloat(1);
+    state.transform.scale.y = call.getFloat(2);
 }
 
 private void _ui_state_scaleX(string op)(GrCall call) {
@@ -360,9 +276,9 @@ private void _ui_state_scaleX(string op)(GrCall call) {
         return;
     }
     static if (op == "set") {
-        state.scaleX = call.getFloat(1);
+        state.transform.scale.x = call.getFloat(1);
     }
-    call.setFloat(state.scaleX);
+    call.setFloat(state.transform.scale.x);
 }
 
 private void _ui_state_scaleY(string op)(GrCall call) {
@@ -372,9 +288,9 @@ private void _ui_state_scaleY(string op)(GrCall call) {
         return;
     }
     static if (op == "set") {
-        state.scaleY = call.getFloat(1);
+        state.transform.scale.y = call.getFloat(1);
     }
-    call.setFloat(state.scaleY);
+    call.setFloat(state.transform.scale.y);
 }
 
 private void _ui_state_angle(string op)(GrCall call) {
@@ -384,9 +300,9 @@ private void _ui_state_angle(string op)(GrCall call) {
         return;
     }
     static if (op == "set") {
-        state.angle = call.getFloat(1);
+        state.transform.rotation.angle = call.getFloat(1);
     }
-    call.setFloat(state.angle);
+    call.setFloat(state.transform.rotation.angle);
 }
 
 private void _ui_state_alpha(string op)(GrCall call) {
@@ -451,11 +367,9 @@ private void _ui_setState(GrCall call) {
     ui.currentStateName = ptr.name;
     ui.initState = null;
     ui.targetState = null;
-    ui.offsetX = ptr.offsetX;
-    ui.offsetY = ptr.offsetY;
-    ui.scaleX = ptr.scaleX;
-    ui.scaleX = ptr.scaleX;
-    ui.angle = ptr.angle;
+    ui.transform = ptr.transform;
+    ui.offset.x = ptr.offset.x;
+    ui.offset.y = ptr.offset.y;
     ui.alpha = ptr.alpha;
     ui.timer.stop();
 }
@@ -474,11 +388,9 @@ private void _ui_runState(GrCall call) {
 
     ui.currentStateName = ptr.name;
     ui.initState = new UIElement.State;
-    ui.initState.offsetX = ui.offsetX;
-    ui.initState.offsetY = ui.offsetY;
-    ui.initState.scaleX = ui.scaleX;
-    ui.initState.scaleY = ui.scaleY;
-    ui.initState.angle = ui.angle;
+    ui.initState.transform = ui.transform;
+    ui.initState.offset.x = ui.offset.x;
+    ui.initState.offset.y = ui.offset.y;
     ui.initState.alpha = ui.alpha;
     ui.initState.ticks = ui.timer.duration;
     ui.targetState = *ptr;
@@ -503,7 +415,7 @@ private void _ui_append_child(GrCall call) {
         return;
     }
 
-    uiParent._children ~= uiChild;
+    uiParent.children ~= uiChild;
 }
 
 private void _label_new(GrCall call) {

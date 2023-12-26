@@ -3,30 +3,59 @@ import "input.gr"
 export func setupCamera() {
     camera3D();
     camera2D();
-    //splitScreen();
+    //splitScreen3D();
 }
 
 task camera2D() {
     var camera = @OrthographicCamera();
+    camera:camera2DControls();
+}
 
+task camera3D() {
+    var camera = @PerspectiveCamera();
+    camera.position = @vec3f(0f, .5f, 2f);
+    camera:camera3DControls();
+}
+
+task splitScreen3D() {
+    var width = screenWidth();
+    var height = screenHeight();
+
+    var halfWidth = width / 2;
+    var halfHeight = height / 2;
+
+    var cam1 = @PerspectiveCamera(width, height, @vec3(0f, 0f, 5f), @vec3(0f, 0f, -1f), @vec3(0f, 1f, 0f));
+    cam1:viewport(@vec4i(0, 0, halfWidth, halfHeight));
+
+    var cam2 = @PerspectiveCamera(width, height, @vec3(0f, 0f, -5f), @vec3(0f, 0f, 1f), @vec3(0f, 1f, 0f));
+    cam2:viewport(@vec4i(0, halfHeight, halfWidth, halfHeight));
+
+    var cam3 = @PerspectiveCamera(width, height, @vec3(5f, 0f, 0f), @vec3(-1f, 0f, 0f), @vec3(0f, 1f, 0f));
+    cam3:viewport(@vec4i(halfWidth, 0, halfWidth, halfHeight));
+
+    var cam4 = @PerspectiveCamera(width, height, @vec3(-5f, 0f, 0f), @vec3(1f, 0f, 0f), @vec3(0f, 1f, 0f));
+    cam4:viewport(@vec4i(halfWidth, halfHeight, halfWidth, halfHeight));
+}
+
+task camera2DControls(camera: OrthographicCamera) {
     // 2D camera controls removed for now
-    /*var moveSpeed = 0.01f;
+    var moveSpeed = 5f;
     var zRotationSpeed = rad(2f);
     var zoomSpeed = 0.05f;
     var wheelFrames = 5;
 
-    var cPosition = camera:position();
-    var zRotation = camera:rotation();
-    var zoomLevel = camera:zoom();
+    var cPosition = camera.globalPosition;
+    var zRotation = camera.rotation;
+    var zoomLevel = camera.zoom;
 
     loop yield {
-        cPosition.x += getActionAxis("move_left", "move_right") * moveSpeed;
-        cPosition.y += getActionAxis("move_down", "move_up") * moveSpeed;
-        zRotation += getActionAxis("roll_right", "roll_left") * zRotationSpeed;
+        cPosition.x += getActionAxis("move_left_2d", "move_right_2d") * moveSpeed;
+        cPosition.y += getActionAxis("move_down_2d", "move_up_2d") * moveSpeed;
+        zRotation.z += getActionAxis("roll_left_2d", "roll_right_2d") * zRotationSpeed;
 
-        if (isActionActivated("zoom_in")) {
+        if (isActionActivated("zoom_in_2d")) {
             zoomLevel -= zoomSpeed;
-        } else if (isActionActivated("zoom_out")) {
+        } else if (isActionActivated("zoom_out_2d")) {
             zoomLevel += zoomSpeed;
         }
 
@@ -35,13 +64,10 @@ task camera2D() {
         camera:position(cPosition);
         camera:rotation(zRotation);
         camera:zoom(zoomLevel);
-    }*/
+    }
 }
 
-task camera3D() {
-    var camera = @PerspectiveCamera();
-    camera.position = @vec3f(0f, .5f, 2f);
-
+task camera3DControls(camera: PerspectiveCamera) {
     var moveSpeed = .05f;
     var zoomSpeed = .15f;
     var mouseSensitivity = .5f;
@@ -55,14 +81,14 @@ task camera3D() {
         var yAxis = camera.up;
         var zAxis = camera.forward;
 
-        cPosition += xAxis * getActionAxis("move_left", "move_right") * moveSpeed +
-                     yAxis * getActionAxis("move_down", "move_up") * moveSpeed +
-                     zAxis * getActionAxis("move_backward", "move_forward") * zoomSpeed;
+        cPosition += xAxis * getActionAxis("move_left_3d", "move_right_3d") * moveSpeed +
+                     yAxis * getActionAxis("move_down_3d", "move_up_3d") * moveSpeed +
+                     zAxis * getActionAxis("move_back_3d", "move_forward_3d") * zoomSpeed;
         camera:position(cPosition);
 
         var deltaPos = @vec2i(mouseX, mouseY);
-        var rotX = mouseSensitivity * deltaPos.x + controllerSensitivity * getActionAxis("turn_left", "turn_right");
-        var rotY = mouseSensitivity * deltaPos.y + controllerSensitivity * getActionAxis("turn_down", "turn_up");
+        var rotX = mouseSensitivity * deltaPos.x + controllerSensitivity * getActionAxis("turn_left_3d", "turn_right_3d");
+        var rotY = mouseSensitivity * deltaPos.y + controllerSensitivity * getActionAxis("turn_down_3d", "turn_up_3d");
 
         mouseX, mouseY = 0;
 
@@ -84,24 +110,4 @@ task camera3D() {
         // @TODO Get mouse position, create a Ray from it (cached as private variable)
         // @TODO Use ray to query entities in the scene, fetch the one closest to the camera near plane
     }
-}
-
-task splitScreen() {
-    var width = screenWidth();
-    var height = screenHeight();
-
-    var halfWidth = width / 2;
-    var halfHeight = height / 2;
-
-    var cam1 = @PerspectiveCamera(width, height, @vec3(0f, 0f, 5f), @vec3(0f, 0f, -1f), @vec3(0f, 1f, 0f));
-    cam1:viewport(@vec4i(0, 0, halfWidth, halfHeight));
-
-    var cam2 = @PerspectiveCamera(width, height, @vec3(0f, 0f, -5f), @vec3(0f, 0f, 1f), @vec3(0f, 1f, 0f));
-    cam2:viewport(@vec4i(0, halfHeight, halfWidth, halfHeight));
-
-    var cam3 = @PerspectiveCamera(width, height, @vec3(5f, 0f, 0f), @vec3(-1f, 0f, 0f), @vec3(0f, 1f, 0f));
-    cam3:viewport(@vec4i(halfWidth, 0, halfWidth, halfHeight));
-
-    var cam4 = @PerspectiveCamera(width, height, @vec3(-5f, 0f, 0f), @vec3(1f, 0f, 0f), @vec3(0f, 1f, 0f));
-    cam4:viewport(@vec4i(halfWidth, halfHeight, halfWidth, halfHeight));
 }

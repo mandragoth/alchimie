@@ -40,19 +40,6 @@ abstract class Camera : Instance3D {
             return _projection;
         }
 
-        /// Get rotation along Z axis
-        float zRotation() {
-            return transform.rotation.eulerAngles.z;
-        }
-
-        /// Set rotation along Z axis
-        void zRotation(float zRotation_) {
-            vec3 oldAngles = transform.rotation.eulerAngles;
-            vec3 newAngles = vec3(oldAngles.x, oldAngles.y, oldAngles.z);
-
-            transform.rotation = rot3(newAngles);
-        }
-
         /// Get zoom level
         float zoomLevel() {
             return _zoomLevel;
@@ -75,6 +62,8 @@ abstract class Camera : Instance3D {
     }
 }
 
+import std.stdio;
+
 /// Orthographic camera class
 class OrthographicCamera : Camera {
     @property {
@@ -83,13 +72,9 @@ class OrthographicCamera : Camera {
             computeViewMatrix();
         }
 
-        override void zRotation(float zRotation_) {
-            zRotation(zRotation_);
+        override void rotation(rot3 rotation_) {
+            transform.rotation = rotation_;
             computeViewMatrix();
-        }
-
-        override float zRotation() {
-            return zRotation();
         }
 
         override void zoomLevel(float zoomLevel_) {
@@ -103,6 +88,8 @@ class OrthographicCamera : Camera {
         // Set aspect ratio and viewport
         _viewport = vec4i(0, 0, width, height);
 
+        // Compute view and projection matrix
+        computeViewMatrix();
         computeProjectionMatrix();
     }
 
@@ -110,7 +97,6 @@ class OrthographicCamera : Camera {
     void computeProjectionMatrix() {
         float halfWidth  = cast(float)_viewport.width / 2f; 
         float halfHeight = cast(float)_viewport.height / 2f;
-        
         computeProjectionMatrix(-halfWidth, halfWidth, -halfHeight, halfHeight);
     } 
 
@@ -122,8 +108,7 @@ class OrthographicCamera : Camera {
 
     /// Recompute view and model matrices
     void computeViewMatrix() {
-        mat4 transform = mat4.translation(transform.position) * mat4.zrotation(zRotation);
-        _view = transform.inverse();
+        _view = transform.combineModel().inverse();
         _matrix = _projection * _view;
     }
 }
