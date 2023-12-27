@@ -80,41 +80,6 @@ class Renderer(uint dimension_) {
 
         /// Render a texture
         void drawMaterial(Material material, mat4 model) {
-            // Default clip has x, y = 0 and w, h = 1
-            vec4 clipf = vec4(0f, 0f, 1f, 1f);
-
-            // Cut texture depending on clip parameters
-            // @TODO set in material instead
-            if (material.clip != vec4i.zero) {
-                clipf.x = cast(float) material.clip.x / cast(float) material.textures[0].width;
-                clipf.y = cast(float) material.clip.y / cast(float) material.textures[0].height;
-                clipf.z = clipf.x + (cast(float) material.clip.z / cast(float) material.textures[0].width);
-                clipf.w = clipf.y + (cast(float) material.clip.w / cast(float) material.textures[0].height);
-            }
-
-            // Bind shader and uploaded dedicated uniforms
-            quadShader.activate();
-            quadShader.uploadUniformVec4("u_Clip", clipf);
-
-            // Set flip
-            vec2 flipf;
-            final switch (material.flip) with (Flip) {
-                case none:
-                    flipf = vec2(0f, 0f);
-                    break;
-                case horizontal:
-                    flipf = vec2(1f, 0f);
-                    break;
-                case vertical:
-                    flipf = vec2(0f, 1f);
-                    break;
-                case both:
-                    flipf = vec2(1f, 1f);
-                    break;
-            }
-
-            quadShader.uploadUniformVec2("u_Flip", flipf);
-
             setupQuadShader(material);
             drawIndexed(rectMesh, quadShader, material, model);
         }
@@ -157,6 +122,40 @@ class Renderer(uint dimension_) {
     private void setupQuadShader(Material material) {
         // Activate shader
         quadShader.activate();
+
+        // Default clip has x, y = 0 and w, h = 1
+        vec4 clipf = vec4(0f, 0f, 1f, 1f);
+
+        // Cut texture depending on clip parameters
+        if (material.clip != vec4i.zero) {
+            clipf.x = cast(float) material.clip.x / cast(float) material.textures[0].width;
+            clipf.y = cast(float) material.clip.y / cast(float) material.textures[0].height;
+            clipf.z = clipf.x + (cast(float) material.clip.z / cast(float) material.textures[0].width);
+            clipf.w = clipf.y + (cast(float) material.clip.w / cast(float) material.textures[0].height);
+        }
+
+        // Set clip
+        quadShader.uploadUniformVec4("u_Clip", clipf);
+
+        // Set flip
+        vec2 flipf;
+        final switch (material.flip) with (Flip) {
+            case none:
+                flipf = vec2.zero;
+                break;
+            case horizontal:
+                flipf = vec2(1f, 0f);
+                break;
+            case vertical:
+                flipf = vec2(0f, 1f);
+                break;
+            case both:
+                flipf = vec2.one;
+                break;
+        }
+
+        // Set flip
+        quadShader.uploadUniformVec2("u_Flip", flipf);
 
         // Set color
         quadShader.uploadUniformVec4("u_Color", vec4(material.color.rgb, material.alpha));

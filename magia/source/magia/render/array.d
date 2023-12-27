@@ -13,12 +13,11 @@ class VertexArray {
 
     @property {
         /// Return index buffer element count if any
-        uint elementCount() {
+        uint count() {
             return _indexBuffer ? _indexBuffer.count : 0;
         }
     }
 
-    /// Element count
     private {
         IndexBuffer _indexBuffer;
     }

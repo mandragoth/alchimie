@@ -72,6 +72,7 @@ final class Mesh(uint dimension_) {
         foreach (ref Texture texture; material.textures) {
             const TextureType type = texture.type;
 
+            // Pack texture type and id into name
             string name;
             if (type == TextureType.sprite) {
                 name = "u_Sprite" ~ to!string(nbSpriteTextures);
@@ -84,40 +85,62 @@ final class Mesh(uint dimension_) {
                 ++nbSpecularTextures;
             }
 
-            // @TODO Likely wrong, we want to update the id of the matching type
+            // Upload texture index (@TODO should it be texture.id?)
             shader.uploadUniformInt(toStringz(name), textureId);
+
+            // Bind texture
             texture.bind();
+
+            // Increment texture index
             ++textureId;
         }
     }
 
-    /// Draw call with model
-    void draw(Shader shader, Material material, mat4 model) {
+    /// Draw call
+    void draw(Shader shader, Material material) {
         bindData(shader, material);
-        
+
         // Index buffer: defer to glDrawElements* methods
-        if (_vertexArray.elementCount) {
-            drawElements(shader, model);
+        if (_vertexArray.count) {
+            drawElements(shader);
         }
         // No index buffer, defer to glDrawArrays* methods
         else {
-            drawArrays(shader, model);
-        } 
-    }
-
-    private void drawElements(Shader shader, mat4 model) {
-        if (_instances == 1) {
-            shader.uploadUniformMat4("u_Transform", model);
-            glDrawElements(_drawMode, _vertexArray.elementCount, GL_UNSIGNED_INT, null);
-        } else {
-            shader.uploadUniformMat4("u_Transform", mat4.identity);
-            glDrawElementsInstanced(_drawMode, _vertexArray.elementCount, GL_UNSIGNED_INT, null, _instances);
+            drawArrays(shader);
         }
     }
 
-    private void drawArrays(Shader shader, mat4 model) {
+    /// Draw call (override with transform matrix)
+    void draw(Shader shader, Material material, mat4 model) {
+        // Bind shader and material data
+        bindData(shader, material);
+
+        // Upload transform
+        shader.uploadUniformMat4("u_Transform", model);
+        
+        // Index buffer: defer to glDrawElements* methods
+        if (_vertexArray.count) {
+            drawElements(shader);
+        }
+        // No index buffer, defer to glDrawArrays* methods
+        else {
+            drawArrays(shader);
+        } 
+    }
+
+    private void drawElements(Shader shader) {
         if (_instances == 1) {
-            shader.uploadUniformMat4("u_Transform", model);
+            glDrawElements(_drawMode, _vertexArray.count, GL_UNSIGNED_INT, null);
+        } else {
+            glDrawElementsInstanced(_drawMode, _vertexArray.count, GL_UNSIGNED_INT, null, _instances);
+        }
+    }
+
+    private void drawArrays(Shader shader) {
+        if (_instances == 1) {
+            glDrawArrays(_drawMode, 0, _vertexBuffer.count);
+        } else {
+            glDrawArraysInstanced(_drawMode, 0, _vertexBuffer.count, _instances);
         }
     }
 }

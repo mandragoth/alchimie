@@ -9,6 +9,9 @@ import magia.render.shader;
 import magia.render.texture;
 import magia.render.vertex;
 
+/// Sprite batch layout
+BufferLayout layoutBatch2D;
+
 /// Static 3D model layout
 BufferLayout layout3D;
 
@@ -35,6 +38,9 @@ Shader lineShader;
 
 /// Quad shader
 Shader quadShader;
+
+/// Sprite shader
+Shader spriteShader;
 
 /// Circle shader
 Shader circleShader;
@@ -65,6 +71,11 @@ void loadShapes() {
         0, 1, 2,
         2, 3, 0
     ]));
+
+    layoutBatch2D = new BufferLayout([
+        BufferElement("a_Position", LayoutType.ltFloat2),
+        BufferElement("a_SpriteId", LayoutType.ltUint)
+    ]);
 
     layout3D = new BufferLayout([
         BufferElement("a_Position", LayoutType.ltFloat3),
@@ -129,11 +140,11 @@ void loadShapes() {
     ]));
 }
 
-/// Electric Bungalows
-void loadShapes2() {
-    // Load shaders for draw calls
+/// Load shaders for draw calls
+void loadShaders() {
     lineShader = Magia.res.get!Shader("line");
     quadShader = Magia.res.get!Shader("quad");
+    spriteShader = Magia.res.get!Shader("sprite");
     circleShader = Magia.res.get!Shader("circle");
     modelShader = Magia.res.get!Shader("model");
     animatedShader = Magia.res.get!Shader("animated");

@@ -211,7 +211,7 @@ class Magia {
             return;
         }
 
-        loadShapes2();
+        loadShaders();
 
         _tickStartFrame = Clock.currStdTime();
         while (isRunning()) {

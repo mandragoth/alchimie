@@ -34,6 +34,11 @@
             "file": "skybox.glsl",
             "name": "skybox",
             "type": "shader"
+        },
+        {
+            "file": "sprite.glsl",
+            "name": "sprite",
+            "type": "shader"
         }
     ]
 }

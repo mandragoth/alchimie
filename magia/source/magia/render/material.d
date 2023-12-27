@@ -28,6 +28,7 @@ alias Clip = vec4i;
 alias defaultClip = vec4i.zero;
 
 /// Material structure
+// @TODO refactorize similarly to BufferElement
 class Material {
     /// How should we texture the rendered item?
     Texture[] textures;

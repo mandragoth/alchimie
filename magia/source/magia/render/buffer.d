@@ -19,6 +19,7 @@ enum LayoutType {
     ltFloat4,
     ltMat3,
     ltMat4,
+    ltUint,
     ltInt,
     ltInt2,
     ltInt3,
@@ -31,6 +32,7 @@ uint layoutTypeSize(LayoutType type) {
     final switch (type) with (LayoutType) {
     case ltFloat:
     case ltInt:
+    case ltUint:
         return 4;
     case ltFloat2:
     case ltInt2:
@@ -73,6 +75,7 @@ struct BufferElement {
             final switch (type) with (LayoutType) {
             case ltFloat:
             case ltInt:
+            case ltUint:
             case ltBool:
                 return 1;
             case ltFloat2:
@@ -106,6 +109,8 @@ struct BufferElement {
             case ltInt3:
             case ltInt4:
                 return GL_INT;
+            case ltUint:
+                return GL_UNSIGNED_INT;
             case ltBool:
                 return GL_BOOL;
             }
@@ -162,7 +167,7 @@ class BufferLayout {
         foreach(ref BufferElement element; _elements) {
             glEnableVertexAttribArray(layoutId);
 
-            if (element.glType == GL_INT) {
+            if (element.glType == GL_INT || element.glType == GL_UNSIGNED_INT) {
                 glVertexAttribIPointer(layoutId,
                                        element.count,
                                        element.glType,
@@ -195,55 +200,30 @@ class VertexBuffer {
     /// Index
     uint id;
 
-    /// Shader data layout
-    BufferLayout layout;
+    private {
+        /// Data length
+        uint _count;
 
-    /// Constructor given vertex buffer
-    this(float[] vertices, BufferLayout layout_) {
-        layout = layout_;
-        glCreateBuffers(1, &id);
-        glBindBuffer(GL_ARRAY_BUFFER, id);
-        glBufferData(GL_ARRAY_BUFFER, vertices.length * float.sizeof, vertices.ptr, GL_STATIC_DRAW);
+        /// Shader data layout
+        BufferLayout _layout;
     }
 
-    /// Constructor given 2D vertices
-    this(vec2[] vertices, BufferLayout layout_) {
-        layout = layout_;
-        glCreateBuffers(1, &id);
-        glBindBuffer(GL_ARRAY_BUFFER, id);
-        glBufferData(GL_ARRAY_BUFFER, vertices.length * vec2.sizeof, vertices.ptr, GL_STATIC_DRAW);
+    @property {
+        /// Number of indices (used for draw call)
+        uint count() const {
+            return _count;
+        }
     }
 
-    /// Constructor given 3D vertices
-    this(vec3[] vertices, BufferLayout layout_) {
-        layout = layout_;
-        glCreateBuffers(1, &id);
-        glBindBuffer(GL_ARRAY_BUFFER, id);
-        glBufferData(GL_ARRAY_BUFFER, vertices.length * vec3.sizeof, vertices.ptr, GL_STATIC_DRAW);
-    }
+    /// Constructor given type array
+    this(type)(type[] data, BufferLayout layout_) {
+        assert(data.length < uint.max);
 
-    /// Constructor given mat4 array
-    this(mat4[] mat4s, BufferLayout layout_) {
-        layout = layout_;
+        _count = cast(uint)data.length;
+        _layout = layout_;
         glCreateBuffers(1, &id);
         glBindBuffer(GL_ARRAY_BUFFER, id);
-        glBufferData(GL_ARRAY_BUFFER, mat4s.length * mat4.sizeof, mat4s.ptr, GL_STATIC_DRAW);
-    }
-
-    /// Constructor given vertices
-    this(Vertex[] vertices, BufferLayout layout_) {
-        layout = layout_;
-        glCreateBuffers(1, &id);
-        glBindBuffer(GL_ARRAY_BUFFER, id);
-        glBufferData(GL_ARRAY_BUFFER, vertices.length * Vertex.sizeof, vertices.ptr, GL_STATIC_DRAW);
-    }
-
-    /// Constructor given vertices and joints
-    this(AnimatedVertex[] animatedVertices, BufferLayout layout_) {
-        layout = layout_;
-        glCreateBuffers(1, &id);
-        glBindBuffer(GL_ARRAY_BUFFER, id);
-        glBufferData(GL_ARRAY_BUFFER, animatedVertices.length * AnimatedVertex.sizeof, animatedVertices.ptr, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, data.length * type.sizeof, data.ptr, GL_STATIC_DRAW);
     }
 
     /// Destructor
@@ -253,9 +233,9 @@ class VertexBuffer {
 
     /// Setup elements
     void setupElements() {
-        assert(layout, "No layout set for VertexBuffer");
-        assert(layout.count, "No elements in VertexBuffer layout");
-        layout.setupElements();
+        assert(_layout, "No layout set for VertexBuffer");
+        assert(_layout.count, "No elements in VertexBuffer layout");
+        _layout.setupElements();
     }
 
     /// Bind for usage
@@ -287,6 +267,8 @@ class IndexBuffer {
     
     /// Constructor given
     this(uint[] indices) {
+        assert(indices.length < uint.max);
+
         glCreateBuffers(1, &id);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.length * uint.sizeof, indices.ptr, GL_STATIC_DRAW);
