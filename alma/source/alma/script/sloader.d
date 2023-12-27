@@ -9,6 +9,7 @@ import alma.script.sgraphics;
 import alma.script.sinput;
 import alma.script.smath;
 import alma.script.common;
+import alma.script.sscene;
 import alma.script.sui;
 import alma.script.svec;
 import alma.script.scolor;
@@ -28,8 +29,8 @@ GrLibrary loadAlchimieLibrary() {
 GrLibLoader[] getAlchimieLibraryLoaders() {
     return [
         &loadAlchimieLibCommon, &loadAlchimieLibMath, &loadAlchimieLibVec,
-        &loadAlchimieLibColor, &loadAlchimieLibGraphics, &loadAlchimieLibDrawable,
-        &loadAlchimieLibAudio, &loadAlchimieLibCamera, &loadAlchimieLibInput,
-        &loadAlchimieLibUI
+        &loadAlchimieLibColor, &loadAlchimieLibGraphics, &loadAlchimieLibScene,
+        &loadAlchimieLibDrawable, &loadAlchimieLibAudio, &loadAlchimieLibCamera,
+        &loadAlchimieLibInput, &loadAlchimieLibUI
     ];
 }

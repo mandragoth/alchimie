@@ -78,29 +78,6 @@ class Renderer(uint dimension_) {
             glDisable(GL_CULL_FACE);
         }
 
-        /// Render filled circle
-        /*void drawFilledCircle(vec2 position, float size, Color color = Color.white, float alpha = 1f) {
-            Transform2D transform = _coordinateSystem.toRenderSpace(position, vec2(size, size), window.screenSize);
-            setupCircleShader(transform.position, transform.scale.x, color, alpha);
-            drawIndexed(rectMesh, circleShader, defaultMaterial, transform);
-        }
-
-        /// Render filled rectangle
-        void drawFilledRect(vec2 position, vec2 size, Color color = Color.white, float alpha = 1f) {
-            Transform2D transform = _coordinateSystem.toRenderSpace(position, size, window.screenSize);
-            setupQuadShader(color, alpha);
-            drawIndexed(rectMesh, quadShader, defaultMaterial, transform);
-        }
-
-        /// Render a texture at given location
-        void drawTexture(Texture texture, vec2 position, vec2 size,
-                         vec4i clip = vec4i.zero, Flip flip = Flip.none, Blend blend = Blend.alpha,
-                         Color color = Color.white, float alpha = 1f) {
-            Transform2D transform = _coordinateSystem.toRenderSpace(position, size, window.screenSize);
-            Material material = new Material(texture, color, alpha, blend, flip, clip);
-            drawMaterial(material, transform);
-        }*/
-
         /// Render a texture
         void drawMaterial(Material material, mat4 model) {
             // Default clip has x, y = 0 and w, h = 1
@@ -138,7 +115,7 @@ class Renderer(uint dimension_) {
 
             quadShader.uploadUniformVec2("u_Flip", flipf);
 
-            setupQuadShader(material.color, material.alpha);
+            setupQuadShader(material);
             drawIndexed(rectMesh, quadShader, material, model);
         }
     } else static if (dimension_ == 3) {
@@ -177,17 +154,15 @@ class Renderer(uint dimension_) {
         lineShader.uploadUniformVec4("u_Color", vec4(color.rgb, alpha));
     }
 
-    private void setupQuadShader(Color color = Color.white, float alpha = 1f, Blend blend = Blend.alpha) {
+    private void setupQuadShader(Material material) {
         // Activate shader
         quadShader.activate();
 
         // Set color
-        // @TODO set in material instead
-        quadShader.uploadUniformVec4("u_Color", vec4(color.rgb, alpha));
+        quadShader.uploadUniformVec4("u_Color", vec4(material.color.rgb, material.alpha));
 
         // Set blend
-        // @TODO set in material instead
-        final switch (blend) with (Blend) {
+        final switch (material.blend) with (Blend) {
             case none:
                 glBlendFuncSeparate(GL_SRC_COLOR, GL_ZERO, GL_ONE, GL_ZERO);
                 glBlendEquation(GL_FUNC_ADD);

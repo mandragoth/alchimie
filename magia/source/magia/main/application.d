@@ -41,13 +41,14 @@ class Magia {
         Renderer2D _renderer2D;
         Renderer3D _renderer3D;
 
-        // @TODO handle several scene (Ressource?)
-        Scene3D _scene3D;
-        Scene2D _scene2D;
-
-        // @TODO merge UIManager with scene / hierarchy
-        // To be specific the UIManager ought to be a Scene2D?
+        // Scenes
+        Scene3D[] _scenes3D;
+        Scene2D[] _scenes2D;
         UIManager _uiManager;
+
+        // Current scenes
+        Scene3D _currentScene3D;
+        Scene2D _currentScene2D;
 
         // @TODO move ?
         InputManager _inputManager;
@@ -76,6 +77,11 @@ class Magia {
         /// Renderer 2D
         Renderer2D renderer2D() {
             return _renderer2D;
+        }
+
+        /// Renderer 3D
+        Renderer3D renderer3D() {
+            return _renderer3D;
         }
 
         /// Module d’entrées
@@ -115,14 +121,26 @@ class Magia {
             _renderer3D.cameras ~= camera;
         }
 
+        /// Add 2D scene and make it current
+        void addCurrentScene(Scene2D scene) {
+            _scenes2D ~= scene;
+            _currentScene2D = scene;
+        }
+
+        /// Add 3D scene and make it current
+        void addCurrentScene(Scene3D scene) {
+            _scenes3D ~= scene;
+            _currentScene3D = scene;
+        }
+
         /// Add 2D entity
-        void addEntity(Entity2D entity) {
-            _scene2D.addEntity(entity);
+        void addEntity(Entity2D entity, Scene2D scene2D = _currentScene2D) {
+            scene2D.addEntity(entity);
         }
 
         /// Add 3D entity
-        void addEntity(Entity3D entity) {
-            _scene3D.addEntity(entity);
+        void addEntity(Entity3D entity, Scene3D scene3D = _currentScene3D) {
+            scene3D.addEntity(entity);
         }
 
         /// Ticks écoulés depuis le début
@@ -166,9 +184,7 @@ class Magia {
         _renderer3D = new Renderer3D(_window, Cartesian3D.center);
         _renderer2D = new Renderer2D(_window, Cartesian2D(_window.topLeft, vec2.bottomRight));
 
-        // Create scenes (@TODO and associate renderers to them)
-        _scene3D = new Scene3D(_renderer3D);
-        _scene2D = new Scene2D(_renderer2D);
+        // Create default scenes
         _uiManager = new UIManager(_renderer2D);
 
         // Create input handlers
@@ -226,10 +242,8 @@ class Magia {
                 _renderer3D.update();
                 _renderer2D.update();
 
-                // Update 3D, 2D and UI draw stacks
-                _scene3D.update();
-                _scene2D.update();
-                _uiManager.update();
+                // Update scenes (default order: 3D, 2D, UI)
+                updateScenes();
 
                 // Update window
                 _window.update();
@@ -245,15 +259,26 @@ class Magia {
             }
         }
 
+        // Update scenes (default order: 3D, 2D, UI)
+        private void updateScenes() {
+            foreach (Scene3D scene3D; _scenes3D) {
+                scene3D.update();
+            }
+
+            foreach (Scene2D scene2D; _scenes2D) {
+                scene2D.update();
+            }
+
+            _uiManager.update();
+        }
+
         /// Render application
         void draw() {
             // Setup light
             _lightingManager.setup();
 
-            // Draw 3D, then 2D, then UI
-            _scene3D.draw();
-            _scene2D.draw();
-            _uiManager.draw();
+            // Draw scenes
+            drawScenes();
 
             // Render all draw calls on window
             _window.render();
@@ -262,6 +287,19 @@ class Magia {
             _renderer3D.clear();
             _renderer2D.clear();
         }
+    }
+
+    // Draw scenes (default order: 3D, 2D, UI)
+    private void drawScenes() {
+        foreach (Scene3D scene3D; _scenes3D) {
+            scene3D.draw();
+        }
+
+        foreach (Scene2D scene2D; _scenes2D) {
+            scene2D.draw();
+        }
+
+        _uiManager.draw();
     }
 
     /// Set application icon

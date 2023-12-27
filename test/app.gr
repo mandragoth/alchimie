@@ -13,6 +13,10 @@ event app() {
 }
 
 task runtime() {
+    // Scenes need to be instantiated for each rendering stack
+    var scene2D = @Scene2D();
+    var scene3D = @Scene3D();
+
     var rect = @Rect(1, 1, @color(1f, 0f, 0f));
     rect:position(@vec2f(400f, 300f));
 

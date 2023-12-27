@@ -8,7 +8,7 @@ export func setupCamera() {
 
 task camera2D() {
     var camera = @OrthographicCamera();
-    camera:camera2DControls();
+    //camera:camera2DControls();
 }
 
 task camera3D() {
