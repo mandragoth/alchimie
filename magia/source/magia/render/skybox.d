@@ -13,7 +13,6 @@ import magia.render.buffer;
 import magia.render.camera;
 import magia.render.data;
 import magia.render.entity;
-import magia.render.material;
 import magia.render.postprocess;
 import magia.render.renderer;
 import magia.render.shader;
@@ -24,7 +23,7 @@ import magia.render.vertex;
 final class Skybox : Entity3D, Resource!Skybox {
     private {
         Shader _shader;
-        Material _material;
+        Texture _texture;
     }
 
     // @TODO use new layout architecture
@@ -35,7 +34,7 @@ final class Skybox : Entity3D, Resource!Skybox {
         _shader.activate();
         _shader.uploadUniformInt("u_Skybox", 0);
 
-        _material = new Material(new Texture(files));
+        _texture = new Texture(files);
     }
 
     /// Accès à la ressource
@@ -47,7 +46,7 @@ final class Skybox : Entity3D, Resource!Skybox {
     override void draw(Renderer3D renderer) {
         glDepthFunc(GL_LEQUAL);
 
-        skyboxMesh.bindData(_shader, _material);
+        skyboxMesh.bindData(_shader, _texture);
 
         // @TODO handle generically?
         foreach (Camera camera; renderer.cameras) {

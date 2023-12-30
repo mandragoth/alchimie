@@ -27,6 +27,11 @@ struct Matrix(type, uint rows_, uint columns_) {
             return data[0].ptr;
         }
 
+        /// Returns raw data as array
+        auto value() {
+            return *data.ptr;
+        }
+
         /// Format internal data as string for debug purposes
         string as_string() const {
             return format("%s", data);

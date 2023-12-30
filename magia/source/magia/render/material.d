@@ -29,36 +29,19 @@ alias defaultClip = vec4i.zero;
 
 /// Material structure
 // @TODO refactorize similarly to BufferElement
-class Material {
-    /// How should we texture the rendered item?
-    Texture[] textures;
-
+struct Material {
     /// How should we color the rendered item?
-    Color color;
+    Color color = Color.white;
 
     /// What is the transparency for the item?
-    float alpha;
+    float alpha = 1f;
 
     /// How should we blend the rendered item?
-    Blend blend;
+    Blend blend = Blend.alpha;
 
     /// Do we need to flip the rendered item?
-    Flip flip;
+    Flip flip = Flip.none;
 
     /// What subset of the texture should we use?
-    Clip clip;
-
-    /// Constructor
-    this(Texture texture_ = null, Color color_ = Color.white, float alpha_ = 1f, Blend blend_ = Blend.alpha,
-         Flip flip_ = Flip.none, Clip clip_ = defaultClip) {
-        color = color_;
-        alpha = alpha_;
-        blend = blend_;
-        flip = flip_;
-        clip = clip_;
-
-        if (texture_) {
-            textures ~= texture_;
-        }
-    }
+    Clip clip = defaultClip;
 }

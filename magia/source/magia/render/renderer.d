@@ -79,9 +79,9 @@ class Renderer(uint dimension_) {
         }
 
         /// Render a texture
-        void drawMaterial(Material material, mat4 model) {
-            setupQuadShader(material);
-            drawIndexed(rectMesh, quadShader, material, model);
+        void drawRectangle(Texture texture, Material material, mat4 model) {
+            setupRectShader(texture, material);
+            drawIndexed(rectMesh, quadShader, [texture], model);
         }
     } else static if (dimension_ == 3) {
         /// Prepare to render 3D items
@@ -119,7 +119,7 @@ class Renderer(uint dimension_) {
         lineShader.uploadUniformVec4("u_Color", vec4(color.rgb, alpha));
     }
 
-    private void setupQuadShader(Material material) {
+    private void setupRectShader(Texture texture, Material material) {
         // Activate shader
         quadShader.activate();
 
@@ -127,11 +127,11 @@ class Renderer(uint dimension_) {
         vec4 clipf = vec4(0f, 0f, 1f, 1f);
 
         // Cut texture depending on clip parameters
-        if (material.clip != vec4i.zero) {
-            clipf.x = cast(float) material.clip.x / cast(float) material.textures[0].width;
-            clipf.y = cast(float) material.clip.y / cast(float) material.textures[0].height;
-            clipf.z = clipf.x + (cast(float) material.clip.z / cast(float) material.textures[0].width);
-            clipf.w = clipf.y + (cast(float) material.clip.w / cast(float) material.textures[0].height);
+        if (material.clip != defaultClip) {
+            clipf.x = cast(float) material.clip.x / cast(float) texture.width;
+            clipf.y = cast(float) material.clip.y / cast(float) texture.height;
+            clipf.z = clipf.x + (cast(float) material.clip.z / cast(float) texture.width);
+            clipf.w = clipf.y + (cast(float) material.clip.w / cast(float) texture.height);
         }
 
         // Set clip
@@ -206,11 +206,11 @@ class Renderer(uint dimension_) {
     }
 
     /// @TODO batching
-    private void drawIndexed(Mesh!(dimension_) mesh, Shader shader, Material material, mat4 model) {
+    private void drawIndexed(Mesh!(dimension_) mesh, Shader shader, Texture[] textures, mat4 model) {
         // One draw call per camera
         foreach (Camera camera; cameras) {
             shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
-            mesh.draw(shader, material, model);
+            mesh.draw(shader, textures, model);
         }
     }
 }

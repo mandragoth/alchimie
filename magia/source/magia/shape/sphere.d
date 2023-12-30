@@ -112,7 +112,7 @@ class Sphere : Entity3D {
     /// Render the sphere
     void draw(Shader shader) {
         foreach(Mesh3D mesh; _meshes) {
-            mesh.draw(shader, defaultMaterial, globalModel);
+            mesh.draw(shader, [defaultTexture], globalModel);
         }
     }
 }

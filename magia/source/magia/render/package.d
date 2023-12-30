@@ -1,6 +1,7 @@
 module magia.render;
 
 public {
+    import magia.render.batch;
     import magia.render.buffer;
     import magia.render.camera;
     import magia.render.data;

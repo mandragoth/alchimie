@@ -48,7 +48,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addFunction(&_addChild, "addChild", [instanceType, instanceType]);
 
     // Entity operations
-    library.addFunction(&_addTexture, "addTexture", [entityType, grString]);
+    library.addFunction(&_addTexture, "addTexture", [modelType, grString]);
 
     // Light types
     GrType directionalLightType = library.addNative("DirectionalLight");
@@ -124,14 +124,9 @@ private void _addChild(GrCall call) {
 }
 
 private void _addTexture(GrCall call) {
-    Entity3D entity = call.getNative!Entity3D(0);
+    ModelInstance modelInstance = call.getNative!ModelInstance(0);
     Texture texture = Magia.res.get!Texture(call.getString(1));
-
-    if (!entity.material) {
-        entity.material = new Material(texture);
-    } else {
-        entity.material.textures ~= texture;
-    }
+    //modelInstance.textures ~= texture;
 }
 
 private void _newRect(GrCall call) {

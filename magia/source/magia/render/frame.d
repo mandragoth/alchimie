@@ -3,7 +3,6 @@ module magia.render.frame;
 import std.stdio;
 
 import bindbc.opengl;
-import magia.render.material;
 import magia.render.texture;
 
 alias FrameBufferLayout = TextureType[];
@@ -14,7 +13,7 @@ class FrameBuffer {
     GLuint id;
 
     protected {
-        Material _material;
+        Texture[] _textures;
     }
 
     /// Constructor
@@ -24,9 +23,8 @@ class FrameBuffer {
         glBindFramebuffer(GL_FRAMEBUFFER, id);
 
         // Create a frame buffer texture for each part of its layout and bind it
-        _material = new Material();
         foreach (TextureType type; layout) {
-            _material.textures ~= new FrameBufferTexture(type, width, height, nbSamples);
+            _textures ~= new FrameBufferTexture(type, width, height, nbSamples);
         }
 
         // Unbind frame buffer (as it may be only used later)
@@ -51,7 +49,7 @@ class FrameBuffer {
     /// Unbind texture from frame buffer
     void unbindTexture(uint textureId) {
         // @TODO correct when generic Texture class ready once again
-        //_material.textures[textureId].unbindFromFrameBuffer();
+        //_textures[textureId].unbindFromFrameBuffer();
     }
 
     /// Unbind frame buffer globally
@@ -71,7 +69,7 @@ class FrameBuffer {
 
     /// Bind attached texture
     void bindTexture(uint textureId, GLuint slot = 0) {
-        _material.textures[textureId].bind(slot);
+        _textures[textureId].bind(slot);
     }
 
     /// Check frame buffer status

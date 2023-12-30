@@ -60,16 +60,21 @@ struct BufferElement {
     /// Type of element
     LayoutType type;
 
-    /// Size of data
-    uint size;
+    /// Size of data in bytes
+    uint typeSize;
 
-    /// Offset in layout
+    /// Offset in layout in bytes
     uint offset;
 
     /// Divisor in layout
     uint divisor;
 
     @property {
+        /// Size of this item
+        uint size() const {
+            return typeSize * count;
+        }
+
         /// Number of entries for this item
         uint count() const {
             final switch (type) with (LayoutType) {
@@ -122,7 +127,7 @@ struct BufferElement {
         name = name_;
         type = type_;
         divisor = divisor_;
-        size = layoutTypeSize(type_);
+        typeSize = layoutTypeSize(type_);
     }
 }
 
@@ -136,9 +141,17 @@ class BufferLayout {
     }
 
     @property {
+        uint size() const {
+            uint size = 0;
+            foreach (BufferElement element; _elements) {
+                size += element.size;
+            }
+            return size;
+        }
+
         /// Elements count
-        ulong count() const {
-            return _elements.length;
+        uint count() const {
+            return cast(uint)_elements.length;
         }
 
         /// Stride
@@ -185,11 +198,34 @@ class BufferLayout {
         }
     }
 
+    /// Setup divisors
+    void setupDivisors(uint layoutId) {
+        foreach(ref BufferElement element; _elements) {
+            glVertexAttribDivisor(layoutId, 1);
+
+            if (element.glType == GL_INT || element.glType == GL_UNSIGNED_INT) {
+                glVertexAttribIPointer(layoutId,
+                                       element.count,
+                                       element.glType,
+                                       stride,
+                                       cast(void *)element.offset);
+            } else {
+                glVertexAttribPointer(layoutId,
+                                      element.count,
+                                      element.glType,
+                                      GL_FALSE, // No normalization
+                                      stride,
+                                      cast(void *)element.offset);
+            }
+            ++layoutId;
+        }
+    }
+
     private void computeOffsets() {
         uint offset = 0;
         foreach (ref BufferElement element; _elements) {
             element.offset = offset;
-            offset += element.size;
+            offset += element.typeSize;
         }
         _stride = offset;
     }
@@ -197,11 +233,14 @@ class BufferLayout {
 
 /// Vertex Buffer Objects hold data sent from CPU to GPU
 class VertexBuffer {
-    /// Index
-    uint id;
-
     private {
-        /// Data length
+        /// Index
+        uint _id;
+
+        /// Preallocated bytes
+        uint _maxCount;
+
+        /// Data length in bytes
         uint _count;
 
         /// Shader data layout
@@ -215,20 +254,40 @@ class VertexBuffer {
         }
     }
 
-    /// Constructor given type array
+    /// Constructor given future max element count and layout
+    this(uint maxCount, BufferLayout layout_) {
+        _maxCount = maxCount;
+        _layout = layout_;
+
+        glCreateBuffers(1, &_id);
+        glBindBuffer(GL_ARRAY_BUFFER, _id);
+        glBufferData(GL_ARRAY_BUFFER, layout_.size * _maxCount, null, GL_STREAM_DRAW);
+    }
+
+    /// Constructor given type array and layout
     this(type)(type[] data, BufferLayout layout_) {
         assert(data.length < uint.max);
-
         _count = cast(uint)data.length;
         _layout = layout_;
-        glCreateBuffers(1, &id);
-        glBindBuffer(GL_ARRAY_BUFFER, id);
-        glBufferData(GL_ARRAY_BUFFER, data.length * type.sizeof, data.ptr, GL_STATIC_DRAW);
+
+        glCreateBuffers(1, &_id);
+        glBindBuffer(GL_ARRAY_BUFFER, _id);
+        glBufferData(GL_ARRAY_BUFFER, type.sizeof * _count, data.ptr, GL_STATIC_DRAW);
     }
 
     /// Destructor
     ~this() {
-        glDeleteBuffers(1, &id);
+        glDeleteBuffers(1, &_id);
+    }
+
+    /// Update data (for a GL_STREAM_DRAW)
+    void updateData(type)(type[] data, uint offset) {
+        assert(data.length < uint.max);
+        assert(data.length < _maxCount);
+        _count = cast(uint)data.length;
+
+        glBindBuffer(GL_ARRAY_BUFFER, _id);
+        glBufferSubData(GL_ARRAY_BUFFER, offset, data.length * type.sizeof, data.ptr);
     }
 
     /// Setup elements
@@ -238,9 +297,16 @@ class VertexBuffer {
         _layout.setupElements();
     }
 
+    /// Setup divisors
+    void setupDivisors(uint layoutId) {
+        assert(_layout, "No layout set for VertexBuffer");
+        assert(_layout.count, "No elements in VertexBuffer layout");
+        _layout.setupDivisors(layoutId);
+    }
+
     /// Bind for usage
     void bind() const {
-        glBindBuffer(GL_ARRAY_BUFFER, id);
+        glBindBuffer(GL_ARRAY_BUFFER, _id);
     }
 
     /// Unbind (static as we bind default)
@@ -251,10 +317,11 @@ class VertexBuffer {
 
 /// Index Buffer Objects hold data referencing triangles indices
 class IndexBuffer {
-    /// Index
-    uint id;
-
     private {
+        /// Index
+        uint _id;
+
+        /// Data length
         uint _count;
     }
 
@@ -269,20 +336,20 @@ class IndexBuffer {
     this(uint[] indices) {
         assert(indices.length < uint.max);
 
-        glCreateBuffers(1, &id);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+        glCreateBuffers(1, &_id);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _id);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.length * uint.sizeof, indices.ptr, GL_STATIC_DRAW);
         _count = cast(uint)indices.length;
     }
 
     /// Destructor
     ~this() {
-        glDeleteBuffers(1, &id);
+        glDeleteBuffers(1, &_id);
     }
 
     /// Bind for usage
     void bind() const {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _id);
     }
 
     /// Unbind (static as we bind default)

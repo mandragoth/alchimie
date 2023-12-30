@@ -13,14 +13,14 @@ import magia.render;
 final class Quad : Entity3D {
     private {
         Shader _shader;
-        Material _material;
+        Texture[] _textures;
     }
 
     /// Constructor
     this() {
         transform = Transform3D.identity;
 
-        _material.textures ~= [
+        _textures ~= [
             new Texture(buildNormalizedPath("assets", "texture", "planks.png"), TextureType.diffuse, 0),
             new Texture(buildNormalizedPath("assets", "texture", "planksSpec.png"), TextureType.specular, 1)
         ];
@@ -38,7 +38,7 @@ final class Quad : Entity3D {
             _shader.uploadUniformVec3("u_CamPos", camera.globalPosition);
             _shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
 
-            quadMesh.draw(_shader, _material, globalModel);
+            quadMesh.draw(_shader, _textures, globalModel);
         }
     }
 }

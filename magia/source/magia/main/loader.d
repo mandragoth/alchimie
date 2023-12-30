@@ -100,8 +100,8 @@ private void _loadSprite(InStream stream) {
     uint nbSprites = stream.read!uint();
     for (int i; i < nbSprites; ++i) {
         string name = stream.read!string();
-        vec4i clip;
 
+        Clip clip;
         clip.x = stream.read!int();
         clip.y = stream.read!int();
         clip.z = stream.read!int();
@@ -118,6 +118,8 @@ private void _loadSprite(InStream stream) {
 
         Magia.res.store(name, { return new Sprite(texture, clip); });
     }
+
+    Magia.res.store(file, { return new SpriteRenderer(texture); });
 }
 
 /// Crée un modèle

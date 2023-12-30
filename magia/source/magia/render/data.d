@@ -9,8 +9,8 @@ import magia.render.shader;
 import magia.render.texture;
 import magia.render.vertex;
 
-/// Sprite batch layout
-BufferLayout layoutBatch2D;
+/// Static 2D sprite layout
+BufferLayout layout2D;
 
 /// Static 3D model layout
 BufferLayout layout3D;
@@ -29,9 +29,6 @@ Mesh3D skyboxMesh;
 
 /// Default texture
 Texture defaultTexture;
-
-/// Default material
-Material defaultMaterial;
 
 /// Line shader
 Shader lineShader;
@@ -55,9 +52,8 @@ Shader animatedShader;
 void loadShapes() {
     // Default white pixel texture to be used if one is required and none provided
     defaultTexture = new Texture(1, 1, 0xffffffff);
-    defaultMaterial = new Material(defaultTexture);
 
-    BufferLayout layout2D = new BufferLayout([
+    layout2D = new BufferLayout([
         BufferElement("a_Position", LayoutType.ltFloat2),
         BufferElement("a_TexCoords", LayoutType.ltFloat2)
     ]);
@@ -71,11 +67,6 @@ void loadShapes() {
         0, 1, 2,
         2, 3, 0
     ]));
-
-    layoutBatch2D = new BufferLayout([
-        BufferElement("a_Position", LayoutType.ltFloat2),
-        BufferElement("a_SpriteId", LayoutType.ltUint)
-    ]);
 
     layout3D = new BufferLayout([
         BufferElement("a_Position", LayoutType.ltFloat3),

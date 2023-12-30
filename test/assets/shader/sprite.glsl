@@ -1,41 +1,35 @@
 #type vert
 #version 400 core
 
+#define MAX_SPRITES 10000
+
+// Per vertex data
 layout(location = 0) in vec2 a_Position;
-layout(location = 1) in uint a_SpriteId;
+layout(location = 1) in vec2 a_TexCoords;
 
-#define MAX_SPRITES 5000
-
-uniform SpriteInfo {
-    vec2 position[MAX_SPRITES];
-    vec2 size[MAX_SPRITES];
-    vec2 texCoords[MAX_SPRITES];
-    vec2 texSize[MAX_SPRITES];
-};
+// Per instance data
+layout(location = 2) in mat4 a_Transform;
+layout(location = 3) in vec4 a_Clip;
+layout(location = 4) in vec2 a_Flip;
 
 out vec2 v_TexCoords;
 
+uniform mat4 u_CamMatrix;
+
 void main() {
-    // Calculate position
-    vec3 position = vec3(position[a_SpriteId], 0.5);
+    // Set texture coordinates
+    v_TexCoords = a_TexCoords;
 
-    // Calculate size
-    vec2 size = a_Position * size[a_SpriteId];
+    // Apply flip
+    v_TexCoords.x = (1.0 - a_Flip.x) * v_TexCoords.x + (1.0 - v_TexCoords.x) * a_Flip.x;
+    v_TexCoords.y = (1.0 - a_Flip.y) * v_TexCoords.y + (1.0 - v_TexCoords.y) * a_Flip.y;
 
-    // Adjust position
-    vec3 newPosition = position + vec3(size, 0.0);
+    // Apply clip
+    v_TexCoords.x = v_TexCoords.x * a_Clip.z + (1.0 - v_TexCoords.x) * a_Clip.x;
+    v_TexCoords.y = (1.0 - v_TexCoords.y) * a_Clip.w + v_TexCoords.y * a_Clip.y;
 
-    // Finalize position
-    gl_Position = vec4(newPosition, 1.0);
-
-    // Calculate texture coordinates
-    vec2 texCoords = texCoords[a_SpriteId];
-
-    // Calculate texture size
-    vec2 texSize = a_Position * texSize[a_SpriteId];
-
-    // Finalize texture coordinates
-    v_TexCoords = texCoords + texSize;
+    // Apply camera, transform model (p,r,s) to vertices
+    gl_Position = u_CamMatrix * a_Transform * vec4(a_Position, 0.0, 1.0);
 }
 
 #type frag
@@ -49,5 +43,5 @@ uniform sampler2D u_Sprite0;
 uniform vec4 u_Color;
 
 void main() {
-    fragColor = texture2D(u_Sprite0, v_TexCoords) * u_Color;
+    fragColor = texture(u_Sprite0, v_TexCoords) * u_Color;
 }

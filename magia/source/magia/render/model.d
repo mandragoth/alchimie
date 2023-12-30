@@ -60,8 +60,8 @@ final class Model : Resource!Model {
         ubyte[][] _data;
         JSONValue _json;
 
-        // Material data
-        Material _material;
+        // Texture data
+        Texture[] _textures;
 
         // Mesh data
         Mesh3D[] _meshes;
@@ -109,9 +109,6 @@ final class Model : Resource!Model {
             _traceData = s_TraceData;
         }
 
-        // Initialize material
-        _material = new Material();
-
         // Fetch file data into buffers
         parseFileData(fileName);
 
@@ -142,7 +139,7 @@ final class Model : Resource!Model {
     this(Model other) {
         _data = other._data;
         _json = other._json;
-        _material = other._material;
+        _textures = other._textures;
         _meshes = other._meshes;
         _vertices = other._vertices;
         _transforms = other._transforms;
@@ -156,23 +153,23 @@ final class Model : Resource!Model {
         return this;
     }
 
-    /// Draw the model with a dedicated material
-    void draw(Shader shader, Material material, Transform3D transform) {
+    /// Draw the model with dedicated textures
+    void draw(Shader shader, Texture[] textures, Transform3D transform) {
         // Model culling is the opposite of usual objects
         glCullFace(GL_BACK);
 
         for (uint meshId = 0; meshId < _meshes.length; ++meshId) {
             Transform3D meshTransform = _transforms[meshId] * transform;
-            _meshes[meshId].draw(shader, material, meshTransform.combineModel());
+            _meshes[meshId].draw(shader, textures, meshTransform.combineModel());
         }
 
         // Revert to usual culling
         glCullFace(GL_FRONT);
     }
 
-    /// Draw the model (with its preloaded material)
+    /// Draw the model (with its preloaded textures)
     void draw(Shader shader, Transform3D transform) {
-        draw(shader, _material, transform);
+        draw(shader, _textures, transform);
     }
 
     private {
@@ -564,10 +561,10 @@ final class Model : Resource!Model {
                     getJsonStr(jsonTexture, "uri");
 
                 if (canFind(path, "baseColor") || canFind(path, "diffuse")) {
-                    _material.textures ~= new Texture(path, TextureType.diffuse, textureId);
+                    _textures ~= new Texture(path, TextureType.diffuse, textureId);
                     ++textureId;
                 } else if (canFind(path, "metallicRoughness") || canFind(path, "specular")) {
-                    _material.textures ~= new Texture(path, TextureType.specular, textureId);
+                    _textures ~= new Texture(path, TextureType.specular, textureId);
                     ++textureId;
                 } else if (_trace) {
                     writeln("Warning: unknown texture type ", path, ", not loaded");
@@ -580,7 +577,7 @@ final class Model : Resource!Model {
                     writeln("  Using default texture");
                 }
 
-                _material.textures ~= defaultTexture;
+                _textures ~= defaultTexture;
             }
         }
 
@@ -801,15 +798,17 @@ final class ModelInstance : Entity3D {
         int nbBones() {
             return cast(int) _model.nbBones;
         }
+
+        void addTexture(Texture texture) {
+            _model._textures ~= texture;
+        }
     }
 
     /// Index of bone to display
     int displayBoneId = -1;
 
     /// Constructor
-    this(string fileName, uint instances = 1, mat4[] instanceMatrices = [
-            mat4.identity
-        ]) {
+    this(string fileName) {
         transform = Transform3D.identity;
         _model = Magia.res.get!Model(fileName);
 
@@ -833,12 +832,7 @@ final class ModelInstance : Entity3D {
             glViewport(camera.viewport.x, camera.viewport.y, camera.viewport.z, camera.viewport.w);
             _shader.uploadUniformVec3("u_CamPos", camera.globalPosition);
             _shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
-
-            if (material) {
-                _model.draw(_shader, material, globalTransform);
-            } else {
-                _model.draw(_shader, globalTransform);
-            }
+            _model.draw(_shader, globalTransform);
         }
     }
 }

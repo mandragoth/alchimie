@@ -38,6 +38,11 @@ struct Vector(type, uint dimension_) {
             return data.ptr;
         }
 
+        /// Returns raw data as array
+        auto value() {
+            return *data.ptr;
+        }
+
         /// Format internal data as string for debug purposes
         string as_string() const {
             return format("%s", data);

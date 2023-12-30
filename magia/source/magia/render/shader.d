@@ -15,10 +15,8 @@ import magia.render.window;
 
 /// Class holding a shader
 class Shader : Resource!Shader {
-    /// Index
-    GLuint id;
-
     private {
+        GLuint _id;
         GLuint _vertexShader;
         GLuint _fragmentShader;
     }
@@ -72,12 +70,12 @@ class Shader : Resource!Shader {
 
     /// Shader turned on
     void activate() const {
-        glUseProgram(id);
+        glUseProgram(_id);
     }
 
     /// Shader turned off
     void remove() {
-        glDeleteProgram(id);
+        glDeleteProgram(_id);
         glDeleteShader(_vertexShader);
         glDeleteShader(_fragmentShader);
     }
@@ -140,10 +138,10 @@ class Shader : Resource!Shader {
             glCompileShader(_fragmentShader);
             compileErrors(_fragmentShader, fragmentPath, "Fragment");
 
-            id = glCreateProgram();
-            glAttachShader(id, _vertexShader);
-            glAttachShader(id, _fragmentShader);
-            glLinkProgram(id);
+            _id = glCreateProgram();
+            glAttachShader(_id, _vertexShader);
+            glAttachShader(_id, _fragmentShader);
+            glLinkProgram(_id);
         }
 
         void compileErrors(GLuint shaderId, string path, string type) {
@@ -162,16 +160,15 @@ class Shader : Resource!Shader {
 
                 // Log type, source, error info
                 glGetShaderInfoLog(shaderId, maxSize, &maxSize, infoLog.ptr);
-                //write(type, " shader error for ", path, ": ", infoLog);
-                assert(false, type ~ " shader error for " ~ path ~ ": " ~ infoLog);
+                writeln(type, " shader error for ", path, ": ", infoLog);
 
                 // Delete shader as we don't need it anymore
-                //glDeleteShader(shaderId);
+                glDeleteShader(shaderId);
             }
         }
 
         GLint getShaderLocation(const char* label) {
-            GLint labelId = glGetUniformLocation(id, label);
+            GLint labelId = glGetUniformLocation(_id, label);
 
             if (labelId == GL_INVALID_VALUE || labelId == GL_INVALID_OPERATION) {
                 throw new Exception("Error " ~ to!string(labelId,
