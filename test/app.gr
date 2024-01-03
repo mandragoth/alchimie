@@ -8,20 +8,16 @@ event app() {
     setupControls();
     setupCamera();
     yield;
-    testUI();
+    //testUI();
     runtime();
 }
 
 task runtime() {
-    // Scenes need to be instantiated for each rendering stack
-    var scene2D = @Scene2D();
-    var scene3D = @Scene3D();
-
-    var rect = @Rect(1, 1, @color(1f, 0f, 0f));
+    var rect = @Rect(10, 10, @color(1f, 0f, 0f));
     rect:position(@vec2f(400f, 300f));
 
-    var rect2 = @Rect(32, 48, @color(0f, 0f, 1f));
-    rect2:position(@vec2f(200f, 150f));
+    /*var rect2 = @Rect(32, 48, @color(0f, 0f, 1f));
+    rect2:position(@vec2f(200f, 150f));*/
 
     var remilia = @Sprite("remilia");
     remilia:position(@vec2f(200f, 150f));
@@ -30,7 +26,7 @@ task runtime() {
         var angle = 0f;
         loop yield {
             remilia:rotation(angle);
-            rect2:rotation(angle);
+            //rect2:rotation(angle);
             angle -= rad(1f);
         }
     }();

@@ -131,25 +131,25 @@ private void _addTexture(GrCall call) {
 
 private void _newRect(GrCall call) {
     Rect rect = new Rect(vec2i(call.getInt(0), call.getInt(1)), call.getNative!SColor(2));
-    Magia.addEntity(rect);
+    Magia.addDrawable(rect);
     call.setNative(rect);
 }
 
 private void _newSprite(GrCall call) {
     Sprite sprite = Magia.res.get!Sprite(call.getString(0));
-    Magia.addEntity(sprite);
+    sprite.register();
     call.setNative(sprite);
 }
 
 private void _newSkybox(GrCall call) {
     Skybox skybox = Magia.res.get!Skybox(call.getString(0));
-    Magia.addEntity(skybox);
+    Magia.addDrawable(skybox);
     call.setNative(skybox);
 }
 
 private void _newModel(GrCall call) {
     ModelInstance modelInstance = new ModelInstance(call.getString(0));
-    Magia.addEntity(modelInstance);
+    Magia.addDrawable(modelInstance);
     call.setNative(modelInstance);
 }
 

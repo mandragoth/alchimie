@@ -121,6 +121,16 @@ class Magia {
             _renderer3D.cameras ~= camera;
         }
 
+        /// Default 2D scene
+        Scene2D currentScene2D() {
+            return _currentScene2D;
+        }
+
+        /// Default 3D scene
+        Scene3D currentScene3D() {
+            return _currentScene3D;
+        }
+
         /// Add 2D scene and make it current
         void addCurrentScene(Scene2D scene) {
             _scenes2D ~= scene;
@@ -133,14 +143,14 @@ class Magia {
             _currentScene3D = scene;
         }
 
-        /// Add 2D entity
-        void addEntity(Entity2D entity, Scene2D scene2D = _currentScene2D) {
-            scene2D.addEntity(entity);
+        /// Add 2D drawable
+        void addDrawable(Drawable2D entity, Scene2D scene2D = _currentScene2D) {
+            scene2D.addDrawable(entity);
         }
 
-        /// Add 3D entity
-        void addEntity(Entity3D entity, Scene3D scene3D = _currentScene3D) {
-            scene3D.addEntity(entity);
+        /// Add 3D drawable
+        void addDrawable(Drawable3D entity, Scene3D scene3D = _currentScene3D) {
+            scene3D.addDrawable(entity);
         }
 
         /// Ticks écoulés depuis le début
@@ -184,7 +194,9 @@ class Magia {
         _renderer3D = new Renderer3D(_window, Cartesian3D.center);
         _renderer2D = new Renderer2D(_window, Cartesian2D(_window.topLeft, vec2.bottomRight));
 
-        // Create default scenes
+        // Create default scenes (@TODO parametrize)
+        addCurrentScene(new Scene2D(_renderer2D));
+        addCurrentScene(new Scene3D(_renderer3D));
         _uiManager = new UIManager(_renderer2D);
 
         // Create input handlers
@@ -237,10 +249,6 @@ class Magia {
 
                 // Update audio
                 _audioManager.update();
-
-                // Update rendering stacks
-                _renderer3D.update();
-                _renderer2D.update();
 
                 // Update scenes (default order: 3D, 2D, UI)
                 updateScenes();

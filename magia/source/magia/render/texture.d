@@ -32,10 +32,10 @@ private {
 
 /// Class holding texture data
 class Texture : Resource!Texture {
-    /// Texture index
-    GLuint id;
-
     protected {
+        /// Texture index
+        GLuint _id;
+
         // Teture image attributes
         int _width, _height;
 
@@ -62,6 +62,11 @@ class Texture : Resource!Texture {
     }
 
     @property {
+        /// Get texture id
+        GLuint id() const {
+            return _id;
+        }
+
         /// Get texture type
         TextureType type() const {
             return _type;
@@ -103,8 +108,8 @@ class Texture : Resource!Texture {
         _width = width;
         _height = height;
 
-        glGenTextures(1, &id);
-        glBindTexture(_target, id);
+        glGenTextures(1, &_id);
+        glBindTexture(_target, _id);
 
         // Setup filters
         glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -131,6 +136,7 @@ class Texture : Resource!Texture {
         SDL_Surface* surface = IMG_Load_RW(rw, 1);
         enforce(surface, "can't load image `" ~ filePath ~ "`");
 
+        // Setup data from surface
         setupData(surface, type, slot);
 
         // Free surface
@@ -142,9 +148,9 @@ class Texture : Resource!Texture {
         setupData(surface, type, slot);
     }
 
-    /// Copie
+    /// Copy constructor
     this(Texture texture_) {
-        id = texture_.id;
+        _id = texture_._id;
         _type = texture_.type;
         _width = texture_._width;
         _height = texture_._height;
@@ -174,8 +180,8 @@ class Texture : Resource!Texture {
         _height = surface.h;
 
         // Generate texture and bind texture
-        glGenTextures(1, &id);
-        glBindTexture(_target, id);
+        glGenTextures(1, &_id);
+        glBindTexture(_target, _id);
 
         if (type == TextureType.sprite) {
             // Setup filter
@@ -251,8 +257,8 @@ class Texture : Resource!Texture {
         _slot = 0;
 
         // Generate texture and bind data
-        glGenTextures(1, &id);
-        glBindTexture(_target, id);
+        glGenTextures(1, &_id);
+        glBindTexture(_target, _id);
 
         // Setup filters
         glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -290,13 +296,13 @@ class Texture : Resource!Texture {
     /// Bind texture
     void bind() const {
         glActiveTexture(GL_TEXTURE0 + _slot);
-        glBindTexture(_target, id);
+        glBindTexture(_target, _id);
     }
 
     /// Bind texture
     void bind(GLuint slot) {
         glActiveTexture(GL_TEXTURE0 + slot);
-        glBindTexture(_target, id);
+        glBindTexture(_target, _id);
     }
 
     /// Unbind texture
@@ -306,7 +312,7 @@ class Texture : Resource!Texture {
 
     /// Release texture
     void remove() {
-        glDeleteTextures(_nbTextures, &id);
+        glDeleteTextures(_nbTextures, &_id);
     }
 }
 
@@ -328,8 +334,8 @@ class FrameBufferTexture : Texture {
         super(width, height, target, type);
 
         // Generate and bind texture
-        glGenTextures(1, &id);
-        glBindTexture(_target, id);
+        glGenTextures(1, &_id);
+        glBindTexture(_target, _id);
 
         _memoryType = GL_UNSIGNED_BYTE;
         _attachment = GL_COLOR_ATTACHMENT0;
@@ -390,7 +396,7 @@ class FrameBufferTexture : Texture {
 
     /// Bind to frame buffer
     void bindToFrameBuffer() {
-        glFramebufferTexture2D(GL_FRAMEBUFFER, _attachment, _target, id, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, _attachment, _target, _id, 0);
     }
 
     /// Unbind from frame buffer

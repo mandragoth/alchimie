@@ -27,21 +27,17 @@ class VertexArray {
         glCreateVertexArrays(1, &_id);
         glBindVertexArray(_id);
 
-        // Bind vertex buffer, set up its elements, unbind it
-        vertexBuffer.bind();
+        // Set up vertex buffer elements
         vertexBuffer.setupElements();
-        vertexBuffer.unbind();
 
         // Save index buffer set it up
         _indexBuffer = indexBuffer;
     }
 
     /// Add per instance vertex buffer
-    void addInstanceVertexBuffer(VertexBuffer vertexBuffer, uint firstLayoutId) {
-        // Bind vertex buffer, link its attributes, unbind it
-        vertexBuffer.bind();
-        vertexBuffer.setupDivisors(firstLayoutId);
-        vertexBuffer.unbind();
+    void addInstanceBuffer(InstanceBuffer instanceBuffer, uint firstLayoutId) {
+        // Set up instance buffer divisors
+        instanceBuffer.setupDivisors(firstLayoutId);
     }
 
     /// Destructor

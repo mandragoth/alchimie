@@ -52,6 +52,27 @@ uint layoutTypeSize(LayoutType type) {
     }
 }
 
+string layouTypeToString(LayoutType type) {
+    final switch (type) with (LayoutType) {
+        case ltFloat:
+        case ltFloat2:
+        case ltFloat3:
+        case ltFloat4:
+        case ltMat3:
+        case ltMat4:
+            return "GL_FLOAT";
+        case ltInt:
+        case ltInt2:
+        case ltInt3:
+        case ltInt4:
+            return "GL_INT";
+        case ltUint:
+            return "GL_UNSIGNED_INT";
+        case ltBool:
+            return "GL_BOOL";
+    }
+}
+
 /// Buffer element for shader layout
 struct BufferElement {
     /// Name of element in the shader
@@ -72,7 +93,7 @@ struct BufferElement {
     @property {
         /// Size of this item
         uint size() const {
-            return typeSize * count;
+            return typeSize;
         }
 
         /// Number of entries for this item
@@ -201,7 +222,7 @@ class BufferLayout {
     /// Setup divisors
     void setupDivisors(uint layoutId) {
         foreach(ref BufferElement element; _elements) {
-            glVertexAttribDivisor(layoutId, 1);
+            glEnableVertexAttribArray(layoutId);
 
             if (element.glType == GL_INT || element.glType == GL_UNSIGNED_INT) {
                 glVertexAttribIPointer(layoutId,
@@ -217,6 +238,8 @@ class BufferLayout {
                                       stride,
                                       cast(void *)element.offset);
             }
+
+            glVertexAttribDivisor(layoutId, 1);
             ++layoutId;
         }
     }
@@ -237,10 +260,10 @@ class VertexBuffer {
         /// Index
         uint _id;
 
-        /// Preallocated bytes
-        uint _maxCount;
+        /// Preallocated length in bytes
+        uint _length;
 
-        /// Data length in bytes
+        /// Number of vertices
         uint _count;
 
         /// Shader data layout
@@ -254,25 +277,17 @@ class VertexBuffer {
         }
     }
 
-    /// Constructor given future max element count and layout
-    this(uint maxCount, BufferLayout layout_) {
-        _maxCount = maxCount;
-        _layout = layout_;
-
-        glCreateBuffers(1, &_id);
-        glBindBuffer(GL_ARRAY_BUFFER, _id);
-        glBufferData(GL_ARRAY_BUFFER, layout_.size * _maxCount, null, GL_STREAM_DRAW);
-    }
-
     /// Constructor given type array and layout
     this(type)(type[] data, BufferLayout layout_) {
         assert(data.length < uint.max);
+
         _count = cast(uint)data.length;
+        _length = _count * cast(uint)type.sizeof;
         _layout = layout_;
 
         glCreateBuffers(1, &_id);
         glBindBuffer(GL_ARRAY_BUFFER, _id);
-        glBufferData(GL_ARRAY_BUFFER, type.sizeof * _count, data.ptr, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, _length, data.ptr, GL_STATIC_DRAW);
     }
 
     /// Destructor
@@ -280,38 +295,50 @@ class VertexBuffer {
         glDeleteBuffers(1, &_id);
     }
 
-    /// Update data (for a GL_STREAM_DRAW)
-    void updateData(type)(type[] data, uint offset) {
-        assert(data.length < uint.max);
-        assert(data.length < _maxCount);
-        _count = cast(uint)data.length;
-
-        glBindBuffer(GL_ARRAY_BUFFER, _id);
-        glBufferSubData(GL_ARRAY_BUFFER, offset, data.length * type.sizeof, data.ptr);
-    }
-
     /// Setup elements
     void setupElements() {
         assert(_layout, "No layout set for VertexBuffer");
         assert(_layout.count, "No elements in VertexBuffer layout");
+        glBindBuffer(GL_ARRAY_BUFFER, _id);
         _layout.setupElements();
+    }
+}
+
+import std.stdio;
+
+/// Instance Buffer Objects are special Vertex Buffer Object streaming per instance dynamic data
+class InstanceBuffer {
+    private {
+        /// Index
+        uint _id;
+
+        /// Shader data layout
+        BufferLayout _layout;
+    }
+
+    /// Destructor
+    ~this() {
+        glDeleteBuffers(1, &_id);
+    }
+
+    /// Constructor given future max element count and layout
+    this(BufferLayout layout_) {
+        _layout = layout_;
+        glCreateBuffers(1, &_id);
+    }
+
+    /// Update data (for a GL_STREAM_DRAW)
+    void setData(type)(type[] data) {
+        glBindBuffer(GL_ARRAY_BUFFER, _id);
+        glBufferData(GL_ARRAY_BUFFER, data.length * type.sizeof, data.ptr, GL_STREAM_DRAW);
     }
 
     /// Setup divisors
     void setupDivisors(uint layoutId) {
         assert(_layout, "No layout set for VertexBuffer");
         assert(_layout.count, "No elements in VertexBuffer layout");
-        _layout.setupDivisors(layoutId);
-    }
-
-    /// Bind for usage
-    void bind() const {
         glBindBuffer(GL_ARRAY_BUFFER, _id);
-    }
-
-    /// Unbind (static as we bind default)
-    static void unbind() {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        _layout.setupDivisors(layoutId);
     }
 }
 

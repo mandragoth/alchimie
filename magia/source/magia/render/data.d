@@ -68,6 +68,18 @@ void loadShapes() {
         2, 3, 0
     ]));
 
+    // Information to forward for each rendered instance
+    BufferLayout spriteInstanceLayout = new BufferLayout([
+        BufferElement("a_Transform[0]", LayoutType.ltFloat4),
+        BufferElement("a_Transform[1]", LayoutType.ltFloat4),
+        BufferElement("a_Transform[2]", LayoutType.ltFloat4),
+        BufferElement("a_Transform[3]", LayoutType.ltFloat4)
+    ]);
+
+    // Per instance vertex buffer
+    InstanceBuffer spriteInstanceBuffer = new InstanceBuffer(spriteInstanceLayout);
+    rectMesh.addInstanceBuffer(spriteInstanceBuffer, layout2D.count);
+
     layout3D = new BufferLayout([
         BufferElement("a_Position", LayoutType.ltFloat3),
         BufferElement("a_Normal", LayoutType.ltFloat3),

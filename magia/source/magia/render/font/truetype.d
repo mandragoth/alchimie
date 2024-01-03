@@ -113,7 +113,9 @@ final class TrueTypeFont : Font {
                 cast(wchar) ch, Color.white.toSDL());
             enforce(surface);
             Texture texture = new Texture(surface, TextureType.sprite);
-            Sprite sprite = new Sprite(texture, vec4i(0, 0, texture.width, texture.height));
+            SpritePool spritePool = new SpritePool(texture);
+            // @TODO reference sprite pool in UI manager?
+            Sprite sprite = new Sprite(texture, spritePool, vec4i(0, 0, texture.width, texture.height));
             enforce(sprite);
             SDL_FreeSurface(surface);
 
@@ -143,7 +145,9 @@ final class TrueTypeFont : Font {
             SDL_BlitSurface(surface, &srcRect, surfaceOutline, &dstRect);
 
             Texture texture = new Texture(surfaceOutline, TextureType.sprite);
-            Sprite sprite = new Sprite(texture, vec4i(0, 0, texture.width, texture.height));
+             SpritePool spritePool = new SpritePool(texture);
+            // @TODO reference sprite pool in UI manager?
+            Sprite sprite = new Sprite(texture, spritePool, vec4i(0, 0, texture.width, texture.height));
             enforce(sprite);
 
             SDL_FreeSurface(surface);

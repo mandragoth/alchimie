@@ -8,6 +8,7 @@ import std.math;
 import magia.core;
 import magia.render.instance;
 import magia.render.shader;
+import magia.render.updatable;
 
 /// Global camera class
 abstract class Camera : Instance3D {
@@ -70,16 +71,19 @@ class OrthographicCamera : Camera {
         override void position(vec3 position_) {
             transform.position = position_;
             computeViewMatrix();
+            computeMVP();
         }
 
         override void rotation(rot3 rotation_) {
             transform.rotation = rotation_;
             computeViewMatrix();
+            computeMVP();
         }
 
         override void zoomLevel(float zoomLevel_) {
             _zoomLevel = zoomLevel_;
             computeProjectionMatrix();
+            computeMVP();
         }
     }
 
@@ -91,25 +95,29 @@ class OrthographicCamera : Camera {
         // Compute view and projection matrix
         computeViewMatrix();
         computeProjectionMatrix();
+        computeMVP();
     }
 
-    /// Recompute projection and model matrices
-    void computeProjectionMatrix() {
+    /// Recompute camera MVP matrix
+    private void computeMVP() {
+        _matrix = _projection * _view;
+    }
+
+    /// Recompute projection matrix
+    private void computeProjectionMatrix() {
         float halfWidth  = cast(float)_viewport.width / 2f; 
         float halfHeight = cast(float)_viewport.height / 2f;
         computeProjectionMatrix(-halfWidth, halfWidth, -halfHeight, halfHeight);
     } 
 
-    /// Recompute projection and model matrices
-    void computeProjectionMatrix(float left, float right, float bottom, float top) {
+    /// Recompute projection matrix
+    private void computeProjectionMatrix(float left, float right, float bottom, float top) {
         _projection = mat4.orthographic(left, right, bottom, top, -1f, 1f);
-        _matrix = _projection * _view;
     }
 
-    /// Recompute view and model matrices
-    void computeViewMatrix() {
+    /// Recompute view matrix
+    private void computeViewMatrix() {
         _view = transform.combineModel().inverse();
-        _matrix = _projection * _view;
     }
 }
 
@@ -121,6 +129,15 @@ class PerspectiveCamera : Camera {
 
         /// Where is up?
         vec3 _up;
+
+        /// Field of view
+        float _FOVdeg = 45f;
+
+        /// Near plane
+        float _nearPlane = 0.1f;
+
+        /// Far plane
+        float _farPlane = 1000f;
     }
 
     @property {
@@ -141,6 +158,18 @@ class PerspectiveCamera : Camera {
         vec3 forward(vec3 forward_) {
             return _target = forward_;
         }
+
+        override void position(vec3 position_) {
+            transform.position = position_;
+            computeViewMatrix();
+            computeMVP();
+        }
+
+        override void rotation(rot3 rotation_) {
+            transform.rotation = rotation_;
+            computeViewMatrix();
+            computeMVP();
+        }
     }
 
     /// Default constructor (by default looks aways from screen along Z, and up is positive along Y axis)
@@ -154,17 +183,23 @@ class PerspectiveCamera : Camera {
 
         // Set aspect ratio and viewport
         _viewport = vec4i(0, 0, width, height);
+
+        // Compute view and projection matrix
+        computeViewMatrix();
+        computeProjectionMatrix();
+        computeMVP();
     }
 
-    /// Setting up camera matrices operations
-    void updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
-        _view = mat4.look_at(globalPosition, globalPosition + _target, _up);
-        _projection = mat4.perspective(_viewport.width, _viewport.height, FOVdeg, nearPlane, farPlane);
+    /// Recompute camera MVP matrix
+    private void computeMVP() {
         _matrix = _projection * _view;
     }
 
-    /// Update the camera @TODO only recomputed when needed
-    override void update() {
-        updateMatrix(45f, 0.1f, 1000f);
+    void computeProjectionMatrix() {
+        _projection = mat4.perspective(_viewport.width, _viewport.height, _FOVdeg, _nearPlane, _farPlane);
+    }
+
+    void computeViewMatrix() {
+        _view = mat4.look_at(globalPosition, globalPosition + _target, _up);
     }
 }

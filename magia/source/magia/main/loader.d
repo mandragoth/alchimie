@@ -94,32 +94,36 @@ private void _compileSprite(string path, Json json, OutStream stream) {
 }
 
 private void _loadSprite(InStream stream) {
-    string file = stream.read!string();
-    Texture texture = new Texture(file, TextureType.sprite);
+    Scene2D scene2D = Magia.currentScene2D;
+    if (scene2D) {
+        string file = stream.read!string();
+        Texture texture = new Texture(file, TextureType.sprite);
 
-    uint nbSprites = stream.read!uint();
-    for (int i; i < nbSprites; ++i) {
-        string name = stream.read!string();
+        SpritePool spritePool = new SpritePool(texture);
+        scene2D.addDrawable(spritePool);
 
-        Clip clip;
-        clip.x = stream.read!int();
-        clip.y = stream.read!int();
-        clip.z = stream.read!int();
-        clip.w = stream.read!int();
+        uint nbSprites = stream.read!uint();
+        for (int i; i < nbSprites; ++i) {
+            string name = stream.read!string();
 
-        if (clip.x == -1)
-            clip.x = 0;
-        if (clip.y == -1)
-            clip.y = 0;
-        if (clip.z == -1)
-            clip.z = texture.width;
-        if (clip.w == -1)
-            clip.w = texture.height;
+            Clip clip;
+            clip.x = stream.read!int();
+            clip.y = stream.read!int();
+            clip.z = stream.read!int();
+            clip.w = stream.read!int();
 
-        Magia.res.store(name, { return new Sprite(texture, clip); });
+            if (clip.x == -1)
+                clip.x = 0;
+            if (clip.y == -1)
+                clip.y = 0;
+            if (clip.z == -1)
+                clip.z = texture.width;
+            if (clip.w == -1)
+                clip.w = texture.height;
+
+            Magia.res.store(name, { return new Sprite(texture, spritePool, clip); });
+        }
     }
-
-    Magia.res.store(file, { return new SpriteRenderer(texture); });
 }
 
 /// Crée un modèle

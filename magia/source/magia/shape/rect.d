@@ -40,10 +40,14 @@ final class Rect : Entity2D {
 
     /// Draw the rectangle on the screen
     override void draw(Renderer2D renderer) {
+        renderer.drawRectangle(material, getTransformModel(renderer));
+    }
+
+    private mat4 getTransformModel(Renderer2D renderer) {
         Transform2D targetTransform = globalTransform;
         targetTransform.scale *= size / 2f;
 
         Transform2D rendererTransform = renderer.toRenderSpace(targetTransform);
-        renderer.drawRectangle(defaultTexture, material, rendererTransform.combineModel());
+        return rendererTransform.combineModel();
     }
 }

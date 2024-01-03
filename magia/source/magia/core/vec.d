@@ -3,6 +3,7 @@ module magia.core.vec;
 import magia.core.mat;
 import magia.core.quat;
 import magia.core.tuple;
+
 import std.format;
 import std.math;
 import std.traits;
@@ -34,13 +35,12 @@ struct Vector(type, uint dimension_) {
         }
 
         /// Returns pointer to data in memory
-        auto value_ptr() {
+        const(type)* value_ptr() const {
             return data.ptr;
         }
 
-        /// Returns raw data as array
-        auto value() {
-            return *data.ptr;
+        const(type)[] value() const {
+            return data[0..$];
         }
 
         /// Format internal data as string for debug purposes

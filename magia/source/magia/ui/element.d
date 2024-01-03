@@ -4,9 +4,10 @@ import magia.core;
 import magia.render.entity;
 import magia.render.instance;
 import magia.render.renderer;
+import magia.render.updatable;
 
 /// Abstract class representing an UI element
-abstract class UIElement : Entity2D {
+abstract class UIElement : Entity2D, Updatable {
     /// Size
     vec2 size = vec2.zero;
 

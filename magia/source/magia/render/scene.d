@@ -7,17 +7,21 @@ import bindbc.opengl;
 import magia.core.timestep;
 import magia.core.transform;
 import magia.render.camera;
+import magia.render.drawable;
 import magia.render.entity;
 import magia.render.renderer;
 import magia.render.skybox;
+import magia.render.updatable;
 
 /// Scene class
 class Scene(uint dimension_) {
-    alias Entities = Entity!(dimension_)[];
+    alias Updatables = Updatable[];
+    alias Drawables = Drawable!(dimension_)[];
 
     private {
         Renderer!(dimension_) _renderer;
-        Entities _entities;
+        Updatables _updatables;
+        Drawables _drawables;
     }
 
     /// Constructor
@@ -25,28 +29,30 @@ class Scene(uint dimension_) {
         _renderer = renderer;
     }
 
-    /// Add an entity
-    void addEntity(Entity!(dimension_) entity) {
-        _entities ~= entity;
+    /// Add an updatable object
+    void addUpdatable(Updatable updatable) {
+        _updatables ~= updatable;
     }
 
-    /// Clear scene from all its entities
-    void clear() {
-        _entities.length = 0;
+    /// Add a drawable object
+    void addDrawable(Drawable!(dimension_) drawable) {
+        _drawables ~= drawable;
     }
 
     /// Update scene
     void update() {
-        foreach(entity; _entities) {
-            entity.update();
+        foreach(updatable; _updatables) {
+            updatable.update();
         }
     }
 
     /// Draw scene
     void draw() {
         _renderer.setup();
-        foreach(entity; _entities) {
-            entity.draw(_renderer);
+
+        // Draw each drawable
+        foreach(drawable; _drawables) {
+            drawable.draw(_renderer);
         }
     }
 }

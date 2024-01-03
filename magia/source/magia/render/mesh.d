@@ -20,9 +20,9 @@ final class Mesh(uint dimension_) {
     private {
         VertexArray _vertexArray;
         VertexBuffer _vertexBuffer;
-        VertexBuffer _instanceBuffer;
+        InstanceBuffer _instanceBuffer;
         GLenum _drawMode;
-        uint _nbInstances = 1;
+        uint _nbInstances = 0;
     }
 
     /// Constructor
@@ -46,15 +46,17 @@ final class Mesh(uint dimension_) {
     }
 
     /// Add per instance vertex buffer
-    void addInstancedVertexBuffer(VertexBuffer instanceBuffer, uint firstLayoutId) {
+    void addInstanceBuffer(InstanceBuffer instanceBuffer, uint firstLayoutId) {
         _instanceBuffer = instanceBuffer;
-        _vertexArray.addInstanceVertexBuffer(_instanceBuffer, firstLayoutId);
+        _vertexArray.addInstanceBuffer(_instanceBuffer, firstLayoutId);
     }
 
-    /// Update instance data before draw call
-    void updateInstanceData(type)(type[] data, uint nbInstances, uint offset = 0) {
-        _nbInstances = nbInstances;
-        _instanceBuffer.updateData(data, offset);
+    /// Set instance data before draw call
+    void setInstanceData(type)(type[] data) {
+        assert(data.length < uint.max);
+
+        _nbInstances = cast(uint)data.length;
+        _instanceBuffer.setData(data);
     }
 
     /// Bind shader, vertex array
@@ -134,18 +136,18 @@ final class Mesh(uint dimension_) {
     }
 
     private void drawElements(Shader shader) {
-        if (_nbInstances == 1) {
-            glDrawElements(_drawMode, _vertexArray.count, GL_UNSIGNED_INT, null);
-        } else {
+        if (_nbInstances) {
             glDrawElementsInstanced(_drawMode, _vertexArray.count, GL_UNSIGNED_INT, null, _nbInstances);
+        } else {
+            glDrawElements(_drawMode, _vertexArray.count, GL_UNSIGNED_INT, null);
         }
     }
 
     private void drawArrays(Shader shader) {
-        if (_nbInstances == 1) {
-            glDrawArrays(_drawMode, 0, _vertexBuffer.count);
-        } else {
+        if (_nbInstances) {
             glDrawArraysInstanced(_drawMode, 0, _vertexBuffer.count, _nbInstances);
+        } else {
+            glDrawArrays(_drawMode, 0, _vertexBuffer.count);
         }
     }
 }

@@ -13,6 +13,7 @@ import magia.render.material;
 import magia.render.mesh;
 import magia.render.postprocess;
 import magia.render.shader;
+import magia.render.sprite;
 import magia.render.texture;
 import magia.render.window;
 
@@ -78,10 +79,23 @@ class Renderer(uint dimension_) {
             glDisable(GL_CULL_FACE);
         }
 
-        /// Render a texture
-        void drawRectangle(Texture texture, Material material, mat4 model) {
-            setupRectShader(texture, material);
-            drawIndexed(rectMesh, quadShader, [texture], model);
+        /// Render a rectangle
+        void drawRectangle(Material material, mat4 model) {
+            setupRectShader(defaultTexture, material);
+            drawIndexed(rectMesh, quadShader, [defaultTexture], model);
+        }
+
+        /// Render a textured sprite
+        void drawSprite(Texture texture, vec4 clipf, vec2 flipf, mat4 model) {
+            setupSpriteShader(texture, clipf, flipf);
+            drawIndexed(rectMesh, spriteShader, [texture], model);
+        }
+
+        /// Render textured sprites from a pool
+        void drawSprites(Texture texture, vec4 clipf, vec2 flipf, mat4[] models) {
+            rectMesh.setInstanceData(models);
+            setupSpriteShader(texture, clipf, flipf);
+            drawIndexed(rectMesh, spriteShader, [texture]);
         }
     } else static if (dimension_ == 3) {
         /// Prepare to render 3D items
@@ -103,13 +117,6 @@ class Renderer(uint dimension_) {
         }*/
     }
 
-    /// Update
-    void update() {
-        foreach (Camera camera; cameras) {
-            camera.update();
-        }
-    }
-
     private void setupLineShader(Color color = Color.white, float alpha = 1f) {
         // Activate shader
         lineShader.activate();
@@ -119,6 +126,7 @@ class Renderer(uint dimension_) {
         lineShader.uploadUniformVec4("u_Color", vec4(color.rgb, alpha));
     }
 
+    /// @TODO remove dynamic clipf and flipf computation
     private void setupRectShader(Texture texture, Material material) {
         // Activate shader
         quadShader.activate();
@@ -177,6 +185,21 @@ class Renderer(uint dimension_) {
         }
     }
 
+    private void setupSpriteShader(Texture texture, vec4 clipf, vec2 flipf) {
+        // Activate shader
+        spriteShader.activate();
+
+        // Set clip
+        spriteShader.uploadUniformVec4("u_Clip", clipf);
+
+        // Set flip
+        spriteShader.uploadUniformVec2("u_Flip", flipf);
+
+        // Set blend
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+        glBlendEquation(GL_FUNC_ADD);
+    }
+
     private void setupCircleShader(vec2 position = vec2.zero, float size = 1f,
                                    Color color = Color.white, float alpha = 1f, Blend blend = Blend.alpha) {
         // Set color
@@ -202,6 +225,16 @@ class Renderer(uint dimension_) {
                 glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
                 glBlendEquation(GL_FUNC_ADD);
                 break;
+        }
+    }
+
+    void drawIndexed(Mesh!(dimension_) mesh, Shader shader, Texture[] textures) {
+        shader.activate();
+
+        // One draw call per camera
+        foreach (Camera camera; cameras) {
+            shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
+            mesh.draw(shader, textures);
         }
     }
 

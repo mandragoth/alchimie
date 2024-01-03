@@ -80,9 +80,6 @@ abstract class Instance(uint dimension_) {
         children ~= instance;
         instance.parent = this;
     }
-
-    /// Update the object (given a deltaTime)
-    void update() {}
 }
 
 alias Instance2D = Instance!(2);

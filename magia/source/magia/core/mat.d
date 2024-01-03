@@ -3,6 +3,7 @@ module magia.core.mat;
 import magia.core.tuple;
 import magia.core.vec;
 
+import std.array;
 import std.conv;
 import std.format;
 import std.math;
@@ -23,13 +24,19 @@ struct Matrix(type, uint rows_, uint columns_) {
 
     @property {
         /// Returns pointer to data in memory
-        auto value_ptr() const {
+        const(type)* value_ptr() const {
             return data[0].ptr;
         }
 
-        /// Returns raw data as array
-        auto value() {
-            return *data.ptr;
+        const(type)[] value() const {
+            type[] toReturn;
+            foreach(r; TupleRange!(0, rows)) {
+                foreach(c; TupleRange!(0, columns)) {
+                    toReturn ~= data[r][c];
+                }
+            }
+
+            return toReturn;
         }
 
         /// Format internal data as string for debug purposes
