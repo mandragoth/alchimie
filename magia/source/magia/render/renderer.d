@@ -79,21 +79,6 @@ class Renderer(uint dimension_) {
             glDisable(GL_DEPTH_TEST);
             glDisable(GL_CULL_FACE);
         }
-
-        /// Render a rectangle
-        void drawRectangles(RectData[] rectData) {
-            rectMesh.setInstanceData(rectData);
-            setBlendAlpha();
-            drawIndexed(rectMesh, rectShader, [defaultTexture]);
-        }
-
-        /// Render textured sprites from a pool
-        // @TODO remove in favor of generic draw function!
-        /*void drawSprites(Texture texture, SpriteData[] spriteData) {
-            spriteMesh.setInstanceData(spriteData);
-            setBlendAlpha();
-            drawIndexed(spriteMesh, spriteShader, [texture]);
-        }*/
     } else static if (dimension_ == 3) {
         /// Prepare to render 3D items
         void setup() {
@@ -141,7 +126,7 @@ class Renderer(uint dimension_) {
     // Draw any mesh with any material
     void draw(type)(Mesh!(dimension_) mesh, Shader shader, Texture[] textures, type[] instanceData) {
         // Set per instance data
-        spriteMesh.setInstanceData(instanceData);
+        mesh.setInstanceData(instanceData);
 
         // Activate shader
         shader.activate();

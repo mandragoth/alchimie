@@ -275,6 +275,16 @@ class VertexBuffer {
         glBufferData(GL_ARRAY_BUFFER, _length, data.ptr, GL_STATIC_DRAW);
     }
 
+    /// Copy constructor
+    this(VertexBuffer other) {
+        // Copy plain old data
+        _layout = other._layout;
+
+        // Generate new buffer and copy data from other buffer
+        glCreateBuffers(1, &_id);
+        /// @TODO copy data
+    }
+
     /// Destructor
     ~this() {
         glDeleteBuffers(1, &_id);
@@ -301,15 +311,25 @@ class InstanceBuffer {
         BufferLayout _layout;
     }
 
-    /// Destructor
-    ~this() {
-        glDeleteBuffers(1, &_id);
-    }
-
     /// Constructor given future max element count and layout
     this(BufferLayout layout_) {
         _layout = layout_;
         glCreateBuffers(1, &_id);
+    }
+
+    /// Copy constructor
+    this(InstanceBuffer other) {
+        // Copy plain old data
+        _layout = other._layout;
+
+        // Generate new buffer and copy data from other buffer
+        glCreateBuffers(1, &_id);
+        /// @TODO copy data
+    }
+
+    /// Destructor
+    ~this() {
+        glDeleteBuffers(1, &_id);
     }
 
     /// Update data (for a GL_STREAM_DRAW)
@@ -352,6 +372,16 @@ class IndexBuffer {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _id);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.length * uint.sizeof, indices.ptr, GL_STATIC_DRAW);
         _count = cast(uint)indices.length;
+    }
+
+    /// Copy constructor
+    this(IndexBuffer other) {
+        // Copy plain old data
+        _count = other._count;
+
+        // Generate new buffer and copy data from other buffer
+        glCreateBuffers(1, &_id);
+        /// @TODO copy data
     }
 
     /// Destructor

@@ -34,10 +34,12 @@ class VertexArray {
         _indexBuffer = indexBuffer;
     }
 
-    /// Add per instance vertex buffer
-    void addInstanceBuffer(InstanceBuffer instanceBuffer, uint firstLayoutId) {
-        // Set up instance buffer divisors
-        instanceBuffer.setupDivisors(firstLayoutId);
+    /// Copy constructor
+    this(VertexArray other) {
+        // Generate new buffer and copy data from other buffer
+        glCreateBuffers(1, &_id);
+
+        _indexBuffer = new IndexBuffer(other._indexBuffer);
     }
 
     /// Destructor

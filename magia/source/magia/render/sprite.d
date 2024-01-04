@@ -9,10 +9,12 @@ import bindbc.sdl;
 
 import magia.core;
 import magia.main;
+import magia.render.buffer;
 import magia.render.data;
 import magia.render.drawable;
 import magia.render.entity;
 import magia.render.material;
+import magia.render.mesh;
 import magia.render.pool;
 import magia.render.renderer;
 import magia.render.shader;
@@ -33,9 +35,46 @@ struct SpriteData {
 class SpritePool : DrawablePool!(2, Sprite, SpriteData) {
     /// Constructor
     this(Texture texture) {
-        writeln("Fetching shader sprite");
-        _shader = Magia.res.get!Shader("sprite");
         _textures ~= texture;
+    }
+
+    /// Load resources
+    void loadResources() {
+        if(!_loaded) {
+            // Fetch shader
+            _shader = Magia.res.get!Shader("sprite");
+
+            // Fetch mesh
+            _mesh = Magia.res.get!Mesh2D("rectMesh");
+
+            /*_mesh = new Mesh2D(new VertexBuffer([
+                -1f, -1f, 0f, 0f, // 3-----2
+                 1f, -1f, 1f, 0f, // |     |
+                 1f,  1f, 1f, 1f, // |     |
+                -1f,  1f, 0f, 1f  // 0-----1
+            ], layout2D), new IndexBuffer([
+                0, 1, 2,
+                2, 3, 0
+            ]));*/
+
+            // Information to forward for each rendered instance
+            BufferLayout instanceLayout = new BufferLayout([
+                BufferElement("a_Transform[0]", LayoutType.ltFloat4),
+                BufferElement("a_Transform[1]", LayoutType.ltFloat4),
+                BufferElement("a_Transform[2]", LayoutType.ltFloat4),
+                BufferElement("a_Transform[3]", LayoutType.ltFloat4),
+                BufferElement("a_Clip", LayoutType.ltFloat4),
+                BufferElement("a_Color", LayoutType.ltFloat4),
+                BufferElement("a_Flip", LayoutType.ltFloat2)
+            ]);
+
+            // Per instance vertex buffer
+            InstanceBuffer instanceBuffer = new InstanceBuffer(instanceLayout);
+            _mesh.addInstanceBuffer(instanceBuffer, layout2D.count);
+
+            Magia.currentScene2D.addDrawable(this);
+            _loaded = true;
+        }
     }
 }
 
@@ -110,13 +149,14 @@ final class Sprite : Entity2D, Resource!Sprite {
         _size = vec2u(clip.width, clip.height);
     }
 
-    /// Accès à la ressource
+    /// Access to resource
     Sprite fetch() {
         return new Sprite(this);
     }
 
     /// Subscribe to related pool
     void register() {
+        _spritePool.loadResources(); 
         _spritePool.addDrawable(this);
     }
 

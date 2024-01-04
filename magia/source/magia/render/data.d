@@ -18,12 +18,6 @@ BufferLayout layout3D;
 /// Animated 3D model layout
 BufferLayout layout3DAnimated;
 
-/// Rect mesh
-Mesh2D rectMesh;
-
-/// Rect mesh
-Mesh2D spriteMesh;
-
 /// Quad mesh
 Mesh3D quadMesh;
 
@@ -58,7 +52,7 @@ void loadShapes() {
         BufferElement("a_TexCoords", LayoutType.ltFloat2)
     ]);
 
-    rectMesh = new Mesh2D(new VertexBuffer([
+    Magia.res.store("rectMesh", { return new Mesh2D(new VertexBuffer([
        -1f, -1f, 0f, 0f, // 3-----2
         1f, -1f, 1f, 0f, // |     |
         1f,  1f, 1f, 1f, // |     |
@@ -66,45 +60,7 @@ void loadShapes() {
     ], layout2D), new IndexBuffer([
         0, 1, 2,
         2, 3, 0
-    ]));
-
-    BufferLayout rectInstanceLayout = new BufferLayout([
-        BufferElement("a_Transform[0]", LayoutType.ltFloat4),
-        BufferElement("a_Transform[1]", LayoutType.ltFloat4),
-        BufferElement("a_Transform[2]", LayoutType.ltFloat4),
-        BufferElement("a_Transform[3]", LayoutType.ltFloat4),
-        BufferElement("a_Clip", LayoutType.ltFloat4),
-        BufferElement("a_Color", LayoutType.ltFloat4)
-    ]);
-
-    // Per instance vertex buffer
-    InstanceBuffer rectInstanceBuffer = new InstanceBuffer(rectInstanceLayout);
-    rectMesh.addInstanceBuffer(rectInstanceBuffer, layout2D.count);
-
-    spriteMesh = new Mesh2D(new VertexBuffer([
-       -1f, -1f, 0f, 0f, // 3-----2
-        1f, -1f, 1f, 0f, // |     |
-        1f,  1f, 1f, 1f, // |     |
-       -1f,  1f, 0f, 1f  // 0-----1
-    ], layout2D), new IndexBuffer([
-        0, 1, 2,
-        2, 3, 0
-    ]));
-
-    // Information to forward for each rendered instance
-    BufferLayout spriteInstanceLayout = new BufferLayout([
-        BufferElement("a_Transform[0]", LayoutType.ltFloat4),
-        BufferElement("a_Transform[1]", LayoutType.ltFloat4),
-        BufferElement("a_Transform[2]", LayoutType.ltFloat4),
-        BufferElement("a_Transform[3]", LayoutType.ltFloat4),
-        BufferElement("a_Clip", LayoutType.ltFloat4),
-        BufferElement("a_Color", LayoutType.ltFloat4),
-        BufferElement("a_Flip", LayoutType.ltFloat2)
-    ]);
-
-    // Per instance vertex buffer
-    InstanceBuffer spriteInstanceBuffer = new InstanceBuffer(spriteInstanceLayout);
-    spriteMesh.addInstanceBuffer(spriteInstanceBuffer, layout2D.count);
+    ])); });
 
     layout3D = new BufferLayout([
         BufferElement("a_Position", LayoutType.ltFloat3),

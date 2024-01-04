@@ -15,6 +15,7 @@ abstract class DrawablePool(uint dimension_, Type, Data) : Drawable!dimension_ {
         Texture[] _textures;
         Type[] _drawables;
         Data[] _instanceData;
+        bool _loaded;
     }
 
     /// Add a sprite to the pool

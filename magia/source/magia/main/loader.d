@@ -31,8 +31,6 @@ private void _loadShader(InStream stream) {
     string name = stream.read!string();
     string file = stream.read!string();
 
-    writeln("Loading shader ", name);
-
     Magia.res.store(name, { return new Shader(file); });
 }
 
@@ -98,35 +96,31 @@ private void _compileSprite(string path, Json json, OutStream stream) {
 }
 
 private void _loadSprite(InStream stream) {
-    Scene2D scene2D = Magia.currentScene2D;
-    if (scene2D) {
-        string file = stream.read!string();
-        Texture texture = new Texture(file, TextureType.sprite);
+    string file = stream.read!string();
+    Texture texture = new Texture(file, TextureType.sprite);
 
-        SpritePool spritePool = new SpritePool(texture);
-        scene2D.addDrawable(spritePool);
+    SpritePool spritePool = new SpritePool(texture);
 
-        uint nbSprites = stream.read!uint();
-        for (int i; i < nbSprites; ++i) {
-            string name = stream.read!string();
+    uint nbSprites = stream.read!uint();
+    for (int i; i < nbSprites; ++i) {
+        string name = stream.read!string();
 
-            Clip clip;
-            clip.x = stream.read!int();
-            clip.y = stream.read!int();
-            clip.z = stream.read!int();
-            clip.w = stream.read!int();
+        Clip clip;
+        clip.x = stream.read!int();
+        clip.y = stream.read!int();
+        clip.z = stream.read!int();
+        clip.w = stream.read!int();
 
-            if (clip.x == -1)
-                clip.x = 0;
-            if (clip.y == -1)
-                clip.y = 0;
-            if (clip.z == -1)
-                clip.z = texture.width;
-            if (clip.w == -1)
-                clip.w = texture.height;
+        if (clip.x == -1)
+            clip.x = 0;
+        if (clip.y == -1)
+            clip.y = 0;
+        if (clip.z == -1)
+            clip.z = texture.width;
+        if (clip.w == -1)
+            clip.w = texture.height;
 
-            Magia.res.store(name, { return new Sprite(texture, spritePool, clip); });
-        }
+        Magia.res.store(name, { return new Sprite(texture, spritePool, clip); });
     }
 }
 

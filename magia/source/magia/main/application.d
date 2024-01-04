@@ -200,9 +200,6 @@ class Magia {
         addCurrentScene(new Scene3D(_renderer3D));
         _uiManager = new UIManager(_renderer2D);
 
-        // Shape pools
-        _currentScene2D.addDrawable(RectPool());
-
         // Create input handlers
         _inputManager = new InputManager(_window);
 
@@ -220,6 +217,7 @@ class Magia {
 
     /// Run application
     void run() {
+        // Load shapes
         loadShapes();
 
         // @TODO: Traiter Status.error en affichant le message d’erreur ?
@@ -227,6 +225,7 @@ class Magia {
             return;
         }
 
+        // Load shaders
         loadShaders();
 
         _tickStartFrame = Clock.currStdTime();

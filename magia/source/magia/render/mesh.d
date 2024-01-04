@@ -16,7 +16,7 @@ import magia.render.shader;
 import magia.render.vertex;
 
 /// Class handling mesh data and draw call
-final class Mesh(uint dimension_) {
+final class Mesh(uint dimension_) : Resource!Mesh {
     private {
         VertexArray _vertexArray;
         VertexBuffer _vertexBuffer;
@@ -38,17 +38,26 @@ final class Mesh(uint dimension_) {
 
     /// Copy constructor
     this(Mesh!dimension_ other) {
+        // @TODO copy buffers as they might be modified!
         _vertexArray = other._vertexArray;
         _vertexBuffer = other._vertexBuffer;
         _instanceBuffer = other._instanceBuffer;
+        //_vertexArray = new VertexArray(other._vertexArray);
+        //_vertexBuffer = new VertexBuffer(other._vertexBuffer);
+        //_instanceBuffer = new InstanceBuffer(other._instanceBuffer);
         _drawMode = other._drawMode;
         _nbInstances = other._nbInstances;
+    }
+
+    /// Access to resource
+    Mesh fetch() {
+        return new Mesh(this);
     }
 
     /// Add per instance vertex buffer
     void addInstanceBuffer(InstanceBuffer instanceBuffer, uint firstLayoutId) {
         _instanceBuffer = instanceBuffer;
-        _vertexArray.addInstanceBuffer(_instanceBuffer, firstLayoutId);
+        _instanceBuffer.setupDivisors(firstLayoutId);
     }
 
     /// Set instance data before draw call

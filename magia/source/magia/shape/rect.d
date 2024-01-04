@@ -9,14 +9,19 @@ import bindbc.sdl;
 
 import magia.core;
 import magia.main;
+import magia.render.buffer;
 import magia.render.data;
 import magia.render.drawable;
 import magia.render.entity;
 import magia.render.material;
+import magia.render.mesh;
+import magia.render.pool;
 import magia.render.renderer;
 import magia.render.scene;
-import magia.render.texture;
+import magia.render.shader;
 import magia.render.window;
+
+import std.stdio;
 
 // Instance data
 struct RectData {
@@ -25,35 +30,45 @@ struct RectData {
     vec4 color;
 }
 
-class RectPool : Drawable2D {
+class RectPool : DrawablePool!(2, Rect, RectData) {
     mixin Singleton;
 
-    private {
-        Rect[] _rectangles;
-        RectData[] _rectData;
-    }
+    /// Constructor
+    this() {
+        _textures ~= defaultTexture;
 
-    /// Add a rect to the pool
-    void addRect(Rect rect) {
-        _rectangles ~= rect;
-    }
+        // Fetch shader
+        _shader = Magia.res.get!Shader("rect");
 
-    /// Add rect data to the pool
-    void addRectData(RectData rectData) {
-        _rectData ~= rectData;
-    }
+        // Fetch mesh
+        //_mesh = Magia.res.get!Mesh2D("rectMesh");
 
-    /// Draw all rectangles held by the pool
-    void draw(Renderer2D renderer) {
-        foreach(Rect rect; _rectangles) {
-            rect.draw(renderer);
-        }
+        _mesh = new Mesh2D(new VertexBuffer([
+            -1f, -1f, 0f, 0f, // 3-----2
+             1f, -1f, 1f, 0f, // |     |
+             1f,  1f, 1f, 1f, // |     |
+            -1f,  1f, 0f, 1f  // 0-----1
+        ], layout2D), new IndexBuffer([
+            0, 1, 2,
+            2, 3, 0
+        ]));
 
-        if (_rectData.length) {
-            renderer.drawRectangles(_rectData);
-        }
+        // Information to forward for each rendered instance
+        BufferLayout instanceLayout = new BufferLayout([
+            BufferElement("a_Transform[0]", LayoutType.ltFloat4),
+            BufferElement("a_Transform[1]", LayoutType.ltFloat4),
+            BufferElement("a_Transform[2]", LayoutType.ltFloat4),
+            BufferElement("a_Transform[3]", LayoutType.ltFloat4),
+            BufferElement("a_Clip", LayoutType.ltFloat4),
+            BufferElement("a_Color", LayoutType.ltFloat4)
+        ]);
 
-        _rectData.length = 0;
+        // Per instance vertex buffer
+        InstanceBuffer instanceBuffer = new InstanceBuffer(instanceLayout);
+        _mesh.addInstanceBuffer(instanceBuffer, layout2D.count);
+
+        // Add to current scene2D
+        Magia.currentScene2D.addDrawable(this);
     }
 }
 
@@ -88,7 +103,7 @@ final class Rect : Entity2D {
 
     /// Subscribe to related pool
     void register() {
-        RectPool().addRect(this);
+        RectPool().addDrawable(this);
     }
 
     /// Draw the rectangle on the screen
@@ -97,7 +112,7 @@ final class Rect : Entity2D {
         _rectData.model = getTransformModel(renderer).transposed;
 
         // Add instance data to the pool list
-        RectPool().addRectData(_rectData);
+        RectPool().addInstanceData(_rectData);
     }
 
     private mat4 getTransformModel(Renderer2D renderer) {
