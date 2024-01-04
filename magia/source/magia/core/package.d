@@ -29,6 +29,7 @@ public {
     import magia.core.timestep;
     import magia.core.transform;
     import magia.core.tuple;
+    import magia.core.type;
     import magia.core.util;
     import magia.core.vec;
 }

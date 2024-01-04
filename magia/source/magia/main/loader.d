@@ -8,6 +8,8 @@ import magia.render;
 import magia.audio;
 import magia.main.application;
 
+import std.stdio;
+
 /// Initialise les ressources
 void setupDefaultResourceLoaders(ResourceManager res) {
     res.setLoader("shader", &_compileShader, &_loadShader);
@@ -28,6 +30,8 @@ private void _compileShader(string path, Json json, OutStream stream) {
 private void _loadShader(InStream stream) {
     string name = stream.read!string();
     string file = stream.read!string();
+
+    writeln("Loading shader ", name);
 
     Magia.res.store(name, { return new Shader(file); });
 }

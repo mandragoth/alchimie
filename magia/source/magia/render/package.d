@@ -13,6 +13,7 @@ public {
     import magia.render.mesh;
     import magia.render.model;
     import magia.render.postprocess;
+    import magia.render.pool;
     import magia.render.renderer;
     import magia.render.shader;
     import magia.render.skybox;

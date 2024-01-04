@@ -9,9 +9,7 @@ import magia.render.renderer;
 import magia.render.texture;
 
 /// An entity is a drawable instance
-abstract class Entity(uint dimension_) : Instance!(dimension_), Drawable!(dimension_) {
-    Material material;
-}
+abstract class Entity(uint dimension_) : Instance!(dimension_), Drawable!(dimension_) {}
 
 alias Entity2D = Entity!(2);
 alias Entity3D = Entity!(3);

@@ -4,28 +4,13 @@ import bindbc.opengl;
 
 import magia.core.color;
 import magia.core.mat;
+import magia.core.type;
 import magia.core.vec;
 import magia.render.joint;
 import magia.render.vertex;
 
 import std.conv;
 import std.format;
-
-/// Type for shader layout element
-enum LayoutType {
-    ltFloat,
-    ltFloat2,
-    ltFloat3,
-    ltFloat4,
-    ltMat3,
-    ltMat4,
-    ltUint,
-    ltInt,
-    ltInt2,
-    ltInt3,
-    ltInt4,
-    ltBool
-}
 
 /// Get size of layout data type
 uint layoutTypeSize(LayoutType type) {

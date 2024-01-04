@@ -9,7 +9,6 @@ layout(location = 1) in vec2 a_TexCoords;
 layout(location = 2) in mat4 a_Transform;
 layout(location = 6) in vec4 a_Clip;
 layout(location = 7) in vec4 a_Color;
-layout(location = 8) in vec2 a_Flip;
 
 out vec4 v_Color;
 out vec2 v_TexCoords;
@@ -22,10 +21,6 @@ void main() {
 
     // Set texture coordinates
     v_TexCoords = a_TexCoords;
-
-    // Apply flip
-    v_TexCoords.x = (1.0 - a_Flip.x) * v_TexCoords.x + (1.0 - v_TexCoords.x) * a_Flip.x;
-    v_TexCoords.y = (1.0 - a_Flip.y) * v_TexCoords.y + (1.0 - v_TexCoords.y) * a_Flip.y;
 
     // Apply clip
     v_TexCoords.x = v_TexCoords.x * a_Clip.z + (1.0 - v_TexCoords.x) * a_Clip.x;

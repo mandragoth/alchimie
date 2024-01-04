@@ -22,8 +22,7 @@ import magia.render.window;
 struct RectData {
     mat4 model;
     vec4 clip;
-    Color color;
-    float alpha;
+    vec4 color;
 }
 
 class RectPool : Drawable2D {
@@ -84,8 +83,7 @@ final class Rect : Entity2D {
         _rectData.clip = vec4(0f, 0f, cast(float)size.x, cast(float)size.y);
 
         // Color and alpha
-        _rectData.color = color;
-        _rectData.alpha = 1f;
+        _rectData.color = vec4(color.r, color.g, color.b, 1f);
     }
 
     /// Subscribe to related pool

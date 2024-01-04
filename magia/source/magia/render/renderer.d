@@ -12,6 +12,7 @@ import magia.render.light;
 import magia.render.material;
 import magia.render.mesh;
 import magia.render.postprocess;
+import magia.render.pool;
 import magia.render.shader;
 import magia.render.sprite;
 import magia.render.texture;
@@ -87,11 +88,12 @@ class Renderer(uint dimension_) {
         }
 
         /// Render textured sprites from a pool
-        void drawSprites(Texture texture, SpriteData[] spriteData) {
+        // @TODO remove in favor of generic draw function!
+        /*void drawSprites(Texture texture, SpriteData[] spriteData) {
             spriteMesh.setInstanceData(spriteData);
             setBlendAlpha();
             drawIndexed(spriteMesh, spriteShader, [texture]);
-        }
+        }*/
     } else static if (dimension_ == 3) {
         /// Prepare to render 3D items
         void setup() {
@@ -133,6 +135,24 @@ class Renderer(uint dimension_) {
                 glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
                 glBlendEquation(GL_FUNC_ADD);
                 break;
+        }
+    }
+
+    // Draw any mesh with any material
+    void draw(type)(Mesh!(dimension_) mesh, Shader shader, Texture[] textures, type[] instanceData) {
+        // Set per instance data
+        spriteMesh.setInstanceData(instanceData);
+
+        // Activate shader
+        shader.activate();
+
+        // Setup uniform data
+        //shader.setupUniformData();
+
+        // One draw call per camera
+        foreach (Camera camera; cameras) {
+            shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
+            mesh.draw(shader, textures);
         }
     }
 

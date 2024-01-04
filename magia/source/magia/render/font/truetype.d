@@ -12,6 +12,7 @@ import std.string : toStringz, fromStringz;
 import bindbc.sdl;
 
 import magia.core;
+import magia.render.material;
 import magia.render.sprite;
 import magia.render.texture;
 import magia.render.font.font;
@@ -115,7 +116,7 @@ final class TrueTypeFont : Font {
             Texture texture = new Texture(surface, TextureType.sprite);
             SpritePool spritePool = new SpritePool(texture);
             // @TODO reference sprite pool in UI manager?
-            Sprite sprite = new Sprite(texture, spritePool, vec4i(0, 0, texture.width, texture.height));
+            Sprite sprite = new Sprite(texture, spritePool, Clip(0, 0, texture.width, texture.height));
             enforce(sprite);
             SDL_FreeSurface(surface);
 
@@ -147,7 +148,7 @@ final class TrueTypeFont : Font {
             Texture texture = new Texture(surfaceOutline, TextureType.sprite);
              SpritePool spritePool = new SpritePool(texture);
             // @TODO reference sprite pool in UI manager?
-            Sprite sprite = new Sprite(texture, spritePool, vec4i(0, 0, texture.width, texture.height));
+            Sprite sprite = new Sprite(texture, spritePool, Clip(0, 0, texture.width, texture.height));
             enforce(sprite);
 
             SDL_FreeSurface(surface);

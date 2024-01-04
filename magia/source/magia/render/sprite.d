@@ -13,52 +13,29 @@ import magia.render.data;
 import magia.render.drawable;
 import magia.render.entity;
 import magia.render.material;
+import magia.render.pool;
 import magia.render.renderer;
-import magia.render.scene;
+import magia.render.shader;
 import magia.render.texture;
 import magia.render.window;
+
+import std.stdio;
 
 // Instance data
 struct SpriteData {
     mat4 model;
     vec4 clip;
+    vec4 color;
     vec2 flip;
 }
 
 /// Sprite handler
-class SpritePool : Drawable2D {
-    private {
-        Texture _texture;
-        Sprite[] _sprites;
-        SpriteData[] _spriteData;
-    }
-
+class SpritePool : DrawablePool!(2, Sprite, SpriteData) {
     /// Constructor
     this(Texture texture) {
-        _texture = texture;
-    }
-
-    /// Add a sprite to the pool
-    void addSprite(Sprite sprite) {
-        _sprites ~= sprite;
-    }
-
-    /// Add sprite data to the pool
-    void addSpriteData(SpriteData spriteData) {
-        _spriteData ~= spriteData;
-    }
-
-    /// Draw all sprites held by the pool
-    void draw(Renderer2D renderer) {
-        foreach(Sprite sprite; _sprites) {
-            sprite.draw(renderer);
-        }
-
-        if (_spriteData.length) {
-            renderer.drawSprites(_texture, _spriteData);
-        }
-
-        _spriteData.length = 0;
+        writeln("Fetching shader sprite");
+        _shader = Magia.res.get!Shader("sprite");
+        _textures ~= texture;
     }
 }
 
@@ -66,7 +43,7 @@ class SpritePool : Drawable2D {
 final class Sprite : Entity2D, Resource!Sprite {
     private {
         SpritePool _spritePool;
-        SpriteData _spriteData;
+        SpriteData _instanceData;
 
         vec2u _size;
     }
@@ -91,7 +68,7 @@ final class Sprite : Entity2D, Resource!Sprite {
     /// Copy constructor
     this(Sprite other) {
         _spritePool = other._spritePool;
-        _spriteData = other._spriteData;
+        _instanceData = other._instanceData;
         _size = other._size;
     }
 
@@ -103,28 +80,30 @@ final class Sprite : Entity2D, Resource!Sprite {
         _spritePool = spritePool;
 
         // Default clip has x, y = 0 and w, h = 1
-        _spriteData.clip = vec4(0f, 0f, 1f, 1f);
+        _instanceData.clip = vec4(0f, 0f, 1f, 1f);
 
         // Cut texture depending on clip parameters
         if (clip != defaultClip) {
-            _spriteData.clip.x = cast(float) clip.x / cast(float) texture.width;
-            _spriteData.clip.y = cast(float) clip.y / cast(float) texture.height;
-            _spriteData.clip.z = _spriteData.clip.x + (cast(float) clip.z / cast(float) texture.width);
-            _spriteData.clip.w = _spriteData.clip.y + (cast(float) clip.w / cast(float) texture.height);
+            _instanceData.clip.x = cast(float) clip.x / cast(float) texture.width;
+            _instanceData.clip.y = cast(float) clip.y / cast(float) texture.height;
+            _instanceData.clip.z = _instanceData.clip.x + (cast(float) clip.z / cast(float) texture.width);
+            _instanceData.clip.w = _instanceData.clip.y + (cast(float) clip.w / cast(float) texture.height);
         }
+
+        _instanceData.color = vec4.one;
 
         final switch (flip) with (Flip) {
             case none:
-                _spriteData.flip = vec2.zero;
+                _instanceData.flip = vec2.zero;
                 break;
             case horizontal:
-                _spriteData.flip = vec2(1f, 0f);
+                _instanceData.flip = vec2(1f, 0f);
                 break;
             case vertical:
-                _spriteData.flip = vec2(0f, 1f);
+                _instanceData.flip = vec2(0f, 1f);
                 break;
             case both:
-                _spriteData.flip = vec2.one;
+                _instanceData.flip = vec2.one;
                 break;
         }
 
@@ -138,16 +117,16 @@ final class Sprite : Entity2D, Resource!Sprite {
 
     /// Subscribe to related pool
     void register() {
-        _spritePool.addSprite(this);
+        _spritePool.addDrawable(this);
     }
 
     /// Draw the sprite on the screen
     override void draw(Renderer2D renderer) {
         // Reference model for draw call
-        _spriteData.model = getTransformModel(renderer).transposed;
+        _instanceData.model = getTransformModel(renderer).transposed;
 
         // Add instance data to the pool list
-        _spritePool.addSpriteData(_spriteData);
+        _spritePool.addInstanceData(_instanceData);
     }
 
     private mat4 getTransformModel(Renderer2D renderer) {

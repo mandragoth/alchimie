@@ -52,9 +52,9 @@ struct Glyph {
     /// Render glyph (@TODO rewrite?)
     void draw(Renderer2D renderer, Transform2D transform, Color color, float alpha) {
         _sprite.transform = transform;
-        _sprite.material.clip = vec4i(_packX, _packY, _packWidth, _packHeight);
+        /*_sprite.material.clip = vec4i(_packX, _packY, _packWidth, _packHeight);
         _sprite.material.color = color;
-        _sprite.material.alpha = alpha;
+        _sprite.material.alpha = alpha;*/
         _sprite.draw(renderer);
     }
 }

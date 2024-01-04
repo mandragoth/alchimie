@@ -42,9 +42,6 @@ Shader rectShader;
 /// Circle shader
 Shader circleShader;
 
-/// Sprite shader
-Shader spriteShader;
-
 /// Model shader
 Shader modelShader;
 
@@ -77,8 +74,7 @@ void loadShapes() {
         BufferElement("a_Transform[2]", LayoutType.ltFloat4),
         BufferElement("a_Transform[3]", LayoutType.ltFloat4),
         BufferElement("a_Clip", LayoutType.ltFloat4),
-        BufferElement("a_Color", LayoutType.ltFloat3),
-        BufferElement("a_Alpha", LayoutType.ltFloat)
+        BufferElement("a_Color", LayoutType.ltFloat4)
     ]);
 
     // Per instance vertex buffer
@@ -102,6 +98,7 @@ void loadShapes() {
         BufferElement("a_Transform[2]", LayoutType.ltFloat4),
         BufferElement("a_Transform[3]", LayoutType.ltFloat4),
         BufferElement("a_Clip", LayoutType.ltFloat4),
+        BufferElement("a_Color", LayoutType.ltFloat4),
         BufferElement("a_Flip", LayoutType.ltFloat2)
     ]);
 
@@ -177,7 +174,6 @@ void loadShaders() {
     lineShader = Magia.res.get!Shader("line");
     rectShader = Magia.res.get!Shader("rect");
     circleShader = Magia.res.get!Shader("circle");
-    spriteShader = Magia.res.get!Shader("sprite");
     modelShader = Magia.res.get!Shader("model");
     animatedShader = Magia.res.get!Shader("animated");
 }

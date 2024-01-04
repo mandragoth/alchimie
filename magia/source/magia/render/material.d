@@ -2,7 +2,7 @@ module magia.render.material;
 
 import magia.core.color;
 import magia.core.vec;
-import magia.render.shader;
+import magia.core.type;
 import magia.render.texture;
 
 /// Indicate if something is mirrored.
@@ -24,24 +24,27 @@ enum Blend {
 }
 
 // @TODO should be vec4u
-alias Clip = vec4i;
-alias defaultClip = vec4i.zero;
+alias Clip = vec4u;
+alias defaultClip = vec4u.zero;
+
+/// Material element
+struct MaterialElement {
+    /// Name of element in the material
+    string name;
+
+    /// Type of element
+    LayoutType type;
+}
+
+alias MaterialElements = MaterialElement[];
 
 /// Material structure
-// @TODO refactorize similarly to BufferElement
-struct Material {
-    /// How should we color the rendered item?
-    Color color = Color.white;
+class Material {
+    private {
+        MaterialElements _elements;
+    }
 
-    /// What is the transparency for the item?
-    float alpha = 1f;
-
-    /// How should we blend the rendered item?
-    Blend blend = Blend.alpha;
-
-    /// Do we need to flip the rendered item?
-    Flip flip = Flip.none;
-
-    /// What subset of the texture should we use?
-    Clip clip = defaultClip;
+    this(MaterialElements elements) {
+        _elements = elements;
+    }
 }

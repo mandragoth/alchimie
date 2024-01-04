@@ -3,6 +3,9 @@ module magia.render.drawable;
 import magia.render.renderer;
 
 interface Drawable(uint dimension_) {
+    /// Dimension
+    static uint dimension = dimension_;
+
     /// Render on screen
     void draw(Renderer!(dimension_));
 }
