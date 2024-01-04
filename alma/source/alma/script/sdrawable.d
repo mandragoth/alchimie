@@ -130,8 +130,8 @@ private void _addTexture(GrCall call) {
 }
 
 private void _newRect(GrCall call) {
-    Rect rect = new Rect(vec2i(call.getInt(0), call.getInt(1)), call.getNative!SColor(2));
-    Magia.addDrawable(rect);
+    Rect rect = new Rect(vec2u(call.getInt(0), call.getInt(1)), call.getNative!SColor(2));
+    rect.register();
     call.setNative(rect);
 }
 

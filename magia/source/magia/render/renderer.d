@@ -16,8 +16,8 @@ import magia.render.shader;
 import magia.render.sprite;
 import magia.render.texture;
 import magia.render.window;
+import magia.shape.rect;
 
-// @TODO remove or improve traces
 import std.stdio;
 
 /// Renderer
@@ -80,16 +80,17 @@ class Renderer(uint dimension_) {
         }
 
         /// Render a rectangle
-        void drawRectangle(Material material, mat4 model) {
-            setupRectShader(defaultTexture, material);
-            drawIndexed(rectMesh, quadShader, [defaultTexture], model);
+        void drawRectangles(RectData[] rectData) {
+            rectMesh.setInstanceData(rectData);
+            setBlendAlpha();
+            drawIndexed(rectMesh, rectShader, [defaultTexture]);
         }
 
         /// Render textured sprites from a pool
         void drawSprites(Texture texture, SpriteData[] spriteData) {
-            rectMesh.setInstanceData(spriteData);
-            setupSpriteShader();
-            drawIndexed(rectMesh, spriteShader, [texture]);
+            spriteMesh.setInstanceData(spriteData);
+            setBlendAlpha();
+            drawIndexed(spriteMesh, spriteShader, [texture]);
         }
     } else static if (dimension_ == 3) {
         /// Prepare to render 3D items
@@ -99,88 +100,10 @@ class Renderer(uint dimension_) {
             glEnable(GL_DEPTH_TEST);
             glCullFace(GL_FRONT);
         }
-
-        /// Render line @TODO factorize mesh and use transform to parametrize line?
-        /*void drawLine(vec3 start, vec3 end, Color color = Color.white, float alpha = 1f) {
-            Mesh3D lineMesh = new Mesh3D(new VertexBuffer([
-                start.x, start.y, start.z,
-                end.x, end.y, end.z    
-            ], layout3D));
-            setupLineShader(color, alpha);
-            drawIndexed(lineMesh, lineShader, defaultMaterial);
-        }*/
     }
 
-    private void setupLineShader(Color color = Color.white, float alpha = 1f) {
-        // Activate shader
-        lineShader.activate();
-
-        // Set color
-        // @TODO set in material instead
-        lineShader.uploadUniformVec4("u_Color", vec4(color.rgb, alpha));
-    }
-
-    /// @TODO remove dynamic clipf and flipf computation
-    private void setupRectShader(Texture texture, Material material) {
-        // Activate shader
-        quadShader.activate();
-
-        // Default clip has x, y = 0 and w, h = 1
-        vec4 clipf = vec4(0f, 0f, 1f, 1f);
-
-        // Cut texture depending on clip parameters
-        if (material.clip != defaultClip) {
-            clipf.x = cast(float) material.clip.x / cast(float) texture.width;
-            clipf.y = cast(float) material.clip.y / cast(float) texture.height;
-            clipf.z = clipf.x + (cast(float) material.clip.z / cast(float) texture.width);
-            clipf.w = clipf.y + (cast(float) material.clip.w / cast(float) texture.height);
-        }
-
-        // Set clip
-        quadShader.uploadUniformVec4("u_Clip", clipf);
-
-        // Set flip
-        vec2 flipf;
-        final switch (material.flip) with (Flip) {
-            case none:
-                flipf = vec2.zero;
-                break;
-            case horizontal:
-                flipf = vec2(1f, 0f);
-                break;
-            case vertical:
-                flipf = vec2(0f, 1f);
-                break;
-            case both:
-                flipf = vec2.one;
-                break;
-        }
-
-        // Set flip
-        quadShader.uploadUniformVec2("u_Flip", flipf);
-
-        // Set color
-        quadShader.uploadUniformVec4("u_Color", vec4(material.color.rgb, material.alpha));
-
-        // Set blend
-        final switch (material.blend) with (Blend) {
-            case none:
-                glBlendFuncSeparate(GL_SRC_COLOR, GL_ZERO, GL_ONE, GL_ZERO);
-                glBlendEquation(GL_FUNC_ADD);
-                break;
-            case additive:
-                glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_COLOR, GL_ZERO, GL_ONE);
-                glBlendEquation(GL_FUNC_ADD);
-                break;
-            case alpha:
-                glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-                glBlendEquation(GL_FUNC_ADD);
-                break;
-        }
-    }
-
-    private void setupSpriteShader() {
-        // Set blend
+    // Set blend to alpha
+    private void setBlendAlpha() {
         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         glBlendEquation(GL_FUNC_ADD);
     }
@@ -214,6 +137,7 @@ class Renderer(uint dimension_) {
     }
 
     void drawIndexed(Mesh!(dimension_) mesh, Shader shader, Texture[] textures) {
+        // Activate shader
         shader.activate();
 
         // One draw call per camera

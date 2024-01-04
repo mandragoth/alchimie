@@ -222,7 +222,6 @@ class BufferLayout {
     /// Setup divisors
     void setupDivisors(uint layoutId) {
         foreach(ref BufferElement element; _elements) {
-            writefln("Setup divisor %u", layoutId);
             glEnableVertexAttribArray(layoutId);
 
             if (element.glType == GL_INT || element.glType == GL_UNSIGNED_INT) {

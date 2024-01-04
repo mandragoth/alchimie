@@ -26,8 +26,8 @@
             "type": "shader"
         },
         {
-            "file": "quad.glsl",
-            "name": "quad",
+            "file": "rect.glsl",
+            "name": "rect",
             "type": "shader"
         },
         {

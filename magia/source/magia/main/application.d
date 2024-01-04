@@ -11,6 +11,7 @@ import magia.audio;
 import magia.core;
 import magia.input;
 import magia.render;
+import magia.shape;
 import magia.ui;
 import magia.main.loader;
 
@@ -198,6 +199,9 @@ class Magia {
         addCurrentScene(new Scene2D(_renderer2D));
         addCurrentScene(new Scene3D(_renderer3D));
         _uiManager = new UIManager(_renderer2D);
+
+        // Shape pools
+        _currentScene2D.addDrawable(RectPool());
 
         // Create input handlers
         _inputManager = new InputManager(_window);

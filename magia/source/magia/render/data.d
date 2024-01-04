@@ -21,6 +21,9 @@ BufferLayout layout3DAnimated;
 /// Rect mesh
 Mesh2D rectMesh;
 
+/// Rect mesh
+Mesh2D spriteMesh;
+
 /// Quad mesh
 Mesh3D quadMesh;
 
@@ -33,14 +36,14 @@ Texture defaultTexture;
 /// Line shader
 Shader lineShader;
 
-/// Quad shader
-Shader quadShader;
-
-/// Sprite shader
-Shader spriteShader;
+/// Rectangle shader
+Shader rectShader;
 
 /// Circle shader
 Shader circleShader;
+
+/// Sprite shader
+Shader spriteShader;
 
 /// Model shader
 Shader modelShader;
@@ -68,6 +71,30 @@ void loadShapes() {
         2, 3, 0
     ]));
 
+    BufferLayout rectInstanceLayout = new BufferLayout([
+        BufferElement("a_Transform[0]", LayoutType.ltFloat4),
+        BufferElement("a_Transform[1]", LayoutType.ltFloat4),
+        BufferElement("a_Transform[2]", LayoutType.ltFloat4),
+        BufferElement("a_Transform[3]", LayoutType.ltFloat4),
+        BufferElement("a_Clip", LayoutType.ltFloat4),
+        BufferElement("a_Color", LayoutType.ltFloat3),
+        BufferElement("a_Alpha", LayoutType.ltFloat)
+    ]);
+
+    // Per instance vertex buffer
+    InstanceBuffer rectInstanceBuffer = new InstanceBuffer(rectInstanceLayout);
+    rectMesh.addInstanceBuffer(rectInstanceBuffer, layout2D.count);
+
+    spriteMesh = new Mesh2D(new VertexBuffer([
+       -1f, -1f, 0f, 0f, // 3-----2
+        1f, -1f, 1f, 0f, // |     |
+        1f,  1f, 1f, 1f, // |     |
+       -1f,  1f, 0f, 1f  // 0-----1
+    ], layout2D), new IndexBuffer([
+        0, 1, 2,
+        2, 3, 0
+    ]));
+
     // Information to forward for each rendered instance
     BufferLayout spriteInstanceLayout = new BufferLayout([
         BufferElement("a_Transform[0]", LayoutType.ltFloat4),
@@ -80,7 +107,7 @@ void loadShapes() {
 
     // Per instance vertex buffer
     InstanceBuffer spriteInstanceBuffer = new InstanceBuffer(spriteInstanceLayout);
-    rectMesh.addInstanceBuffer(spriteInstanceBuffer, layout2D.count);
+    spriteMesh.addInstanceBuffer(spriteInstanceBuffer, layout2D.count);
 
     layout3D = new BufferLayout([
         BufferElement("a_Position", LayoutType.ltFloat3),
@@ -148,9 +175,9 @@ void loadShapes() {
 /// Load shaders for draw calls
 void loadShaders() {
     lineShader = Magia.res.get!Shader("line");
-    quadShader = Magia.res.get!Shader("quad");
-    spriteShader = Magia.res.get!Shader("sprite");
+    rectShader = Magia.res.get!Shader("rect");
     circleShader = Magia.res.get!Shader("circle");
+    spriteShader = Magia.res.get!Shader("sprite");
     modelShader = Magia.res.get!Shader("model");
     animatedShader = Magia.res.get!Shader("animated");
 }
