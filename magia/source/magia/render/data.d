@@ -73,7 +73,9 @@ void loadShapes() {
         BufferElement("a_Transform[0]", LayoutType.ltFloat4),
         BufferElement("a_Transform[1]", LayoutType.ltFloat4),
         BufferElement("a_Transform[2]", LayoutType.ltFloat4),
-        BufferElement("a_Transform[3]", LayoutType.ltFloat4)
+        BufferElement("a_Transform[3]", LayoutType.ltFloat4),
+        BufferElement("a_Clip", LayoutType.ltFloat4),
+        BufferElement("a_Flip", LayoutType.ltFloat2)
     ]);
 
     // Per instance vertex buffer

@@ -85,16 +85,10 @@ class Renderer(uint dimension_) {
             drawIndexed(rectMesh, quadShader, [defaultTexture], model);
         }
 
-        /// Render a textured sprite
-        void drawSprite(Texture texture, vec4 clipf, vec2 flipf, mat4 model) {
-            setupSpriteShader(texture, clipf, flipf);
-            drawIndexed(rectMesh, spriteShader, [texture], model);
-        }
-
         /// Render textured sprites from a pool
-        void drawSprites(Texture texture, vec4 clipf, vec2 flipf, mat4[] models) {
-            rectMesh.setInstanceData(models);
-            setupSpriteShader(texture, clipf, flipf);
+        void drawSprites(Texture texture, SpriteData[] spriteData) {
+            rectMesh.setInstanceData(spriteData);
+            setupSpriteShader();
             drawIndexed(rectMesh, spriteShader, [texture]);
         }
     } else static if (dimension_ == 3) {
@@ -185,16 +179,7 @@ class Renderer(uint dimension_) {
         }
     }
 
-    private void setupSpriteShader(Texture texture, vec4 clipf, vec2 flipf) {
-        // Activate shader
-        spriteShader.activate();
-
-        // Set clip
-        spriteShader.uploadUniformVec4("u_Clip", clipf);
-
-        // Set flip
-        spriteShader.uploadUniformVec2("u_Flip", flipf);
-
+    private void setupSpriteShader() {
         // Set blend
         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         glBlendEquation(GL_FUNC_ADD);
