@@ -13,7 +13,7 @@ event app() {
 }
 
 task runtime() {
-    var rect = @Rect(10, 10, @color(1f, 0f, 0f));
+    /*var rect = @Rect(10, 10, @color(1f, 0f, 0f));
     rect:position(@vec2f(400f, 300f));
 
     var rect2 = @Rect(32, 48, @color(0f, 0f, 1f));
@@ -32,7 +32,7 @@ task runtime() {
             rect2:rotation(angle);
             angle -= rad(1f);
         }
-    }();
+    }();*/
 
     var skybox = @Skybox("night"); // @TODO fix
     var globalLight = @DirectionalLight(@vec3f(0f, -10f, 0f), .2f, .01f);
@@ -44,14 +44,14 @@ task runtime() {
 
     //var cube = @Model("cube");
 
-    /*var jupiter = @Model("jupiter");
+    var jupiter = @Model("jupiter");
     jupiter:position(@vec3f(0f, 0f, -2f));
-    jupiter:scale(@vec3f(.05f, .05f, .05f));*/
+    jupiter:scale(@vec3f(.05f, .05f, .05f));
 
     /*var reimu = @Model("reimu");
     reimu:position(@vec3f(0f, -1f, 0f));
-    reimu:scale(@vec3f(0.1f, 0.1f, 0.1f));
-    reimu:addTexture("reimu_body");*/
+    reimu:scale(@vec3f(0.1f, 0.1f, 0.1f));*/
+    //reimu:addTexture("reimu_body");
 
     /*var reimuHair = @Model("reimu_hair");
     reimuHair:addTexture("reimu_hair");

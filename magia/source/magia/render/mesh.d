@@ -95,7 +95,7 @@ final class Mesh(uint dimension_) : Resource!Mesh {
                 ++nbSpecularTextures;
             }
 
-            // Upload texture index (@TODO should it be texture.id?)
+            // Upload texture index
             shader.uploadUniformInt(toStringz(name), textureId);
 
             // Bind texture

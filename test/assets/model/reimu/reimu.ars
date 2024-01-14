@@ -2,8 +2,8 @@
     "resources": [
         {
             "type": "model",
-            "name": "idleanim",
-            "file": "idleanim.gltf"
+            "name": "reimu",
+            "file": "reimu.gltf"
         }
     ]
 }

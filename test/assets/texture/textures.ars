@@ -1,0 +1,14 @@
+{
+    "resources": [
+        {
+            "type": "texture",
+            "name": "reimu_body",
+            "file": "reimu_body.png"
+        },
+        {
+            "type": "texture",
+            "name": "reimu_hair",
+            "file": "reimu_hair.png"
+        }
+    ]
+}

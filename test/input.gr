@@ -32,10 +32,12 @@ export func setupControls() {
     addActionEvent("move_left_3d", @InputEvent.controllerAxis(ControllerAxis.leftX, -1f));
     addActionEvent("move_left_3d", @InputEvent.controllerButton(ControllerButton.left, KeyState.pressed));
     addActionEvent("move_left_3d", @InputEvent.keyButton(KeyButton.left, KeyState.pressed));
+    addActionEvent("move_left_3d", @InputEvent.keyButton(KeyButton.a, KeyState.pressed));
 
     addActionEvent("move_right_3d", @InputEvent.controllerAxis(ControllerAxis.leftX, 1f));
     addActionEvent("move_right_3d", @InputEvent.controllerButton(ControllerButton.right, KeyState.pressed));
     addActionEvent("move_right_3d", @InputEvent.keyButton(KeyButton.right, KeyState.pressed));
+    addActionEvent("move_right_3d", @InputEvent.keyButton(KeyButton.d, KeyState.pressed));
 
     addActionEvent("move_down_3d", @InputEvent.controllerAxis(ControllerAxis.leftTrigger, 1f));
     addActionEvent("move_down_3d", @InputEvent.keyButton(KeyButton.leftShift, KeyState.pressed));
@@ -46,10 +48,12 @@ export func setupControls() {
     addActionEvent("move_back_3d", @InputEvent.controllerAxis(ControllerAxis.leftY, 1f));
     addActionEvent("move_back_3d", @InputEvent.controllerButton(ControllerButton.down, KeyState.pressed));
     addActionEvent("move_back_3d", @InputEvent.keyButton(KeyButton.down, KeyState.pressed));
+    addActionEvent("move_back_3d", @InputEvent.keyButton(KeyButton.s, KeyState.pressed));
 
     addActionEvent("move_forward_3d", @InputEvent.controllerAxis(ControllerAxis.leftY, -1f));
     addActionEvent("move_forward_3d", @InputEvent.controllerButton(ControllerButton.up, KeyState.pressed));
     addActionEvent("move_forward_3d", @InputEvent.keyButton(KeyButton.up, KeyState.pressed));
+    addActionEvent("move_forward_3d", @InputEvent.keyButton(KeyButton.w, KeyState.pressed));
 
     addActionEvent("turn_up_3d", @InputEvent.controllerAxis(ControllerAxis.rightY, 1f));
     addActionEvent("turn_down_3d", @InputEvent.controllerAxis(ControllerAxis.rightY, -1f));

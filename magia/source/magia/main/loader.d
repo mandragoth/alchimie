@@ -17,6 +17,7 @@ void setupDefaultResourceLoaders(ResourceManager res) {
     res.setLoader("skybox", &_compileSkybox, &_loadSkybox);
     res.setLoader("sprite", &_compileSprite, &_loadSprite);
     res.setLoader("model", &_compileModel, &_loadModel);
+    res.setLoader("texture", &_compileTexture, &_loadTexture);
     res.setLoader("sound", &_compileSound, &_loadSound);
 }
 
@@ -135,6 +136,19 @@ private void _loadModel(InStream stream) {
     string file = stream.read!string();
 
     Magia.res.store(name, { return new Model(file); });
+}
+
+/// Crée une texture
+private void _compileTexture(string path, Json json, OutStream stream) {
+    stream.write!string(json.getString("name"));
+    stream.write!string(path ~ Archive.Separator ~ json.getString("file"));
+}
+
+private void _loadTexture(InStream stream) {
+    string name = stream.read!string();
+    string file = stream.read!string();
+
+    Magia.res.store(name, { return new Texture(file); });
 }
 
 /// Crée un son
