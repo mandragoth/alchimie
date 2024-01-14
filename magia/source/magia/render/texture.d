@@ -207,19 +207,13 @@ class Texture : Resource!Texture {
             writeln("Loaded texture with ", nbChannels, " channels");
         }
 
-        bool mustFreeSurface;
-
         // For now, consider diffuses as RGBA, speculars as R
         if (nbChannels == 4) {
-            _internalFormat = GL_RGBA8;
-            _dataFormat = GL_BGRA;
-            surface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
-            mustFreeSurface = true;
+            _internalFormat = GL_RGBA;
+            _dataFormat = GL_RGBA;
         } else if (nbChannels == 3) {
-            _internalFormat = GL_RGB8;
-            _dataFormat = GL_BGR;
-            surface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGB888, 0);
-            mustFreeSurface = true;
+            _internalFormat = GL_RGB;
+            _dataFormat = GL_RGB;
         } else if (nbChannels == 1) {
             _internalFormat = GL_RED;
             _dataFormat = GL_RED;
@@ -232,10 +226,6 @@ class Texture : Resource!Texture {
         glTexImage2D(_target, 0, _internalFormat, _width, _height, 0,
             _dataFormat, _memoryType, surface.pixels);
         _nbTextures = 1;
-
-        if (mustFreeSurface) {
-            SDL_FreeSurface(surface);
-        }
 
         // Generate mipmaps
         if (type == TextureType.sprite) {
