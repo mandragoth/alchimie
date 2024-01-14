@@ -789,6 +789,7 @@ final class Model : Resource!Model {
 /// Instance of a **Model** to render
 final class ModelInstance : Entity3D {
     private {
+        Texture[] _textures;
         Model _model;
         Shader _shader;
     }
@@ -800,7 +801,7 @@ final class ModelInstance : Entity3D {
         }
 
         void addTexture(Texture texture) {
-            _model._textures ~= texture;
+            _textures ~= texture;
         }
     }
 
@@ -832,7 +833,12 @@ final class ModelInstance : Entity3D {
             glViewport(camera.viewport.x, camera.viewport.y, camera.viewport.z, camera.viewport.w);
             _shader.uploadUniformVec3("u_CamPos", camera.globalPosition);
             _shader.uploadUniformMat4("u_CamMatrix", camera.matrix);
-            _model.draw(_shader, globalTransform);
+
+            if (_textures) {
+                _model.draw(_shader, _textures, globalTransform);
+            } else {
+                _model.draw(_shader, globalTransform);
+            }
         }
     }
 }

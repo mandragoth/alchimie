@@ -126,7 +126,7 @@ private void _addChild(GrCall call) {
 private void _addTexture(GrCall call) {
     ModelInstance modelInstance = call.getNative!ModelInstance(0);
     Texture texture = Magia.res.get!Texture(call.getString(1));
-    //modelInstance.textures ~= texture;
+    modelInstance.addTexture(texture);
 }
 
 private void _newRect(GrCall call) {
