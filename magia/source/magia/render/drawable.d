@@ -2,6 +2,7 @@ module magia.render.drawable;
 
 import magia.render.renderer;
 
+/// Any object that can be drawn
 interface Drawable(uint dimension_) {
     /// Dimension
     static uint dimension = dimension_;

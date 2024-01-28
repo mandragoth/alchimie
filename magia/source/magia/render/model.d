@@ -21,7 +21,8 @@ import magia.render.buffer;
 import magia.render.camera;
 import magia.render.bone;
 import magia.render.data;
-import magia.render.entity;
+import magia.render.drawable;
+import magia.render.instance;
 import magia.render.joint;
 import magia.render.material;
 import magia.render.mesh;
@@ -787,7 +788,7 @@ final class Model : Resource!Model {
 }
 
 /// Instance of a **Model** to render
-final class ModelInstance : Entity3D {
+final class ModelInstance : Instance3D, Drawable3D {
     private {
         Texture[] _textures;
         Model _model;
@@ -800,6 +801,7 @@ final class ModelInstance : Entity3D {
             return cast(int) _model.nbBones;
         }
 
+        /// Add a texture to the model instance
         void addTexture(Texture texture) {
             _textures ~= texture;
         }

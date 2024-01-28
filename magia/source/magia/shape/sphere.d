@@ -8,7 +8,7 @@ import magia.render;
 import std.stdio;
 
 /// Instance of sphere
-class Sphere : Entity3D {
+class Sphere : Instance3D, Drawable3D {
     protected {
         Mesh3D[] _meshes;
 
@@ -110,9 +110,10 @@ class Sphere : Entity3D {
     }
 
     /// Render the sphere
-    void draw(Shader shader) {
+    void draw(Renderer3D renderer) {
+        /// @TODO fetch real position in renderer space
         foreach(Mesh3D mesh; _meshes) {
-            mesh.draw(shader, [defaultTexture], globalModel);
+            mesh.draw(modelShader, [defaultTexture], globalModel);
         }
     }
 }

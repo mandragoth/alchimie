@@ -12,7 +12,7 @@ import magia.render.array;
 import magia.render.buffer;
 import magia.render.camera;
 import magia.render.data;
-import magia.render.entity;
+import magia.render.drawable;
 import magia.render.postprocess;
 import magia.render.renderer;
 import magia.render.shader;
@@ -20,7 +20,7 @@ import magia.render.texture;
 import magia.render.vertex;
 
 /// Class handling skybox data and draw call
-final class Skybox : Entity3D, Resource!Skybox {
+final class Skybox : Drawable3D, Resource!Skybox {
     private {
         Shader _shader;
         Texture _texture;

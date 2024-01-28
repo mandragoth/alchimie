@@ -8,7 +8,6 @@ import magia.core.timestep;
 import magia.core.transform;
 import magia.render.camera;
 import magia.render.drawable;
-import magia.render.entity;
 import magia.render.renderer;
 import magia.render.skybox;
 import magia.render.updatable;

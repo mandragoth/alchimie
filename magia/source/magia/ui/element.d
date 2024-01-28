@@ -1,13 +1,13 @@
 module magia.ui.element;
 
 import magia.core;
-import magia.render.entity;
+import magia.render.drawable;
 import magia.render.instance;
 import magia.render.renderer;
 import magia.render.updatable;
 
 /// Abstract class representing an UI element
-abstract class UIElement : Entity2D, Updatable {
+abstract class UIElement : Instance2D, Drawable2D, Updatable {
     /// Size
     vec2 size = vec2.zero;
 
@@ -77,7 +77,7 @@ abstract class UIElement : Entity2D, Updatable {
     bool isHovered, isClicked;
 
     /// Update
-    override void update() {
+    void update() {
         // Compute transitions
         if (timer.isRunning) {
             timer.update();
@@ -96,7 +96,8 @@ abstract class UIElement : Entity2D, Updatable {
         }
     }
 
-    override void draw(Renderer2D renderer) {
+    /// Draw
+    void draw(Renderer2D renderer) {
         // Position
         vec2 position = transform.position + offset;
 

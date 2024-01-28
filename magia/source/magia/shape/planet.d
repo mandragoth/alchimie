@@ -4,7 +4,6 @@ import bindbc.opengl;
 
 import magia.core;
 
-import magia.render.entity;
 import magia.render.mesh;
 import magia.render.shader;
 import magia.render.texture;

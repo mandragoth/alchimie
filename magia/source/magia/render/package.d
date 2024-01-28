@@ -2,10 +2,10 @@ module magia.render;
 
 public {
     import magia.render.buffer;
+    import magia.render.bullet;
     import magia.render.camera;
     import magia.render.data;
     import magia.render.drawable;
-    import magia.render.entity;
     import magia.render.font;
     import magia.render.instance;
     import magia.render.light;

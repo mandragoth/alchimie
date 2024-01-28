@@ -13,7 +13,7 @@ event app() {
 }
 
 task runtime() {
-    /*var rect = @Rect(10, 10, @color(1f, 0f, 0f));
+    var rect = @Rect(10, 10, @color(1f, 0f, 0f));
     rect:position(@vec2f(400f, 300f));
 
     var rect2 = @Rect(32, 48, @color(0f, 0f, 1f));
@@ -32,7 +32,12 @@ task runtime() {
             rect2:rotation(angle);
             angle -= rad(1f);
         }
-    }();*/
+    }();
+
+    loop (i, 100) {
+        var test = @Sprite("remilia");
+        test:position(@vec2f(i * 15 as <float>, i * 5 as <float>));
+    }
 
     var skybox = @Skybox("night"); // @TODO fix
     var globalLight = @DirectionalLight(@vec3f(0f, -10f, 0f), .2f, .01f);

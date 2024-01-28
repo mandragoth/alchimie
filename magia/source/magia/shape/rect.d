@@ -12,7 +12,7 @@ import magia.main;
 import magia.render.buffer;
 import magia.render.data;
 import magia.render.drawable;
-import magia.render.entity;
+import magia.render.instance;
 import magia.render.material;
 import magia.render.mesh;
 import magia.render.pool;
@@ -23,13 +23,19 @@ import magia.render.window;
 
 import std.stdio;
 
-// Instance data
+/// Instance data
 struct RectData {
+    /// Model
     mat4 model;
+
+    /// Sprite clip
     vec4 clip;
+
+    /// Sprite color
     vec4 color;
 }
 
+/// Rectangle handler
 class RectPool : DrawablePool!(2, Rect, RectData) {
     mixin Singleton;
 
@@ -73,7 +79,7 @@ class RectPool : DrawablePool!(2, Rect, RectData) {
 }
 
 /// Instance of rectangle
-final class Rect : Entity2D {
+final class Rect : Instance2D, Drawable2D {
     private {
         RectData _rectData;
     }
@@ -107,7 +113,7 @@ final class Rect : Entity2D {
     }
 
     /// Draw the rectangle on the screen
-    override void draw(Renderer2D renderer) {
+    void draw(Renderer2D renderer) {
         // Reference model for draw call
         _rectData.model = getTransformModel(renderer).transposed;
 

@@ -10,7 +10,7 @@ import magia.core;
 import magia.render;
 
 /// Instance of quad
-final class Quad : Entity3D {
+final class Quad : Instance3D, Drawable3D {
     private {
         Shader _shader;
         Texture[] _textures;

@@ -12,13 +12,11 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     GrType vec2Type = grGetNativeType("vec2", [grFloat]);
     GrType vec3Type = grGetNativeType("vec3", [grFloat]);
     GrType colorType = grGetNativeType("color");
-    GrType vec2iType = grGetNativeType("vec2i", [grInt]);
-    GrType vec4iType = grGetNativeType("vec4i", [grInt]);
     GrType mat4Type = grGetNativeType("mat4");
 
     // Entity types
     GrType instanceType = library.addNative("Instance");
-    GrType entityType = library.addNative("Entity", [], "Instance");
+    library.addNative("Entity", [], "Instance");
     GrType rectType = library.addNative("Rect", [], "Entity");
     GrType spriteType = library.addNative("Sprite", [], "Entity");
     GrType skyboxType = library.addNative("Skybox", [], "Entity");

@@ -12,7 +12,7 @@ import magia.main;
 import magia.render.buffer;
 import magia.render.data;
 import magia.render.drawable;
-import magia.render.entity;
+import magia.render.instance;
 import magia.render.material;
 import magia.render.mesh;
 import magia.render.pool;
@@ -23,11 +23,18 @@ import magia.render.window;
 
 import std.stdio;
 
-// Instance data
+/// Instance data
 struct SpriteData {
+    /// Sprite model
     mat4 model;
+
+    /// Sprite clip
     vec4 clip;
+
+    /// Sprite color
     vec4 color;
+
+    /// Sprite flip
     vec2 flip;
 }
 
@@ -79,7 +86,7 @@ class SpritePool : DrawablePool!(2, Sprite, SpriteData) {
 }
 
 /// Instance of sprite
-final class Sprite : Entity2D, Resource!Sprite {
+final class Sprite : Instance2D, Drawable2D, Resource!Sprite {
     private {
         SpritePool _spritePool;
         SpriteData _instanceData;
@@ -161,7 +168,7 @@ final class Sprite : Entity2D, Resource!Sprite {
     }
 
     /// Draw the sprite on the screen
-    override void draw(Renderer2D renderer) {
+    void draw(Renderer2D renderer) {
         // Reference model for draw call
         _instanceData.model = getTransformModel(renderer).transposed;
 
