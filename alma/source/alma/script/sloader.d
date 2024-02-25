@@ -2,7 +2,9 @@ module alma.script.sloader;
 
 import grimoire;
 import alma.script.saudio;
+import alma.script.sbullet;
 import alma.script.scamera;
+import alma.script.scolor;
 import alma.script.scommon;
 import alma.script.sdrawable;
 import alma.script.sgraphics;
@@ -12,7 +14,6 @@ import alma.script.common;
 import alma.script.sscene;
 import alma.script.sui;
 import alma.script.svec;
-import alma.script.scolor;
 
 /// Charge la bibliothèque d’alchimie
 GrLibrary loadAlchimieLibrary() {
@@ -30,7 +31,7 @@ GrLibLoader[] getAlchimieLibraryLoaders() {
     return [
         &loadAlchimieLibCommon, &loadAlchimieLibMath, &loadAlchimieLibVec,
         &loadAlchimieLibColor, &loadAlchimieLibGraphics, &loadAlchimieLibScene,
-        &loadAlchimieLibDrawable, &loadAlchimieLibAudio, &loadAlchimieLibCamera,
-        &loadAlchimieLibInput, &loadAlchimieLibUI
+        &loadAlchimieLibDrawable, &loadAlchimieLibBullet, &loadAlchimieLibAudio,
+        &loadAlchimieLibCamera, &loadAlchimieLibInput, &loadAlchimieLibUI
     ];
 }

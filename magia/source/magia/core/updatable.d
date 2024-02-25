@@ -1,4 +1,4 @@
-module magia.render.updatable;
+module magia.core.updatable;
 
 /// Any object that can be updated
 interface Updatable {

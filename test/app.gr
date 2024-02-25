@@ -34,10 +34,7 @@ task runtime() {
         }
     }();
 
-    loop (i, 100) {
-        var test = @Sprite("remilia");
-        test:position(@vec2f(i * 15 as <float>, i * 5 as <float>));
-    }
+    ringTest();
 
     var skybox = @Skybox("night"); // @TODO fix
     var globalLight = @DirectionalLight(@vec3f(0f, -10f, 0f), .2f, .01f);
@@ -72,6 +69,18 @@ task runtime() {
     loop yield {
         rig:updateDisplayBoneId();
     }*/
+}
+
+task ringTest() {
+    loop {
+        var angle = 0f;
+        while (angle < 360f) {
+            var bullet = @Bullet("remilia", @vec2f(400f, 300f), 2f, angle);
+            angle += 15f;
+        }
+
+        sleep(0.5.seconds);
+    }
 }
 
 func updateDisplayBoneId(model: Model) {

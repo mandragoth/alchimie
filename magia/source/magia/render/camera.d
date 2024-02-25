@@ -8,7 +8,6 @@ import std.math;
 import magia.core;
 import magia.render.instance;
 import magia.render.shader;
-import magia.render.updatable;
 
 /// Global camera class
 abstract class Camera : Instance3D {

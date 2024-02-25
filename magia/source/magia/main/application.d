@@ -144,6 +144,11 @@ class Magia {
             _currentScene3D = scene;
         }
 
+        /// Add updatable to 2D scene
+        void addUpdatable(Updatable entity, Scene2D scene2D = _currentScene2D) {
+            scene2D.addUpdatable(entity);
+        }
+
         /// Add 2D drawable
         void addDrawable(Drawable2D entity, Scene2D scene2D = _currentScene2D) {
             scene2D.addDrawable(entity);

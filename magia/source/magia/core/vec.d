@@ -39,6 +39,7 @@ struct Vector(type, uint dimension_) {
             return data.ptr;
         }
 
+        /// Returns data in memory
         const(type)[] value() const {
             return data[0..$];
         }
@@ -268,6 +269,18 @@ struct Vector(type, uint dimension_) {
         void set(type x_, type y_) {
             x = x_;
             y = y_;
+        }
+
+        static if(__traits(isFloating, type)) {
+            /// Direction from angle in radians
+            static Vector!(type, dimension) angled(type radians) {
+                return Vector!(type, dimension)(cos(radians), sin(radians));
+            }
+
+            /// Angle from direction
+            type angle() const {
+                return atan2(y, x);
+            }
         }
 
         /// Right is positive along X axis

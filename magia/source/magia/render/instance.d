@@ -58,7 +58,7 @@ abstract class Instance(uint dimension_) {
         }
 
         /// Get local position
-        vec localPosition() {
+        ref vec localPosition() {
             return transform.position;
         }
 

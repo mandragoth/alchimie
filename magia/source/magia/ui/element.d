@@ -4,7 +4,6 @@ import magia.core;
 import magia.render.drawable;
 import magia.render.instance;
 import magia.render.renderer;
-import magia.render.updatable;
 
 /// Abstract class representing an UI element
 abstract class UIElement : Instance2D, Drawable2D, Updatable {

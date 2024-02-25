@@ -6,11 +6,11 @@ import bindbc.opengl;
 
 import magia.core.timestep;
 import magia.core.transform;
+import magia.core.updatable;
 import magia.render.camera;
 import magia.render.drawable;
 import magia.render.renderer;
 import magia.render.skybox;
-import magia.render.updatable;
 
 /// Scene class
 class Scene(uint dimension_) {

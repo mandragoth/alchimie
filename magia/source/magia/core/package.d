@@ -31,5 +31,6 @@ public {
     import magia.core.tuple;
     import magia.core.type;
     import magia.core.util;
+    import magia.core.updatable;
     import magia.core.vec;
 }
