@@ -102,11 +102,11 @@ struct Color {
         }
 
         /// Convert to Vec3
-        vec3 rgb() const {
-            return vec3(_r, _g, _b);
+        vec3f rgb() const {
+            return vec3f(_r, _g, _b);
         }
         /// Convert from Vec3
-        vec3 rgb(vec3 v) {
+        vec3f rgb(vec3f v) {
             set(v.x, v.y, v.z);
             return v;
         }
@@ -124,7 +124,7 @@ struct Color {
     }
 
     /// Sets the RGB values, between 0 and 1.
-    this(vec3 v) {
+    this(vec3f v) {
         _r = clamp(v.x, 0f, 1f);
         _g = clamp(v.y, 0f, 1f);
         _b = clamp(v.z, 0f, 1f);

@@ -13,6 +13,7 @@ public {
     import magia.core.array;
     import magia.core.cli;
     import magia.core.color;
+    import magia.core.constants;
     import magia.core.coord;
     import magia.core.json;
     import magia.core.json_old;

@@ -60,7 +60,7 @@ final class Label : UIElement {
         UIElement.draw(renderer);
 
         Color color = Color.white;
-        vec2 pos = vec2.zero;
+        vec2f pos = vec2f.zero;
 
         dchar prevChar;
         foreach (dchar ch; _text) {
@@ -86,7 +86,7 @@ final class Label : UIElement {
     }
 
     private void reload() {
-        vec2 totalSize_ = vec2(0f, _font.ascent - _font.descent) * _charScale;
+        vec2f totalSize_ = vec2f(0f, _font.ascent - _font.descent) * _charScale;
         float lineWidth = 0f;
 
         dchar prevChar;

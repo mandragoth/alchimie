@@ -7,7 +7,7 @@ import grimoire;
 
 import alma.script.common;
 
-void loadAlchimieLibInput(GrLibDefinition library) {
+void loadAlchimieLibInput(GrModule library) {
     GrType keyState = library.addEnum("KeyState", [
             __traits(allMembers, KeyState)
         ], cast(GrInt[])[EnumMembers!(KeyState)]);

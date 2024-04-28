@@ -10,7 +10,7 @@ private {
     bool _areLibLoaded;
     GrLibrary[] _libraries;
 }
-
+/*
 private void loadLibraries() {
     if (_areLibLoaded)
         return;
@@ -39,3 +39,4 @@ GrBytecode compileSource(string inputFile, int options, GrLocale locale) {
 
     return bytecode;
 }
+*/

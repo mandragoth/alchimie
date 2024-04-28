@@ -2,7 +2,7 @@ module alma.script.scommon;
 
 import grimoire;
 
-package void loadAlchimieLibCommon(GrLibDefinition library) {
+package void loadAlchimieLibCommon(GrModule library) {
     library.addEnum("Spline", [
             "linear",
             "sineIn",

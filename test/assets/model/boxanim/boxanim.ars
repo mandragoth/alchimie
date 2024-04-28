@@ -1,9 +1,0 @@
-{
-    "resources": [
-        {
-            "type": "model",
-            "name": "boxanim",
-            "file": "boxanim.gltf"
-        }
-    ]
-}

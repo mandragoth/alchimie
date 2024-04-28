@@ -7,16 +7,16 @@ import magia.render.renderer;
 /// Structure holding a Vertex
 struct Vertex {
     /// Where to place the vertex
-    vec3 position;
+    vec3f position;
     /// Normal vector (for lights, etc.)
-    vec3 normal;
+    vec3f normal;
     /// Color of the vertex
     Color color;
     /// Texture coordinates
-    vec2 texUV;
+    vec2f texUV;
 
     /// Constructor
-    this(vec3 position_, vec2 texUV_ = vec2.zero, vec3 normal_ = vec3.zero, Color color_ = Color.white) {
+    this(vec3f position_, vec2f texUV_ = vec2f.zero, vec3f normal_ = vec3f.zero, Color color_ = Color.white) {
         position = position_;
         normal = normal_;
         color = color_;
@@ -27,17 +27,17 @@ struct Vertex {
 /// Structure holding packed vertex and joint data
 struct AnimatedVertex {
     /// Where to place the vertex
-    vec3 position;
+    vec3f position;
     /// Normal vector (for lights, etc.)
-    vec3 normal;
+    vec3f normal;
     /// Color of the vertex
     Color color;
     /// Texture coordinates
-    vec2 texUV;
+    vec2f texUV;
     /// Joint associated vertex
     vec4i boneIds;
     /// Joint associated weight
-    vec4 weights;
+    vec4f weights;
 
     /// Constructor
     this(Vertex vertex, Joint joint) {

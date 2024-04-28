@@ -5,6 +5,7 @@
  */
 module magia.core.array;
 
+import std.algorithm;
 import std.parallelism;
 import std.range;
 import std.typecons;
@@ -33,7 +34,7 @@ final class IArray(T, size_t _capacity, bool _useParallelism = false) {
         }
 
         /// Liste des éléments contenus
-        ref T[_capacity] data() {
+        ref T[_capacity] array() {
             return _dataTable;
         }
 
@@ -97,7 +98,7 @@ final class IArray(T, size_t _capacity, bool _useParallelism = false) {
     }
 
     /// Vide la liste
-    void reset() {
+    void clear() {
         _dataTop = 0u;
         _availableIndexesTop = 0u;
         _removeTop = 0u;
@@ -219,6 +220,19 @@ final class IArray(T, size_t _capacity, bool _useParallelism = false) {
         return result;
     }
 
+    /// Opérateur ~
+    typeof(this) opBinary(string op : "~")(T value) const {
+        typeof(this) result = new typeof(this);
+        result ~= value;
+        return result;
+    }
+
+    /// Opérateur ~=
+    typeof(this) opOpAssign(string op : "~")(T value) {
+        push(value);
+        return this;
+    }
+
     /// Accède à un élément
     T opIndex(size_t index) {
         return _dataTable[_translationTable[index]];
@@ -270,7 +284,7 @@ final class Array(T, bool _useParallelism = false) {
         }
 
         /// Liste des éléments contenus
-        ref T[] data() {
+        ref T[] array() {
             return _dataTable;
         }
 
@@ -291,17 +305,27 @@ final class Array(T, bool _useParallelism = false) {
     }
 
     /// Retire un élément de la liste
-    void pop(size_t index) {
-        //Prend la première valeur de la pile et comble le trou
-        if ((index + 1) < _dataTable.length) {
-            _dataTable[index] = _dataTable[$ - 1];
-        }
+    void pop(size_t index, bool isStable = false) {
+        if (isStable) {
+            if (index == 0) {
+                _dataTable = _dataTable[1 .. $];
+            } else if (index + 1 == _dataTable.length) {
+                _dataTable.length--;
+            } else {
+                _dataTable = _dataTable[0 .. index] ~ _dataTable[index + 1 .. $];
+            }
+        } else {
+            //Prend la première valeur de la pile et comble le trou
+            if ((index + 1) < _dataTable.length) {
+                _dataTable[index] = _dataTable[$ - 1];
+            }
 
-        _dataTable.length--;
+            _dataTable.length--;
+        }
     }
 
     /// Vide la liste
-    void reset() {
+    void clear() {
         _dataTable.length = 0u;
         _removeTable.length = 0u;
     }
@@ -312,9 +336,23 @@ final class Array(T, bool _useParallelism = false) {
     }
 
     /// Supprime tous les éléments marqué pour suppression
-    void sweep() {
-        foreach (size_t index; _removeTable) {
-            pop(index);
+    void sweep(bool isStable = false) {
+        if (isStable) {
+            sort!("a > b", SwapStrategy.unstable)(_removeTable);
+
+            T[] result;
+            for (size_t i; i < _dataTable.length; ++i) {
+                if (_removeTable.length && i == _removeTable[$ - 1]) {
+                    _removeTable.length--;
+                } else {
+                    result ~= _dataTable[i];
+                }
+            }
+            _dataTable = result;
+        } else {
+            foreach (size_t index; _removeTable) {
+                pop(index);
+            }
         }
         _removeTable.length = 0u;
     }
@@ -333,12 +371,40 @@ final class Array(T, bool _useParallelism = false) {
 
             return result;
         }
+
+        /// Ditto
+        int opApplyReverse(int delegate(ref T) dlg) {
+            int result;
+
+            foreach_reverse (i; parallel(iota(_dataTable.length))) {
+                result = dlg(_dataTable[i]);
+
+                if (result)
+                    break;
+            }
+
+            return result;
+        }
     } else {
         /// Ditto
         int opApply(int delegate(ref T) dlg) {
             int result;
 
             foreach (value; _dataTable) {
+                result = dlg(value);
+
+                if (result)
+                    break;
+            }
+
+            return result;
+        }
+
+        /// Ditto
+        int opApplyReverse(int delegate(ref T) dlg) {
+            int result;
+
+            foreach_reverse (value; _dataTable) {
                 result = dlg(value);
 
                 if (result)
@@ -363,6 +429,20 @@ final class Array(T, bool _useParallelism = false) {
         return result;
     }
 
+    /// Ditto
+    int opApplyReverse(int delegate(const ref T) dlg) const {
+        int result;
+
+        foreach_reverse (value; _dataTable) {
+            result = dlg(value);
+
+            if (result)
+                break;
+        }
+
+        return result;
+    }
+
     static if (_useParallelism) {
         /// Ditto
         int opApply(int delegate(const size_t, ref T) dlg) {
@@ -377,12 +457,40 @@ final class Array(T, bool _useParallelism = false) {
 
             return result;
         }
+
+        /// Ditto
+        int opApplyReverse(int delegate(const size_t, ref T) dlg) {
+            int result;
+
+            foreach_reverse (i; parallel(iota(_dataTable.length))) {
+                result = dlg(i, _dataTable[i]);
+
+                if (result)
+                    break;
+            }
+
+            return result;
+        }
     } else {
         /// Ditto
         int opApply(int delegate(const size_t, ref T) dlg) {
             int result;
 
             foreach (size_t i, T value; _dataTable) {
+                result = dlg(i, value);
+
+                if (result)
+                    break;
+            }
+
+            return result;
+        }
+
+        /// Ditto
+        int opApplyReverse(int delegate(const size_t, ref T) dlg) {
+            int result;
+
+            foreach_reverse (size_t i, T value; _dataTable) {
                 result = dlg(i, value);
 
                 if (result)
@@ -408,6 +516,20 @@ final class Array(T, bool _useParallelism = false) {
     }
 
     /// Ditto
+    int opApplyReverse(int delegate(const size_t, const ref T) dlg) const {
+        int result;
+
+        foreach_reverse (size_t i, const T value; _dataTable) {
+            result = dlg(i, value);
+
+            if (result)
+                break;
+        }
+
+        return result;
+    }
+
+    /// Ditto
     int opApply(int delegate(const Tuple!(const size_t, const T)) dlg) const {
         int result;
 
@@ -419,6 +541,33 @@ final class Array(T, bool _useParallelism = false) {
         }
 
         return result;
+    }
+
+    /// Ditto
+    int opApplyReverse(int delegate(const Tuple!(const size_t, const T)) dlg) const {
+        int result;
+
+        foreach_reverse (size_t i, const T value; _dataTable) {
+            result = dlg(tuple!(const size_t, const T)(i, value));
+
+            if (result)
+                break;
+        }
+
+        return result;
+    }
+
+    /// Opérateur ~
+    typeof(this) opBinary(string op : "~")(T value) const {
+        typeof(this) result = new typeof(this);
+        result ~= value;
+        return result;
+    }
+
+    /// Opérateur ~=
+    typeof(this) opOpAssign(string op : "~")(T value) {
+        push(value);
+        return this;
     }
 
     /// Accède à un élément

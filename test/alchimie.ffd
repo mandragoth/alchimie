@@ -1,0 +1,16 @@
+default "test"
+
+config "test" {
+    source "app.gr"
+    media "img" true
+    media "model" true
+    media "shader" true
+    media "skybox" true
+    media "sound" true
+    media "texture" true
+
+    window {
+        size 1280 720
+        title "Test"
+    }
+}

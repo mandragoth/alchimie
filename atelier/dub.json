@@ -6,9 +6,9 @@
 	"copyright": "Copyright © 2022, Mandragoth",
 	"description": "Éditeur d’Alchimie",
 	"license": "Zlib",
-	"name": "atelier",
+	"name": "magia",
     "targetType": "executable",
-    "targetName": "atelier",
+    "targetName": "magia",
     "dependencies": {
         "magia": {
             "path": "../magia"
@@ -22,12 +22,12 @@
             "name": "debug",
             "targetPath": "../bin",
             "dflags": ["-gf"],
-            "targetName": "atelier-dbg"
+            "targetName": "magia-dbg"
         },
         {
             "name": "export",
             "targetPath": "../export",
-            "targetName": "atelier"
+            "targetName": "magia"
         }
     ]
 }

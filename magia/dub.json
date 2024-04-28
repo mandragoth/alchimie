@@ -1,8 +1,12 @@
 {
+    "name": "magia",
+	"license": "Zlib",
 	"authors": [
 		"Jonath",
 		"Enalye"
 	],
+	"description": "Moteur de jeu Magia",
+	"copyright": "Copyright © 2022, Mandragoth",
 	"buildTypes": {
 		"debug": {
 			"buildOptions": [
@@ -26,52 +30,94 @@
 			]
 		}
 	},
-	"copyFiles-windows": [
-		"../libs/$PLATFORM/$ARCH/SDL2.dll",
-		"../libs/$PLATFORM/$ARCH/SDL2_image.dll",
-		"../libs/$PLATFORM/$ARCH/SDL2_ttf.dll",
-		"../libs/$PLATFORM/$ARCH/OpenAL32.dll"
-	],
-	"copyright": "Copyright © 2022, Mandragoth",
 	"dependencies": {
+        "grimoire": {
+            "path": "../grimoire"
+        },
+        "farfadet": {
+            "path": "../farfadet"
+        },
+		"bindbc-sdl": "~>1.4.2",
 		"audio-formats": "~>3.0.1",
-		"bindbc-openal": "~>1.1.0",
-		"bindbc-opengl": "~>1.1.0",
-		"bindbc-sdl": "~>1.4.2"
+		"bindbc-opengl": "~>1.1.0"
 	},
-	"description": "Moteur de jeu Magia",
 	"lflags-posix": [
-		"-L-L../libs/$PLATFORM/$ARCH/",
+		"-L-L$PACKAGE_DIR/../libs/$PLATFORM/$ARCH/",
 		"-L-lz"
 	],
 	"libs-posix": [
 		"SDL2",
 		"SDL2_image",
-		"SDL2_mixer",
 		"SDL2_ttf"
 	],
 	"libs-windows": [
-		"../libs/$PLATFORM/$ARCH/SDL2",
-		"../libs/$PLATFORM/$ARCH/SDL2_image",
-		"../libs/$PLATFORM/$ARCH/SDL2_mixer",
-		"../libs/$PLATFORM/$ARCH/SDL2_ttf",
-		"../libs/$PLATFORM/$ARCH/OpenAL32"
+        "$PACKAGE_DIR/../libs/$PLATFORM/$ARCH/SDL2",
+        "$PACKAGE_DIR/../libs/$PLATFORM/$ARCH/SDL2_image",
+        "$PACKAGE_DIR/../libs/$PLATFORM/$ARCH/SDL2_ttf"
 	],
-	"license": "Zlib",
-	"name": "magia",
-	"subConfigurations": {
-		"bindbc-sdl": "static"
-	},
-	"targetName": "magia",
-	"targetPath": "bin",
-	"targetType": "library",
+    "copyFiles-windows": [
+        "$PACKAGE_DIR/../libs/$PLATFORM/$ARCH/SDL2.dll",
+        "$PACKAGE_DIR/../libs/$PLATFORM/$ARCH/SDL2_image.dll",
+        "$PACKAGE_DIR/../libs/$PLATFORM/$ARCH/SDL2_ttf.dll"
+    ],
 	"versions": [
 		"GL_41",
 		"GL_ARB",
 		"BindSDL_Static",
 		"SDL_2_26",
 		"SDL_Image_2_6",
-		"SDL_Mixer_2_6",
 		"SDL_TTF_2_20"
-	]
+	],
+	"subConfigurations": {
+		"bindbc-sdl": "static"
+	},
+    "configurations": [
+        {
+            "name": "magia_debug",
+            "targetPath": "../bin",
+            "targetType": "executable",
+            "targetName": "magia_debug",
+            "dflags": [
+                "-gf"
+            ],
+            "versions": [
+                "MagiaDebug",
+                "MagiaExe"
+            ]
+        },
+        {
+            "name": "magia_core",
+            "targetType": "library",
+            "targetName": "magia",
+            "targetPath": "../bin",
+            "versions": [
+                "MagiaCore"
+            ]
+        },
+        {
+            "name": "magia_dll",
+            "targetType": "dynamicLibrary",
+            "targetPath": "../export",
+            "targetName": "magia",
+            "versions": [
+                "MagiaDLL"
+            ]
+        },
+        {
+            "name": "magia_doc",
+            "targetType": "executable",
+            "targetName": "magia_doc",
+            "targetPath": "../bin",
+            "dflags": [
+                "-gf"
+            ],
+            "versions": [
+                "MagiaDoc",
+                "MagiaExe"
+            ]
+        }
+    ],
+    "subPackages": [
+        "../magia"
+    ]
 }

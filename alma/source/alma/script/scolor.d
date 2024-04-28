@@ -5,7 +5,7 @@ import grimoire;
 
 import alma.script.common;
 
-package void loadAlchimieLibColor(GrLibDefinition library) {
+package void loadAlchimieLibColor(GrModule library) {
     GrType colorType = library.addNative("color");
 
     library.addConstructor(&_ctor, colorType, [grFloat, grFloat, grFloat]);

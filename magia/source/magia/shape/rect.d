@@ -8,7 +8,7 @@ import bindbc.opengl;
 import bindbc.sdl;
 
 import magia.core;
-import magia.main;
+import magia.kernel;
 import magia.render.buffer;
 import magia.render.data;
 import magia.render.drawable;
@@ -29,10 +29,10 @@ struct RectData {
     mat4 model;
 
     /// Sprite clip
-    vec4 clip;
+    vec4f clip;
 
     /// Sprite color
-    vec4 color;
+    vec4f color;
 }
 
 /// Rectangle handler
@@ -86,8 +86,8 @@ final class Rect : Instance2D, Drawable2D {
 
     @property {
         /// Size
-        vec2 size() const {
-            return vec2(_rectData.clip.width, _rectData.clip.height);
+        vec2f size() const {
+            return vec2f(_rectData.clip.width, _rectData.clip.height);
         }
     }
 
@@ -101,10 +101,10 @@ final class Rect : Instance2D, Drawable2D {
         transform = Transform2D.identity;
 
         // Clip
-        _rectData.clip = vec4(0f, 0f, cast(float)size.x, cast(float)size.y);
+        _rectData.clip = vec4f(0f, 0f, cast(float)size.x, cast(float)size.y);
 
         // Color and alpha
-        _rectData.color = vec4(color.r, color.g, color.b, 1f);
+        _rectData.color = vec4f(color.r, color.g, color.b, 1f);
     }
 
     /// Subscribe to related pool

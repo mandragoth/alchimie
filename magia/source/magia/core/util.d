@@ -51,7 +51,7 @@ float angleLerp(float a, float b, float t) {
 }
 
 /// Scale a vector to fit the specified vector while keeping its ratio.
-vec2 scaleToFit(vec2 src, vec2 dst) {
+vec2f scaleToFit(vec2f src, vec2f dst) {
     float scale;
     if (dst.x / dst.y > src.x / src.y) {
         scale = dst.y / src.y;

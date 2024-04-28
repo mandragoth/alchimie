@@ -2,8 +2,16 @@ module magia.core.cli;
 
 import std.conv : to;
 import std.exception : enforce;
-import std.stdio : writeln;
 import std.string;
+
+import magia.kernel;
+
+/// Décrit une erreur syntaxique
+private final class CliException : Exception {
+    import std.exception : basicExceptionCtors;
+
+    mixin basicExceptionCtors;
+}
 
 /// Outil de gestion de ligne de commande
 final class Cli {
@@ -48,7 +56,7 @@ final class Cli {
 
             /// Retourne le paramètre obligatoire demandé
             string getRequiredParam(size_t index) const {
-                enforce(index < _requiredParams.length,
+                enforce!CliException(index < _requiredParams.length,
                     "l’index `" ~ to!string(index) ~ "` dépasse le nombre de paramètres obligatoires `" ~ to!string(
                         _requiredParams.length) ~ "`");
                 return _requiredParams[index];
@@ -56,7 +64,7 @@ final class Cli {
 
             /// Retourne le paramètre optionel demandé
             string getOptionalParam(size_t index) const {
-                enforce(index < _optionalParams.length, "l’index `" ~ to!string(
+                enforce!CliException(index < _optionalParams.length, "l’index `" ~ to!string(
                         index) ~ "` dépasse le nombre de paramètres optionels `" ~ to!string(
                         _requiredParams.length) ~ "`");
                 return _optionalParams[index];
@@ -102,15 +110,17 @@ final class Cli {
 
         private void addOption(string shortName, string longName,
             string[] requiredParams_, string[] optionalParams_) {
-            enforce(!hasOption(shortName), "une option est déjà définie pour `" ~ shortName ~ "`");
-            enforce(!hasOption(longName), "une option est déjà définie pour `" ~ longName ~ "`");
+            enforce!CliException(!hasOption(shortName),
+                "une option est déjà définie pour `" ~ shortName ~ "`");
+            enforce!CliException(!hasOption(longName),
+                "une option est déjà définie pour `" ~ longName ~ "`");
 
             _options ~= new Option(shortName, longName, requiredParams_, optionalParams_);
         }
 
         /// Retourne le paramètre obligatoire demandé
         string getRequiredParam(size_t index) const {
-            enforce(index < _requiredParams.length, "l’index `" ~ to!string(
+            enforce!CliException(index < _requiredParams.length, "l’index `" ~ to!string(
                     index) ~ "` dépasse le nombre de paramètres obligatoires `" ~ to!string(
                     _requiredParams.length) ~ "`");
             return _requiredParams[index];
@@ -118,7 +128,7 @@ final class Cli {
 
         /// Retourne le paramètre optionel demandé
         string getOptionalParam(size_t index) const {
-            enforce(index < _optionalParams.length, "l’index `" ~ to!string(
+            enforce!CliException(index < _optionalParams.length, "l’index `" ~ to!string(
                     index) ~ "` dépasse le nombre de paramètres optionels `" ~ to!string(
                     _requiredParams.length) ~ "`");
             return _optionalParams[index];
@@ -202,10 +212,10 @@ final class Cli {
         }
 
         Command addOption(Option option) {
-            enforce(!hasOption(option._shortName),
+            enforce!CliException(!hasOption(option._shortName),
                 "une option est déjà définie pour `" ~ option._shortName ~
                 "` pour la commande `" ~ _name ~ "`");
-            enforce(!hasOption(option._longName),
+            enforce!CliException(!hasOption(option._longName),
                 "une option est déjà définie pour `" ~ option._longName ~
                 "` pour la commande `" ~ _name ~ "`");
             _options ~= option;
@@ -254,9 +264,12 @@ final class Cli {
     /// Ajoute une option
     void addOption(string shortName, string longName, string info,
         string[] requiredParams = [], string[] optionalParams = []) {
-        enforce(shortName.length || longName.length, "l’option doit avoir au moins un nom");
-        enforce(!hasOption(shortName), "une option est déjà définie pour `" ~ shortName ~ "`");
-        enforce(!hasOption(longName), "une option est déjà définie pour `" ~ longName ~ "`");
+        enforce!CliException(shortName.length || longName.length,
+            "l’option doit avoir au moins un nom");
+        enforce!CliException(!hasOption(shortName),
+            "une option est déjà définie pour `" ~ shortName ~ "`");
+        enforce!CliException(!hasOption(longName),
+            "une option est déjà définie pour `" ~ longName ~ "`");
 
         _options ~= new Option(shortName, longName, info, requiredParams, optionalParams);
     }
@@ -264,7 +277,8 @@ final class Cli {
     /// Ajoute une commande
     void addCommand(Callback callback, string name, string info,
         string[] requiredParams = [], string[] optionalParams = []) {
-        enforce(!hasCommand(name), "une commande est déjà définie pour `" ~ name ~ "`");
+        enforce!CliException(!hasCommand(name),
+            "une commande est déjà définie pour `" ~ name ~ "`");
 
         _commands ~= new Command(callback, name, info, requiredParams, optionalParams);
     }
@@ -272,7 +286,8 @@ final class Cli {
     /// Ajoute une option à une commande
     void addCommandOption(string name, string shortName, string longName,
         string info, string[] requiredParams = [], string[] optionalParams = []) {
-        enforce(shortName.length || longName.length, "l’option doit avoir au moins un nom");
+        enforce!CliException(shortName.length || longName.length,
+            "l’option doit avoir au moins un nom");
 
         foreach (command; _commands) {
             if (command._name == name) {
@@ -281,7 +296,7 @@ final class Cli {
                 return;
             }
         }
-        enforce(false, "aucune commande `" ~ name ~ "` trouvé");
+        enforce!CliException(false, "aucune commande `" ~ name ~ "` trouvé");
     }
 
     private final class State {
@@ -296,7 +311,7 @@ final class Cli {
         this(Cli cli, string[] args) {
             _cli = cli;
 
-            enforce(args.length >= 1, "arguments manquant");
+            enforce!CliException(args.length >= 1, "arguments manquant");
             _exeName = args[0];
             _args = args[1 .. $];
         }
@@ -321,15 +336,16 @@ final class Cli {
                 }
             }
 
-            enforce(false, "commande inconnue `" ~ cmd ~ "`");
+            enforce!CliException(false, "commande inconnue `" ~ cmd ~ "`");
         }
 
         private void _parseCommand() {
-            enforce(_args.length >= _command._requiredParams.length, "paramètres manquants");
+            enforce!CliException(_args.length >= _command._requiredParams.length,
+                "paramètres manquants");
             string[] requiredParams = _args[0 .. _command._requiredParams.length];
             _args = _args[_command._requiredParams.length .. $];
             foreach (param; requiredParams) {
-                enforce(indexOf(param, "-") != 0, "paramètres manquants");
+                enforce!CliException(indexOf(param, "-") != 0, "paramètres manquants");
             }
 
             string[] optionalParams;
@@ -357,7 +373,7 @@ final class Cli {
                 Option currentOption = null;
                 if (indexOf(cmd, "--") == 0) {
                     cmd = cmd[2 .. $];
-                    enforce(cmd.length, "une option est vide");
+                    enforce!CliException(cmd.length, "une option est vide");
 
                     foreach (Option option; _command ? _command._options : _cli._options) {
                         if (cmd == option._longName && option._longName.length) {
@@ -369,7 +385,7 @@ final class Cli {
                     }
                 } else {
                     cmd = cmd[1 .. $];
-                    enforce(cmd.length, "une option est vide");
+                    enforce!CliException(cmd.length, "une option est vide");
 
                     foreach (Option option; _command ? _command._options : _cli._options) {
                         if (cmd == option._shortName && option._shortName.length) {
@@ -382,11 +398,12 @@ final class Cli {
                 }
 
                 if (_command)
-                    enforce(currentOption,
+                    enforce!CliException(currentOption,
                         "l’option `" ~ cmd ~ "` n’est pas reconnue par la commande `" ~
                         _command._name ~ "`");
                 else
-                    enforce(currentOption, "l’option `" ~ cmd ~ "` n’est pas reconnue");
+                    enforce!CliException(currentOption,
+                        "l’option `" ~ cmd ~ "` n’est pas reconnue");
 
                 if (!_args.length)
                     break;
@@ -398,11 +415,12 @@ final class Cli {
         }
 
         private void _parseOption(Option option) {
-            enforce(_args.length >= option._requiredParams.length, "paramètres manquants");
+            enforce!CliException(_args.length >= option._requiredParams.length,
+                "paramètres manquants");
             string[] requiredParams = _args[0 .. option._requiredParams.length];
             _args = _args[option._requiredParams.length .. $];
             foreach (param; requiredParams) {
-                enforce(indexOf(param, "-") != 0, "paramètres manquants");
+                enforce!CliException(indexOf(param, "-") != 0, "paramètres manquants");
             }
 
             string[] optionalParams;
@@ -469,7 +487,7 @@ final class Cli {
                 command = command_;
             }
         }
-        enforce(command, "aucune commande `" ~ name ~ "` trouvé");
+        enforce!CliException(command, "aucune commande `" ~ name ~ "` trouvé");
 
         string result;
         {
@@ -518,13 +536,13 @@ final class Cli {
         State state = new State(this, args);
         try {
             state.run();
-        } catch (Exception e) {
-            writeln("\033[1;91mErreur:\033[0;0m " ~ e.msg);
+        } catch (CliException e) {
+            log("\033[1;91mErreur:\033[0;0m " ~ e.msg);
 
             if (state._command) {
-                writeln("\n", getHelp(state._command._name));
+                log("\n", getHelp(state._command._name));
             } else {
-                writeln("\n", getHelp());
+                log("\n", getHelp());
             }
         }
     }

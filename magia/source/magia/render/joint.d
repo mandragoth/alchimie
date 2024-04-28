@@ -7,10 +7,10 @@ struct Joint {
     /// Associated vertex
     vec4i boneIds;
     /// Associated weight
-    vec4 weights;
+    vec4f weights;
 
     /// Constructor
-    this(vec4i boneIds_, vec4 weights_) {
+    this(vec4i boneIds_, vec4f weights_) {
         boneIds = boneIds_;
         weights = weights_;
     }

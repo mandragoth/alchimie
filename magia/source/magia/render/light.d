@@ -34,7 +34,7 @@ class DirectionalLight {
     BaseLight base;
 
     /// Direction of the light
-    vec3 direction;
+    vec3f direction;
 
     @property {
         /// Wrapping getter
@@ -153,7 +153,7 @@ class PointLight : Instance3D {
 /// Spot light representation
 class SpotLight : PointLight {
     /// Direction of the light
-    vec3 direction;
+    vec3f direction;
 
     /// Angle of the cone
     float angle;

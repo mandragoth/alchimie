@@ -95,10 +95,10 @@ class Renderer(uint dimension_) {
         glBlendEquation(GL_FUNC_ADD);
     }
 
-    private void setupCircleShader(vec2 position = vec2.zero, float size = 1f,
+    private void setupCircleShader(vec2f position = vec2f.zero, float size = 1f,
                                    Color color = Color.white, float alpha = 1f, Blend blend = Blend.alpha) {
         // Set color
-        circleShader.uploadUniformVec4("u_Color", vec4(color.r, color.g, color.b, alpha));
+        circleShader.uploadUniformVec4("u_Color", vec4f(color.r, color.g, color.b, alpha));
 
         // Set position
         circleShader.uploadUniformVec2("u_Position", position);

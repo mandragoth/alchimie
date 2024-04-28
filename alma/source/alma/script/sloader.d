@@ -15,23 +15,28 @@ import alma.script.sscene;
 import alma.script.sui;
 import alma.script.svec;
 
-/// Charge la bibliothèque d’alchimie
 GrLibrary loadAlchimieLibrary() {
-    GrLibrary library = new GrLibrary;
+    GrLibrary library = new GrLibrary(0);
 
     foreach (loader; getAlchimieLibraryLoaders()) {
-        loader(library);
+        library.addModule(loader);
     }
 
     return library;
 }
 
-/// Retourne les fonctions de chargement de la bibliothèque d’alchimie
-GrLibLoader[] getAlchimieLibraryLoaders() {
-    return [
-        &loadAlchimieLibCommon, &loadAlchimieLibMath, &loadAlchimieLibVec,
-        &loadAlchimieLibColor, &loadAlchimieLibGraphics, &loadAlchimieLibScene,
-        &loadAlchimieLibDrawable, &loadAlchimieLibBullet, &loadAlchimieLibAudio,
-        &loadAlchimieLibCamera, &loadAlchimieLibInput, &loadAlchimieLibUI
-    ];
+private GrModuleLoader[] getAlchimieLibraryLoaders() {
+    GrModuleLoader[] loaders;
+
+    static foreach (pack; [
+            &loadAlchimieLibCommon, &loadAlchimieLibMath, &loadAlchimieLibVec,
+            &loadAlchimieLibColor, &loadAlchimieLibGraphics,
+            &loadAlchimieLibScene, &loadAlchimieLibBullet,
+            &loadAlchimieLibDrawable, &loadAlchimieLibAudio,
+            &loadAlchimieLibCamera, &loadAlchimieLibInput, &loadAlchimieLibUI
+        ]) {
+        loaders ~= pack();
+    }
+
+    return loaders;
 }

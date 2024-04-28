@@ -1,0 +1,7 @@
+texture "reimu_body" {
+    file "reimu_body.png"
+}
+
+texture "reimu_hair" {
+    file "reimu_hair.png"
+}

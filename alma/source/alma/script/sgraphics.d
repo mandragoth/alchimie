@@ -3,7 +3,7 @@ module alma.script.sgraphics;
 import magia;
 import grimoire;
 
-package void loadAlchimieLibGraphics(GrLibDefinition library) {
+package void loadAlchimieLibGraphics(GrModule library) {
     // Maths types
     GrType vec2Type = grGetNativeType("vec2", [grFloat]);
     GrType vec3Type = grGetNativeType("vec3", [grFloat]);
@@ -51,12 +51,12 @@ private void _newVertexBuffer(GrCall call) {
 }
 
 private void _newVertexBuffer2(GrCall call) {
-    VertexBuffer vertexBuffer = new VertexBuffer(call.getList(0).getNatives!vec2(), call.getNative!BufferLayout(1));
+    VertexBuffer vertexBuffer = new VertexBuffer(call.getList(0).getNatives!vec2f(), call.getNative!BufferLayout(1));
     call.setNative(vertexBuffer);
 }
 
 private void _newVertexBuffer3(GrCall call) {
-    VertexBuffer vertexBuffer = new VertexBuffer(call.getList(0).getNatives!vec3(), call.getNative!BufferLayout(1));
+    VertexBuffer vertexBuffer = new VertexBuffer(call.getList(0).getNatives!vec3f(), call.getNative!BufferLayout(1));
     call.setNative(vertexBuffer);
 }
 
@@ -92,8 +92,8 @@ private void _newMesh3D(GrCall call) {
 }
 
 // float[] vertices, BufferLayout layout_
-// vec3[] vertices, BufferLayout layout_
-// vec2[] vertices, BufferLayout layout_
+// vec3f[] vertices, BufferLayout layout_
+// vec2f[] vertices, BufferLayout layout_
 // Vertex[] vertices, BufferLayout layout_
 // AnimatedVertex[] animatedVertices, BufferLayout layout_
 // mat4[] mat4s, BufferLayout layout_

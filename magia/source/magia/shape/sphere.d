@@ -27,16 +27,16 @@ class Sphere : Instance3D, Drawable3D {
         _resolution = resolution;
         _radius = radius;
 
-        vec3[] directions = [vec3.up, vec3.down, vec3.left, vec3.right, vec3.forward, vec3.back];
+        vec3f[] directions = [vec3f.up, vec3f.down, vec3f.left, vec3f.right, vec3f.forward, vec3f.back];
 
         for (int directionIdx = 0; directionIdx < directions.length; ++directionIdx) {
             generateFaceMesh(directions[directionIdx]);
         }
     }
 
-    private void generateFaceMesh(vec3 directionY) {
-        vec3 directionX = vec3(directionY.y, directionY.z, directionY.x);
-        vec3 directionZ = directionX.cross(directionY);
+    private void generateFaceMesh(vec3f directionY) {
+        vec3f directionX = vec3f(directionY.y, directionY.z, directionY.x);
+        vec3f directionZ = directionX.cross(directionY);
 
         const int nbVertices = _resolution * _resolution;
         Vertex[] vertices = new Vertex[nbVertices];
@@ -56,7 +56,7 @@ class Sphere : Instance3D, Drawable3D {
                 int vertexIdx = getVertexIdx(x, y);
 
                 vertices[vertexIdx].position = generateSurfacePoint(directionX, directionY, directionZ, x, y, resolution2);
-                vertices[vertexIdx].texUV = vec2(fx / fResolution2, fy / fResolution2);
+                vertices[vertexIdx].texUV = vec2f(fx / fResolution2, fy / fResolution2);
                 vertices[vertexIdx].color = Color.red;
                 vertices[vertexIdx].normal = computeNormal(vertices[vertexIdx].position);
 
@@ -81,12 +81,12 @@ class Sphere : Instance3D, Drawable3D {
     }
 
     /// Generate a point on the sphere's surface
-    protected vec3 generateSurfacePoint(vec3 directionX, vec3 directionY, vec3 directionZ,
+    protected vec3f generateSurfacePoint(vec3f directionX, vec3f directionY, vec3f directionZ,
                                         int x, int y, int resolution) {
-        const vec2 ratio = vec2(x, y) / resolution;
-        const vec2 ratioScale = (ratio - vec2(0.5f, 0.5f)) * 2;
+        const vec2f ratio = vec2f(x, y) / resolution;
+        const vec2f ratioScale = (ratio - vec2f(0.5f, 0.5f)) * 2;
 
-        vec3 surfacePoint = directionY + ratioScale.x * directionX + ratioScale.y * directionZ;
+        vec3f surfacePoint = directionY + ratioScale.x * directionX + ratioScale.y * directionZ;
         return surfacePoint.normalized;
     }
 
@@ -96,14 +96,14 @@ class Sphere : Instance3D, Drawable3D {
     }
 
     // Compute normals 
-    private vec3 computeNormal(vec3 surfacePoint) {
-        const vec3 center = transform.position;
+    private vec3f computeNormal(vec3f surfacePoint) {
+        const vec3f center = transform.position;
 
-        vec3 normal = surfacePoint - center;
+        vec3f normal = surfacePoint - center;
         normal.normalize();
 
         /*if (_debug) {
-            addLine(new Line(surfacePoint, surfacePoint + normal * _radius / 100, vec3(0., 1., 0.)));
+            addLine(new Line(surfacePoint, surfacePoint + normal * _radius / 100, vec3f(0., 1., 0.)));
         }*/
 
         return normal;

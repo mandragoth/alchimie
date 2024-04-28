@@ -5,7 +5,7 @@ import magia;
 
 import alma.script.common;
 
-void loadAlchimieLibCamera(GrLibDefinition library) {
+void loadAlchimieLibCamera(GrModule library) {
     // Fetch maths types
     GrType vec3Type = grGetNativeType("vec3", [grFloat]);
     GrType vec4iType = grGetNativeType("vec4", [grInt]);
@@ -48,9 +48,9 @@ private void _newPerspectiveCamera(GrCall call) {
 private void _newPerspectiveCamera2(GrCall call) {
     uint width = call.getUInt(0);
     uint height = call.getUInt(1);
-    vec3 position = cast(vec3) call.getNative!SVec3f(2);
-    vec3 target = cast(vec3) call.getNative!SVec3f(3);
-    vec3 up = cast(vec3) call.getNative!SVec3f(4);
+    vec3f position = cast(vec3f) call.getNative!SVec3f(2);
+    vec3f target = cast(vec3f) call.getNative!SVec3f(3);
+    vec3f up = cast(vec3f) call.getNative!SVec3f(4);
 
     PerspectiveCamera camera = new PerspectiveCamera(width, height, position, target, up);
     Magia.addCamera3D(camera);
@@ -95,7 +95,7 @@ private void _setViewport(GrCall call) {
 
 private void _setForward(GrCall call) {
     PerspectiveCamera camera = call.getNative!PerspectiveCamera(0);
-    camera.forward = cast(vec3) call.getNative!SVec3f(1);
+    camera.forward = cast(vec3f) call.getNative!SVec3f(1);
 }
 
 private void _getScreenWidth(GrCall call) {

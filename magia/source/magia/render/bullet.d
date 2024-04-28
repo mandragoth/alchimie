@@ -30,7 +30,7 @@ struct BulletPhysics {
         float _angle = 0f;
 
         /// Cartesian direction
-        vec2 _direction = vec2.zero;
+        vec2f _direction = vec2f.zero;
     }
 
     @property {
@@ -42,16 +42,16 @@ struct BulletPhysics {
         /// Set angle
         void angle(float angle_) {
             _angle = angle_;
-            _direction = vec2.angled(angle_);
+            _direction = vec2f.angled(angle_);
         }
 
         /// Get direction
-        vec2 direction() {
+        vec2f direction() {
             return _direction;
         }
 
         /// Set direction
-        void direction(vec2 direction_) {
+        void direction(vec2f direction_) {
             _angle = direction_.angle();
             _direction = direction_;
         }
@@ -64,7 +64,7 @@ struct BulletPhysics {
     float radius = 0f;
 
     /// Update bullet physics
-    void update(ref vec2 position) {
+    void update(ref vec2f position) {
         speed = clamp(speed + acceleration, minSpeed, maxSpeed);
         position = position + speed * _direction;
         angle = angle + angularSpeed;
@@ -79,7 +79,7 @@ class Bullet : Drawable2D, Updatable {
     }
 
     /// Constructor
-    this(Sprite sprite, vec2 position, float speed, float angle) {
+    this(Sprite sprite, vec2f position, float speed, float angle) {
         _sprite = sprite;
         _sprite.position = position;
         _physics.speed = speed;

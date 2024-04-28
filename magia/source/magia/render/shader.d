@@ -10,7 +10,7 @@ import std.typecons : Flag;
 import bindbc.opengl;
 
 import magia.core;
-import magia.main;
+import magia.kernel;
 import magia.render.window;
 
 /// Class holding a shader
@@ -98,20 +98,20 @@ class Shader : Resource!Shader {
         glUniform1f(labelId, data);
     }
 
-    /// Upload an uniform of type vec2 to the shader
-    void uploadUniformVec2(const char* label, vec2 data) {
+    /// Upload an uniform of type vec2f to the shader
+    void uploadUniformVec2(const char* label, vec2f data) {
         GLint labelId = getShaderLocation(label);
         glUniform2f(labelId, data.x, data.y);
     }
 
-    /// Upload an uniform of type vec3 to the shader
-    void uploadUniformVec3(const char* label, vec3 data) {
+    /// Upload an uniform of type vec3f to the shader
+    void uploadUniformVec3(const char* label, vec3f data) {
         GLint labelId = getShaderLocation(label);
         glUniform3f(labelId, data.x, data.y, data.z);
     }
 
-    /// Upload an uniform of type vec4 to the shader
-    void uploadUniformVec4(const char* label, vec4 data) {
+    /// Upload an uniform of type vec4f to the shader
+    void uploadUniformVec4(const char* label, vec4f data) {
         GLint labelId = getShaderLocation(label);
         glUniform4f(labelId, data.x, data.y, data.z, data.w);
     }

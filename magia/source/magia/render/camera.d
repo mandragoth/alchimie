@@ -67,13 +67,13 @@ import std.stdio;
 /// Orthographic camera class
 class OrthographicCamera : Camera {
     @property {
-        override void position(vec3 position_) {
+        override void position(vec3f position_) {
             transform.position = position_;
             computeViewMatrix();
             computeMVP();
         }
 
-        override void rotation(rot3 rotation_) {
+        override void rotation(rot3f rotation_) {
             transform.rotation = rotation_;
             computeViewMatrix();
             computeMVP();
@@ -124,10 +124,10 @@ class OrthographicCamera : Camera {
 class PerspectiveCamera : Camera {
     private {
         /// Where the camera looks
-        vec3 _target = vec3.back;
+        vec3f _target = vec3f.back;
 
         /// Where is up?
-        vec3 _up;
+        vec3f _up;
 
         /// Field of view
         float _FOVdeg = 45f;
@@ -141,30 +141,30 @@ class PerspectiveCamera : Camera {
 
     @property {
         /// Direction to the right of the camera
-        vec3 right() const {
+        vec3f right() const {
             return cross(_target, _up).normalized;
         }
         /// Direction to the left of the camera
-        vec3 up() const {
+        vec3f up() const {
             return _up;
         }
 
         /// Direction the camera is facing towards
-        vec3 forward() const {
+        vec3f forward() const {
             return _target;
         }
         /// Ditto
-        vec3 forward(vec3 forward_) {
+        vec3f forward(vec3f forward_) {
             return _target = forward_;
         }
 
-        override void position(vec3 position_) {
+        override void position(vec3f position_) {
             transform.position = position_;
             computeViewMatrix();
             computeMVP();
         }
 
-        override void rotation(rot3 rotation_) {
+        override void rotation(rot3f rotation_) {
             transform.rotation = rotation_;
             computeViewMatrix();
             computeMVP();
@@ -172,7 +172,7 @@ class PerspectiveCamera : Camera {
     }
 
     /// Default constructor (by default looks aways from screen along Z, and up is positive along Y axis)
-    this(uint width, uint height, vec3 position = vec3.zero, vec3 target = vec3.back, vec3 up = vec3.up) {
+    this(uint width, uint height, vec3f position = vec3f.zero, vec3f target = vec3f.back, vec3f up = vec3f.up) {
         // Setup position
         transform.position = position;
 

@@ -1,0 +1,3 @@
+model "reimu_hair" {
+    file "reimu_hair.gltf"
+}

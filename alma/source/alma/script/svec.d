@@ -5,13 +5,13 @@ import alma.script.common;
 
 import std.conv;
 
-package void loadAlchimieLibVec(GrLibDefinition library) {
+package void loadAlchimieLibVec(GrModule library) {
     static foreach (dimension; [2, 3, 4]) {
         _loadVec!dimension(library);
     }
 }
 
-private void _loadVec(int dimension)(GrLibDefinition library) {
+private void _loadVec(int dimension)(GrModule library) {
     mixin("GrType vecType = library.addNative(\"vec", dimension, "\", [\"T\"]);");
 
     mixin("GrType vecFloatType = library.addAlias(\"vec", dimension,
@@ -153,8 +153,8 @@ private void _angleBetween(int dimension, string type)(GrCall call) {
 }
 
 private void _rotate3(string type)(GrCall call) {
-    mixin("vec3 v1 = cast(vec3) call.getNative!(SVec3!Gr", type, ")(0);");
-    mixin("vec3 v2 = cast(vec3) call.getNative!(SVec3!Gr", type, ")(1);");
+    mixin("vec3f v1 = cast(vec3f) call.getNative!(SVec3!Gr", type, ")(0);");
+    mixin("vec3f v2 = cast(vec3f) call.getNative!(SVec3!Gr", type, ")(1);");
     call.setNative(toSVec3f(rotate(v1, v2, call.getFloat(2))));
 }
 

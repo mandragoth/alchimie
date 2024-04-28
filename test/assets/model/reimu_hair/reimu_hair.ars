@@ -1,9 +1,0 @@
-{
-    "resources": [
-        {
-            "type": "model",
-            "name": "reimu_hair",
-            "file": "reimu_hair.gltf"
-        }
-    ]
-}

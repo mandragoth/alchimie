@@ -8,7 +8,7 @@ import bindbc.opengl;
 import bindbc.sdl;
 
 import magia.core;
-import magia.main;
+import magia.kernel;
 import magia.render.buffer;
 import magia.render.data;
 import magia.render.drawable;
@@ -29,20 +29,25 @@ struct SpriteData {
     mat4 model;
 
     /// Sprite clip
-    vec4 clip;
+    vec4f clip;
 
     /// Sprite color
-    vec4 color;
+    vec4f color;
 
     /// Sprite flip
-    vec2 flip;
+    vec2f flip;
 }
 
 /// Sprite handler
-class SpritePool : DrawablePool!(2, Sprite, SpriteData) {
+class SpritePool : DrawablePool!(2, Sprite, SpriteData), Resource!SpritePool {
     /// Constructor
     this(Texture texture) {
         _textures ~= texture;
+    }
+
+    /// Ressource
+    SpritePool fetch() {
+        return this;
     }
 
     /// Load resources
@@ -106,8 +111,8 @@ final class Sprite : Instance2D, Drawable2D, Resource!Sprite {
         }
 
         /// Size
-        vec2 size() const {
-            return cast(vec2)_size;
+        vec2f size() const {
+            return cast(vec2f)_size;
         }
     }
 
@@ -126,7 +131,7 @@ final class Sprite : Instance2D, Drawable2D, Resource!Sprite {
         _spritePool = spritePool;
 
         // Default clip has x, y = 0 and w, h = 1
-        _instanceData.clip = vec4(0f, 0f, 1f, 1f);
+        _instanceData.clip = vec4f(0f, 0f, 1f, 1f);
 
         // Cut texture depending on clip parameters
         if (clip != defaultClip) {
@@ -136,20 +141,20 @@ final class Sprite : Instance2D, Drawable2D, Resource!Sprite {
             _instanceData.clip.w = _instanceData.clip.y + (cast(float) clip.w / cast(float) texture.height);
         }
 
-        _instanceData.color = vec4.one;
+        _instanceData.color = vec4f.one;
 
         final switch (flip) with (Flip) {
             case none:
-                _instanceData.flip = vec2.zero;
+                _instanceData.flip = vec2f.zero;
                 break;
             case horizontal:
-                _instanceData.flip = vec2(1f, 0f);
+                _instanceData.flip = vec2f(1f, 0f);
                 break;
             case vertical:
-                _instanceData.flip = vec2(0f, 1f);
+                _instanceData.flip = vec2f(0f, 1f);
                 break;
             case both:
-                _instanceData.flip = vec2.one;
+                _instanceData.flip = vec2f.one;
                 break;
         }
 

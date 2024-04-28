@@ -4,7 +4,7 @@ import bindbc.sdl;
 import bindbc.opengl;
 
 import magia.core;
-import magia.main;
+import magia.kernel;
 
 import std.exception;
 import std.conv;
@@ -88,8 +88,8 @@ class Texture : Resource!Texture {
         }
 
         /// Get texture size
-        vec2 size() const {
-            return vec2(_width, _height);
+        vec2f size() const {
+            return vec2f(_width, _height);
         }
     }
 

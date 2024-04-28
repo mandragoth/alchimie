@@ -1,0 +1,3 @@
+model "reimu" {
+    file "reimu.gltf"
+}

@@ -7,7 +7,7 @@ import std.conv;
 import bindbc.opengl;
 
 import magia.core;
-import magia.main;
+import magia.kernel;
 import magia.render.array;
 import magia.render.buffer;
 import magia.render.camera;

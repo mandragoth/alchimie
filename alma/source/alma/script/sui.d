@@ -7,7 +7,7 @@ import std.algorithm.comparison : min, max;
 import grimoire;
 import magia;
 
-package void loadAlchimieLibUI(GrLibDefinition library) {
+package void loadAlchimieLibUI(GrModule library) {
     GrType splineType = grGetEnumType("Spline");
     GrType alignXType = library.addEnum("AlignX", ["left", "center", "right"]);
     GrType alignYType = library.addEnum("AlignY", ["top", "center", "bottom"]);

@@ -65,9 +65,9 @@ struct Transform(uint dimension_) {
 
     static if (dimension_ == 2) {
         mat4 combineModel() const {
-            mat4 mTranslation = mat4.translation(vec3(position.x, position.y, 0f));
+            mat4 mTranslation = mat4.translation(vec3f(position.x, position.y, 0f));
             mat4 mRotation = rotation.toMatrix();
-            mat4 mScale = mat4.scaling(vec3(scale.x, scale.y, 0f));
+            mat4 mScale = mat4.scaling(vec3f(scale.x, scale.y, 0f));
 
             return mTranslation * mRotation * mScale;
         }

@@ -387,12 +387,12 @@ T rotate(T)(const T p, const T r, float angle) @safe pure nothrow if(is_vector!T
     const quat q2 = quat(cosRot, r.x * sinRot, r.y * sinRot, r.z * sinRot);
     const quat q3 = q2 * q1 * q2.conjugated;
 
-    return vec3(q3.x, q3.y, q3.z);
+    return vec3f(q3.x, q3.y, q3.z);
 }
 
-alias vec2 = Vector!(float, 2);
-alias vec3 = Vector!(float, 3);
-alias vec4 = Vector!(float, 4);
+alias vec2f = Vector!(float, 2);
+alias vec3f = Vector!(float, 3);
+alias vec4f = Vector!(float, 4);
 
 alias vec2i = Vector!(int, 2);
 alias vec3i = Vector!(int, 3);

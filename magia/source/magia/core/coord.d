@@ -16,7 +16,7 @@ struct Cartesian(uint dimension_) {
     vec axes;
 
     /// Default coordinate system (center of screen)
-    static Cartesian3D center = Cartesian3D(vec3.zero, vec3.one);
+    static Cartesian3D center = Cartesian3D(vec3f.zero, vec3f.one);
 
     /// Compute transform for renderer given a set of positions and size
     Transform!(dimension_) toRenderSpace(Transform!(dimension_) transform) {

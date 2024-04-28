@@ -8,10 +8,10 @@ import magia.render.renderer;
 /// Abstract class representing an UI element
 abstract class UIElement : Instance2D, Drawable2D, Updatable {
     /// Size
-    vec2 size = vec2.zero;
+    vec2f size = vec2f.zero;
 
     /// Pivot point
-    vec2 pivot = vec2.one * .5f;
+    vec2f pivot = vec2f.one * .5f;
 
     /// X alignment
     enum AlignX {
@@ -34,7 +34,7 @@ abstract class UIElement : Instance2D, Drawable2D, Updatable {
     AlignY alignY = AlignY.top;
 
     /// Offset
-    vec2 offset = vec2.zero;
+    vec2f offset = vec2f.zero;
 
     /// Alpha
     float alpha = 1f;
@@ -48,7 +48,7 @@ abstract class UIElement : Instance2D, Drawable2D, Updatable {
         Transform2D transform;
 
         /// Offset to set
-        vec2 offset = vec2.zero;
+        vec2f offset = vec2f.zero;
 
         /// Alpha to set
         float alpha = 1f;
@@ -98,13 +98,13 @@ abstract class UIElement : Instance2D, Drawable2D, Updatable {
     /// Draw
     void draw(Renderer2D renderer) {
         // Position
-        vec2 position = transform.position + offset;
+        vec2f position = transform.position + offset;
 
         // Rotation
-        rot2 rotation = transform.rotation;
+        rot2f rotation = transform.rotation;
 
         // Scale
-        vec2 scale = transform.scale;
+        vec2f scale = transform.scale;
 
         UIElement parentElement = cast(UIElement) parent;
         

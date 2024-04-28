@@ -51,4 +51,8 @@ class UIManager {
     void removeRoots() {
         _roots.length = 0;
     }
+
+    void clearUI() {
+        
+    }
 }

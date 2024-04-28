@@ -12,7 +12,7 @@ alias SVec2f = SVec2!GrFloat;
 alias SVec2i = SVec2!GrInt;
 alias SVec2u = SVec2!GrUInt;
 
-SVec2f toSVec2f(vec2 v_) {
+SVec2f toSVec2f(vec2f v_) {
     auto v = new SVec2f;
     v.x = v_.x;
     v.y = v_.y;
@@ -28,7 +28,7 @@ alias SVec3f = SVec3!GrFloat;
 alias SVec3i = SVec3!GrInt;
 alias SVec3u = SVec3!GrUInt;
 
-SVec3f toSVec3f(vec3 v_) {
+SVec3f toSVec3f(vec3f v_) {
     auto v = new SVec3f;
     v.x = v_.x;
     v.y = v_.y;

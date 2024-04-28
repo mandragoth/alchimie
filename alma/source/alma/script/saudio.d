@@ -5,7 +5,7 @@ import magia;
 
 import alma.script.common;
 
-void loadAlchimieLibAudio(GrLibDefinition lib) {
+void loadAlchimieLibAudio(GrModule lib) {
     GrType vec3Type = grGetNativeType("vec3", [grFloat]);
     GrType instanceType = grGetNativeType("Instance");
 

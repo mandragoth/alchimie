@@ -1,0 +1,7 @@
+sound "test" {
+    file "test.wav"
+}
+
+sound "wind" {
+    file "wind.wav"
+}

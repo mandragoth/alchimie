@@ -16,7 +16,7 @@ import std.stdio;
 final class Planet : Sphere {
     // Noise parameters
     private {
-        vec3 _noiseOffset;
+        vec3f _noiseOffset;
         int _nbLayers;
         float _strength;
         float _roughness;
@@ -25,7 +25,7 @@ final class Planet : Sphere {
     }
 
     /// Constructor
-    this(int resolution, float radius, vec3 noiseOffset, int nbLayers,
+    this(int resolution, float radius, vec3f noiseOffset, int nbLayers,
         float strength, float roughness, float persistence, float minHeight) {
         _noiseOffset = noiseOffset;
         _nbLayers = nbLayers;
@@ -38,14 +38,14 @@ final class Planet : Sphere {
     }
 
     // Generate a point on the planet's surface
-    protected override vec3 generateSurfacePoint(vec3 directionX, vec3 directionY, vec3 directionZ,
+    protected override vec3f generateSurfacePoint(vec3f directionX, vec3f directionY, vec3f directionZ,
                                                  int x, int y, int resolution) {
-        vec3 surfacePoint = super.generateSurfacePoint(directionX, directionY, directionZ, x, y, resolution);
+        vec3f surfacePoint = super.generateSurfacePoint(directionX, directionY, directionZ, x, y, resolution);
         return surfacePoint * sampleRandomHeight(surfacePoint);
     }
 
     // Sample random height given a sphere surface point, several layers of noise
-    private float sampleRandomHeight(vec3 point) {
+    private float sampleRandomHeight(vec3f point) {
         float noiseValue = 0;
         float frequency = 1;
         float amplitude = 1;
@@ -61,7 +61,7 @@ final class Planet : Sphere {
     }
 
     // Sample random height given a sphere surface point for a single noise layer
-    private float getNoiseHeight(vec3 point) {
+    private float getNoiseHeight(vec3f point) {
         const float elevation = noise(point.x, point.y, point.z) * _strength;
         return _radius * (1 + elevation);
     }

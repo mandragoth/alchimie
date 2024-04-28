@@ -4,11 +4,11 @@ import std.stdio;
 
 import grimoire;
 
-import magia.main.application;
+import magia.kernel.runtime;
 import magia.render.scene;
 import alma.script.common;
 
-package void loadAlchimieLibScene(GrLibDefinition library) {
+package void loadAlchimieLibScene(GrModule library) {
     GrType scene2DType = library.addNative("Scene2D");
     GrType scene3DType = library.addNative("Scene3D");
 

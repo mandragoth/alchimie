@@ -1,9 +1,0 @@
-{
-    "resources": [
-        {
-            "type": "model",
-            "name": "reimu",
-            "file": "reimu.gltf"
-        }
-    ]
-}

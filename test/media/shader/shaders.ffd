@@ -1,0 +1,31 @@
+shader "animated" {
+    file "animated.glsl"
+}
+
+shader "circle" {
+    file "circle.glsl"
+}
+
+shader "line" {
+    file "line.glsl"
+}
+
+shader "model" {
+    file "model.glsl"
+}
+
+shader "postprocess" {
+    file "postprocess.glsl"
+}
+
+shader "rect" {
+    file "rect.glsl"
+}
+
+shader "skybox" {
+    file "skybox.glsl"
+}
+
+shader "sprite" {
+    file "sprite.glsl"
+}

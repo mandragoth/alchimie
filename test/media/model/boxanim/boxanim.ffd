@@ -1,0 +1,3 @@
+model "boxanim" {
+    file "boxanim.gltf"
+}

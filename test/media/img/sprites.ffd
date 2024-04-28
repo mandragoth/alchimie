@@ -1,0 +1,35 @@
+texture "checkerboard" {
+    file "checkerboard.png"
+}
+
+sprite "checkerboard" {
+    texture "checkerboard"
+    clip 0 0 64 64
+}
+
+texture "mandragoth" {
+    file "mandragoth.png"
+}
+
+sprite "mandragoth" {
+    texture "mandragoth"
+    clip 0 0 450 450
+}
+
+texture "remilia" {
+    file "remilia.png"
+}
+
+sprite "remilia" {
+    texture "remilia"
+    clip 0 0 32 48
+}
+
+texture "shot" {
+    file "shot.png"
+}
+
+sprite "shot" {
+    texture "shot"
+    clip 0 0 512 512
+}

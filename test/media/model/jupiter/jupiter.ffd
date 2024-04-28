@@ -1,0 +1,3 @@
+model "jupiter" {
+    file "jupiter.gltf"
+}

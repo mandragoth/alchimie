@@ -1,0 +1,8 @@
+skybox "day" {
+    right "right.jpg"
+    left "left.jpg"
+    top "top.jpg"
+    bottom "bottom.jpg"
+    front "front.jpg"
+    back "back.jpg"
+}

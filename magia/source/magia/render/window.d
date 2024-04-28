@@ -9,7 +9,7 @@ import bindbc.opengl;
 import bindbc.sdl;
 
 import magia.core;
-import magia.main;
+import magia.kernel;
 import magia.render.camera;
 import magia.render.renderer;
 
@@ -21,7 +21,7 @@ enum DisplayMode {
 }
 
 /// Window class
-class Window {
+final class Window {
     private {
         /// SDL window
         SDL_Window* _sdlWindow;
@@ -45,7 +45,7 @@ class Window {
         vec2u _windowSize;
 
         /// Screen size as floats
-        vec2 _screenSize;
+        vec2f _screenSize;
 
         /// Timing details
         float _previousTime = 0f;
@@ -73,13 +73,13 @@ class Window {
         }
 
         /// Size of the window in pixels
-        vec2 screenSize() const {
+        vec2f screenSize() const {
             return _screenSize;
         }
 
         /// Coordinates for the top left of the screen
-        vec2 topLeft() const {
-            return vec2(-_screenSize.x / 2f, _screenSize.y / 2f);
+        vec2f topLeft() const {
+            return vec2f(-_screenSize.x / 2f, _screenSize.y / 2f);
         }
 
         /// Delta time
@@ -90,26 +90,6 @@ class Window {
         /// Set title
         void title(string title) {
             SDL_SetWindowTitle(_sdlWindow, toStringz(title));
-        }
-
-        /// Set icon
-        void icon(string path) {
-            /// Free previous icon if needed
-            if (_icon) {
-                SDL_FreeSurface(_icon);
-            }
-
-            /// Load new icon and set it up
-            const(ubyte)[] data = Magia.res.read(path);
-            SDL_RWops* rw = SDL_RWFromConstMem(cast(const(void)*) data.ptr, cast(int) data.length);
-            _icon = IMG_Load_RW(rw, 1);
-            enforce(_icon, "impossible de charger `" ~ path ~ "`");
-            SDL_SetWindowIcon(_sdlWindow, _icon);
-        }
-
-        /// Add camera
-        void addCamera(Camera camera) {
-            _cameras ~= camera;
         }
     }
 
@@ -138,7 +118,7 @@ class Window {
         glClipControl(GL_LOWER_LEFT, GL_NEGATIVE_ONE_TO_ONE);
 
         _windowSize = windowSize;
-        _screenSize = cast(vec2)(windowSize);
+        _screenSize = cast(vec2f)(windowSize);
     }
 
     /// Destructor
@@ -146,6 +126,26 @@ class Window {
         if (_sdlWindow) {
             SDL_DestroyWindow(_sdlWindow);
         }
+    }
+
+    /// Set icon
+    void setIcon(string path) {
+        /// Free previous icon if needed
+        if (_icon) {
+            SDL_FreeSurface(_icon);
+        }
+
+        /// Load new icon and set it up
+        const(ubyte)[] data = Magia.res.read(path);
+        SDL_RWops* rw = SDL_RWFromConstMem(cast(const(void)*) data.ptr, cast(int) data.length);
+        _icon = IMG_Load_RW(rw, 1);
+        enforce(_icon, "impossible de charger `" ~ path ~ "`");
+        SDL_SetWindowIcon(_sdlWindow, _icon);
+    }
+
+    /// Add camera
+    void addCamera(Camera camera) {
+        _cameras ~= camera;
     }
 
     /// Update window behavior depending on its flags
@@ -181,7 +181,7 @@ class Window {
     /// Resize window, viewport and camera aspect ratios
     void resizeWindow(const vec2u windowSize) {
         _windowSize = windowSize;
-        _screenSize = cast(vec2)(windowSize);
+        _screenSize = cast(vec2f)(windowSize);
         glViewport(0, 0, windowSize.x, windowSize.y);
     }
 }

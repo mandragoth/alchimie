@@ -1,9 +1,0 @@
-{
-    "resources": [
-        {
-            "type": "model",
-            "name": "jupiter",
-            "file": "jupiter.gltf"
-        }
-    ]
-}

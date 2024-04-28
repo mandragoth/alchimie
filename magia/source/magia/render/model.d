@@ -15,7 +15,7 @@ import std.typecons;
 import bindbc.opengl;
 
 import magia.core;
-import magia.main;
+import magia.kernel;
 import magia.render.animation;
 import magia.render.buffer;
 import magia.render.camera;
@@ -299,29 +299,29 @@ final class Model : Resource!Model {
             return values;
         }
 
-        /// Group given float array as a vec2
-        vec2[] groupFloatsVec2(float[] floats) {
-            vec2[] values;
+        /// Group given float array as a vec2f
+        vec2f[] groupFloatsVec2(float[] floats) {
+            vec2f[] values;
             for (uint i = 0; i < floats.length;) {
-                values ~= vec2(floats[i++], floats[i++]);
+                values ~= vec2f(floats[i++], floats[i++]);
             }
             return values;
         }
 
-        /// Group given float array as a vec3
-        vec3[] groupFloatsVec3(float[] floats) {
-            vec3[] values;
+        /// Group given float array as a vec3f
+        vec3f[] groupFloatsVec3(float[] floats) {
+            vec3f[] values;
             for (uint i = 0; i < floats.length;) {
-                values ~= vec3(floats[i++], floats[i++], floats[i++]);
+                values ~= vec3f(floats[i++], floats[i++], floats[i++]);
             }
             return values;
         }
 
-        /// Group given float array as a vec4
-        vec4[] groupFloatsVec4(float[] inputs) {
-            vec4[] values;
+        /// Group given float array as a vec4f
+        vec4f[] groupFloatsVec4(float[] inputs) {
+            vec4f[] values;
             for (uint i = 0; i < inputs.length;) {
-                values ~= vec4(inputs[i++], inputs[i++], inputs[i++], inputs[i++]);
+                values ~= vec4f(inputs[i++], inputs[i++], inputs[i++], inputs[i++]);
             }
             return values;
         }
@@ -359,11 +359,11 @@ final class Model : Resource!Model {
         }
 
         /// Assemble all vertices
-        Vertex[] assembleVertices(vec3[] positions, vec3[] normals, vec2[] texUVs) {
+        Vertex[] assembleVertices(vec3f[] positions, vec3f[] normals, vec2f[] texUVs) {
             Vertex[] vertices;
             for (uint i = 0; i < positions.length; ++i) {
-                vec3 normal = i < normals.length ? normals[i] : vec3.zero;
-                vec2 texUV = i < texUVs.length ? texUVs[i] : vec2.zero;
+                vec3f normal = i < normals.length ? normals[i] : vec3f.zero;
+                vec2f texUV = i < texUVs.length ? texUVs[i] : vec2f.zero;
                 vertices ~= Vertex(positions[i], texUV, normal);
             }
 
@@ -385,7 +385,7 @@ final class Model : Resource!Model {
         }
 
         /// Assemble all joints
-        Joint[] assembleJoints(vec4i[] boneIds, vec4[] weights) {
+        Joint[] assembleJoints(vec4i[] boneIds, vec4f[] weights) {
             assert(boneIds.length == weights.length);
 
             if (_traceData) {
@@ -440,18 +440,18 @@ final class Model : Resource!Model {
 
                 // Load vertices
                 const uint positionId = getJsonInt(jsonAttributes, "POSITION");
-                vec3[] positions = groupFloatsVec3(
+                vec3f[] positions = groupFloatsVec3(
                     parseBufferData!float(jsonAccessors[positionId]));
 
                 const uint normalId = getJsonInt(jsonAttributes, "NORMAL", -1);
 
-                vec3[] normals;
+                vec3f[] normals;
                 if (normalId != -1) {
                     normals = groupFloatsVec3(parseBufferData!float(jsonAccessors[normalId]));
                 }
 
                 const uint texUVId = getJsonInt(jsonAttributes, "TEXCOORD_0", -1);
-                vec2[] texUVs;
+                vec2f[] texUVs;
                 if (texUVId != -1) {
                     texUVs = groupFloatsVec2(parseBufferData!float(jsonAccessors[texUVId]));
                 }
@@ -481,7 +481,7 @@ final class Model : Resource!Model {
 
                     vec4i[] boneIds = groupIntsVec4i(
                         parseBufferData!ushort(jsonAccessors[jointId]));
-                    vec4[] weights = groupFloatsVec4(
+                    vec4f[] weights = groupFloatsVec4(
                         parseBufferData!float(jsonAccessors[weightId]));
 
                     // Pack all joints into an array
@@ -586,9 +586,9 @@ final class Model : Resource!Model {
         void traverseNode(uint nodeId, mat4 parentModel = mat4.identity, bool isRoot = true) {
             JSONValue jsonNode = _json["nodes"][nodeId];
 
-            vec3 translation = vec3.zero;
+            vec3f translation = vec3f.zero;
             quat rotation = quat.identity;
-            vec3 scale = vec3.one;
+            vec3f scale = vec3f.one;
             mat4 matNode = mat4.identity;
 
             if (_traceDeep) {
@@ -599,7 +599,7 @@ final class Model : Resource!Model {
 
             float[] translationArray = getJsonArrayFloat(jsonNode, "translation");
             if (translationArray.length == 3) {
-                translation = vec3(translationArray[0], translationArray[1], translationArray[2]);
+                translation = vec3f(translationArray[0], translationArray[1], translationArray[2]);
 
                 if (_traceDeep) {
                     writeln("  Translation: ", translation);
@@ -618,14 +618,14 @@ final class Model : Resource!Model {
 
             float[] scaleArray = getJsonArrayFloat(jsonNode, "scale");
             if (scaleArray.length == 3) {
-                scale = vec3(scaleArray[0], scaleArray[1], scaleArray[2]);
+                scale = vec3f(scaleArray[0], scaleArray[1], scaleArray[2]);
 
                 if (_traceDeep) {
                     writeln("  Scale: ", scale);
                 }
             }
 
-            const Transform3D nodeTransform = Transform3D(translation, rot3(rotation), scale);
+            const Transform3D nodeTransform = Transform3D(translation, rot3f(rotation), scale);
 
             float[] matrixArray = getJsonArrayFloat(jsonNode, "matrix");
             if (matrixArray.length == 16) {
@@ -671,7 +671,7 @@ final class Model : Resource!Model {
                 }
 
                 // Record transform for new mesh
-                _transforms ~= Transform3D(translation, rot3(rotation), scale);
+                _transforms ~= Transform3D(translation, rot3f(rotation), scale);
 
                 const uint meshId = getJsonInt(jsonNode, "mesh");
                 const uint skinId = getJsonInt(jsonNode, "skin", uintDefault);
@@ -740,7 +740,7 @@ final class Model : Resource!Model {
                     JSONValue jsonTimes = jsonAccessors[inputId];
                     JSONValue jsonData = jsonAccessors[outputId];
 
-                    vec3[] translations;
+                    vec3f[] translations;
                     if (path == "translation") {
                         translations = groupFloatsVec3(parseBufferData!float(jsonData));
                     }
@@ -750,7 +750,7 @@ final class Model : Resource!Model {
                         rotations = groupFloatsQuat(parseBufferData!float(jsonData));
                     }
 
-                    vec3[] scales;
+                    vec3f[] scales;
                     if (path == "scale") {
                         scales = groupFloatsVec3(parseBufferData!float(jsonData));
                     }

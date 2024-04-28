@@ -1,7 +1,7 @@
 module magia.render.data;
 
 import magia.core;
-import magia.main;
+import magia.kernel;
 import magia.render.buffer;
 import magia.render.material;
 import magia.render.mesh;
@@ -80,10 +80,10 @@ void loadShapes() {
 
     quadMesh = new Mesh3D(new VertexBuffer([
         // Coordinates (x, z)      TexCoords     Normals    
-        Vertex(vec3(-1f, 0f,  1f), vec2(0f, 0f), vec3.up), // 0-----3
-        Vertex(vec3(-1f, 0f, -1f), vec2(0f, 1f), vec3.up), // |     |
-        Vertex(vec3( 1f, 0f, -1f), vec2(1f, 1f), vec3.up), // |     |
-        Vertex(vec3( 1f, 0f,  1f), vec2(1f, 0f), vec3.up)  // 1-----2
+        Vertex(vec3f(-1f, 0f,  1f), vec2f(0f, 0f), vec3f.up), // 0-----3
+        Vertex(vec3f(-1f, 0f, -1f), vec2f(0f, 1f), vec3f.up), // |     |
+        Vertex(vec3f( 1f, 0f, -1f), vec2f(1f, 1f), vec3f.up), // |     |
+        Vertex(vec3f( 1f, 0f,  1f), vec2f(1f, 0f), vec3f.up)  // 1-----2
     ], layout3D), new IndexBuffer([
         0, 1, 2,
         0, 2, 3

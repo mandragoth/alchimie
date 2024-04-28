@@ -7,7 +7,7 @@ import magia;
 
 import alma.script.common;
 
-package void loadAlchimieLibDrawable(GrLibDefinition library) {
+package void loadAlchimieLibDrawable(GrModule library) {
     // Maths types
     GrType vec2Type = grGetNativeType("vec2", [grFloat]);
     GrType vec3Type = grGetNativeType("vec3", [grFloat]);
@@ -76,12 +76,12 @@ private void _getLocalPosition3D(GrCall call) {
 
 private void _setPosition2D(GrCall call) {
     Instance2D instance = call.getNative!Instance2D(0);
-    instance.position = cast(vec2) call.getNative!SVec2f(1);
+    instance.position = cast(vec2f) call.getNative!SVec2f(1);
 }
 
 private void _setPosition3D(GrCall call) {
     Instance3D instance = call.getNative!Instance3D(0);
-    instance.position = cast(vec3) call.getNative!SVec3f(1);
+    instance.position = cast(vec3f) call.getNative!SVec3f(1);
 }
 
 private void _getRotation3D(GrCall call) {
@@ -96,18 +96,18 @@ private void _setRotation2D(GrCall call) {
 
 private void _setRotation3D(GrCall call) {
     Instance3D instance = call.getNative!Instance3D(0);
-    vec3 eulerAngles = cast(vec3) call.getNative!SVec3f(1);
+    vec3f eulerAngles = cast(vec3f) call.getNative!SVec3f(1);
     instance.rotation = rot3(eulerAngles);
 }
 
 private void _setScale2D(GrCall call) {
     Instance2D instance = call.getNative!Instance2D(0);
-    instance.scale = cast(vec2) call.getNative!SVec2f(1);
+    instance.scale = cast(vec2f) call.getNative!SVec2f(1);
 }
 
 private void _setScale3D(GrCall call) {
     Instance3D instance = call.getNative!Instance3D(0);
-    instance.scale = cast(vec3) call.getNative!SVec3f(1);
+    instance.scale = cast(vec3f) call.getNative!SVec3f(1);
 }
 
 private void _setModel(GrCall call) {
@@ -164,7 +164,7 @@ private void _newSphere(GrCall call) {
 private void _newDirectionalLight(GrCall call) {
     DirectionalLight directionalLight = new DirectionalLight();
 
-    directionalLight.direction = cast(vec3) call.getNative!SVec3f(0);
+    directionalLight.direction = cast(vec3f) call.getNative!SVec3f(0);
     directionalLight.ambientIntensity = call.getFloat(1);
     directionalLight.diffuseIntensity = call.getFloat(2);
 
@@ -177,7 +177,7 @@ private void _newDirectionalLight(GrCall call) {
 private void _newPointLight(GrCall call) {
     PointLight pointLight = new PointLight();
 
-    pointLight.position = cast(vec3) call.getNative!SVec3f(0);
+    pointLight.position = cast(vec3f) call.getNative!SVec3f(0);
     pointLight.color = call.getNative!SColor(1);
     pointLight.ambientIntensity = call.getFloat(2);
     pointLight.diffuseIntensity = call.getFloat(3);
@@ -191,8 +191,8 @@ private void _newPointLight(GrCall call) {
 private void _newSpotLight(GrCall call) {
     SpotLight spotLight = new SpotLight();
 
-    spotLight.position = cast(vec3) call.getNative!SVec3f(0);
-    spotLight.direction = cast(vec3) call.getNative!SVec3f(1);
+    spotLight.position = cast(vec3f) call.getNative!SVec3f(0);
+    spotLight.direction = cast(vec3f) call.getNative!SVec3f(1);
     spotLight.color = call.getNative!SColor(2);
     spotLight.angle = call.getFloat(3);
     spotLight.ambientIntensity = call.getFloat(4);

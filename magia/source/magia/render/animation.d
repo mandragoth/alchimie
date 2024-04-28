@@ -3,7 +3,7 @@ module magia.render.animation;
 import std.stdio;
 
 import magia.core;
-import magia.main.application;
+import magia.kernel.runtime;
 
 /// Type of interpolation
 enum Interpolation {
@@ -22,11 +22,11 @@ class Animation {
         // Keyframes times in seconds
         int[] _keyTimes;
         // Array of translations to interpolate between
-        vec3[] _translations;
+        vec3f[] _translations;
         // Array of rotations to interpolate between
         quat[] _rotations;
         // Array of scales to intepolate between
-        vec3[] _scales;
+        vec3f[] _scales;
         // Interpolation function used
         Interpolation _interpolation;
         // Timer used to run the animation
@@ -36,7 +36,7 @@ class Animation {
     }
     
     /// Constructor given times in seconds
-    this(float start, float end, float[] keyTimes, string interpolation, vec3[] translations, quat[] rotations, vec3[] scales, bool trace = false) {
+    this(float start, float end, float[] keyTimes, string interpolation, vec3f[] translations, quat[] rotations, vec3f[] scales, bool trace = false) {
         _start = secondsToTicks(start);
         _end = secondsToTicks(end);
         _keyTimes = secondsToTicks(keyTimes);
@@ -94,7 +94,7 @@ class Animation {
 
     /// Interpolate translations
     mat4 computeInterpolatedModel() {
-        vec3 translation = vec3.zero;
+        vec3f translation = vec3f.zero;
         if (_translations) {
             translation = computeInterpolatedVec3(_translations);
         }
@@ -104,12 +104,12 @@ class Animation {
             rotation = computeInterpolatedQuat(_rotations);
         }
 
-        vec3 scale = vec3.one;
+        vec3f scale = vec3f.one;
         if (_scales) {
             scale = computeInterpolatedVec3(_scales);
         }
 
-        Transform3D transform = Transform3D(translation, rot3(rotation), scale);
+        Transform3D transform = Transform3D(translation, rot3f(rotation), scale);
         return transform.combineModel();
     }
 
@@ -127,7 +127,7 @@ class Animation {
             return Interpolation.linear_t;
         }
 
-        vec3 computeInterpolatedVec3(vec3[] values) {
+        vec3f computeInterpolatedVec3(vec3f[] values) {
             // Compute current time
             const float currentTime = _timer.value;
 
@@ -152,9 +152,9 @@ class Animation {
             assert(f >= 0f && f <= 1f);
 
             // Get value parameters for interpolation
-            const vec3 vecStart = values[startId];
-            const vec3 vecEnd = values[endId];
-            const vec3 vecDelta = vecEnd - vecStart;
+            const vec3f vecStart = values[startId];
+            const vec3f vecEnd = values[endId];
+            const vec3f vecDelta = vecEnd - vecStart;
 
             // Perform linear interpolation (@TODO handle other types)
             return vecStart + f * vecDelta;

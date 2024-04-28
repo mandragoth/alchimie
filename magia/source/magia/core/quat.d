@@ -88,7 +88,7 @@ struct Quaternion(type) {
     }
 
     /// Instancing using euler angles
-    static Quaternion eulerRotation(vec3 rotation) {
+    static Quaternion eulerRotation(vec3f rotation) {
         return eulerRotation(rotation.x, rotation.y, rotation.z);
     }
 

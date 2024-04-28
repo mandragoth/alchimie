@@ -5,7 +5,7 @@ import magia;
 
 import alma.script.common;
 
-package void loadAlchimieLibBullet(GrLibDefinition library) {
+package void loadAlchimieLibBullet(GrModule library) {
     // Maths types
     GrType vec2Type = grGetNativeType("vec2", [grFloat]);
 
@@ -18,7 +18,7 @@ package void loadAlchimieLibBullet(GrLibDefinition library) {
 
 private void _newBullet(GrCall call) {
     Sprite sprite = Magia.res.get!Sprite(call.getString(0));
-    vec2 position = cast(vec2) call.getNative!SVec2f(1);
+    vec2f position = cast(vec2f) call.getNative!SVec2f(1);
     float speed = call.getFloat(2);
     float angle = call.getFloat(3);
 

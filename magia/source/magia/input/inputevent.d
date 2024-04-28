@@ -908,6 +908,9 @@ final class InputEvent {
             return _keyButton.button == event._keyButton.button;
         case mouseButton:
             return _mouseButton.button == event._mouseButton.button;
+        case mouseWheel:
+            // @À faire -------------
+            return false;
         case controllerButton:
             return _controllerButton.button == event._controllerButton.button;
         case controllerAxis:

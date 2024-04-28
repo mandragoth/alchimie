@@ -42,8 +42,8 @@ struct Rotor(type, uint dimension_) {
         quat rotation = quat.identity;
 
         /// If we manipulate euler angles, rot3 decays to euler mode
-        vec3 eulerAngles() const {
-            return vec3(rotation.roll, rotation.pitch, rotation.yaw);
+        vec3f eulerAngles() const {
+            return vec3f(rotation.roll, rotation.pitch, rotation.yaw);
         }
 
         /// Constructor given a quaternion
@@ -52,7 +52,7 @@ struct Rotor(type, uint dimension_) {
         }
 
         /// Constructor given euler angles
-        this(vec3 eulerAngles) {
+        this(vec3f eulerAngles) {
             rotation = quat.eulerRotation(eulerAngles);
         }
 
@@ -75,5 +75,5 @@ struct Rotor(type, uint dimension_) {
     }
 }
 
-alias rot2 = Rotor!(float, 2);
-alias rot3 = Rotor!(float, 3);
+alias rot2f = Rotor!(float, 2);
+alias rot3f = Rotor!(float, 3);

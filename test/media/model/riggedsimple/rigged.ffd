@@ -1,0 +1,3 @@
+model "riggedsimple" {
+    file "rigged.gltf"
+}
