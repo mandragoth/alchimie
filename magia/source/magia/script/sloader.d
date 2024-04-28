@@ -8,7 +8,7 @@ import magia.script.scolor;
 import magia.script.scommon;
 import magia.script.sdrawable;
 import magia.script.sgraphics;
-import magia.script.sinput;
+import magia.script.input;
 import magia.script.smath;
 import magia.script.common;
 import magia.script.sscene;
@@ -28,7 +28,7 @@ GrLibrary getAlchimieLibrary() {
 private GrModuleLoader[] getAlchimieLibraryLoaders() {
     GrModuleLoader[] loaders;
 
-    static foreach (pack; [&getLibLoaders_temp]) {
+    static foreach (pack; [&getLibLoaders_temp, &getLibLoaders_input]) {
         loaders ~= pack();
     }
 
@@ -41,6 +41,6 @@ GrModuleLoader[] getLibLoaders_temp() {
         &loadAlchimieLibCommon, &loadAlchimieLibMath, &loadAlchimieLibVec,
         &loadAlchimieLibColor, &loadAlchimieLibGraphics, &loadAlchimieLibScene,
         &loadAlchimieLibBullet, &loadAlchimieLibDrawable, &loadAlchimieLibAudio,
-        &loadAlchimieLibCamera, &loadAlchimieLibInput, &loadAlchimieLibUI
+        &loadAlchimieLibCamera, &loadAlchimieLibUI
     ];
 }

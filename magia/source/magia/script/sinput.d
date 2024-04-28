@@ -1,5 +1,5 @@
 module magia.script.sinput;
-
+/*
 import std.traits;
 
 import magia.core;
@@ -457,3 +457,4 @@ private void _getActionStrength(GrCall call) {
 private void _getActionAxis(GrCall call) {
     call.setFloat(Magia.input.getActionAxis(call.getString(0), call.getString(1)));
 }
+*/

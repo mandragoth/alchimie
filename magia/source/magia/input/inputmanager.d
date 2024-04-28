@@ -35,14 +35,12 @@ final class InputManager {
             int index, joystickId;
         }
 
-        // Window InputManager impacts
-        Window _window;
-
         // Input handlers
         InputMap _map;
         Controller[] _controllers;
 
-        vec2i _globalMousePosition, _relativeMousePosition, _mouseWheel;
+        vec2f _mousePosition = vec2f.zero, _deltaMousePosition = vec2f.zero;
+        vec2i _mouseWheel;
 
         KeyState[InputEvent.KeyButton.Button.max + 1] _keyButtonStates;
         KeyState[InputEvent.MouseButton.Button.max + 1] _mouseButtonStates;
@@ -72,13 +70,23 @@ final class InputManager {
         bool hasClipboard() const {
             return cast(bool) SDL_HasClipboardText();
         }
+
+        /// Position du curseur
+        vec2f mousePosition() const {
+            return _mousePosition;
+        }
+
+        /// Position du curseur par rapport à la frame précédente
+        vec2f deltaMousePosition() const {
+            return _deltaMousePosition;
+        }
     }
 
     /// Init
-    this(Window window) {
+    this() {
         signal(SIGINT, &_signalHandler);
-        _globalMousePosition = vec2i.zero;
-        _relativeMousePosition = vec2i.zero;
+        _mousePosition = vec2f.zero;
+        _deltaMousePosition = vec2f.zero;
 
         // Ouvre la base de donnée des manettes
         foreach (string line; _gameControllerDb.splitLines()) {
@@ -123,8 +131,9 @@ final class InputManager {
         InputEvent[] events;
         SDL_Event sdlEvent;
 
-        // Reset mouse wheel
+        // Réinitialise les états de la souris
         _mouseWheel = vec2i.zero;
+        _deltaMousePosition = vec2f.zero;
 
         // Update key states FSM
         _updateKeyStates();
@@ -168,11 +177,9 @@ final class InputManager {
                 events ~= event;
                 break;
             case SDL_MOUSEMOTION:
-                _globalMousePosition = vec2i(sdlEvent.motion.x, sdlEvent.motion.y);
-                _relativeMousePosition = vec2i(sdlEvent.motion.xrel, sdlEvent.motion.yrel);
-                InputEvent event = InputEvent.mouseMotion( //
-                    _globalMousePosition, //
-                    _relativeMousePosition);
+                _mousePosition = vec2f(sdlEvent.motion.x, sdlEvent.motion.y);
+                _deltaMousePosition = vec2f(sdlEvent.motion.xrel, sdlEvent.motion.yrel);
+                InputEvent event = InputEvent.mouseMotion(_mousePosition, _deltaMousePosition);
 
                 events ~= event;
                 break;
@@ -183,15 +190,15 @@ final class InputManager {
                 if (button > InputEvent.MouseButton.Button.max)
                     break;
 
-                _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
+                _mousePosition = vec2f(sdlEvent.button.x, sdlEvent.button.y);
 
                 if (_mouseButtonStates[button] == KeyState.none) {
                     _mouseButtonStates[button] = KeyState.down;
                 }
 
                 InputState state = InputState(_mouseButtonStates[button]);
-                events ~= InputEvent.mouseButton(button, state, sdlEvent.button.clicks,
-                    _globalMousePosition, _relativeMousePosition);
+                events ~= InputEvent.mouseButton(button, state,
+                    sdlEvent.button.clicks, _mousePosition, _deltaMousePosition);
                 break;
             case SDL_MOUSEBUTTONUP:
                 InputEvent.MouseButton.Button button = cast(
@@ -200,12 +207,12 @@ final class InputManager {
                 if (button > InputEvent.MouseButton.Button.max)
                     break;
 
-                _globalMousePosition = vec2i(sdlEvent.button.x, sdlEvent.button.y);
+                _mousePosition = vec2f(sdlEvent.button.x, sdlEvent.button.y);
                 _mouseButtonStates[button] = KeyState.up;
 
                 InputState state = InputState(_mouseButtonStates[button]);
-                events ~= InputEvent.mouseButton(button, state, sdlEvent.button.clicks,
-                    _globalMousePosition, _relativeMousePosition);
+                events ~= InputEvent.mouseButton(button, state,
+                    sdlEvent.button.clicks, _mousePosition, _deltaMousePosition);
                 break;
             case SDL_MOUSEWHEEL:
                 _mouseWheel = vec2i(sdlEvent.wheel.x, sdlEvent.wheel.y);
@@ -262,9 +269,8 @@ final class InputManager {
             case SDL_WINDOWEVENT:
                 switch (sdlEvent.window.event) {
                 case SDL_WINDOWEVENT_RESIZED:
-                    _window.resizeWindow(vec2u(sdlEvent.window.data1, sdlEvent.window.data2));
-                    break;
                 case SDL_WINDOWEVENT_SIZE_CHANGED:
+                    //Magia.window.onSize(sdlEvent.window.data1, sdlEvent.window.data2);
                     break;
                 default:
                     break;
@@ -318,33 +324,33 @@ final class InputManager {
 
     /// Ajoute une manette connectée
     private void _addController(int index) {
-        //writeln("Detected device at index ", index, ".");
+        //log("Detected device at index ", index, ".");
 
         auto c = SDL_JoystickNameForIndex(index);
         auto d = fromStringz(c);
-        //writeln("Device name: ", d);
+        //log("Device name: ", d);
 
         if (!SDL_IsGameController(index)) {
-            //writeln("The device is not recognised as a game controller.");
+            //log("The device is not recognised as a game controller.");
             auto stick = SDL_JoystickOpen(index);
             auto guid = SDL_JoystickGetGUID(stick);
-            //writeln("The device guid is: ");
+            //log("The device guid is: ");
             //foreach (i; 0 .. 16)
             //    printf("%02x", guid.data[i]);
-            //writeln("");
+            //log("");
             return;
         }
-        //writeln("The device has been detected as a game controller.");
+        //log("The device has been detected as a game controller.");
         foreach (controller; _controllers) {
             if (controller.index == index) {
-                //writeln("The controller is already open, aborted.");
+                //log("The controller is already open, aborted.");
                 return;
             }
         }
 
         auto sdlController = SDL_GameControllerOpen(index);
         if (!sdlController) {
-            //writeln("Could not connect the game controller.");
+            //log("Could not connect the game controller.");
             return;
         }
 
@@ -355,12 +361,12 @@ final class InputManager {
         controller.joystickId = SDL_JoystickInstanceID(controller.sdlJoystick);
         _controllers ~= controller;
 
-        //writeln("The game controller is now connected.");
+        //log("The game controller is now connected.");
     }
 
     /// Retire une manette déconnectée
     private void _removeController(int joystickId) {
-        //writeln("Controller disconnected: ", joystickId);
+        //log("Controller disconnected: ", joystickId);
 
         int index;
         bool isControllerPresent;
@@ -404,7 +410,7 @@ final class InputManager {
     // Mise à jour des états d'une touche naturelle
     private void _updateKeyState(ref KeyState keyState) {
         if (keyState == KeyState.down) {
-            keyState = KeyState.hold;
+            keyState = KeyState.held;
         } else if (keyState == KeyState.up) {
             keyState = KeyState.none;
         }
@@ -430,7 +436,7 @@ final class InputManager {
                 case mouseButton:
                 case mouseWheel:
                 case controllerButton:
-                    eventStrength = event.value;
+                    eventStrength = event.getValue();
                     break;
                 case controllerAxis:
                     const InputEvent.ControllerAxis controllerAxis = event.asControllerAxis();
@@ -454,32 +460,78 @@ final class InputManager {
     /// Est-ce qu'un evenement attendu associe a une action matche un veritable input ?
     private bool matchManagedInput(InputEvent event) {
         switch (event.type) with (InputEvent.Type) {
-            case keyButton:
-                return event.matchExpectedState(_keyButtonStates[event.asKeyButton.button]);
-            case mouseButton:
-                return event.matchExpectedState(_mouseButtonStates[event.asMouseButton.button]);
-            case controllerButton:
-                return event.matchExpectedState(_controllerButtonStates[event.asControllerButton.button]);
-            case controllerAxis:
-                return event.matchAxisValue(_controllerAxisValues[event.asControllerAxis.axis]);
-            default:
-                return false;
+        case keyButton:
+            return event.matchExpectedState(_keyButtonStates[event.asKeyButton.button]);
+        case mouseButton:
+            return event.matchExpectedState(_mouseButtonStates[event.asMouseButton.button]);
+        case controllerButton:
+            return event.matchExpectedState(
+                _controllerButtonStates[event.asControllerButton.button]);
+        case controllerAxis:
+            return event.matchAxisValue(_controllerAxisValues[event.asControllerAxis.axis]);
+        default:
+            return false;
         }
+    }
+
+    /// Est-ce que la touche est appuyée sur cette frame ?
+    bool isDown(InputEvent.KeyButton.Button button) const {
+        return _keyButtonStates[button].isKeyStateDown();
+    }
+
+    /// Ditto
+    bool isDown(InputEvent.MouseButton.Button button) const {
+        return _mouseButtonStates[button].isKeyStateDown();
+    }
+
+    /// Ditto
+    bool isDown(InputEvent.ControllerButton.Button button) const {
+        return _controllerButtonStates[button].isKeyStateDown();
+    }
+
+    /// Est-ce que la touche est relâchée sur cette frame ?
+    bool isUp(InputEvent.KeyButton.Button button) const {
+        return _keyButtonStates[button].isKeyStateUp();
+    }
+
+    /// Ditto
+    bool isUp(InputEvent.MouseButton.Button button) const {
+        return _mouseButtonStates[button].isKeyStateUp();
+    }
+
+    /// Ditto
+    bool isUp(InputEvent.ControllerButton.Button button) const {
+        return _controllerButtonStates[button].isKeyStateUp();
+    }
+
+    /// Est-ce que la touche est maintenue ?
+    bool isHeld(InputEvent.KeyButton.Button button) const {
+        return _keyButtonStates[button].isKeyStateHeld();
+    }
+
+    /// Ditto
+    bool isHeld(InputEvent.MouseButton.Button button) const {
+        return _mouseButtonStates[button].isKeyStateHeld();
+    }
+
+    /// Ditto
+    bool isHeld(InputEvent.ControllerButton.Button button) const {
+        return _controllerButtonStates[button].isKeyStateHeld();
     }
 
     /// Est-ce que la touche est appuyée ?
     bool isPressed(InputEvent.KeyButton.Button button) const {
-        return _keyButtonStates[button].pressed();
+        return _keyButtonStates[button].isKeyStatePressed();
     }
 
     /// Ditto
     bool isPressed(InputEvent.MouseButton.Button button) const {
-        return _mouseButtonStates[button].pressed();
+        return _mouseButtonStates[button].isKeyStatePressed();
     }
 
     /// Ditto
     bool isPressed(InputEvent.ControllerButton.Button button) const {
-        return _controllerButtonStates[button].pressed();
+        return _controllerButtonStates[button].isKeyStatePressed();
     }
 
     /// Retourne la valeur de l’axe
@@ -534,10 +586,10 @@ final class InputManager {
         return getActionStrength(positiveId) - getActionStrength(negativeId);
     }
 
-    /*
-    vec2f getVector(string leftAction, string rightAction, string upAction, string downAction) {
-
-    }*/
+    vec2f getActionVector(string leftAction, string rightAction, string upAction, string downAction) {
+        return vec2f(getActionStrength(rightAction) - getActionStrength(leftAction),
+            getActionStrength(downAction) - getActionStrength(upAction));
+    }
 }
 
 /// Capture les interruptions

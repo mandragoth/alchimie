@@ -2,7 +2,9 @@ module magia.input.inputevent;
 
 import std.array : join;
 import std.conv : to;
+import std.math : abs;
 import std.stdio;
+import std.string : fromStringz;
 import std.typecons;
 
 import bindbc.sdl;
@@ -13,30 +15,30 @@ import magia.core;
 enum KeyState {
     none = 0,
     down = 1 << 0,
-    hold = 1 << 1,
-    up   = 1 << 2,
-    pressed = down | hold
+    held = 1 << 1,
+    up = 1 << 2,
+    pressed = down | held
 }
 
 pragma(inline) {
     /// Dans le cas d’une touche ou d’un bouton, est-il appuyé ?
-    bool pressed(KeyState state) {
-        return cast(bool) (state & KeyState.pressed);
+    bool isKeyStatePressed(KeyState state) {
+        return cast(bool)(state & KeyState.pressed);
     }
 
     /// Dans le cas d’une touche ou d’un bouton, est-il maintenu enfoncé ?
-    bool hold(KeyState state) {
-        return cast(bool) (state & KeyState.hold);
+    bool isKeyStateHeld(KeyState state) {
+        return cast(bool)(state & KeyState.held);
     }
 
     /// Dans le cas d'une touche ou d'un bouton, a-t-il été appuyé cette frame ?
-    bool down(KeyState state) {
-        return cast(bool) (state & KeyState.down);
+    bool isKeyStateDown(KeyState state) {
+        return cast(bool)(state & KeyState.down);
     }
 
     /// Dans le cas d'une touche ou d'un bouton, a-t-on arreté d'appuyer dessus cette frame ?
-    bool up(KeyState state) {
-        return cast(bool) (state & KeyState.up);
+    bool isKeyStateUp(KeyState state) {
+        return cast(bool)(state & KeyState.up);
     }
 }
 
@@ -57,8 +59,47 @@ final class InputEvent {
         dropFile
     }
 
+    private abstract class BaseEvent {
+        /// Dans le cas d’une touche ou d’un bouton, est-il appuyé ?
+        final bool isPressed() const {
+            return this.outer.isPressed();
+        }
+
+        /// Dans le cas d’une touche ou d’un bouton, est-il maintenu enfoncé ?
+        final bool isHeld() const {
+            return this.outer.isHeld();
+        }
+
+        /// Dans le cas d'une touche ou d'un bouton, a-t-il été appuyé cette frame ?
+        final bool isDown() const {
+            return this.outer.isDown();
+        }
+
+        /// Dans le cas d'une touche ou d'un bouton, a-t-on arreté d'appuyer dessus cette frame ?
+        final bool isUp() const {
+            return this.outer.isUp();
+        }
+
+        /// L’événement est-il un écho ?
+        final bool isEcho() const {
+            return this.outer.isEcho();
+        }
+
+        final double getValue() const {
+            return this.outer.getValue();
+        }
+
+        final string getInfoState() const {
+            return this.outer.getInfoState();
+        }
+
+        final string prettify() const {
+            return this.outer.prettify();
+        }
+    }
+
     /// Touche du clavier
-    final class KeyButton {
+    final class KeyButton : BaseEvent {
         /// Touches du clavier
         enum Button {
             unknown = SDL_SCANCODE_UNKNOWN,
@@ -304,6 +345,14 @@ final class InputEvent {
             app2 = SDL_SCANCODE_APP2
         }
 
+        @property {
+            string layout() const {
+                SDL_KeyCode key = SDL_GetKeyFromScancode(cast(SDL_Scancode) button);
+                const char* name = SDL_GetKeyName(key);
+                return fromStringz(name).dup;
+            }
+        }
+
         /// Touche du clavier
         Button button;
 
@@ -348,19 +397,19 @@ final class InputEvent {
         /// Combien de fois cette touche a été appuyé ?
         uint clicks;
 
-        /// Position relative à la racine
-        vec2i globalPosition;
+        /// Position du curseur
+        vec2f position;
 
-        /// Position relative au nœud actuel
-        vec2i relativePosition;
+        /// Position par rapport à la dernière position
+        vec2f deltaPosition;
 
         /// Init
-        this(Button button_, InputState state_, uint clicks_, vec2i globalPosition_, vec2i relativePosition_) {
+        this(Button button_, InputState state_, uint clicks_, vec2f position_, vec2f deltaPosition_) {
             button = button_;
             state = state_;
             clicks = clicks_;
-            globalPosition = globalPosition_;
-            relativePosition = relativePosition_;
+            position = position_;
+            deltaPosition = deltaPosition_;
         }
 
         /// Copie
@@ -368,29 +417,29 @@ final class InputEvent {
             button = event.button;
             state = event.state;
             clicks = event.clicks;
-            globalPosition = event.globalPosition;
-            relativePosition = event.relativePosition;
+            position = event.position;
+            deltaPosition = event.deltaPosition;
         }
     }
 
     /// Déplacement de la souris
     final class MouseMotion {
-        /// Position relative à la racine
-        vec2i globalPosition;
+        /// Position du curseur
+        vec2f position;
 
-        /// Position relative au nœud actuel
-        vec2i relativePosition;
+        /// Position par rapport à la dernière position
+        vec2f deltaPosition;
 
         /// Init
-        this(vec2i globalPosition_, vec2i relativePosition_) {
-            globalPosition = globalPosition_;
-            relativePosition = relativePosition_;
+        this(vec2f position_, vec2f deltaPosition_) {
+            position = position_;
+            deltaPosition = deltaPosition_;
         }
 
         /// Copie
         this(const MouseMotion event) {
-            globalPosition = event.globalPosition;
-            relativePosition = event.relativePosition;
+            position = event.position;
+            deltaPosition = event.deltaPosition;
         }
     }
 
@@ -612,27 +661,27 @@ final class InputEvent {
         }
 
         /// Dans le cas d’une touche ou d’un bouton, est-il appuyé ?
-        bool pressed() const {
-            return state.pressed();
+        bool isPressed() const {
+            return cast(bool)(state & KeyState.pressed);
         }
 
         /// Dans le cas d’une touche ou d’un bouton, est-il maintenu enfoncé ?
-        bool hold() const {
-            return state.hold();
+        bool isHeld() const {
+            return cast(bool)(state & KeyState.held);
         }
 
         /// Dans le cas d'une touche ou d'un bouton, a-t-il été appuyé cette frame ?
-        bool down() const {
-            return state.down();
+        bool isDown() const {
+            return cast(bool)(state & KeyState.down);
         }
 
         /// Dans le cas d'une touche ou d'un bouton, a-t-on arreté d'appuyer dessus cette frame ?
-        bool up() const {
-            return state.hold();
+        bool isUp() const {
+            return cast(bool)(state & KeyState.up);
         }
 
         /// L’événement est-il un écho ?
-        bool echo() const {
+        bool isEcho() const {
             switch (_type) with (Type) {
             case keyButton:
                 return _keyButton.echo;
@@ -642,12 +691,12 @@ final class InputEvent {
         }
 
         /// Valeur analogique du bouton ou de l’axe
-        double value() const {
+        double getValue() const {
             switch (_type) with (Type) {
             case keyButton:
             case mouseButton:
             case controllerButton:
-                return pressed ? 1.0 : .0;
+                return isPressed() ? 1.0 : .0;
             case controllerAxis:
                 return _controllerAxis.value;
             default:
@@ -656,12 +705,12 @@ final class InputEvent {
         }
 
         /// Formate l'etat
-        string infoState() const {
-            if (down) {
+        string getInfoState() const {
+            if (isDown()) {
                 return "down";
-            } else if (hold) {
-                return "hold";
-            } else if (up) {
+            } else if (isHeld()) {
+                return "held";
+            } else if (isUp()) {
                 return "up";
             } else {
                 return "none";
@@ -680,27 +729,27 @@ final class InputEvent {
                 break;
             case keyButton:
                 info ~= "button: " ~ to!string(_keyButton.button);
-                info ~= infoState;
+                info ~= getInfoState();
                 if (_keyButton.echo)
                     info ~= "echo";
                 break;
             case mouseButton:
                 info ~= "button: " ~ to!string(_mouseButton.button);
-                info ~= infoState;
+                info ~= getInfoState();
                 info ~= "clicks: " ~ to!string(_mouseButton.clicks);
-                info ~= "globalPosition: " ~ to!string(_mouseButton.globalPosition);
-                info ~= "relativePosition: " ~ to!string(_mouseButton.relativePosition);
+                info ~= "position: " ~ to!string(_mouseButton.position);
+                info ~= "deltaPosition: " ~ to!string(_mouseButton.deltaPosition);
                 break;
             case mouseMotion:
-                info ~= "globalPosition: " ~ to!string(_mouseMotion.globalPosition);
-                info ~= "relativePosition: " ~ to!string(_mouseMotion.relativePosition);
+                info ~= "position: " ~ to!string(_mouseMotion.position);
+                info ~= "deltaPosition: " ~ to!string(_mouseMotion.deltaPosition);
                 break;
             case mouseWheel:
                 info ~= "wheel: " ~ to!string(_mouseWheel.wheel);
                 break;
             case controllerButton:
                 info ~= "button: " ~ to!string(_controllerButton.button);
-                info ~= infoState;
+                info ~= getInfoState();
                 break;
             case controllerAxis:
                 info ~= "axis: " ~ to!string(_controllerAxis.axis);
@@ -768,12 +817,12 @@ final class InputEvent {
         }
 
         void _makeMouseButton(MouseButton.Button button, InputState state,
-                              uint clicks, vec2i globalPosition, vec2i relativePosition) {
-            _mouseButton = new MouseButton(button, state, clicks, globalPosition, relativePosition);
+            uint clicks, vec2f position, vec2f deltaPosition) {
+            _mouseButton = new MouseButton(button, state, clicks, position, deltaPosition);
         }
 
-        void _makeMouseMotion(vec2i globalPosition, vec2i relativePosition) {
-            _mouseMotion = new MouseMotion(globalPosition, relativePosition);
+        void _makeMouseMotion(vec2f position, vec2f deltaPosition) {
+            _mouseMotion = new MouseMotion(position, deltaPosition);
         }
 
         void _makeMouseWheel(vec2i wheel) {
@@ -810,20 +859,20 @@ final class InputEvent {
 
         /// Retourne un événement correspondant à une touche de la souris
         InputEvent mouseButton(MouseButton.Button button, InputState state,
-            uint clicks, vec2i globalPosition, vec2i relativePosition) {
+            uint clicks, vec2f position, vec2f deltaPosition) {
             InputEvent event = new InputEvent;
             event._type = Type.mouseButton;
             event._isAccepted = false;
-            event._makeMouseButton(button, state, clicks, globalPosition, relativePosition);
+            event._makeMouseButton(button, state, clicks, position, deltaPosition);
             return event;
         }
 
         /// Retourne un événement correspondant à un déplacement de la souris
-        InputEvent mouseMotion(vec2i globalPosition, vec2i relativePosition) {
+        InputEvent mouseMotion(vec2f position, vec2f deltaPosition) {
             InputEvent event = new InputEvent;
             event._type = Type.mouseMotion;
             event._isAccepted = false;
-            event._makeMouseMotion(globalPosition, relativePosition);
+            event._makeMouseMotion(position, deltaPosition);
             return event;
         }
 
@@ -877,11 +926,11 @@ final class InputEvent {
     bool matchExpectedState(const KeyState inputState) const {
         switch (_type) with (Type) {
         case keyButton:
-            return cast(bool) (_keyButton.state & inputState);
+            return cast(bool)(_keyButton.state & inputState);
         case mouseButton:
-            return cast(bool) (_mouseButton.state & inputState);
+            return cast(bool)(_mouseButton.state & inputState);
         case controllerButton:
-            return cast(bool) (_controllerButton.state & inputState);
+            return cast(bool)(_controllerButton.state & inputState);
         default:
             return false;
         }
@@ -893,8 +942,7 @@ final class InputEvent {
         const double strength = _controllerAxis.value;
         const double deadzone = _controllerAxis.deadzone;
 
-        if ((value < 0.0) == (strength < 0.0) &&
-            (value > 0.0) == (strength > 0.0)) {
+        if ((value < 0.0) == (strength < 0.0) && (value > 0.0) == (strength > 0.0)) {
             return abs(value) > deadzone;
         }
 
@@ -908,9 +956,6 @@ final class InputEvent {
             return _keyButton.button == event._keyButton.button;
         case mouseButton:
             return _mouseButton.button == event._mouseButton.button;
-        case mouseWheel:
-            // @À faire -------------
-            return false;
         case controllerButton:
             return _controllerButton.button == event._controllerButton.button;
         case controllerAxis:

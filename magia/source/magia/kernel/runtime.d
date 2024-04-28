@@ -252,7 +252,7 @@ final class Magia {
         _uiManager = new UIManager(_renderer2D);
 
         // Create input handlers
-        _inputManager = new InputManager(_window);
+        _inputManager = new InputManager;
 
         // Création du gestionnaire des ressources
         _resourceManager = new ResourceManager();

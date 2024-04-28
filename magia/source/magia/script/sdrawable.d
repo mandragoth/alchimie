@@ -35,8 +35,12 @@ package void loadAlchimieLibDrawable(GrModule library) {
     library.addConstructor(&_newSphere, sphereType);
 
     // Instance operations
-    library.addFunction(&_getGlobalPosition3D, "globalPosition", [instanceType], [vec3Type]);
-    library.addFunction(&_getLocalPosition3D, "localPosition", [instanceType], [vec3Type]);
+    library.addFunction(&_getGlobalPosition3D, "globalPosition", [instanceType], [
+            vec3Type
+        ]);
+    library.addFunction(&_getLocalPosition3D, "localPosition", [instanceType], [
+            vec3Type
+        ]);
     library.addFunction(&_setPosition2D, "position", [instanceType, vec2Type]);
     library.addFunction(&_setPosition3D, "position", [instanceType, vec3Type]);
     library.addFunction(&_getRotation3D, "rotation", [instanceType], [vec3Type]);
@@ -56,24 +60,32 @@ package void loadAlchimieLibDrawable(GrModule library) {
     GrType spotLightType = library.addNative("SpotLight", [], "Entity");
 
     // Light types constructors
-    library.addConstructor(&_newDirectionalLight, directionalLightType, [vec3Type, grFloat, grFloat]);
-    library.addConstructor(&_newPointLight, pointLightType, [vec3Type, colorType, grFloat, grFloat]);
-    library.addConstructor(&_newSpotLight, spotLightType, [vec3Type, vec3Type, colorType, grFloat, grFloat, grFloat]);
+    library.addConstructor(&_newDirectionalLight, directionalLightType,
+        [vec3Type, grFloat, grFloat]);
+    library.addConstructor(&_newPointLight, pointLightType, [
+            vec3Type, colorType, grFloat, grFloat
+        ]);
+    library.addConstructor(&_newSpotLight, spotLightType, [
+            vec3Type, vec3Type, colorType, grFloat, grFloat, grFloat
+        ]);
 
     // Model instances operations
     library.addFunction(&_nbBones, "nbBones", [modelType], [grInt]);
-    library.addFunction(&_getDisplayBoneId, "displayBoneId", [modelType], [grInt]);
-    library.addFunction(&_setDisplayBoneId, "displayBoneId", [modelType, grInt], []);
+    library.addFunction(&_getDisplayBoneId, "displayBoneId", [modelType], [
+            grInt
+        ]);
+    library.addFunction(&_setDisplayBoneId, "displayBoneId", [modelType, grInt], [
+        ]);
 }
 
 private void _getGlobalPosition3D(GrCall call) {
     Instance3D instance = call.getNative!Instance3D(0);
-    call.setNative(toSVec3f(instance.globalPosition));
+    call.setNative(svec3(instance.globalPosition));
 }
 
 private void _getLocalPosition3D(GrCall call) {
     Instance3D instance = call.getNative!Instance3D(0);
-    call.setNative(toSVec3f(instance.localPosition));
+    call.setNative(svec3(instance.localPosition));
 }
 
 private void _setPosition2D(GrCall call) {
@@ -88,7 +100,7 @@ private void _setPosition3D(GrCall call) {
 
 private void _getRotation3D(GrCall call) {
     Instance3D instance = call.getNative!Instance3D(0);
-    call.setNative(toSVec3f(instance.transform.rotation.eulerAngles));
+    call.setNative(svec3(instance.transform.rotation.eulerAngles));
 }
 
 private void _setRotation2D(GrCall call) {
@@ -119,7 +131,7 @@ private void _setModel(GrCall call) {
 
 private void _addChild(GrCall call) {
     Instance3D current = call.getNative!Instance3D(0);
-    Instance3D child   = call.getNative!Instance3D(1);
+    Instance3D child = call.getNative!Instance3D(1);
     current.addChild(child);
 }
 

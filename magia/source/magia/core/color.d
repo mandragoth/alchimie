@@ -11,7 +11,7 @@ module magia.core.color;
 import std.math;
 import std.typecons;
 import std.random;
-public import std.algorithm.comparison : clamp;
+import std.algorithm.comparison : clamp;
 
 import bindbc.sdl;
 
@@ -68,7 +68,7 @@ struct Color {
 
     static {
         /// Take a 0xFFFFFF color format.
-        Color fromHex(int rgbValue) {
+        Color fromHex(uint rgbValue) {
             return Color((rgbValue >> 16) & 0xFF, (rgbValue >> 8) & 0xFF, rgbValue & 0xFF);
         }
     }
@@ -101,11 +101,11 @@ struct Color {
             return _b = clamp(blue, 0f, 1f);
         }
 
-        /// Convert to Vec3
+        /// Convert to vec3
         vec3f rgb() const {
             return vec3f(_r, _g, _b);
         }
-        /// Convert from Vec3
+        /// Convert from vec3
         vec3f rgb(vec3f v) {
             set(v.x, v.y, v.z);
             return v;
@@ -153,33 +153,36 @@ struct Color {
 
     /// Binary operations
     Color opBinary(string op)(const Color c) const {
-        return mixin("Color(_r " ~ op ~ " c._r, _g " ~ op ~ " c._g, _b " ~ op ~ " c._b)");
+        return mixin("Color(_r ", op, " c._r, _g ", op, " c._g, _b ", op, " c._b)");
     }
 
     /// Binary operations
     Color opBinary(string op)(float s) const {
-        return mixin("Color(_r " ~ op ~ " s, _g " ~ op ~ " s, _b " ~ op ~ " s)");
+        return mixin("Color(_r ", op, " s, _g ", op, " s, _b ", op, " s)");
     }
 
     /// Binary operations
     Color opBinaryRight(string op)(float s) const {
-        return mixin("Color(s " ~ op ~ " _r, s " ~ op ~ " _g, s " ~ op ~ " _b)");
+        return mixin("Color(s ", op, " _r, s ", op, " _g, s ", op, " _b)");
     }
 
     /// Binary operations
     Color opOpAssign(string op)(const Color c) {
         mixin("
-			_r = clamp(_r " ~ op ~ "c._r, 0f, 1f);
-			_g = clamp(_g " ~ op
-                ~ "c._g, 0f, 1f);
-			_b = clamp(_b " ~ op ~ "c._b, 0f, 1f);
+			_r = clamp(_r ", op, "c._r, 0f, 1f);
+			_g = clamp(_g " ~ op ~ "c._g, 0f, 1f);
+			_b = clamp(_b ", op, "c._b, 0f, 1f);
 			");
         return this;
     }
 
+    Color lerp(Color end, float t) const {
+        return (this * (1f - t)) + (end * t);
+    }
+
     /// Assignment
     Color opOpAssign(string op)(float s) {
-        mixin("s = clamp(s, 0f, 1f);_r = _r" ~ op ~ "s;_g = _g" ~ op ~ "s;_b = _b" ~ op ~ "s;");
+        mixin("s = clamp(s, 0f, 1f);_r = _r", op, "s;_g = _g", op, "s;_b = _b", op, "s;");
         return this;
     }
 
@@ -203,6 +206,11 @@ struct Color {
             cast(ubyte)(_r * 255f), cast(ubyte)(_g * 255f), cast(ubyte)(_b * 255f)
         };
         return sdlColor;
+    }
+
+    uint toHex() const {
+        return (((cast(uint)(_r * 255f)) & 0xff) << 16) | (
+            ((cast(uint)(_g * 255f)) & 0xff) << 8) | ((cast(uint)(_b * 255f)) & 0xff);
     }
 }
 

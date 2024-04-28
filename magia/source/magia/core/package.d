@@ -15,6 +15,7 @@ public {
     import magia.core.color;
     import magia.core.constants;
     import magia.core.coord;
+    import magia.core.hslcolor;
     import magia.core.json;
     import magia.core.json_old;
     import magia.core.mat;

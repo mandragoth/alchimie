@@ -155,11 +155,12 @@ private void _angleBetween(int dimension, string type)(GrCall call) {
 private void _rotate3(string type)(GrCall call) {
     mixin("vec3f v1 = cast(vec3f) call.getNative!(SVec3!Gr", type, ")(0);");
     mixin("vec3f v2 = cast(vec3f) call.getNative!(SVec3!Gr", type, ")(1);");
-    call.setNative(toSVec3f(rotate(v1, v2, call.getFloat(2))));
+    call.setNative(svec3(rotate(v1, v2, call.getFloat(2))));
 }
 
 private void _toString(int dimension, string type)(GrCall call) {
-    mixin("SVec", dimension, "!Gr", type, " v = call.getNative!(SVec", dimension, "!Gr", type, ")(0);");
+    mixin("SVec", dimension, "!Gr", type, " v = call.getNative!(SVec",
+        dimension, "!Gr", type, ")(0);");
 
     string str = "{";
     for (int i = 0; i < dimension; ++i) {

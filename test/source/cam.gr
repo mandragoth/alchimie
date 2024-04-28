@@ -81,14 +81,14 @@ task camera3DControls(camera: PerspectiveCamera) {
         var yAxis = camera.up;
         var zAxis = camera.forward;
 
-        cPosition += xAxis * getActionAxis("move_left_3d", "move_right_3d") * moveSpeed +
-                     yAxis * getActionAxis("move_down_3d", "move_up_3d") * moveSpeed +
-                     zAxis * getActionAxis("move_back_3d", "move_forward_3d") * zoomSpeed;
+        cPosition += xAxis * @Input.getActionAxis("move_left_3d", "move_right_3d") * moveSpeed +
+                     yAxis * @Input.getActionAxis("move_down_3d", "move_up_3d") * moveSpeed +
+                     zAxis * @Input.getActionAxis("move_back_3d", "move_forward_3d") * zoomSpeed;
         camera:position(cPosition);
 
-        var deltaPos = @vec2i(mouseX, mouseY);
-        var rotX = mouseSensitivity * deltaPos.x + controllerSensitivity * getActionAxis("turn_left_3d", "turn_right_3d");
-        var rotY = mouseSensitivity * deltaPos.y + controllerSensitivity * getActionAxis("turn_down_3d", "turn_up_3d");
+        var deltaPos = @Input.getDeltaMousePosition();
+        var rotX = mouseSensitivity * deltaPos.x + controllerSensitivity * @Input.getActionAxis("turn_left_3d", "turn_right_3d");
+        var rotY = mouseSensitivity * deltaPos.y + controllerSensitivity * @Input.getActionAxis("turn_down_3d", "turn_up_3d");
 
         mouseX, mouseY = 0;
 

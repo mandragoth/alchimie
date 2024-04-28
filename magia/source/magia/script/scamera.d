@@ -72,17 +72,17 @@ private void _getZoom(GrCall call) {
 
 private void _getUp(GrCall call) {
     PerspectiveCamera camera = call.getNative!PerspectiveCamera(0);
-    call.setNative(toSVec3f(camera.up));
+    call.setNative(svec3(camera.up));
 }
 
 private void _getRight(GrCall call) {
     PerspectiveCamera camera = call.getNative!PerspectiveCamera(0);
-    call.setNative(toSVec3f(camera.right));
+    call.setNative(svec3(camera.right));
 }
 
 private void _getForward(GrCall call) {
     PerspectiveCamera camera = call.getNative!PerspectiveCamera(0);
-    call.setNative(toSVec3f(camera.forward));
+    call.setNative(svec3(camera.forward));
 }
 
 private void _setZoom(GrCall call) {
