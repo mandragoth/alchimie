@@ -4,7 +4,7 @@ import magia.core.mat;
 import magia.core.quat;
 import magia.core.rot;
 import magia.core.vec;
-import magia.core.util;
+import magia.core.math;
 
 /// Transform structure
 struct Transform(uint dimension_) {

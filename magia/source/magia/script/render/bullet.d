@@ -25,7 +25,7 @@ private void _newBullet(GrCall call) {
     float speed = call.getFloat(2);
     float angle = call.getFloat(3);
 
-    Bullet bullet = new Bullet(sprite, position, speed, angle * degToRad);
+    Bullet bullet = new Bullet(sprite, position, speed, degToRad(angle));
     Magia.addDrawable(bullet);
     Magia.addUpdatable(bullet);
 

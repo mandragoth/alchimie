@@ -19,6 +19,7 @@ public {
     import magia.core.json;
     import magia.core.json_old;
     import magia.core.mat;
+    import magia.core.math;
     import magia.core.quat;
     import magia.core.resource;
     import magia.core.ringbuffer;
@@ -32,7 +33,6 @@ public {
     import magia.core.transform;
     import magia.core.tuple;
     import magia.core.type;
-    import magia.core.util;
     import magia.core.updatable;
     import magia.core.vec;
 }

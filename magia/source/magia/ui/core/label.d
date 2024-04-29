@@ -1,12 +1,11 @@
-module magia.ui.label;
+module magia.ui.core.label;
 
 import std.algorithm.comparison : min;
 import std.conv : to;
-import std.stdio;
 
 import magia.core;
 import magia.render;
-import magia.ui.element;
+import magia.ui.core.element;
 
 /// Label
 final class Label : UIElement {
@@ -50,15 +49,13 @@ final class Label : UIElement {
     }
 
     /// Constructor
-    this(string text_ = "", Font font_ = getDefaultFont()) {
+    this(string text_ = "", Font font_) {
         _text = to!dstring(text_);
         _font = font_;
         reload();
     }
-
+/*
     override void draw(Renderer2D renderer) {
-        UIElement.draw(renderer);
-
         Color color = Color.white;
         vec2f pos = vec2f.zero;
 
@@ -68,9 +65,8 @@ final class Label : UIElement {
                 pos.x = transform.position.x;
                 pos.y += _font.lineSkip * _charScale;
                 prevChar = 0;
-            }
-            else {
-                Glyph metrics = _font.getMetrics(ch);
+            } else {
+                Glyph metrics = _font.getGlyph(ch);
                 pos.x += _font.getKerning(prevChar, ch) * _charScale;
 
                 Transform2D glyphTransform;
@@ -83,10 +79,10 @@ final class Label : UIElement {
                 prevChar = ch;
             }
         }
-    }
+    }*/
 
     private void reload() {
-        vec2f totalSize_ = vec2f(0f, _font.ascent - _font.descent) * _charScale;
+        /*vec2f totalSize_ = vec2f(0f, _font.ascent - _font.descent) * _charScale;
         float lineWidth = 0f;
 
         dchar prevChar;
@@ -94,9 +90,8 @@ final class Label : UIElement {
             if (ch == '\n') {
                 lineWidth = 0f;
                 totalSize_.y += _font.lineSkip * _charScale;
-            }
-            else {
-                const Glyph metrics = _font.getMetrics(ch);
+            } else {
+                const Glyph metrics = _font.getGlyph(ch);
                 lineWidth += _font.getKerning(prevChar, ch) * _charScale;
                 lineWidth += metrics.advance * _charScale;
                 if (lineWidth > totalSize_.x)
@@ -106,6 +101,6 @@ final class Label : UIElement {
         }
 
         size.x = totalSize_.x;
-        size.y = totalSize_.y;
+        size.y = totalSize_.y;*/
     }
 }

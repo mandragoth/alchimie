@@ -1,27 +1,13 @@
-/**
-    Useful functions
-
-    Copyright: (c) Enalye 2017
-    License: Zlib
-    Authors: Enalye
-*/
-
-module magia.core.util;
+module magia.core.math;
 
 public import std.math;
+import std.traits;
 public import std.algorithm.comparison : clamp, min, max;
 
-import magia.core.vec;
-
-/// Ratio to multiply with to get a value in radians from a value in degrees.
-enum double degToRad = std.math.PI / 180.0;
-/// Ratio to multiply with to get a value in degrees from a value in radians.
-enum double radToDeg = 180.0 / std.math.PI;
-
 /// The square root of 2, then divided by 2.
-enum sqrt2_2 = std.math.sqrt(2.0) / 2.0;
+//enum sqrt2_2 = std.math.sqrt(2.0) / 2.0;
 /// 2 times PI.
-enum pi2 = PI * 2f;
+enum TAU = PI * 2f;
 
 /// Interpolation, returns a value between a and b. \
 /// If t = 0, returns a. \
@@ -51,12 +37,11 @@ float angleLerp(float a, float b, float t) {
 }
 
 /// Scale a vector to fit the specified vector while keeping its ratio.
-vec2f scaleToFit(vec2f src, vec2f dst) {
+Vec2!T scaleToFit(T)(Vec2!T src, Vec2!T dst) {
     float scale;
     if (dst.x / dst.y > src.x / src.y) {
         scale = dst.y / src.y;
-    }
-    else {
+    } else {
         scale = dst.x / src.x;
     }
 
@@ -64,6 +49,29 @@ vec2f scaleToFit(vec2f src, vec2f dst) {
 }
 
 /// Linear interpolation to approach a target
-float approach(float value, float target, float step) {
+T approach(T)(T value, T target, T step) if (isScalarType!T) {
     return value > target ? max(value - step, target) : min(value + step, target);
+}
+
+private enum DegToRadFactor = PI / 180.0;
+private enum RadToDegFactor = 180.0 / PI;
+
+/// Converti un angle en degrées en radians
+T degToRad(T)(T deg) {
+    return deg * DegToRadFactor;
+}
+
+/// Converti un angle en radians en degrées
+T radToDeg(T)(T rad) {
+    return rad * RadToDegFactor;
+}
+
+/// Converti un gain en décibels en amplitude
+T dbToVol(T)(T db) {
+    return pow(10.0, 0.05 * db);
+}
+
+/// Converti un gain en amplitude en décibels
+T volToDb(T)(T vol) {
+    return 20.0 * log10(vol);
 }

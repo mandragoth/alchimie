@@ -10,7 +10,7 @@ import magia.kernel;
 import magia.ui;
 
 package void loadLibUI_tempui(GrModule library) {
-    GrType splineType = grGetEnumType("Spline");
+    /*GrType splineType = grGetEnumType("Spline");
     GrType alignXType = library.addEnum("AlignX", ["left", "center", "right"]);
     GrType alignYType = library.addEnum("AlignY", ["top", "center", "bottom"]);
     GrType stateType = library.addNative("UIState");
@@ -66,10 +66,10 @@ package void loadLibUI_tempui(GrModule library) {
     library.addFunction(&_ui_append_child, "append", [uiType, uiType]);
 
     // Labels
-    library.addConstructor(&_label_new, labelType, [grString]);
-    library.addFunction(&_label_text, "text", [labelType, grString]);
+    //library.addConstructor(&_label_new, labelType, [grString]);
+    //library.addFunction(&_label_text, "text", [labelType, grString]);*/
 }
-
+/*
 private void _ui_size(GrCall call) {
     UIElement ui = call.getNative!UIElement(0);
     if (!ui) {
@@ -419,7 +419,7 @@ private void _ui_append_child(GrCall call) {
 
     uiParent.children ~= uiChild;
 }
-
+/*
 private void _label_new(GrCall call) {
     Label label = new Label(call.getString(0));
     call.setNative(label);
@@ -433,4 +433,4 @@ private void _label_text(GrCall call) {
     }
 
     label.text = call.getString(1);
-}
+}*/

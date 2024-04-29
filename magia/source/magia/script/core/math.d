@@ -103,11 +103,11 @@ private void _scalarVec3(GrCall call) {
 }
 
 private void _rad(GrCall call) {
-    call.setDouble(call.getDouble(0) * degToRad);
+    call.setDouble(degToRad(call.getDouble(0)));
 }
 
 private void _deg(GrCall call) {
-    call.setDouble(call.getDouble(0) * radToDeg);
+    call.setDouble(radToDeg(call.getDouble(0)));
 }
 
 private void _angle(GrCall call) {

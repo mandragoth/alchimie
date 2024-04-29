@@ -5,7 +5,7 @@ import magia.render.sprite;
 import magia.render.font.glyph;
 import magia.render.font.truetype;
 import magia.render.font.vera;
-
+/*
 private {
     Font _defaultFont, _veraFont;
 }
@@ -27,24 +27,24 @@ void setDefaultFont(Font font) {
 
 Font getDefaultFont() {
     return _defaultFont;
-}
+}*/
 
 /// Font that renders text to texture.
 interface Font {
     @property {
-        /// Font name
-        string name() const;
-        /// Default font size
+        /// Taille de la police
         int size() const;
-        /// Where the top is above the baseline
+        /// Jusqu’où peut monter un caractère au-dessus la ligne
         int ascent() const;
-        /// Where the bottom is below the baseline
+        /// Jusqu’où peut descendre un caractère en-dessous la ligne
         int descent() const;
-        /// Distance between each baselines
+        /// Distance entre chaque ligne
         int lineSkip() const;
+        /// Taille de la bordure
+        int outline() const;
     }
 
     int getKerning(dchar prevChar, dchar currChar);
 
-    Glyph getMetrics(dchar character);
+    Glyph getGlyph(dchar character);
 }

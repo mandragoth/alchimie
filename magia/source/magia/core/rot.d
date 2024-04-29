@@ -2,7 +2,7 @@ module magia.core.rot;
 
 import magia.core.mat;
 import magia.core.quat;
-import magia.core.util;
+import magia.core.math;
 import magia.core.vec;
 
 /// Prototype for generic rotor class, today only handles 2D, 3D
@@ -17,12 +17,12 @@ struct Rotor(type, uint dimension_) {
         this(float angle_) {
             // Keep it in [0; range
             while(angle_ < 0) {
-                angle_ += pi2;
+                angle_ += TAU;
             }
 
             // Keep it in ;2π] range
-            while(angle_ > pi2) {
-                angle_ -= pi2;
+            while(angle_ > TAU) {
+                angle_ -= TAU;
             }
 
             angle = angle_;

@@ -307,8 +307,8 @@ class Texture : Resource!Texture {
 
     /// Met à jour une portion de la texture
     void update(vec4u clip, uint[] data) {
-        glTexSubImage2D(_target, 0, clip.x, clip.y, clip.z, clip.w, 0,
-            _dataFormat, _memoryType, data);
+        glTexSubImage2D(_target, 0, clip.x, clip.y, clip.z, clip.w,
+            _dataFormat, _memoryType, data.ptr);
     }
 }
 

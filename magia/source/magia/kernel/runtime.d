@@ -137,6 +137,11 @@ final class Magia {
             return _audioMixer;
         }
 
+        /// La machine virtuelle Grimoire
+        GrEngine vm() {
+            return _engine;
+        }
+
         /// Add 2D camera
         void addCamera2D(OrthographicCamera camera) {
             _window.addCamera(camera);
@@ -229,7 +234,6 @@ final class Magia {
 
         // Load internal libs
         loadSDLOpenGL();
-        initFont();
 
         // Initialisation du gestionnaire audio
         _audioMixer = new AudioMixer();
@@ -248,7 +252,7 @@ final class Magia {
         // Create default scenes (@TODO parametrize)
         addCurrentScene(new Scene2D(_renderer2D));
         addCurrentScene(new Scene3D(_renderer3D));
-        _uiManager = new UIManager(_renderer2D);
+        _uiManager = new UIManager();
 
         // Create input handlers
         _inputManager = new InputManager;
@@ -529,7 +533,7 @@ final class Magia {
             scene2D.draw();
         }
 
-        _uiManager.draw();
+        _uiManager.draw(_renderer2D);
     }
 
     void callEvent(GrEvent event, GrValue[] parameters = []) {

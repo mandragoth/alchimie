@@ -29,6 +29,13 @@ struct Vector(type, uint dimension_) {
             return Vector(1);
         }
 
+        static if (__traits(isFloating, type)) {
+            /// Vecteur de taille 0.5
+            static Vector!(type, dimension_) half() {
+                return Vector(.5);
+            }
+        }
+
         /// Returns dimension of vector
         static uint dimension() {
             return dimension_;
@@ -41,13 +48,14 @@ struct Vector(type, uint dimension_) {
 
         /// Returns data in memory
         const(type)[] value() const {
-            return data[0..$];
+            return data[0 .. $];
         }
 
         /// Format internal data as string for debug purposes
         string as_string() const {
             return format("%s", data);
         }
+
         alias toString = as_string;
 
         /// Get/Set vector data
@@ -79,7 +87,7 @@ struct Vector(type, uint dimension_) {
         real magnitude_squared() const {
             real toReturn = 0;
 
-            foreach(i; TupleRange!(0, dimension)) {
+            foreach (i; TupleRange!(0, dimension)) {
                 toReturn += data[i] ^^ 2;
             }
 
@@ -103,7 +111,8 @@ struct Vector(type, uint dimension_) {
     }
 
     /// 2 vectors are compatible if and only if rvalue has a dimension equal or smaller to lvalue
-    static void isCompatibleVectorImpl(T, int d)(Vector!(T, d)) if(d <= dimension) {}
+    static void isCompatibleVectorImpl(T, int d)(Vector!(T, d)) if (d <= dimension) {
+    }
 
     /// Are 2 vectors compatible?
     template isCompatibleVector(T) {
@@ -112,30 +121,32 @@ struct Vector(type, uint dimension_) {
 
     /// Internal generic function in charge of building a vector
     private void construct(uint i, T, Tail...)(T head, Tail tail) {
-        static if(i >= dimension) {
+        static if (i >= dimension) {
             static assert(false, "Too many arguments passed to constructor");
-        } else static if(is(T : type)) {
+        } else static if (is(T : type)) {
             data[i] = head;
             construct!(i + 1)(tail);
-        } else static if(isDynamicArray!T) {
-            static assert((Tail.length == 0) && (i == 0), "Dynamic array can't be passed together with other arguments");
+        } else static if (isDynamicArray!T) {
+            static assert((Tail.length == 0) && (i == 0),
+                "Dynamic array can't be passed together with other arguments");
             data[] = head[];
-        } else static if(isStaticArray!T) {
+        } else static if (isStaticArray!T) {
             data[i .. i + T.length] = head[];
             construct!(i + T.length)(tail);
-        } else static if(isCompatibleVector!T) {
-            static if(is(type == T)) {
+        } else static if (isCompatibleVector!T) {
+            static if (is(type == T)) {
                 data[i .. i + T.dimension] = head.data[];
                 construct!(i + T.dimension)(tail);
-            }
-            else {
+            } else {
                 static foreach (y; TupleRange!(0, T.dimension)) {
                     data[i + y] = cast(type) head.data[y];
                 }
                 construct!(i + T.dimension)(tail);
             }
         } else {
-            static assert(false, "Vector constructor argument must be of type " ~ type.stringof ~ " or Vector, not " ~ T.stringof);
+            static assert(false,
+                "Vector constructor argument must be of type " ~ type.stringof ~
+                " or Vector, not " ~ T.stringof);
         }
     }
 
@@ -151,17 +162,17 @@ struct Vector(type, uint dimension_) {
 
     /// Scalar constructor
     this()(type scalar) {
-        static foreach(i; TupleRange!(0, dimension)) {
+        static foreach (i; TupleRange!(0, dimension)) {
             data[i] = scalar;
         }
     }
-    
+
     /// Normalizes the vector.
     void normalize() {
         const real len = length;
 
-        if(len != 0) {
-            static foreach(i; TupleRange!(0, dimension)) {
+        if (len != 0) {
+            static foreach (i; TupleRange!(0, dimension)) {
                 data[i] = cast(type)(data[i] / len);
             }
         }
@@ -169,8 +180,8 @@ struct Vector(type, uint dimension_) {
 
     /// Does the vector contain a value
     bool contains(type value) const {
-        static foreach(i; TupleRange!(0, dimension)) {
-            if(data[i] == value) {
+        static foreach (i; TupleRange!(0, dimension)) {
+            if (data[i] == value) {
                 return true;
             }
         }
@@ -178,14 +189,24 @@ struct Vector(type, uint dimension_) {
         return false;
     }
 
+    /// Le vecteur est-il contenu entre deux vecteurs ?
+    bool isBetween(const Vector!(type, dimension_) minVec, const Vector!(type, dimension_) maxVec) const {
+        static foreach (i; TupleRange!(0, dimension)) {
+            if (data[i] < minVec.data[i] || data[i] > maxVec.data[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /// Vector unary operation
     Vector opUnary(string op)() const {
-        static if(op == "+")
+        static if (op == "+")
             return this;
         else {
             Vector toReturn;
 
-            static foreach(i; TupleRange!(0, dimension)) {
+            static foreach (i; TupleRange!(0, dimension)) {
                 mixin("toReturn.data[i] = ", op, "data[i];");
             }
 
@@ -197,8 +218,8 @@ struct Vector(type, uint dimension_) {
     Vector opBinary(string op)(type scalar) const {
         Vector toReturn;
 
-        static foreach(i; TupleRange!(0, dimension)) {
-            mixin("toReturn.data[i] = cast(type)(data[i] ", op ," scalar);");
+        static foreach (i; TupleRange!(0, dimension)) {
+            mixin("toReturn.data[i] = cast(type)(data[i] ", op, " scalar);");
         }
 
         return toReturn;
@@ -208,15 +229,16 @@ struct Vector(type, uint dimension_) {
     Vector opBinary(string op)(Vector other) const {
         Vector toReturn;
 
-        static foreach(i; TupleRange!(0, dimension)) {
-            mixin("toReturn.data[i] = cast(type)(data[i] ", op ," other.data[i]);");
+        static foreach (i; TupleRange!(0, dimension)) {
+            mixin("toReturn.data[i] = cast(type)(data[i] ", op, " other.data[i]);");
         }
 
         return toReturn;
     }
 
     /// Commutative binary operations
-    auto opBinaryRight(string op, T)(T inp) const if(!is_vector!T && !is_matrix!T && !is_quaternion!T) {
+    auto opBinaryRight(string op, T)(T inp) const 
+            if (!is_vector!T && !is_matrix!T && !is_quaternion!T) {
         return this.opBinary!(op)(inp);
     }
 
@@ -230,7 +252,7 @@ struct Vector(type, uint dimension_) {
     Vector!(newType, dimension_) opCast(V : Vector!(newType, dimension_), newType)() const {
         Vector!(newType, dimension_) toReturn;
 
-        static foreach(i; TupleRange!(0, dimension_)) {
+        static foreach (i; TupleRange!(0, dimension_)) {
             toReturn.data[i] = cast(newType)(data[i]);
         }
 
@@ -239,7 +261,7 @@ struct Vector(type, uint dimension_) {
 
     /// Assignment
     Vector!(type, dimension) opAssign(T)(Vector!(T, dimension) other) {
-        static foreach(i; TupleRange!(0, dimension)) {
+        static foreach (i; TupleRange!(0, dimension)) {
             data[i] = cast(type) other.data[i];
         }
 
@@ -248,7 +270,7 @@ struct Vector(type, uint dimension_) {
 
     /// Vector scalar assignment operators
     Vector!(type, dimension) opOpAssign(string op)(type scalar) {
-        static foreach(i; TupleRange!(0, dimension)) {
+        static foreach (i; TupleRange!(0, dimension)) {
             mixin("data[i] ", op, "= scalar;");
         }
 
@@ -257,7 +279,7 @@ struct Vector(type, uint dimension_) {
 
     /// Array assignment
     Vector!(type, dimension) opOpAssign(string op)(Vector!(type, dimension) other) {
-        static foreach(i; TupleRange!(0, dimension)) {
+        static foreach (i; TupleRange!(0, dimension)) {
             mixin("data[i] ", op, "= other.data[i];");
         }
 
@@ -265,13 +287,13 @@ struct Vector(type, uint dimension_) {
     }
 
     /// Vector of size 2
-    static if(dimension == 2) {
+    static if (dimension == 2) {
         void set(type x_, type y_) {
             x = x_;
             y = y_;
         }
 
-        static if(__traits(isFloating, type)) {
+        static if (__traits(isFloating, type)) {
             /// Direction from angle in radians
             static Vector!(type, dimension) angled(type radians) {
                 return Vector!(type, dimension)(cos(radians), sin(radians));
@@ -309,7 +331,7 @@ struct Vector(type, uint dimension_) {
     }
 
     /// Vector of size 3
-    static if(dimension == 3) {
+    static if (dimension == 3) {
         void set(type x_, type y_, type z_) {
             x = x_;
             y = y_;
@@ -336,7 +358,7 @@ struct Vector(type, uint dimension_) {
     }
 
     /// Vector of size 4
-    static if(dimension == 4) {
+    static if (dimension == 4) {
         void set(type x_, type y_, type z_, type w_) {
             x = x_;
             y = y_;
@@ -346,7 +368,8 @@ struct Vector(type, uint dimension_) {
     }
 }
 
-private void is_vector_impl(T, int d)(Vector!(T, d)) {}
+private void is_vector_impl(T, int d)(Vector!(T, d)) {
+}
 
 /// If T is a vector, this evaluates to true, otherwise false.
 template is_vector(T) {
@@ -354,10 +377,10 @@ template is_vector(T) {
 }
 
 /// Dot product between two vectors
-T.vectorType dot(T)(const T veca, const T vecb) @safe pure nothrow if(is_vector!T) {
+T.vectorType dot(T)(const T veca, const T vecb) @safe pure nothrow if (is_vector!T) {
     T.vectorType toReturn = 0;
 
-    foreach(i; TupleRange!(0, T.dimension)) {
+    foreach (i; TupleRange!(0, T.dimension)) {
         toReturn += veca.data[i] * vecb.data[i];
     }
 
@@ -365,19 +388,21 @@ T.vectorType dot(T)(const T veca, const T vecb) @safe pure nothrow if(is_vector!
 }
 
 /// Returns the angle between two vectors
-T.vectorType angle(T)(const T veca, const T vecb) @safe pure nothrow if(is_vector!T) {
+T.vectorType angle(T)(const T veca, const T vecb) @safe pure nothrow 
+        if (is_vector!T) {
     return acos(dot(veca.normalized, vecb.normalized));
 }
 
 /// Calculates the cross product of two 3-dimensional vectors
-T cross(T)(const T veca, const T vecb) @safe pure nothrow if(is_vector!T && (T.dimension == 3)) {
-   return T(veca.y * vecb.z - vecb.y * veca.z,
-            veca.z * vecb.x - vecb.z * veca.x,
-            veca.x * vecb.y - vecb.x * veca.y);
+T cross(T)(const T veca, const T vecb) @safe pure nothrow 
+        if (is_vector!T && (T.dimension == 3)) {
+    return T(veca.y * vecb.z - vecb.y * veca.z, veca.z * vecb.x - vecb.z * veca.x,
+        veca.x * vecb.y - vecb.x * veca.y);
 }
 
 /// Rotates p around axis r by angle
-T rotate(T)(const T p, const T r, float angle) @safe pure nothrow if(is_vector!T && (T.dimension == 3)) {
+T rotate(T)(const T p, const T r, float angle) @safe pure nothrow 
+        if (is_vector!T && (T.dimension == 3)) {
     const float halfAngle = angle / 2;
 
     const float cosRot = cos(halfAngle);

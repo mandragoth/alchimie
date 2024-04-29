@@ -243,7 +243,7 @@ class LightingManager {
 
                 string uniformName = "u_SpotLights[" ~ to!string(spotLightId) ~ "]";
                 shader.uploadUniformVec3(toStringz(uniformName ~ ".direction"), spotLight.direction);
-                shader.uploadUniformFloat(toStringz(uniformName ~ ".cutoff"), cos(spotLight.angle * degToRad));
+                shader.uploadUniformFloat(toStringz(uniformName ~ ".cutoff"), cos(degToRad(spotLight.angle)));
 
                 string baseUniformName = uniformName ~ ".base";
                 shader.uploadUniformVec3(toStringz(baseUniformName ~ ".position"), spotLight.globalPosition);
