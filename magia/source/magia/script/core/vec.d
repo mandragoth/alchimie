@@ -1,24 +1,24 @@
-module magia.script.svec;
+module magia.script.core.vec;
 
 import std.conv;
 import grimoire;
 import magia.core;
 import magia.script.common;
 
-package void loadAlchimieLibVec(GrModule library) {
+package void loadLibCore_vec(GrModule mod) {
     static foreach (dimension; [2, 3, 4]) {
-        _loadVec!dimension(library);
+        _loadVec!dimension(mod);
     }
 }
 
-private void _loadVec(int dimension)(GrModule library) {
-    mixin("GrType vecType = library.addNative(\"vec", dimension, "\", [\"T\"]);");
+private void _loadVec(int dimension)(GrModule mod) {
+    mixin("GrType vecType = mod.addNative(\"vec", dimension, "\", [\"T\"]);");
 
-    mixin("GrType vecFloatType = library.addAlias(\"vec", dimension,
+    mixin("GrType vecFloatType = mod.addAlias(\"vec", dimension,
         "f\", grGetNativeType(\"vec", dimension, "\", [grFloat]));");
-    mixin("GrType vecIntType = library.addAlias(\"vec", dimension,
+    mixin("GrType vecIntType = mod.addAlias(\"vec", dimension,
         "i\", grGetNativeType(\"vec", dimension, "\", [grInt]));");
-    mixin("GrType vecUIntType = library.addAlias(\"vec", dimension,
+    mixin("GrType vecUIntType = mod.addAlias(\"vec", dimension,
         "u\", grGetNativeType(\"vec", dimension, "\", [grUInt]));");
 
     static if (dimension == 4) {
@@ -34,19 +34,19 @@ private void _loadVec(int dimension)(GrModule library) {
     static foreach (type; ["Float", "Int", "UInt"]) {
         // Constructeurs
         static if (dimension == 4) {
-            mixin("library.addConstructor(&_ctor!(dimension, type, fields), vec", type,
+            mixin("mod.addConstructor(&_ctor!(dimension, type, fields), vec", type,
                 "Type, [gr", type, ", gr", type, ", gr", type, ", gr", type, "]);");
         } else static if (dimension == 3) {
-            mixin("library.addConstructor(&_ctor!(dimension, type, fields), vec",
+            mixin("mod.addConstructor(&_ctor!(dimension, type, fields), vec",
                 type, "Type, [gr", type, ", gr", type, ", gr", type, "]);");
         } else static if (dimension == 2) {
-            mixin("library.addConstructor(&_ctor!(dimension, type, fields), vec",
+            mixin("mod.addConstructor(&_ctor!(dimension, type, fields), vec",
                 type, "Type, [gr", type, ", gr", type, "]);");
         }
 
         // Champs
         static foreach (field; fields) {
-            mixin("library.addProperty(
+            mixin("mod.addProperty(
                 &_property!(dimension, \"", field, "\", \"get\", type),
                 &_property!(dimension, \"", field, "\", \"set\", type),
                 \"", field, "\", vec", type, "Type, gr", type, ");");
@@ -54,40 +54,40 @@ private void _loadVec(int dimension)(GrModule library) {
 
         // Opérateurs unaires
         static foreach (op; ["+", "-"]) {
-            mixin("library.addOperator(&_unaryOp!(dimension, op, type), op, [vec",
+            mixin("mod.addOperator(&_unaryOp!(dimension, op, type), op, [vec",
                 type, "Type], vec", type, "Type);");
         }
 
         // Opérateurs binaires
         static foreach (op; ["+", "-", "*", "/", "%"]) {
             // Vectoriels
-            mixin("library.addOperator(&_binaryOp!(dimension, op, type), op, [vec",
+            mixin("mod.addOperator(&_binaryOp!(dimension, op, type), op, [vec",
                 type, "Type, vec", type, "Type], vec", type, "Type);");
 
             // Scalaires
-            mixin("library.addOperator(&_scalarRightOp!(dimension, op, type), op, [vec",
+            mixin("mod.addOperator(&_scalarRightOp!(dimension, op, type), op, [vec",
                 type, "Type, gr", type, "], vec", type, "Type);");
-            mixin("library.addOperator(&_scalarLeftOp!(dimension, op, type), op, [gr",
+            mixin("mod.addOperator(&_scalarLeftOp!(dimension, op, type), op, [gr",
                 type, ", vec", type, "Type], vec", type, "Type);");
         }
 
         // Angle
         static if (dimension == 2 || dimension == 3) {
-            mixin("library.addFunction(&_angleBetween!(dimension, type), \"angleBetween\", [vec",
+            mixin("mod.addFunction(&_angleBetween!(dimension, type), \"angleBetween\", [vec",
                 type, "Type, vec", type, "Type], [grFloat]);");
         }
 
         // Rotate
         static if (dimension == 2) {
-            /*mixin("library.addFunction(&_rotate2!(type), \"rotate\", [vec",
+            /*mixin("mod.addFunction(&_rotate2!(type), \"rotate\", [vec",
                 type, "Type, "Type, grFloat], [grFloat]);");*/
         } else static if (dimension == 3) {
-            mixin("library.addFunction(&_rotate3!(type), \"rotate\", [vec",
+            mixin("mod.addFunction(&_rotate3!(type), \"rotate\", [vec",
                 type, "Type, vec", type, "Type, grFloat], [vecFloatType]);");
         }
 
         // Conversion to string
-        mixin("library.addCast(&_toString!(dimension, type), vec", type, "Type, grString);");
+        mixin("mod.addCast(&_toString!(dimension, type), vec", type, "Type, grString);");
     }
 }
 

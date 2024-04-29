@@ -1,16 +1,6 @@
-/**
-    Tweening
-
-    Copyright: (c) Enalye 2017
-    License: Zlib
-    Authors: Enalye
-*/
-
 module magia.core.spline;
 
 import std.math;
-
-import magia.core.util;
 
 alias SplineFunc = float function(float);
 

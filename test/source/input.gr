@@ -79,16 +79,23 @@ export func setupControls() {
     @Input.addActionEvent("zoom_out_2d", @InputEvent.mouseWheel(0, 1));
 
     // Exit
-    @Input.addActionEvent("exit", @InputEvent.controllerButton(ControllerButton.start, KeyState.pressed));
-    @Input.addActionEvent("exit", @InputEvent.keyButton(KeyButton.escape, KeyState.pressed));
-
-    /*if(isActionActivated("exit")) {
-        @App.close();
-    }*/
+    @Input.addActionEvent("exit", @InputEvent.controllerButton(ControllerButton.start, KeyState.down));
+    @Input.addActionEvent("exit", @InputEvent.keyButton(KeyButton.escape, KeyState.down));
 
     // Bones debug
     @Input.addActionEvent("previous_bone", @InputEvent.keyButton(KeyButton.f1, KeyState.down));
     @Input.addActionEvent("next_bone", @InputEvent.keyButton(KeyButton.f2, KeyState.down));
+
+    task() {
+        loop yield {
+            if(@Input.isActionActivated("exit")) {
+                @App.close();
+            }
+            else if(@Input.isPressed(KeyButton.f5)) {
+                @App.reload(true, true);
+            }
+        }
+    }();
 }
 
 export var mouseX : int;

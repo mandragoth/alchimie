@@ -1,4 +1,4 @@
-module magia.script.sbullet;
+module magia.script.render.bullet;
 
 import grimoire;
 import magia.core;
@@ -6,15 +6,17 @@ import magia.kernel;
 import magia.render;
 import magia.script.common;
 
-package void loadAlchimieLibBullet(GrModule library) {
+package void loadLibRender_bullet(GrModule mod) {
     // Maths types
     GrType vec2Type = grGetNativeType("vec2", [grFloat]);
 
     // Bullet types
-    GrType bulletType = library.addNative("Bullet");
+    GrType bulletType = mod.addNative("Bullet");
 
     // Bullet constructors
-    library.addConstructor(&_newBullet, bulletType, [grString, vec2Type, grFloat, grFloat]);
+    mod.addConstructor(&_newBullet, bulletType, [
+            grString, vec2Type, grFloat, grFloat
+        ]);
 }
 
 private void _newBullet(GrCall call) {

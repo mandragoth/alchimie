@@ -1,19 +1,14 @@
 module magia.script.sloader;
 
 import grimoire;
-import magia.script.saudio;
-import magia.script.sbullet;
-import magia.script.scamera;
-import magia.script.scolor;
-import magia.script.scommon;
-import magia.script.sdrawable;
-import magia.script.sgraphics;
-import magia.script.input;
-import magia.script.smath;
+import magia.script.audio;
 import magia.script.common;
+import magia.script.core;
+import magia.script.input;
+import magia.script.kernel;
+import magia.script.render;
+import magia.script.ui;
 import magia.script.sscene;
-import magia.script.sui;
-import magia.script.svec;
 
 GrLibrary getAlchimieLibrary() {
     GrLibrary library = new GrLibrary(0);
@@ -28,7 +23,15 @@ GrLibrary getAlchimieLibrary() {
 private GrModuleLoader[] getAlchimieLibraryLoaders() {
     GrModuleLoader[] loaders;
 
-    static foreach (pack; [&getLibLoaders_temp, &getLibLoaders_input]) {
+    static foreach (pack; [
+            &getLibLoaders_temp,
+            &getLibLoaders_audio,
+            &getLibLoaders_core,
+            &getLibLoaders_input,
+            &getLibLoaders_kernel,
+            &getLibLoaders_render,
+            &getLibLoaders_ui,
+        ]) {
         loaders ~= pack();
     }
 
@@ -38,9 +41,6 @@ private GrModuleLoader[] getAlchimieLibraryLoaders() {
 //Temp
 GrModuleLoader[] getLibLoaders_temp() {
     return [
-        &loadAlchimieLibCommon, &loadAlchimieLibMath, &loadAlchimieLibVec,
-        &loadAlchimieLibColor, &loadAlchimieLibGraphics, &loadAlchimieLibScene,
-        &loadAlchimieLibBullet, &loadAlchimieLibDrawable, &loadAlchimieLibAudio,
-        &loadAlchimieLibCamera, &loadAlchimieLibUI
+        &loadAlchimieLibScene,
     ];
 }

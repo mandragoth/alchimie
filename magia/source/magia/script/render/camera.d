@@ -1,48 +1,50 @@
-module magia.script.scamera;
+module magia.script.render.camera;
 
 import grimoire;
 import magia.core;
 import magia.kernel;
 import magia.render;
-
 import magia.script.common;
 
-void loadAlchimieLibCamera(GrModule library) {
+package void loadLibRender_camera(GrModule mod) {
     // Fetch maths types
     GrType vec3Type = grGetNativeType("vec3", [grFloat]);
     GrType vec4iType = grGetNativeType("vec4", [grInt]);
 
     // Camera types
-    GrType cameraType = library.addNative("Camera", [], "Entity");
-    GrType pCameraType = library.addNative("PerspectiveCamera", [], "Camera");
-    GrType oCameraType = library.addNative("OrthographicCamera", [], "Camera");
+    GrType cameraType = mod.addNative("Camera", [], "Entity");
+    GrType pCameraType = mod.addNative("PerspectiveCamera", [], "Camera");
+    GrType oCameraType = mod.addNative("OrthographicCamera", [], "Camera");
 
     // AudioContext type
-    GrType audioContextType = library.addNative("AudioContext");
+    GrType audioContextType = mod.addNative("AudioContext");
 
     // Camera constructors
-    library.addConstructor(&_newPerspectiveCamera, pCameraType);
-    library.addConstructor(&_newPerspectiveCamera2, pCameraType, [grUInt, grUInt, vec3Type, vec3Type, vec3Type]);
-    library.addConstructor(&_newOrthographicCamera, oCameraType);
+    mod.addConstructor(&_newPerspectiveCamera, pCameraType);
+    mod.addConstructor(&_newPerspectiveCamera2, pCameraType, [
+            grUInt, grUInt, vec3Type, vec3Type, vec3Type
+        ]);
+    mod.addConstructor(&_newOrthographicCamera, oCameraType);
 
     // Camera properties
-    library.addProperty(&_getZoom, null, "zoom", cameraType, grFloat);
-    library.addProperty(&_getUp, null, "up", pCameraType, vec3Type);
-    library.addProperty(&_getRight, null, "right", pCameraType, vec3Type);
-    library.addProperty(&_getForward, null, "forward", pCameraType, vec3Type);
+    mod.addProperty(&_getZoom, null, "zoom", cameraType, grFloat);
+    mod.addProperty(&_getUp, null, "up", pCameraType, vec3Type);
+    mod.addProperty(&_getRight, null, "right", pCameraType, vec3Type);
+    mod.addProperty(&_getForward, null, "forward", pCameraType, vec3Type);
 
     // Camera operations
-    library.addFunction(&_setZoom, "zoom", [cameraType, grFloat]);
-    library.addFunction(&_setViewport, "viewport", [pCameraType, vec4iType]);
-    library.addFunction(&_setForward, "forward", [pCameraType, vec3Type]);
+    mod.addFunction(&_setZoom, "zoom", [cameraType, grFloat]);
+    mod.addFunction(&_setViewport, "viewport", [pCameraType, vec4iType]);
+    mod.addFunction(&_setForward, "forward", [pCameraType, vec3Type]);
 
     // Screen operations
-    library.addFunction(&_getScreenWidth, "screenWidth", [], [grInt]);
-    library.addFunction(&_getScreenHeight, "screenHeight", [], [grInt]);
+    mod.addFunction(&_getScreenWidth, "screenWidth", [], [grInt]);
+    mod.addFunction(&_getScreenHeight, "screenHeight", [], [grInt]);
 }
 
 private void _newPerspectiveCamera(GrCall call) {
-    PerspectiveCamera camera = new PerspectiveCamera(Magia.window.screenWidth, Magia.window.screenHeight);
+    PerspectiveCamera camera = new PerspectiveCamera(Magia.window.screenWidth,
+        Magia.window.screenHeight);
     Magia.addCamera3D(camera);
     call.setNative(camera);
 }
@@ -60,7 +62,8 @@ private void _newPerspectiveCamera2(GrCall call) {
 }
 
 private void _newOrthographicCamera(GrCall call) {
-    OrthographicCamera camera = new OrthographicCamera(Magia.window.screenWidth, Magia.window.screenHeight);
+    OrthographicCamera camera = new OrthographicCamera(Magia.window.screenWidth,
+        Magia.window.screenHeight);
     Magia.addCamera2D(camera);
     call.setNative(camera);
 }

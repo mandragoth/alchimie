@@ -1,15 +1,17 @@
-module magia.script.smath;
+module magia.script.core.math;
 
-import magia.core;
 import grimoire;
+import magia.core;
 
-package void loadAlchimieLibMath(GrModule library) {
+package void loadLibCore_math(GrModule mod) {
     // Maths types
-    GrType quatType = library.addClass("quat", ["w", "x", "y", "z"], [grFloat, grFloat, grFloat, grFloat]);
-    library.addNative("mat4");
+    GrType quatType = mod.addClass("quat", ["w", "x", "y", "z"], [
+            grFloat, grFloat, grFloat, grFloat
+        ]);
+    mod.addNative("mat4");
 
     // Maths types contructors
-    library.addConstructor(&_newQuat, quatType, [grFloat, grFloat, grFloat, grFloat]);
+    mod.addConstructor(&_newQuat, quatType, [grFloat, grFloat, grFloat, grFloat]);
 }
 
 private void _newVec2(GrCall call) {
@@ -89,7 +91,8 @@ private void _addVec3(GrCall call) {
 
 private void _scalarVec3(GrCall call) {
     GrObject v1Obj = call.getObject(0);
-    vec3f v1 = vec3f(v1Obj.getFloat("x"), v1Obj.getFloat("y"), v1Obj.getFloat("z")) * call.getFloat(1);
+    vec3f v1 = vec3f(v1Obj.getFloat("x"), v1Obj.getFloat("y"), v1Obj.getFloat("z")) *
+        call.getFloat(1);
 
     GrObject v2Obj = call.createObject("vec3f");
     v2Obj.setFloat("x", v1.x);

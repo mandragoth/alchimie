@@ -1,4 +1,4 @@
-module magia.script.sui;
+module magia.script.ui.tempui;
 
 import std.conv : to;
 import std.math;
@@ -9,7 +9,7 @@ import magia.core;
 import magia.kernel;
 import magia.ui;
 
-package void loadAlchimieLibUI(GrModule library) {
+package void loadLibUI_tempui(GrModule library) {
     GrType splineType = grGetEnumType("Spline");
     GrType alignXType = library.addEnum("AlignX", ["left", "center", "right"]);
     GrType alignYType = library.addEnum("AlignY", ["top", "center", "bottom"]);

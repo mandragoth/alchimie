@@ -1,6 +1,4 @@
-module magia.script.sdrawable;
-
-import std.stdio;
+module magia.script.render.drawable;
 
 import grimoire;
 import magia.core;
@@ -9,7 +7,7 @@ import magia.render;
 import magia.shape;
 import magia.script.common;
 
-package void loadAlchimieLibDrawable(GrModule library) {
+package void loadLibRender_drawable(GrModule mod) {
     // Maths types
     GrType vec2Type = grGetNativeType("vec2", [grFloat]);
     GrType vec3Type = grGetNativeType("vec3", [grFloat]);
@@ -17,65 +15,63 @@ package void loadAlchimieLibDrawable(GrModule library) {
     GrType mat4Type = grGetNativeType("mat4");
 
     // Entity types
-    GrType instanceType = library.addNative("Instance");
-    library.addNative("Entity", [], "Instance");
-    GrType rectType = library.addNative("Rect", [], "Entity");
-    GrType spriteType = library.addNative("Sprite", [], "Entity");
-    GrType skyboxType = library.addNative("Skybox", [], "Entity");
-    GrType modelType = library.addNative("Model", [], "Entity");
-    GrType quadType = library.addNative("Quad", [], "Entity");
-    GrType sphereType = library.addNative("Sphere", [], "Entity");
+    GrType instanceType = mod.addNative("Instance");
+    mod.addNative("Entity", [], "Instance");
+    GrType rectType = mod.addNative("Rect", [], "Entity");
+    GrType spriteType = mod.addNative("Sprite", [], "Entity");
+    GrType skyboxType = mod.addNative("Skybox", [], "Entity");
+    GrType modelType = mod.addNative("Model", [], "Entity");
+    GrType quadType = mod.addNative("Quad", [], "Entity");
+    GrType sphereType = mod.addNative("Sphere", [], "Entity");
 
     // Entity constructors
-    library.addConstructor(&_newRect, rectType, [grInt, grInt, colorType]);
-    library.addConstructor(&_newSprite, spriteType, [grString]);
-    library.addConstructor(&_newSkybox, skyboxType, [grString]);
-    library.addConstructor(&_newModel, modelType, [grString]);
-    library.addConstructor(&_newQuad, quadType);
-    library.addConstructor(&_newSphere, sphereType);
+    mod.addConstructor(&_newRect, rectType, [grInt, grInt, colorType]);
+    mod.addConstructor(&_newSprite, spriteType, [grString]);
+    mod.addConstructor(&_newSkybox, skyboxType, [grString]);
+    mod.addConstructor(&_newModel, modelType, [grString]);
+    mod.addConstructor(&_newQuad, quadType);
+    mod.addConstructor(&_newSphere, sphereType);
 
     // Instance operations
-    library.addFunction(&_getGlobalPosition3D, "globalPosition", [instanceType], [
+    mod.addFunction(&_getGlobalPosition3D, "globalPosition", [instanceType], [
             vec3Type
         ]);
-    library.addFunction(&_getLocalPosition3D, "localPosition", [instanceType], [
+    mod.addFunction(&_getLocalPosition3D, "localPosition", [instanceType], [
             vec3Type
         ]);
-    library.addFunction(&_setPosition2D, "position", [instanceType, vec2Type]);
-    library.addFunction(&_setPosition3D, "position", [instanceType, vec3Type]);
-    library.addFunction(&_getRotation3D, "rotation", [instanceType], [vec3Type]);
-    library.addFunction(&_setRotation2D, "rotation", [instanceType, grFloat]);
-    library.addFunction(&_setRotation3D, "rotation", [instanceType, vec3Type]);
-    library.addFunction(&_setScale2D, "scale", [instanceType, vec2Type]);
-    library.addFunction(&_setScale3D, "scale", [instanceType, vec3Type]);
-    library.addFunction(&_setModel, "model", [instanceType, mat4Type]);
-    library.addFunction(&_addChild, "addChild", [instanceType, instanceType]);
+    mod.addFunction(&_setPosition2D, "position", [instanceType, vec2Type]);
+    mod.addFunction(&_setPosition3D, "position", [instanceType, vec3Type]);
+    mod.addFunction(&_getRotation3D, "rotation", [instanceType], [vec3Type]);
+    mod.addFunction(&_setRotation2D, "rotation", [instanceType, grFloat]);
+    mod.addFunction(&_setRotation3D, "rotation", [instanceType, vec3Type]);
+    mod.addFunction(&_setScale2D, "scale", [instanceType, vec2Type]);
+    mod.addFunction(&_setScale3D, "scale", [instanceType, vec3Type]);
+    mod.addFunction(&_setModel, "model", [instanceType, mat4Type]);
+    mod.addFunction(&_addChild, "addChild", [instanceType, instanceType]);
 
     // Entity operations
-    library.addFunction(&_addTexture, "addTexture", [modelType, grString]);
+    mod.addFunction(&_addTexture, "addTexture", [modelType, grString]);
 
     // Light types
-    GrType directionalLightType = library.addNative("DirectionalLight");
-    GrType pointLightType = library.addNative("PointLight", [], "Entity");
-    GrType spotLightType = library.addNative("SpotLight", [], "Entity");
+    GrType directionalLightType = mod.addNative("DirectionalLight");
+    GrType pointLightType = mod.addNative("PointLight", [], "Entity");
+    GrType spotLightType = mod.addNative("SpotLight", [], "Entity");
 
     // Light types constructors
-    library.addConstructor(&_newDirectionalLight, directionalLightType,
-        [vec3Type, grFloat, grFloat]);
-    library.addConstructor(&_newPointLight, pointLightType, [
+    mod.addConstructor(&_newDirectionalLight, directionalLightType, [
+            vec3Type, grFloat, grFloat
+        ]);
+    mod.addConstructor(&_newPointLight, pointLightType, [
             vec3Type, colorType, grFloat, grFloat
         ]);
-    library.addConstructor(&_newSpotLight, spotLightType, [
+    mod.addConstructor(&_newSpotLight, spotLightType, [
             vec3Type, vec3Type, colorType, grFloat, grFloat, grFloat
         ]);
 
     // Model instances operations
-    library.addFunction(&_nbBones, "nbBones", [modelType], [grInt]);
-    library.addFunction(&_getDisplayBoneId, "displayBoneId", [modelType], [
-            grInt
-        ]);
-    library.addFunction(&_setDisplayBoneId, "displayBoneId", [modelType, grInt], [
-        ]);
+    mod.addFunction(&_nbBones, "nbBones", [modelType], [grInt]);
+    mod.addFunction(&_getDisplayBoneId, "displayBoneId", [modelType], [grInt]);
+    mod.addFunction(&_setDisplayBoneId, "displayBoneId", [modelType, grInt], []);
 }
 
 private void _getGlobalPosition3D(GrCall call) {

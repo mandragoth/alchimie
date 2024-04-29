@@ -50,7 +50,6 @@ final class Magia {
         uint _ticksPerSecond = 60u;
         ulong _currentTick;
         double _accumulator = 0.0;
-        bool _hasQuit;
 
         // Main window
         Window _window;
@@ -95,7 +94,7 @@ final class Magia {
 
         /// Est-ce que magia tourne toujours ?
         bool isRunning() {
-            return !(_inputManager.hasQuit() || _hasQuit);
+            return _isRunning && !_inputManager.hasQuit();
         }
 
         /// Fenetre
@@ -404,6 +403,14 @@ final class Magia {
         _loadArchives();
         _compileResources();
         _loadResources();
+
+        // Load shapes
+        loadShapes();
+
+        // Load shaders
+        loadShaders();
+
+        // À FAIRE: réinitialiser la scène
     }
 
     /// Récupère les événements (clavier/souris/manette/etc)
@@ -415,12 +422,6 @@ final class Magia {
 
     /// Run application
     void run() {
-        // Load shapes
-        loadShapes();
-
-        // Load shaders
-        loadShaders();
-
         if (_compileFunc) {
             _bytecode = _compileFunc(_libraries);
         }
@@ -444,6 +445,10 @@ final class Magia {
             _tickStartFrame = Clock.currStdTime();
 
             _accumulator += deltaTime;
+
+            if (_mustReload) {
+                _reload();
+            }
 
             while (_accumulator >= 1.0) {
                 _accumulator -= 1.0;
