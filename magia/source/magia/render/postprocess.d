@@ -14,7 +14,8 @@ import magia.render.render;
 static float gamma = 2.2f;
 
 /// Background color
-static Color bgColor = Color(.08f, .10f, .13f);
+//static Color bgColor = Color(.08f, .10f, .13f);
+static Color bgColor = Color.black;
 
 /// Background alpha
 static float bgAlpha = 1f;

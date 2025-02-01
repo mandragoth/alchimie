@@ -62,7 +62,6 @@ class Renderer(uint dimension_) {
 
     /// Clear rendered frame
     void clear() {
-        // @TODO clear frame buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
@@ -123,7 +122,7 @@ class Renderer(uint dimension_) {
         }
     }
 
-    // Draw any mesh with any material
+    /// Draw any mesh with any material
     void draw(type)(Mesh!(dimension_) mesh, Shader shader, Texture[] textures, type[] instanceData) {
         // Set per instance data
         mesh.setInstanceData(instanceData);
@@ -141,6 +140,7 @@ class Renderer(uint dimension_) {
         }
     }
 
+    /// Draw an indexed mesh
     void drawIndexed(Mesh!(dimension_) mesh, Shader shader, Texture[] textures) {
         // Activate shader
         shader.activate();
@@ -152,7 +152,7 @@ class Renderer(uint dimension_) {
         }
     }
 
-    /// @TODO batching
+    /// Draw an indexed mesh @TODO batching
     private void drawIndexed(Mesh!(dimension_) mesh, Shader shader, Texture[] textures, mat4 model) {
         // One draw call per camera
         foreach (Camera camera; cameras) {

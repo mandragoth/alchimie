@@ -1,6 +1,7 @@
 module magia.shape;
 
 public {
+    import magia.shape.circle;
     import magia.shape.planet;
     import magia.shape.quad;
     import magia.shape.rect;

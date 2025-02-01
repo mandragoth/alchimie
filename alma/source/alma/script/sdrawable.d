@@ -18,6 +18,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     GrType instanceType = library.addNative("Instance");
     library.addNative("Entity", [], "Instance");
     GrType rectType = library.addNative("Rect", [], "Entity");
+    GrType circleType = library.addNative("Circle", [], "Entity");
     GrType spriteType = library.addNative("Sprite", [], "Entity");
     GrType skyboxType = library.addNative("Skybox", [], "Entity");
     GrType modelType = library.addNative("Model", [], "Entity");
@@ -26,6 +27,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
 
     // Entity constructors
     library.addConstructor(&_newRect, rectType, [grInt, grInt, colorType]);
+    library.addConstructor(&_newCircle, circleType, [grInt, colorType]);
     library.addConstructor(&_newSprite, spriteType, [grString]);
     library.addConstructor(&_newSkybox, skyboxType, [grString]);
     library.addConstructor(&_newModel, modelType, [grString]);
@@ -131,6 +133,12 @@ private void _newRect(GrCall call) {
     Rect rect = new Rect(vec2u(call.getInt(0), call.getInt(1)), call.getNative!SColor(2));
     rect.register();
     call.setNative(rect);
+}
+
+private void _newCircle(GrCall call) {
+    Circle circle = new Circle(call.getInt(0), call.getNative!SColor(1));
+    circle.register();
+    call.setNative(circle);
 }
 
 private void _newSprite(GrCall call) {
