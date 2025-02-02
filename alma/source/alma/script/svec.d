@@ -34,8 +34,8 @@ private void _loadVec(int dimension)(GrLibDefinition library) {
     static foreach (type; ["Float", "Int", "UInt"]) {
         // Constructeurs
         static if (dimension == 4) {
-            mixin("library.addConstructor(&_ctor!(dimension, type, fields), vec", type,
-                "Type, [gr", type, ", gr", type, ", gr", type, ", gr", type, "]);");
+            mixin("library.addConstructor(&_ctor!(dimension, type, fields), vec",
+                type, "Type, [gr", type, ", gr", type, ", gr", type, ", gr", type, "]);");
         } else static if (dimension == 3) {
             mixin("library.addConstructor(&_ctor!(dimension, type, fields), vec",
                 type, "Type, [gr", type, ", gr", type, ", gr", type, "]);");
@@ -43,6 +43,8 @@ private void _loadVec(int dimension)(GrLibDefinition library) {
             mixin("library.addConstructor(&_ctor!(dimension, type, fields), vec",
                 type, "Type, [gr", type, ", gr", type, "]);");
         }
+
+        mixin("library.addConstructor(&_defaultCtor!(dimension, type), vec", type, "Type);");
 
         // Champs
         static foreach (field; fields) {
@@ -96,6 +98,11 @@ private void _ctor(int dimension, string type, string[] fields)(GrCall call) {
     static foreach (idx, field; fields) {
         mixin("vec.", field, " = call.get", type, "(", idx, ");");
     }
+    call.setNative(vec);
+}
+
+private void _defaultCtor(int dimension, string type)(GrCall call) {
+    mixin("SVec", dimension, "!Gr", type, " vec = new SVec", dimension, "!Gr", type, ";");
     call.setNative(vec);
 }
 

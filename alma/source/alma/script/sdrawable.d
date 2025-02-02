@@ -35,6 +35,8 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addConstructor(&_newSphere, sphereType);
 
     // Instance operations
+    library.addFunction(&_getGlobalPosition2D, "globalPosition2D", [instanceType], [vec2Type]);
+    library.addFunction(&_getLocalPosition2D, "localPosition2D", [instanceType], [vec2Type]);
     library.addFunction(&_getGlobalPosition3D, "globalPosition", [instanceType], [vec3Type]);
     library.addFunction(&_getLocalPosition3D, "localPosition", [instanceType], [vec3Type]);
     library.addFunction(&_setPosition2D, "position", [instanceType, vec2Type]);
@@ -49,6 +51,9 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
 
     // Entity operations
     library.addFunction(&_addTexture, "addTexture", [modelType, grString]);
+
+    // Circle operations
+    library.addFunction(&_getSize, "size", [circleType], [grFloat]);
 
     // Light types
     GrType directionalLightType = library.addNative("DirectionalLight");
@@ -74,6 +79,16 @@ private void _getGlobalPosition3D(GrCall call) {
 private void _getLocalPosition3D(GrCall call) {
     Instance3D instance = call.getNative!Instance3D(0);
     call.setNative(toSVec3f(instance.localPosition));
+}
+
+private void _getGlobalPosition2D(GrCall call) {
+    Instance2D instance = call.getNative!Instance2D(0);
+    call.setNative(toSVec2f(instance.globalPosition));
+}
+
+private void _getLocalPosition2D(GrCall call) {
+    Instance2D instance = call.getNative!Instance2D(0);
+    call.setNative(toSVec2f(instance.localPosition));
 }
 
 private void _setPosition2D(GrCall call) {
@@ -127,6 +142,11 @@ private void _addTexture(GrCall call) {
     ModelInstance modelInstance = call.getNative!ModelInstance(0);
     Texture texture = Magia.res.get!Texture(call.getString(1));
     modelInstance.addTexture(texture);
+}
+
+private void _getSize(GrCall call) {
+    Circle circle = call.getNative!Circle(0);
+    call.setFloat(circle.size);
 }
 
 private void _newRect(GrCall call) {

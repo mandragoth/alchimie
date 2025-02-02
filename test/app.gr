@@ -12,12 +12,17 @@ event app() {
     runtime();
 }
 
+var boundingBox = @vec2f(800f, 600f);
+
 task runtime() {
-    /*var rect = @Rect(100, 100, @color(1f, 0f, 0f));
-    rect:position(@vec2f(400f, 300f));*/
+    spawnCircles();
 
     var circle = @Circle(100, @color(0f, 0.6f, 1f));
     circle:position(@vec2f(400f, 300f));
+    circle:gravity();
+
+    var rect = @Rect(10, 10, @color(1f, 0f, 0f));
+    rect:position(@vec2f(400f, 300f));
 
     /*var rect2 = @Rect(32, 48, @color(0f, 0f, 1f));
     rect2:position(@vec2f(200f, 150f));
@@ -72,6 +77,46 @@ task runtime() {
     loop yield {
         rig:updateDisplayBoneId();
     }*/
+}
+
+func spawnCircles() {
+    var positions = list<vec2f, 100>;
+
+    /*loop(i, nbParticles) {
+        positions[i] = ;
+    }*/
+}
+
+func sign(x: float) (float) {
+    if (x == 0) {
+        return 0f;
+    } else if (x > 0) {
+        return 1f;
+    }
+
+    return -1f;
+}
+
+func bounce(circle: Circle, velocity: vec2f) {
+    var circlePos = circle:localPosition2D;
+    var bottom = boundingBox.y - circle.size / 2;
+    var dredge = 0.8f;
+
+    if (circlePos.y > bottom) {
+        velocity.y *= -1 * dredge;
+        circle:position(@vec2f(circlePos.x, bottom));
+    }
+}
+
+task gravity(circle: Circle) {
+    var deltaTime = 0.016f;
+    var velocity = @vec2f(0f, 0f);
+
+    loop yield {
+        velocity += @vec2f(0f, 1f) * 9.8f * deltaTime;
+        circle:position(circle:localPosition2D + velocity);
+        bounce(circle, velocity);
+    }
 }
 
 task ringTest() {

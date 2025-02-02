@@ -12,7 +12,6 @@ layout(location = 7) in vec4 a_Color;
 
 out vec4 v_Color;
 out vec2 v_TexCoords;
-out vec2 v_InstancePosition;
 out float v_Size;
 
 uniform mat4 u_CamMatrix;
@@ -43,7 +42,6 @@ layout(location = 0) out vec4 fragColor;
 // Per vertex data
 in vec4 v_Color;
 in vec2 v_TexCoords;
-in vec2 v_InstancePosition;
 in float v_Size;
 
 uniform sampler2D u_Sprite0;
