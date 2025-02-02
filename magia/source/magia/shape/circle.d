@@ -95,6 +95,11 @@ final class Circle : Instance2D, Drawable2D {
         }
     }
 
+    /// Default constructor
+    this() {
+        this(0, Color.white);
+    }
+
     /// Copy constructor
     this(Circle other) {
         _circleData = other._circleData;

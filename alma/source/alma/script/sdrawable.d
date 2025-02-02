@@ -28,6 +28,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     // Entity constructors
     library.addConstructor(&_newRect, rectType, [grInt, grInt, colorType]);
     library.addConstructor(&_newCircle, circleType, [grInt, colorType]);
+    library.addConstructor(&_defaultCircle, circleType);
     library.addConstructor(&_newSprite, spriteType, [grString]);
     library.addConstructor(&_newSkybox, skyboxType, [grString]);
     library.addConstructor(&_newModel, modelType, [grString]);
@@ -157,6 +158,12 @@ private void _newRect(GrCall call) {
 
 private void _newCircle(GrCall call) {
     Circle circle = new Circle(call.getInt(0), call.getNative!SColor(1));
+    circle.register();
+    call.setNative(circle);
+}
+
+private void _defaultCircle(GrCall call) {
+    Circle circle = new Circle();
     circle.register();
     call.setNative(circle);
 }

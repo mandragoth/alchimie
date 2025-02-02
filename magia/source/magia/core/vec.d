@@ -80,7 +80,7 @@ struct Vector(type, uint dimension_) {
             real toReturn = 0;
 
             foreach(i; TupleRange!(0, dimension)) {
-                toReturn += data[i] ^^ 2;
+                toReturn += pow(data[i], 2);
             }
 
             return toReturn;

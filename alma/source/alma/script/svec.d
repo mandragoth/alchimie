@@ -4,6 +4,7 @@ import magia, grimoire;
 import alma.script.common;
 
 import std.conv;
+import std.stdio;
 
 package void loadAlchimieLibVec(GrLibDefinition library) {
     static foreach (dimension; [2, 3, 4]) {
@@ -88,6 +89,9 @@ private void _loadVec(int dimension)(GrLibDefinition library) {
                 type, "Type, vec", type, "Type, grFloat], [vecFloatType]);");
         }
 
+        // Magnitude
+        mixin("library.addFunction(&_magnitude!(dimension, type), \"magnitude\", [vec", type, "Type], [grFloat]);");
+
         // Conversion to string
         mixin("library.addCast(&_toString!(dimension, type), vec", type, "Type, grString);");
     }
@@ -103,6 +107,7 @@ private void _ctor(int dimension, string type, string[] fields)(GrCall call) {
 
 private void _defaultCtor(int dimension, string type)(GrCall call) {
     mixin("SVec", dimension, "!Gr", type, " vec = new SVec", dimension, "!Gr", type, ";");
+    mixin("vec = Vector!(Gr", type, ", ", dimension, ").zero;");
     call.setNative(vec);
 }
 
@@ -163,6 +168,11 @@ private void _rotate3(string type)(GrCall call) {
     mixin("vec3 v1 = cast(vec3) call.getNative!(SVec3!Gr", type, ")(0);");
     mixin("vec3 v2 = cast(vec3) call.getNative!(SVec3!Gr", type, ")(1);");
     call.setNative(toSVec3f(rotate(v1, v2, call.getFloat(2))));
+}
+
+private void _magnitude(int dimension, string type)(GrCall call) {
+    mixin("SVec", dimension, "!Gr", type, " v = call.getNative!(SVec", dimension, "!Gr", type, ")(0);");
+    call.setFloat(v.magnitude());
 }
 
 private void _toString(int dimension, string type)(GrCall call) {

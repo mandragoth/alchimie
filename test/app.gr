@@ -12,17 +12,22 @@ event app() {
     runtime();
 }
 
-var boundingBox = @vec2f(800f, 600f);
+const boundingBox = @vec2f(800f, 600f);
+const left  = 200f;
+const right = 600f;
+const up    = 150f;
+const down  = 450f;
+
+const smoothingRadius = 1.2f;
+const targetDensity = 4.00f;
+const pressureMultiplier = 1200f;
+const mass = 1f;
 
 task runtime() {
-    spawnCircles();
-
-    var circle = @Circle(100, @color(0f, 0.6f, 1f));
-    circle:position(@vec2f(400f, 300f));
-    circle:gravity();
-
-    var rect = @Rect(10, 10, @color(1f, 0f, 0f));
+    var rect = @Rect(400, 300, @color(.08f, .10f, .13f));
     rect:position(@vec2f(400f, 300f));
+
+    spawnParticles();
 
     /*var rect2 = @Rect(32, 48, @color(0f, 0f, 1f));
     rect2:position(@vec2f(200f, 150f));
@@ -79,43 +84,183 @@ task runtime() {
     }*/
 }
 
-func spawnCircles() {
-    var positions = list<vec2f, 100>;
+func spawnParticles() {
+    var particleSize = 10;
+    var particles = list<Circle, 50>;
+    var densities = list<float, 50>;
 
-    /*loop(i, nbParticles) {
-        positions[i] = ;
+    // Grid spawn
+    /*var nbParticlesRow = 3;
+    var nbParticlesCol = 3;
+    var spacing = particleSize;
+    loop (i, 10) {
+        var x = 400f + (i % nbParticlesRow - nbParticlesRow / 2f - 0.5f) * spacing;
+        var y = 300f + (i / nbParticlesCol - nbParticlesCol / 2f - 0.5f) * spacing;
+        particles[i] = @Circle(particleSize, @color(0f, 0.6f, 1f));
+        particles[i]:position(@vec2f(x, y));
     }*/
+
+    // Random spawn
+    loop (i, particles.size()) {
+        var x = left + (right - left) * uniform01();
+        var y = up + (down - up) * uniform01();
+        particles[i] = @Circle(particleSize, @color(0f, 0.6f, 1f));
+        particles[i]:position(@vec2f(x, y));
+    }
+
+    particles:applyForces();
 }
 
-func sign(x: float) (float) {
-    if (x == 0) {
+const pi = PI as <float>;
+
+func smoothingKernel(radius: float, distance: float)(float) {
+    if (distance >= radius) {
         return 0f;
-    } else if (x > 0) {
-        return 1f;
     }
 
-    return -1f;
+    var radius4 = radius * radius * radius;
+    var volume = (pi * radius4 / 6f);
+    return (radius - distance) * (radius - distance) / volume;
 }
 
-func bounce(circle: Circle, velocity: vec2f) {
-    var circlePos = circle:localPosition2D;
-    var bottom = boundingBox.y - circle.size / 2;
-    var dredge = 0.8f;
-
-    if (circlePos.y > bottom) {
-        velocity.y *= -1 * dredge;
-        circle:position(@vec2f(circlePos.x, bottom));
+func smoothingKernelDerivative(radius: float, distance: float)(float) {
+    if (distance >= radius) {
+        return 0f;
     }
+
+    var radius4 = radius * radius * radius;
+    var rate = 12f / (pi * radius4);
+    return (distance - radius) * rate;
 }
 
-task gravity(circle: Circle) {
-    var deltaTime = 0.016f;
-    var velocity = @vec2f(0f, 0f);
+func computeDensity(particles: list<Circle>, particleId: uint)(float) {
+    var samplePoint = particles[particleId]:localPosition2D;
+
+    // @TODO optimize this pass to only look at neighborhood
+    var density = 0f;
+    loop (otherParticleId, particles.size) {
+        var otherPoint = particles[otherParticleId]:localPosition2D;
+        var towards = otherPoint - samplePoint;
+        var distance = towards:magnitude;
+
+        var influence = smoothingKernel(smoothingRadius, distance / 100f);
+        density += mass * influence;
+    }
+
+    return density;
+}
+
+func densityToPressure(density: float)(float) {
+    var densityError = density - targetDensity;
+    var pressure = densityError * pressureMultiplier;
+    return pressure;
+}
+
+func computeSharedPressure(density1: float, density2: float)(float) {
+    var pressure1 = densityToPressure(density1);
+    var pressure2 = densityToPressure(density2);
+    return (pressure1 + pressure2) / 2f;
+}
+
+func getRandomDirection()(vec2f) {
+    var x = (uniform01() - 0.5f) * 2f;
+    var y = (uniform01() - 0.5f) * 2f;
+    return @vec2f(x, y);
+}
+
+func computePressureForce(particles: list<Circle>, densities: list<float>, particleId: uint)(vec2f) {
+    var samplePoint = particles[particleId]:localPosition2D;
+
+    var pressureForce = @vec2f;
+    loop (otherParticleId, particles.size) {
+        if (otherParticleId == particleId) {
+            continue;
+        }
+
+        var otherPoint = particles[otherParticleId]:localPosition2D;
+        var towards = otherPoint - samplePoint;
+        var distance = towards:magnitude;
+
+        var direction = @vec2f;
+        if (distance == 0) {
+            direction = getRandomDirection();
+        } else {
+            direction = towards / distance;
+        }
+
+        var slope = smoothingKernelDerivative(smoothingRadius, distance / 100f);
+
+        var density = densities[particleId];
+        var sharedPressure = computeSharedPressure(density, densities[otherParticleId]);
+
+        pressureForce += sharedPressure * direction * slope * mass / density;
+    }
+
+    return pressureForce;
+}
+
+func applyForces(particles: list<Circle>) {
+    var velocities = list<vec2f, 50>;
+    var densities = list<float, 50>;
 
     loop yield {
-        velocity += @vec2f(0f, 1f) * 9.8f * deltaTime;
-        circle:position(circle:localPosition2D + velocity);
-        bounce(circle, velocity);
+        applyGravity(particles, velocities, densities);
+        applyPressure(particles, velocities, densities);
+        applyPhysics(particles, velocities);
+    }
+}
+
+const deltaTime = 0.016f;
+
+func applyGravity(particles: list<Circle>, velocities: list<vec2f>, densities: list<float>) {
+    loop (i, particles.size) {
+        velocities[i] += @vec2f(0f, 1f) * 9.8f * deltaTime;
+        densities[i] = computeDensity(particles, i);
+    }
+}
+
+func applyPressure(particles: list<Circle>, velocities: list<vec2f>, densities: list<float>) {
+    loop (i, particles.size) {
+        var pressureForce = computePressureForce(particles, densities, i);
+        var pressureAcceleration = pressureForce / densities[i];
+        velocities[i] += pressureAcceleration * deltaTime;
+    }
+}
+
+func applyPhysics(particles: list<Circle>, velocities: list<vec2f>) {
+    loop (i, particles.size) {
+        var particlePos = particles[i]:localPosition2D + velocities[i];
+        bounce(particles[i], particlePos, velocities[i]);
+        particles[i]:position(particlePos);
+    }
+}
+
+func bounce(circle: Circle, position: vec2f, velocity: vec2f) {
+    var collisionLeft  = left + circle.size / 2f;
+    var collisionRight = right - circle.size / 2f;
+    var collisionUp    = up + circle.size / 2f;
+    var collisionDown  = down - circle.size / 2f;
+
+    var drag = 0.8f;
+
+    if (position.x < collisionLeft) {
+        position.x = collisionLeft;
+        velocity.x *= -1 * drag;
+    }
+
+    if (position.x > collisionRight) {
+        position.x = collisionRight;
+        velocity.x *= -1 * drag;
+    }
+
+    if (position.y < collisionUp) {
+        position.y = collisionUp;
+        velocity.y *= -1 * drag;
+    }
+
+    if (position.y > collisionDown) {
+        position.y = collisionDown;
+        velocity.y *= -1 * drag;
     }
 }
 
