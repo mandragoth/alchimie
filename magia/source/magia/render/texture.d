@@ -28,7 +28,7 @@ enum TextureType {
 
 // Trace
 private {
-    static bool s_Trace = false;
+    static bool s_Trace = true;
 }
 
 /// Class holding texture data
@@ -109,23 +109,23 @@ class Texture : Resource!Texture {
         _width = width;
         _height = height;
 
-        glGenTextures(1, &_id);
-        glBindTexture(_target, _id);
+        // Create texture
+        glCreateTextures(_target, 1, &_id);
 
         // Setup filters
-        glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTextureParameteri(_id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTextureParameteri(_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         // Setup wrap
-        glTexParameteri(_target, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTextureParameteri(_id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(_id, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
         _dataFormat = GL_RGBA;
         _internalFormat = GL_RGBA;
 
         assert(data.sizeof == width * height * 4);
-        glTexImage2D(_target, 0, _internalFormat, _width, _height, 0,
-            _dataFormat, GL_UNSIGNED_BYTE, &data);
+        glTextureStorage2D(_id, 1, _internalFormat, _width, _height);
+        glTextureSubImage2D(_id, 0, 0, 0, _width, _height, _dataFormat, GL_UNSIGNED_BYTE, &data);
         _nbTextures = 1;
     }
 
@@ -181,25 +181,24 @@ class Texture : Resource!Texture {
         _height = surface.h;
 
         // Generate texture and bind texture
-        glGenTextures(1, &_id);
-        glBindTexture(_target, _id);
+        glCreateTextures(_target, 1, &_id);
 
         if (type == TextureType.sprite) {
             // Setup filter
-            glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTextureParameteri(_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTextureParameteri(_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
             // Setup wrap
-            glTexParameteri(_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTextureParameteri(_id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTextureParameteri(_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         } else {
             // Setup filters
-            glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTextureParameteri(_id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTextureParameteri(_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
             // Setup wrap
-            glTexParameteri(_target, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(_target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTextureParameteri(_id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTextureParameteri(_id, GL_TEXTURE_WRAP_T, GL_REPEAT);
         }
 
         const uint nbChannels = surface.format.BytesPerPixel;
@@ -210,10 +209,10 @@ class Texture : Resource!Texture {
 
         // For now, consider diffuses as RGBA, speculars as R
         if (nbChannels == 4) {
-            _internalFormat = GL_RGBA;
+            _internalFormat = GL_RGBA8;
             _dataFormat = GL_RGBA;
         } else if (nbChannels == 3) {
-            _internalFormat = GL_RGB;
+            _internalFormat = GL_RGB8;
             _dataFormat = GL_RGB;
         } else if (nbChannels == 1) {
             _internalFormat = GL_RED;
@@ -224,15 +223,15 @@ class Texture : Resource!Texture {
 
         // Generate texture image
         _memoryType = GL_UNSIGNED_BYTE;
-        glTexImage2D(_target, 0, _internalFormat, _width, _height, 0,
-            _dataFormat, _memoryType, surface.pixels);
+        glTextureStorage2D(_id, 1, _internalFormat, _width, _height);
+        glTextureSubImage2D(_id, 0, 0, 0, _width, _height, _dataFormat, _memoryType, surface.pixels);
         _nbTextures = 1;
 
         // Generate mipmaps
         if (type == TextureType.sprite) {
-            glTexParameteri(_target, GL_TEXTURE_MAX_LEVEL, 0);
+            glTextureParameteri(_id, GL_TEXTURE_MAX_LEVEL, 0);
         } else {
-            glGenerateMipmap(_target);
+            glGenerateTextureMipmap(_id);
         }
     }
 

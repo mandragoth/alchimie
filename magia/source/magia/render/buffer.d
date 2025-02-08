@@ -212,7 +212,7 @@ class BufferLayout {
     void setupDivisors(GLuint vaoId, GLuint vboId, uint layoutId) {
         foreach(ref BufferElement element; _elements) {
             glEnableVertexArrayAttrib(vaoId, layoutId);
-            glVertexArrayAttribBinding(vaoId, layoutId, 0);
+            glVertexArrayAttribBinding(vaoId, layoutId, 1);
 
             if (element.glType == GL_INT || element.glType == GL_UNSIGNED_INT) {
                 glVertexArrayAttribIFormat(vaoId,
@@ -232,7 +232,7 @@ class BufferLayout {
             glVertexArrayBindingDivisor(vaoId, layoutId, 1);
             ++layoutId;
         }
-        glVertexArrayVertexBuffer(vaoId, 0, vboId, 0, stride);
+        glVertexArrayVertexBuffer(vaoId, 1, vboId, 0, stride);
     }
 
     private void computeOffsets() {

@@ -228,7 +228,7 @@ class Magia {
         }
 
         // Lighting manager
-        //_lightingManager = new LightingManager();
+        _lightingManager = new LightingManager();
 
         _tickStartFrame = Clock.currStdTime();
         while (isRunning()) {

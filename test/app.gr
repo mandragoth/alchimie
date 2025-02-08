@@ -24,11 +24,11 @@ const pressureMultiplier = 1200f;
 const mass = 1f;
 
 task runtime() {
-    //var skybox = @Skybox("night"); // @TODO fix
+    //var skybox = @Skybox("night");
 
-    //var rayTracer = @RayTracer();
+    var rayTracer = @RayTracer();
 
-    spawnParticles();
+    //spawnParticles();
 
     /*var rect2 = @Rect(32, 48, @color(0f, 0f, 1f));
     rect2:position(@vec2f(200f, 150f));
