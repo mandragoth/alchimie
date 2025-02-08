@@ -37,6 +37,7 @@ uint layoutTypeSize(LayoutType type) {
     }
 }
 
+/// Get openGL string for layout data type
 string layouTypeToString(LayoutType type) {
     final switch (type) with (LayoutType) {
         case ltFloat:
@@ -147,6 +148,7 @@ class BufferLayout {
     }
 
     @property {
+        /// Elements size
         uint size() const {
             uint size = 0;
             foreach (BufferElement element; _elements) {
@@ -181,52 +183,56 @@ class BufferLayout {
     }
 
     /// Setup elements
-    void setupElements() {
+    void setupElements(GLuint vaoId, GLuint vboId) {
         uint layoutId = 0;
         foreach(ref BufferElement element; _elements) {
-            glEnableVertexAttribArray(layoutId);
+            glEnableVertexArrayAttrib(vaoId, layoutId);
+            glVertexArrayAttribBinding(vaoId, layoutId, 0);
 
             if (element.glType == GL_INT || element.glType == GL_UNSIGNED_INT) {
-                glVertexAttribIPointer(layoutId,
-                                       element.count,
-                                       element.glType,
-                                       stride,
-                                       cast(void *)element.offset);
+                glVertexArrayAttribIFormat(vaoId,
+                                           layoutId,
+                                           element.count,
+                                           element.glType,
+                                           cast(void *)element.offset);
             } else {
-                glVertexAttribPointer(layoutId,
-                                      element.count,
-                                      element.glType,
-                                      GL_FALSE, // No normalization
-                                      stride,
-                                      cast(void *)element.offset);
+                glVertexArrayAttribFormat(vaoId,
+                                          layoutId,
+                                          element.count,
+                                          element.glType,
+                                          GL_FALSE, // No normalization
+                                          cast(void *)element.offset);
             }
             ++layoutId;
         }
+        glVertexArrayVertexBuffer(vaoId, 0, vboId, 0, stride);
     }
 
     /// Setup divisors
-    void setupDivisors(uint layoutId) {
+    void setupDivisors(GLuint vaoId, GLuint vboId, uint layoutId) {
         foreach(ref BufferElement element; _elements) {
-            glEnableVertexAttribArray(layoutId);
+            glEnableVertexArrayAttrib(vaoId, layoutId);
+            glVertexArrayAttribBinding(vaoId, layoutId, 0);
 
             if (element.glType == GL_INT || element.glType == GL_UNSIGNED_INT) {
-                glVertexAttribIPointer(layoutId,
-                                       element.count,
-                                       element.glType,
-                                       stride,
-                                       cast(void *)element.offset);
+                glVertexArrayAttribIFormat(vaoId,
+                                           layoutId,
+                                           element.count,
+                                           element.glType,
+                                           cast(void *)element.offset);
             } else {
-                glVertexAttribPointer(layoutId,
-                                      element.count,
-                                      element.glType,
-                                      GL_FALSE, // No normalization
-                                      stride,
-                                      cast(void *)element.offset);
+                glVertexArrayAttribFormat(vaoId,
+                                          layoutId,
+                                          element.count,
+                                          element.glType,
+                                          GL_FALSE, // No normalization
+                                          cast(void *)element.offset);
             }
 
-            glVertexAttribDivisor(layoutId, 1);
+            glVertexArrayBindingDivisor(vaoId, layoutId, 1);
             ++layoutId;
         }
+        glVertexArrayVertexBuffer(vaoId, 0, vboId, 0, stride);
     }
 
     private void computeOffsets() {
@@ -239,7 +245,7 @@ class BufferLayout {
     }
 }
 
-/// Vertex Buffer Objects hold data sent from CPU to GPU
+/// Vertex Buffer Objects (VBO) hold data sent from CPU to GPU
 class VertexBuffer {
     private {
         /// Index
@@ -271,8 +277,10 @@ class VertexBuffer {
         _layout = layout_;
 
         glCreateBuffers(1, &_id);
-        glBindBuffer(GL_ARRAY_BUFFER, _id);
-        glBufferData(GL_ARRAY_BUFFER, _length, data.ptr, GL_STATIC_DRAW);
+        glNamedBufferData(_id, _length, data.ptr, GL_STATIC_DRAW);
+        
+        /*glBindBuffer(GL_ARRAY_BUFFER, _id);
+        glBufferData(GL_ARRAY_BUFFER, _length, data.ptr, GL_STATIC_DRAW);*/
     }
 
     /// Copy constructor
@@ -291,11 +299,10 @@ class VertexBuffer {
     }
 
     /// Setup elements
-    void setupElements() {
+    void setupElements(GLuint vaoId) {
         assert(_layout, "No layout set for VertexBuffer");
         assert(_layout.count, "No elements in VertexBuffer layout");
-        glBindBuffer(GL_ARRAY_BUFFER, _id);
-        _layout.setupElements();
+        _layout.setupElements(vaoId, _id);
     }
 }
 
@@ -334,20 +341,18 @@ class InstanceBuffer {
 
     /// Update data (for a GL_STREAM_DRAW)
     void setData(type)(type[] data) {
-        glBindBuffer(GL_ARRAY_BUFFER, _id);
-        glBufferData(GL_ARRAY_BUFFER, data.length * type.sizeof, data.ptr, GL_STREAM_DRAW);
+        glNamedBufferData(_id, data.length * type.sizeof, data.ptr, GL_STREAM_DRAW);
     }
 
     /// Setup divisors
-    void setupDivisors(uint layoutId) {
+    void setupDivisors(GLuint vaoId, uint layoutId) {
         assert(_layout, "No layout set for VertexBuffer");
         assert(_layout.count, "No elements in VertexBuffer layout");
-        glBindBuffer(GL_ARRAY_BUFFER, _id);
-        _layout.setupDivisors(layoutId);
+        _layout.setupDivisors(vaoId, _id, layoutId);
     }
 }
 
-/// Index Buffer Objects hold data referencing triangles indices
+/// Index Buffer Objects (EBO) hold data referencing triangles indices
 class IndexBuffer {
     private {
         /// Index
@@ -369,8 +374,9 @@ class IndexBuffer {
         assert(indices.length < uint.max);
 
         glCreateBuffers(1, &_id);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _id);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.length * uint.sizeof, indices.ptr, GL_STATIC_DRAW);
+        glNamedBufferData(_id, indices.length * uint.sizeof, indices.ptr, GL_STATIC_DRAW);
+        /*glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _id);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.length * uint.sizeof, indices.ptr, GL_STATIC_DRAW);*/
         _count = cast(uint)indices.length;
     }
 
@@ -389,13 +395,8 @@ class IndexBuffer {
         glDeleteBuffers(1, &_id);
     }
 
-    /// Bind for usage
-    void bind() const {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _id);
-    }
-
-    /// Unbind (static as we bind default)
-    static void unbind() {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    /// Link to Vertex Array
+    void linkToVertexArray(GLuint vaoId) {
+        glVertexArrayElementBuffer(vaoId, _id);
     }
 }

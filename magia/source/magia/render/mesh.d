@@ -57,7 +57,7 @@ final class Mesh(uint dimension_) : Resource!Mesh {
     /// Add per instance vertex buffer
     void addInstanceBuffer(InstanceBuffer instanceBuffer, uint firstLayoutId) {
         _instanceBuffer = instanceBuffer;
-        _instanceBuffer.setupDivisors(firstLayoutId);
+        _vertexArray.linkToInstanceBuffer(_instanceBuffer, firstLayoutId);
     }
 
     /// Set instance data before draw call

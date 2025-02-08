@@ -1,5 +1,5 @@
 #type vert
-#version 400 core
+#version 460 core
 
 // Per vertex data
 layout(location = 0) in vec2 a_Position;
@@ -31,7 +31,7 @@ void main() {
 }
 
 #type frag
-#version 400 core
+#version 460 core
 
 layout(location = 0) out vec4 fragColor;
 

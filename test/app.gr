@@ -24,9 +24,11 @@ const pressureMultiplier = 1200f;
 const mass = 1f;
 
 task runtime() {
-    var rayTracer = @RayTracer();
+    //var skybox = @Skybox("night"); // @TODO fix
 
-    //spawnParticles();
+    //var rayTracer = @RayTracer();
+
+    spawnParticles();
 
     /*var rect2 = @Rect(32, 48, @color(0f, 0f, 1f));
     rect2:position(@vec2f(200f, 150f));
@@ -48,7 +50,6 @@ task runtime() {
 
     //ringTest();
 
-    //var skybox = @Skybox("night"); // @TODO fix
     //var globalLight = @DirectionalLight(@vec3f(0f, -10f, 0f), .2f, .01f);
     //var pointLight1 = @PointLight(@vec3f(-1f, 0.5f, 0f), @color(1f, 0f, 0f), 0f, 0.3f);
     //var pointLight2 = @PointLight(@vec3f(1f, 0.5f, 0f), @color(0f, 1f, 0f), 0f, 0.3f);

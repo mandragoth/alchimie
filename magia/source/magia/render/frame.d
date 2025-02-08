@@ -8,6 +8,7 @@ import magia.render.texture;
 alias FrameBufferLayout = TextureType[];
 
 /// Class holding a Frame Buffer Object
+// @TODO port to DSA
 class FrameBuffer {
     /// Index
     GLuint id;

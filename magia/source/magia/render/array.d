@@ -6,7 +6,7 @@ import magia.render.buffer;
 
 alias VertexBuffers = VertexBuffer[];
 
-/// Class holding a Vertex Array Object
+/// Vertex Array Object (VAO) hold indices to Vertex Buffer Object (VBO)
 class VertexArray {
     private uint _id;
 
@@ -25,13 +25,15 @@ class VertexArray {
     this(VertexBuffer vertexBuffer, IndexBuffer indexBuffer) {
         // Create vertex array and bind it
         glCreateVertexArrays(1, &_id);
-        glBindVertexArray(_id);
 
         // Set up vertex buffer elements
-        vertexBuffer.setupElements();
+        vertexBuffer.setupElements(_id);
 
         // Save index buffer set it up
         _indexBuffer = indexBuffer;
+
+        // Link VAO and EBO
+        _indexBuffer.linkToVertexArray(_id);
     }
 
     /// Copy constructor
@@ -47,19 +49,19 @@ class VertexArray {
         glDeleteVertexArrays(1, &_id);
     }
 
+    /// Link to instance buffer
+    void linkToInstanceBuffer(InstanceBuffer instanceBuffer, uint firstLayoutId) {
+        instanceBuffer.setupDivisors(_id, firstLayoutId);
+    }
+
     /// Bind VAO
     void bind() const {
         glBindVertexArray(_id);
-
-        if (_indexBuffer) {
-            _indexBuffer.bind();
-        }
     }
 
     /// Unbind VAO
     static void unbind() {
         glBindVertexArray(0);
-        IndexBuffer.unbind();
     }
 
     /// Delete VAO
