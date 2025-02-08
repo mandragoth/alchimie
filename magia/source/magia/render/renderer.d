@@ -114,6 +114,19 @@ class Renderer(uint dimension_) {
         }
     }
 
+    /// Draw any mesh with any material
+    void draw(type)(Mesh!(dimension_) mesh, Shader shader, ComputeShaderTexture texture, type[] instanceData = []) {
+        // Set per instance data
+        if (instanceData) {
+            mesh.setInstanceData(instanceData);
+        }
+
+        // One draw call per camera
+        foreach (Camera camera; cameras) {
+            mesh.draw(shader, [texture], camera.matrix);
+        }
+    }
+
     /// Draw an indexed mesh
     void drawIndexed(Mesh!(dimension_) mesh, Shader shader, Texture[] textures) {
         // Activate shader

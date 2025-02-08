@@ -9,6 +9,7 @@ import magia.render.shader;
 import magia.render.texture;
 import magia.render.vertex;
 import magia.render.window;
+import std.stdio;
 
 /// Static 2D sprite layout
 BufferLayout layout2D;
@@ -29,7 +30,7 @@ Mesh3D skyboxMesh;
 Texture defaultTexture;
 
 /// Ray tracer texture
-Texture rayTracerTexture;
+ComputeShaderTexture rayTracerTexture;
 
 /// Load all shapes at runtime
 void loadShapes() {

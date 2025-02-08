@@ -69,13 +69,20 @@ final class Mesh(uint dimension_) : Resource!Mesh {
     }
 
     /// Bind shader, vertex array
-    void bindData(Shader shader, Texture[] textures) {
+    // @TODO handle uniform upload
+    void bindData(Shader shader, Texture[] textures, mat4 camView = mat4.identity) {
         shader.activate();
+        
+        if (camView != mat4.identity) {
+            shader.uploadUniformMat4("u_CamMatrix", camView);
+        }
+
         _vertexArray.bind();
 
         uint nbSpriteTextures = 0;
         uint nbDiffuseTextures = 0;
         uint nbSpecularTextures = 0;
+        uint nbComputeTextures = 0;
 
         // Forward textures to shader
         uint textureId = 0;
@@ -93,6 +100,9 @@ final class Mesh(uint dimension_) : Resource!Mesh {
             } else if (type == TextureType.specular) {
                 name = "u_Specular" ~ to!string(nbSpecularTextures);
                 ++nbSpecularTextures;
+            } else if (type == TextureType.compute) {
+                name = "screen";
+                ++nbComputeTextures;
             }
 
             // Upload texture index

@@ -5,6 +5,7 @@ import bindbc.opengl;
 
 import magia.core;
 import magia.main;
+import magia.render.shader;
 
 import std.exception;
 import std.conv;
@@ -333,6 +334,11 @@ class ComputeShaderTexture : Texture {
         // Generate storage and bind texture
         glTextureStorage2D(_id, 1, _internalFormat, width, height);
         glBindImageTexture(0, _id, 0, GL_FALSE, 0, GL_WRITE_ONLY, _dataFormat);
+    }
+
+    /// Bind to shader and screen
+    override void bind() const {
+        glBindTextureUnit(_slot, _id);
     }
 }
 

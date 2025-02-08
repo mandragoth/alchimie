@@ -11,6 +11,7 @@ import bindbc.opengl;
 
 import magia.core;
 import magia.main;
+import magia.render.texture;
 import magia.render.window;
 
 /// Class holding a shader
@@ -78,7 +79,7 @@ class Shader : Resource!Shader {
             glUseProgram(_computeId);
 
             // @TODO parametrize chunk size
-            glDispatchCompute(Magia.window.screenWidth, Magia.window.screenHeight, 1);
+            glDispatchCompute(Magia.window.screenWidth / 8, Magia.window.screenHeight / 4, 1);
             // @TODO parametrize barrier
             glMemoryBarrier(GL_ALL_BARRIER_BITS);
         }
@@ -101,6 +102,7 @@ class Shader : Resource!Shader {
 
     /// Upload an uniform of type int to the shader
     void uploadUniformInt(const char* label, int data) {
+        //writeln("label: ", to!string(label));
         GLint labelId = getShaderLocation(label);
         glUniform1i(labelId, data);
     }

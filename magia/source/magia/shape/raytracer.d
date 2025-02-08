@@ -34,6 +34,6 @@ class RayTracer : Instance2D, Drawable2D {
 
     /// Draw call
     void draw(Renderer2D renderer) {
-        renderer.draw(_mesh, _shader, [rayTracerTexture]);
+        renderer.draw(_mesh, _shader, rayTracerTexture);
     }
 }
