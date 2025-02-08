@@ -333,7 +333,7 @@ class ComputeShaderTexture : Texture {
 
         // Generate storage and bind texture
         glTextureStorage2D(_id, 1, _internalFormat, width, height);
-        glBindImageTexture(0, _id, 0, GL_FALSE, 0, GL_WRITE_ONLY, _dataFormat);
+        glBindImageTexture(_slot, _id, 0, GL_FALSE, 0, GL_WRITE_ONLY, _dataFormat);
     }
 
     /// Bind to shader and screen

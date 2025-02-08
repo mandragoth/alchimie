@@ -105,11 +105,11 @@ final class Mesh(uint dimension_) : Resource!Mesh {
                 ++nbComputeTextures;
             }
 
-            // Upload texture index
-            shader.uploadUniformInt(toStringz(name), textureId);
-
             // Bind texture
             texture.bind();
+
+            // Upload texture index
+            shader.uploadUniformInt(toStringz(name), textureId);
 
             // Increment texture index
             ++textureId;
