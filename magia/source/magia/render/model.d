@@ -816,9 +816,9 @@ final class ModelInstance : Instance3D, Drawable3D {
         _model = Magia.res.get!Model(fileName);
 
         if (nbBones == 0) {
-            _shader = modelShader;
+            _shader = Magia.res.get!Shader("model");
         } else {
-            _shader = animatedShader;
+            _shader = Magia.res.get!Shader("animated");
         }
     }
 

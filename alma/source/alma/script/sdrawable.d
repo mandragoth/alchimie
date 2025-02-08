@@ -24,6 +24,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     GrType modelType = library.addNative("Model", [], "Entity");
     GrType quadType = library.addNative("Quad", [], "Entity");
     GrType sphereType = library.addNative("Sphere", [], "Entity");
+    GrType rayTracerType = library.addNative("RayTracer", [], "Entity");
 
     // Entity constructors
     library.addConstructor(&_newRect, rectType, [grInt, grInt, colorType]);
@@ -34,6 +35,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addConstructor(&_newModel, modelType, [grString]);
     library.addConstructor(&_newQuad, quadType);
     library.addConstructor(&_newSphere, sphereType);
+    library.addConstructor(&_newRayTracer, rayTracerType);
 
     // Instance operations
     library.addFunction(&_getGlobalPosition2D, "globalPosition2D", [instanceType], [vec2Type]);
@@ -194,6 +196,12 @@ private void _newQuad(GrCall call) {
 private void _newSphere(GrCall call) {
     Sphere sphere = new Sphere(100, 10);
     call.setNative(sphere);
+}
+
+private void _newRayTracer(GrCall call) {
+    RayTracer rayTracer = new RayTracer();
+    Magia.addDrawable(rayTracer);
+    call.setNative(rayTracer);
 }
 
 private void _newDirectionalLight(GrCall call) {

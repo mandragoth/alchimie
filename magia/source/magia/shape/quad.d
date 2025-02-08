@@ -7,9 +7,11 @@ import std.stdio;
 import bindbc.opengl;
 
 import magia.core;
+import magia.main;
 import magia.render;
 
 /// Instance of quad
+// @TODO rework
 final class Quad : Instance3D, Drawable3D {
     private {
         Shader _shader;
@@ -25,7 +27,7 @@ final class Quad : Instance3D, Drawable3D {
             new Texture(buildNormalizedPath("assets", "texture", "planksSpec.png"), TextureType.specular, 1)
         ];
 
-        _shader = modelShader;
+        _shader = Magia.res.get!Shader("model");
     }
 
     /// Render the quad

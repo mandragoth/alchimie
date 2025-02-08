@@ -94,43 +94,17 @@ class Renderer(uint dimension_) {
         glBlendEquation(GL_FUNC_ADD);
     }
 
-    private void setupCircleShader(vec2 position = vec2.zero, float size = 1f,
-                                   Color color = Color.white, float alpha = 1f, Blend blend = Blend.alpha) {
-        // Set color
-        circleShader.uploadUniformVec4("u_Color", vec4(color.r, color.g, color.b, alpha));
-
-        // Set position
-        circleShader.uploadUniformVec2("u_Position", position);
-
-        // Set position
-        circleShader.uploadUniformFloat("u_Size", size);
-
-        // Set blend
-        final switch (blend) with (Blend) {
-            case none:
-                glBlendFuncSeparate(GL_SRC_COLOR, GL_ZERO, GL_ONE, GL_ZERO);
-                glBlendEquation(GL_FUNC_ADD);
-                break;
-            case additive:
-                glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_COLOR, GL_ZERO, GL_ONE);
-                glBlendEquation(GL_FUNC_ADD);
-                break;
-            case alpha:
-                glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-                glBlendEquation(GL_FUNC_ADD);
-                break;
-        }
-    }
-
     /// Draw any mesh with any material
-    void draw(type)(Mesh!(dimension_) mesh, Shader shader, Texture[] textures, type[] instanceData) {
+    void draw(type)(Mesh!(dimension_) mesh, Shader shader, Texture[] textures, type[] instanceData = []) {
         // Set per instance data
-        mesh.setInstanceData(instanceData);
+        if (instanceData) {
+            mesh.setInstanceData(instanceData);
+        }
 
         // Activate shader
         shader.activate();
 
-        // Setup uniform data
+        // Setup uniform data (@TODO handle)
         //shader.setupUniformData();
 
         // One draw call per camera
@@ -196,17 +170,17 @@ version (Windows) {
             const GLchar* message, void*) nothrow {
             switch (severity) {
             case GL_DEBUG_SEVERITY_HIGH:
-                printf("[OPENGL][FATAL] %s", message);
+                printf("[OPENGL][FATAL] %s\n", message);
                 break;
             case GL_DEBUG_SEVERITY_MEDIUM:
-                printf("[OPENGL][MEDIUM] %s", message);
+                printf("[OPENGL][MEDIUM] %s\n", message);
                 break;
             case GL_DEBUG_SEVERITY_LOW:
-                printf("[OPENGL][MINOR] %s", message);
+                printf("[OPENGL][MINOR] %s\n", message);
                 break;
             case GL_DEBUG_SEVERITY_NOTIFICATION:
             default:
-                //printf("[OPENGL][INFO] %s", message);
+                printf("[OPENGL][INFO] %s\n", message);
                 break;
             }
         }

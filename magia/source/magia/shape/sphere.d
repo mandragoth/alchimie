@@ -3,13 +3,16 @@ module magia.shape.sphere;
 import bindbc.opengl;
 
 import magia.core;
+import magia.main;
 import magia.render;
 
 import std.stdio;
 
 /// Instance of sphere
+// @TODO rework
 class Sphere : Instance3D, Drawable3D {
     protected {
+        Shader _shader;
         Mesh3D[] _meshes;
 
         // Sphere parameters
@@ -24,6 +27,7 @@ class Sphere : Instance3D, Drawable3D {
     this(int resolution, float radius) {
         transform = Transform3D.identity;
 
+        _shader = Magia.res.get!Shader("model");
         _resolution = resolution;
         _radius = radius;
 
@@ -113,7 +117,7 @@ class Sphere : Instance3D, Drawable3D {
     void draw(Renderer3D renderer) {
         /// @TODO fetch real position in renderer space
         foreach(Mesh3D mesh; _meshes) {
-            mesh.draw(modelShader, [defaultTexture], globalModel);
+            mesh.draw(_shader, [defaultTexture], globalModel);
         }
     }
 }

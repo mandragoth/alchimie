@@ -18,6 +18,7 @@ enum TextureType {
     diffuse,
     specular,
     cubemap,
+    compute,
     postprocess,
     multisample,
     shadowmap,
@@ -303,6 +304,35 @@ class Texture : Resource!Texture {
     /// Release texture
     void remove() {
         glDeleteTextures(_nbTextures, &_id);
+    }
+}
+
+/// Compute shader texture
+// @TODO extract to parent class fully?
+class ComputeShaderTexture : Texture {
+    /// Constructor given screen dimensions
+    this(uint width, uint height) {
+        GLenum target = GL_TEXTURE_2D;
+        super(width, height, target, TextureType.compute);
+
+        // Create texture
+        glCreateTextures(_target, 1, &_id);
+
+        // Setup filters
+        glTextureParameteri(_id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTextureParameteri(_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        // Setup wrap
+        glTextureParameteri(_id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        // Setup formats
+        _internalFormat = GL_RGBA32F;
+        _dataFormat = GL_RGBA32F;
+
+        // Generate storage and bind texture
+        glTextureStorage2D(_id, 1, _internalFormat, width, height);
+        glBindImageTexture(0, _id, 0, GL_FALSE, 0, GL_WRITE_ONLY, _dataFormat);
     }
 }
 

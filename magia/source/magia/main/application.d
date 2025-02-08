@@ -193,9 +193,6 @@ class Magia {
         _window = new Window(size, title);
         _tickStartFrame = Clock.currStdTime();
 
-        // Lighting manager
-        _lightingManager = new LightingManager();
-
         // Create renderers and their associated coordinate system and camera
         _renderer3D = new Renderer3D(_window, Cartesian3D.center);
         _renderer2D = new Renderer2D(_window, Cartesian2D(_window.topLeft, vec2.bottomRight));
@@ -230,8 +227,8 @@ class Magia {
             return;
         }
 
-        // Load shaders
-        loadShaders();
+        // Lighting manager
+        //_lightingManager = new LightingManager();
 
         _tickStartFrame = Clock.currStdTime();
         while (isRunning()) {
@@ -276,7 +273,7 @@ class Magia {
         }
 
         // Update scenes (default order: 3D, 2D, UI)
-        private void updateScenes() {
+        void updateScenes() {
             foreach (Scene3D scene3D; _scenes3D) {
                 scene3D.update();
             }
@@ -291,7 +288,9 @@ class Magia {
         /// Render application
         void draw() {
             // Setup light
-            _lightingManager.setup();
+            if (_lightingManager) {
+                _lightingManager.setup();
+            }
 
             // Draw scenes
             drawScenes();

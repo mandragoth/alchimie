@@ -16,9 +16,18 @@ import magia.render.window;
 /// Class holding a shader
 class Shader : Resource!Shader {
     private {
+        enum Type {
+            VERTEX,
+            FRAGMENT,
+            COMPUTE,
+            NONE
+        }
+
         GLuint _id;
+        GLuint _computeId;
         GLuint _vertexShader;
         GLuint _fragmentShader;
+        GLuint _computeShader;
     }
 
     /// Constructor given 1 file
@@ -26,35 +35,30 @@ class Shader : Resource!Shader {
         string text = Magia.res.readText(filePath);
         string vertexData;
         string fragmentData;
+        string computeData;
 
-        bool readingVertex = false;
-        bool readingFragment = false;
+        Type readingType = Type.NONE;
         foreach (string line; text.splitLines(KeepTerminator.yes)) {
             if (startsWith(line, "#type")) {
                 line = strip(line);
 
                 if (endsWith(line, "vert")) {
-                    readingVertex = true;
-                    readingFragment = false;
+                    readingType = Type.VERTEX;
                 } else if (endsWith(line, "frag")) {
-                    readingVertex = false;
-                    readingFragment = true;
+                    readingType = Type.FRAGMENT;
+                } else if (endsWith(line, "comp")) {
+                    readingType = Type.COMPUTE;
                 }
-            } else if (readingVertex) {
+            } else if (readingType == Type.VERTEX) {
                 vertexData ~= line;
-            } else if (readingFragment) {
+            } else if (readingType == Type.FRAGMENT) {
                 fragmentData ~= line;
+            } else if (readingType == Type.COMPUTE) {
+                computeData ~= line;
             }
         }
 
-        setupShaders(filePath, filePath, vertexData, fragmentData);
-    }
-
-    /// Constructor given 2 files
-    this(string vertexFile, string fragmentFile) {
-        string vertexData = Magia.res.readText(vertexFile);
-        string fragmentData = Magia.res.readText(fragmentFile);
-        setupShaders(vertexFile, fragmentFile, vertexData, fragmentData);
+        setupShaders(filePath, vertexData, fragmentData, computeData);
     }
 
     /// Copy constructor
@@ -70,6 +74,15 @@ class Shader : Resource!Shader {
 
     /// Shader turned on
     void activate() const {
+        if (_computeShader) {
+            glUseProgram(_computeId);
+
+            // @TODO parametrize chunk size
+            glDispatchCompute(Magia.window.screenWidth, Magia.window.screenHeight, 1);
+            // @TODO parametrize barrier
+            glMemoryBarrier(GL_ALL_BARRIER_BITS);
+        }
+
         glUseProgram(_id);
     }
 
@@ -123,25 +136,55 @@ class Shader : Resource!Shader {
     }
 
     private {
-        void setupShaders(string vertexPath, string fragmentPath,
-            string vertexData, string fragmentData) {
-            const char* vertexSource = toStringz(vertexData);
-            const char* fragmentSource = toStringz(fragmentData);
+        void setupShaders(string filePath,
+                          string vertexData,
+                          string fragmentData,
+                          string computeData) {
+            const bool hasVertex = !vertexData.empty();
+            const bool hasFragment = !fragmentData.empty();
+            const bool hasCompute = !computeData.empty();
 
-            _vertexShader = glCreateShader(GL_VERTEX_SHADER);
-            glShaderSource(_vertexShader, 1, &vertexSource, null);
-            glCompileShader(_vertexShader);
-            compileErrors(_vertexShader, vertexPath, "Vertex");
+            if (hasVertex) {
+                const char* vertexSource = toStringz(vertexData);
+                _vertexShader = glCreateShader(GL_VERTEX_SHADER);
+                glShaderSource(_vertexShader, 1, &vertexSource, null);
+                glCompileShader(_vertexShader);
+                compileErrors(_vertexShader, filePath, "Vertex");
+            }
 
-            _fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-            glShaderSource(_fragmentShader, 1, &fragmentSource, null);
-            glCompileShader(_fragmentShader);
-            compileErrors(_fragmentShader, fragmentPath, "Fragment");
+            if (hasFragment) { 
+                const char* fragmentSource = toStringz(fragmentData);
+                _fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+                glShaderSource(_fragmentShader, 1, &fragmentSource, null);
+                glCompileShader(_fragmentShader);
+                compileErrors(_fragmentShader, filePath, "Fragment");
+            }
+
+            if (hasCompute) {  
+                const char* computeSource = toStringz(computeData);
+                _computeShader = glCreateShader(GL_COMPUTE_SHADER);
+                glShaderSource(_computeShader, 1, &computeSource, null);
+                glCompileShader(_computeShader);
+                compileErrors(_computeShader, filePath, "Compute");
+            }
 
             _id = glCreateProgram();
-            glAttachShader(_id, _vertexShader);
-            glAttachShader(_id, _fragmentShader);
+            
+            if (hasVertex) {
+                glAttachShader(_id, _vertexShader);
+            }
+
+            if (hasFragment) {
+                glAttachShader(_id, _fragmentShader);
+            }
+
             glLinkProgram(_id);
+
+            if (hasCompute) {
+                _computeId = glCreateProgram();
+                glAttachShader(_computeId, _computeShader);
+                glLinkProgram(_computeId);
+            }
         }
 
         void compileErrors(GLuint shaderId, string path, string type) {

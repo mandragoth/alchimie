@@ -7,6 +7,7 @@ import std.stdio;
 import bindbc.opengl;
 
 import magia.core;
+import magia.main;
 import magia.render;
 
 /// Type of instantiated light
@@ -170,6 +171,15 @@ class LightingManager {
         DirectionalLight _directionalLight;
         PointLight[] _pointLights;
         SpotLight[] _spotLights;
+
+        Shader _modelShader;
+        Shader _animatedShader;
+    }
+
+    /// Constructor
+    this() {
+        _modelShader = Magia.res.get!Shader("model");
+        _animatedShader = Magia.res.get!Shader("animated");
     }
 
     @property {
@@ -199,8 +209,8 @@ class LightingManager {
     
     /// Setup lighting in shader
     void setup() {
-        setupInShader(modelShader);
-        setupInShader(animatedShader);
+        setupInShader(_modelShader);
+        setupInShader(_animatedShader);
     }
 
     private {

@@ -8,6 +8,7 @@ import magia.render.mesh;
 import magia.render.shader;
 import magia.render.texture;
 import magia.render.vertex;
+import magia.render.window;
 
 /// Static 2D sprite layout
 BufferLayout layout2D;
@@ -27,25 +28,16 @@ Mesh3D skyboxMesh;
 /// Default texture
 Texture defaultTexture;
 
-/// Line shader
-Shader lineShader;
-
-/// Rectangle shader
-Shader rectShader;
-
-/// Circle shader
-Shader circleShader;
-
-/// Model shader
-Shader modelShader;
-
-/// Animated model shader
-Shader animatedShader;
+/// Ray tracer texture
+Texture rayTracerTexture;
 
 /// Load all shapes at runtime
 void loadShapes() {
     // Default white pixel texture to be used if one is required and none provided
     defaultTexture = new Texture(1, 1, 0xffffffff);
+
+    // Raytracer texture
+    rayTracerTexture = new ComputeShaderTexture(Magia.window.screenWidth, Magia.window.screenHeight);
 
     layout2D = new BufferLayout([
         BufferElement("a_Position", LayoutType.ltFloat2),
@@ -123,13 +115,4 @@ void loadShapes() {
         3, 7, 6,
         6, 2, 3 
     ]));
-}
-
-/// Load shaders for draw calls
-void loadShaders() {
-    lineShader = Magia.res.get!Shader("line");
-    rectShader = Magia.res.get!Shader("rect");
-    circleShader = Magia.res.get!Shader("circle");
-    modelShader = Magia.res.get!Shader("model");
-    animatedShader = Magia.res.get!Shader("animated");
 }
