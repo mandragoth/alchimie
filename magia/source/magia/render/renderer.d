@@ -94,7 +94,7 @@ class Renderer(uint dimension_) {
         glBlendEquation(GL_FUNC_ADD);
     }
 
-    /// Draw any mesh with any material
+    /// Draw a mesh with a texture array
     void draw(type)(Mesh!(dimension_) mesh, Shader shader, Texture[] textures, type[] instanceData = []) {
         // Set per instance data
         if (instanceData) {
@@ -114,7 +114,7 @@ class Renderer(uint dimension_) {
         }
     }
 
-    /// Draw any mesh with any material
+    /// Draw a mesh with a compute shader texture
     void draw(type)(Mesh!(dimension_) mesh, Shader shader, ComputeShaderTexture texture, type[] instanceData = []) {
         // Set per instance data
         if (instanceData) {

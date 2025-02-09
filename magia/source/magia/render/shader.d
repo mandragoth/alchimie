@@ -29,6 +29,7 @@ class Shader : Resource!Shader {
         GLuint _vertexShader;
         GLuint _fragmentShader;
         GLuint _computeShader;
+        vec3u  _computeGroups;
     }
 
     /// Constructor given 1 file
@@ -77,14 +78,18 @@ class Shader : Resource!Shader {
     void activate() const {
         if (_computeShader) {
             glUseProgram(_computeId);
-
-            // @TODO parametrize chunk size
-            glDispatchCompute(Magia.window.screenWidth / 8, Magia.window.screenHeight / 4, 1);
+            glDispatchCompute(_computeGroups.x, _computeGroups.y, _computeGroups.z);
             // @TODO parametrize barrier
             glMemoryBarrier(GL_ALL_BARRIER_BITS);
         }
 
-        glUseProgram(_id);
+        if (_vertexShader || _fragmentShader) {
+            glUseProgram(_id);
+        }
+    }
+
+    void setComputeDispatch(uint numGroupsX, uint numGroupsY, uint numGroupsZ) {
+        _computeGroups = vec3u(numGroupsX, numGroupsY, numGroupsZ);
     }
 
     /// Shader turned off

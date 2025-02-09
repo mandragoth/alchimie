@@ -1,6 +1,11 @@
 {
     "resources": [
         {
+            "file": "color.glsl",
+            "name": "color",
+            "type": "shader"
+        },
+        {
             "file": "animated.glsl",
             "name": "animated",
             "type": "shader"
@@ -44,6 +49,11 @@
             "file": "raytracer.glsl",
             "name": "raytracer",
             "type": "shader"   
-        }
+        },
+        {
+            "file": "particles.glsl",
+            "name": "particles",
+            "type": "shader"   
+        },
     ]
 }

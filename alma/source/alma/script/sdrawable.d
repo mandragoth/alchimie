@@ -24,7 +24,10 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     GrType modelType = library.addNative("Model", [], "Entity");
     GrType quadType = library.addNative("Quad", [], "Entity");
     GrType sphereType = library.addNative("Sphere", [], "Entity");
-    GrType rayTracerType = library.addNative("RayTracer", [], "Entity");
+
+    library.addNative("Drawable");
+    GrType rayTracerType = library.addNative("RayTracer", [], "Drawable");
+    GrType particlePoolType = library.addNative("ParticlePool", [], "Drawable");
 
     // Entity constructors
     library.addConstructor(&_newRect, rectType, [grInt, grInt, colorType]);
@@ -36,6 +39,7 @@ package void loadAlchimieLibDrawable(GrLibDefinition library) {
     library.addConstructor(&_newQuad, quadType);
     library.addConstructor(&_newSphere, sphereType);
     library.addConstructor(&_newRayTracer, rayTracerType);
+    library.addConstructor(&_newParticlePool, particlePoolType);
 
     // Instance operations
     library.addFunction(&_getGlobalPosition2D, "globalPosition2D", [instanceType], [vec2Type]);
@@ -202,6 +206,12 @@ private void _newRayTracer(GrCall call) {
     RayTracer rayTracer = new RayTracer();
     Magia.addDrawable(rayTracer);
     call.setNative(rayTracer);
+}
+
+private void _newParticlePool(GrCall call) {
+    ParticlePool particlePool = new ParticlePool();
+    Magia.addDrawable(particlePool);
+    call.setNative(particlePool);
 }
 
 private void _newDirectionalLight(GrCall call) {

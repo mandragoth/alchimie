@@ -21,6 +21,13 @@ class VertexArray {
         IndexBuffer _indexBuffer;
     }
 
+    /// Default constructor
+    this() {
+        // Create vertex array and bind it
+        glCreateVertexArrays(1, &_id);
+        glBindVertexArray(_id);
+    }
+
     /// Constructor
     this(VertexBuffer vertexBuffer, IndexBuffer indexBuffer) {
         // Create vertex array and bind it

@@ -34,9 +34,13 @@ func @Particle() (Particle) {
 }
 
 task runtime() {
-    //var rayTracer = @RayTracer();
+    /*var rect = @Rect(boundingBox.x, boundingBox.y, @color(.08f, .10f, .13f));
+    rect:position(@vec2f(400f, 300f));*/
 
-    spawnParticles();
+    //var rayTracer = @RayTracer();
+    var particlePool = @ParticlePool();
+
+    //spawnParticles();
 
     /*var rect2 = @Rect(32, 48, @color(0f, 0f, 1f));
     rect2:position(@vec2f(200f, 150f));
@@ -94,9 +98,6 @@ task runtime() {
 }
 
 func spawnParticles() {
-    var rect = @Rect(boundingBox.x, boundingBox.y, @color(.08f, .10f, .13f));
-    rect:position(@vec2f(400f, 300f));
-
     var particleSize = 10;
     var particles = list<Particle, 60>;
 

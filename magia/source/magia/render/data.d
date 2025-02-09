@@ -3,6 +3,8 @@ module magia.render.data;
 import magia.core;
 import magia.main;
 import magia.render.buffer;
+import magia.render.element;
+import magia.render.layout;
 import magia.render.material;
 import magia.render.mesh;
 import magia.render.shader;
