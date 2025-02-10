@@ -104,9 +104,6 @@ class Renderer(uint dimension_) {
         // Activate shader
         shader.activate();
 
-        // Setup uniform data (@TODO handle)
-        //shader.setupUniformData();
-
         // One draw call per camera
         foreach (Camera camera; cameras) {
             shader.uploadUniformMat4("u_CamMatrix", camera.matrix);

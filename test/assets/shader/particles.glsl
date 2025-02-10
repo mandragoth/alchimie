@@ -3,10 +3,10 @@
 
 layout (location = 0) in vec3 a_Position;
 
-//uniform mat4 u_CamMatrix;
+uniform mat4 u_CamMatrix;
 
 void main() {
-    gl_Position = vec4(a_Position, 1.0);
+    gl_Position = u_CamMatrix * vec4(a_Position, 1.0);
 }
 
 #type frag
@@ -15,7 +15,7 @@ void main() {
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-    fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    fragColor = vec4(0.5, 0.5, 0.5, 1.0);
 }
 
 #type comp

@@ -4,6 +4,7 @@ import magia.core.mat;
 import magia.core.vec;
 import magia.main;
 import magia.render.array;
+import magia.render.camera;
 import magia.render.drawable;
 import magia.render.element;
 import magia.render.layout;
@@ -83,6 +84,7 @@ class ParticlePool : Drawable3D {
     /// Draw particles
     void draw(Renderer3D renderer) {
         _shader.activate();
+        _shader.uploadUniformMat4("u_CamMatrix", renderer.cameras[0].matrix);
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
