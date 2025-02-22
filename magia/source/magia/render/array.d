@@ -28,7 +28,17 @@ class VertexArray {
         glBindVertexArray(_id);
     }
 
-    /// Constructor
+    /// Constructor taking only vertex buffer
+    this(VertexBuffer vertexBuffer) {
+        // Create vertex array and bind it
+        glCreateVertexArrays(1, &_id);
+        glBindVertexArray(_id);
+
+        // Set up vertex buffer elements
+        vertexBuffer.setupElements();
+    }
+
+    /// Constructor taking vertex and index buffers
     this(VertexBuffer vertexBuffer, IndexBuffer indexBuffer) {
         // Create vertex array and bind it
         glCreateVertexArrays(1, &_id);

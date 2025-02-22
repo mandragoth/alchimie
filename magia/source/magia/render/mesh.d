@@ -25,8 +25,28 @@ final class Mesh(uint dimension_) : Resource!Mesh {
         uint _nbInstances = 0;
     }
 
-    /// Constructor
-    this(VertexBuffer vertexBuffer, IndexBuffer indexBuffer = null, GLenum drawMode = GL_TRIANGLES) {
+    /// Constructor without data
+    this(GLenum drawMode) {
+        // Setup members from ctr
+        _drawMode = drawMode;
+
+        // Generate and bind vertex array
+        _vertexArray = new VertexArray();
+    }
+
+    /// Constructor with vertices
+    this(VertexBuffer vertexBuffer, GLenum drawMode = GL_TRIANGLES) {
+        // Setup members from ctr
+        _drawMode = drawMode;
+        _vertexBuffer = vertexBuffer;
+
+        // Generate and bind vertex array
+        _vertexArray = new VertexArray(_vertexBuffer);
+        _vertexArray.bind();
+    }
+
+    /// Constructor taking vertices and indices
+    this(VertexBuffer vertexBuffer, IndexBuffer indexBuffer, GLenum drawMode = GL_TRIANGLES) {
         // Setup members from ctr
         _drawMode = drawMode;
         _vertexBuffer = vertexBuffer;
@@ -67,6 +87,11 @@ final class Mesh(uint dimension_) : Resource!Mesh {
         _nbInstances = cast(uint)data.length;
         _instanceBuffer.setData(data);
     }
+
+    /// Temporary: bind mesh VAO to SSBO
+    /*void bindToSSBO(BufferLayout layout, GLuint ssboBuffer) {
+
+    }*/
 
     /// Bind shader, vertex array
     // @TODO handle uniform upload

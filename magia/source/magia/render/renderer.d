@@ -95,7 +95,7 @@ class Renderer(uint dimension_) {
     }
 
     /// Draw a mesh with a texture array
-    void draw(type)(Mesh!(dimension_) mesh, Shader shader, Texture[] textures, type[] instanceData = []) {
+    void draw(type)(Mesh!(dimension_) mesh, Shader shader, Texture[] textures = [], type[] instanceData = []) {
         // Set per instance data
         if (instanceData) {
             mesh.setInstanceData(instanceData);
@@ -180,7 +180,7 @@ version (Windows) {
             const GLchar* message, void*) nothrow {
             switch (severity) {
             case GL_DEBUG_SEVERITY_HIGH:
-                printf("[OPENGL][FATAL] %s\n", message);
+                //printf("[OPENGL][FATAL] %s\n", message);
                 break;
             case GL_DEBUG_SEVERITY_MEDIUM:
                 printf("[OPENGL][MEDIUM] %s\n", message);
