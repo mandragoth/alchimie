@@ -18,28 +18,26 @@ import magia.render.shader;
 
 import bindbc.opengl;
 
+import std.random;
 import std.stdio;
 
-///
-const uint nbParticlesX = 10;
-///
-const uint nbParticlesY = 10;
-///
-const uint nbParticlesZ = 10;
-///
-const uint nbTotalParticles = nbParticlesX * nbParticlesY * nbParticlesZ;
+/// Number of particles in simulation
+const uint nbParticles = 100;
 
 /// Instance data
 struct ParticleData {
-    /// Positions
+    /// Position
     vec4 position;
 
-    /// Colors
+    /// Color
     vec4 color;
+
+    /// Speed
+    vec4 speed;
 }
 
 /// Particle pool
-class ParticlePool : Drawable3D {
+class ParticlePool : Drawable2D {
     private {
         Mesh3D _mesh;
         VertexArray _vertexArray;
@@ -51,7 +49,7 @@ class ParticlePool : Drawable3D {
     this() {
         _mesh = new Mesh3D(GL_POINTS);
         _shader = Magia.res.get!Shader("particles");
-        _shader.setComputeDispatch(nbTotalParticles, 1, 1);
+        _shader.setComputeDispatch(nbParticles, 1, 1);
         initBuffers();
     }
 
@@ -64,8 +62,9 @@ class ParticlePool : Drawable3D {
 
         // Information to forward for each rendered instance
         BufferLayout bufferLayout = new BufferLayout([
-            BufferElement("pos", LayoutType.ltFloat4),
+            BufferElement("position", LayoutType.ltFloat4),
             BufferElement("color", LayoutType.ltFloat4),
+            BufferElement("speed", LayoutType.ltFloat4),
         ]);
 
         const GLsizeiptr bufferSize = particleData.length * ParticleData.sizeof;
@@ -82,34 +81,23 @@ class ParticlePool : Drawable3D {
 
     /// Compute position for each particle
     private void computePositions(ref ParticleData[] particleData) {
-        vec4 p = vec4(0f, 0f, 0f, 1f);
-
-        const float dx = 2.0f / nbParticlesX;
-        const float dy = 2.0f / nbParticlesY;
-        const float dz = 2.0f / nbParticlesZ;
-
-        for (int x = 0; x < nbParticlesX; ++x) {
-            for (int y = 0; y < nbParticlesY; ++y) {
-                for (int z = 0; z < nbParticlesZ; ++z) {
-                    p.x = dx * x - 1f;
-                    p.y = dy * y - 1f;
-                    p.z = dz * z - 1f;
-                    p.w = 1.0f;
-                    particleData ~= ParticleData(p);
-                }
-            }
+        for (int i = 0; i < nbParticles; ++i) {
+            const float x = 800f * uniform01!float() - 400;
+            const float y = 600f * uniform01!float() - 300;
+            particleData ~= ParticleData(vec4(x, y, 0f, 1.0f), vec4(0f, 0.6f, 1f, 1f), vec4.zero);
         }
     }
 
     /// Draw particles
-    void draw(Renderer3D renderer) {
+    void draw(Renderer2D renderer) {
         // Setup shader
         _shader.activate();
         _shader.uploadUniformMat4("u_CamMatrix", renderer.cameras[0].matrix);
 
         // Draw the particles
         _vertexArray.bind();
-        glDrawArrays(GL_POINTS, 0, nbTotalParticles);
+        glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+        glDrawArrays(GL_POINTS, 0, nbParticles);
         _vertexArray.unbind();
 
         // Should be replacable with:
