@@ -13,11 +13,12 @@ package void loadAlchimieLibMath(GrLibDefinition library) {
     // Maths types @TODO matrice dedicated lib
     library.addNative("mat4");
 
+    GrType vec2IType = grGetNativeType("vec2", [grInt]);
     GrType vec2UType = grGetNativeType("vec2", [grUInt]);
 
     // Maths functions
     library.addFunction(&_uniform01, "uniform01", [], [grFloat]);
-    library.addFunction(&_hashvec2u, "hashvec2u", [vec2UType], [grUInt]);
+    library.addFunction(&_hashvec2i, "hashvec2i", [vec2IType], [grUInt]);
     library.addFunction(&_sortbyvalue, "sortbyvalue", [grList(vec2UType)], []);
 }
 
@@ -29,10 +30,10 @@ const uint primeX = 15823;
 const uint primeY = 9737333;
 
 // Note: hash done here to avoid overflow panick
-private void _hashvec2u(GrCall call) {
-    vec2u data = cast(vec2u) call.getNative!SVec2u(0);
-    uint a = data.x * primeX;
-    uint b = data.y * primeY;
+private void _hashvec2i(GrCall call) {
+    vec2i data = cast(vec2i) call.getNative!SVec2i(0);
+    uint a = cast(uint) data.x * primeX;
+    uint b = cast(uint) data.y * primeY;
     call.setUInt(a + b);
 }
 

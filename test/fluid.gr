@@ -1,0 +1,354 @@
+export func positionToCell(point: vec2f, radius: float)(vec2i) {
+    var cellX = (point.x / radius) as <int>;
+    var cellY = (point.y / radius) as <int>;
+    return @vec2i(cellX, cellY);
+}
+
+const boundingBox = @vec2i(800, 600);
+const left  = 0;
+const right = boundingBox.x;
+const up    = 0;
+const down  = boundingBox.y;
+
+const smoothingRadius = 100f;
+const squaredSmoothingRadius = smoothingRadius * smoothingRadius;
+const targetDensity = 1.25f;
+const pressureMultiplier = 20f;
+const mass = 1f;
+
+class Particle {
+    var circle: Circle;
+    var velocity: vec2f;
+    var density: float;
+}
+
+func @Particle() (Particle) {
+    return @Particle{};
+}
+
+export func spawnParticles() {
+    var particleSize = 10;
+    var particles = list<Particle, 100>;
+    var spatialLookup = list<vec2u, 100>;
+    var startIndices = list<uint, 100>;
+
+    // Grid spawn
+    /*var nbParticlesRow = 3;
+    var nbParticlesCol = 3;
+    var spacing = particleSize;
+    loop (i, 10) {
+        var x = 400f + (i % nbParticlesRow - nbParticlesRow / 2f - 0.5f) * spacing;
+        var y = 300f + (i / nbParticlesCol - nbParticlesCol / 2f - 0.5f) * spacing;
+        particles[i] = @Circle(particleSize, @color(0f, 0.6f, 1f));
+        particles[i]:position(@vec2f(x, y));
+    }*/
+
+    // Random spawn
+    loop (i, particles.size()) {
+        var x = left + (right - left) * uniform01();
+        var y = up + (down - up) * uniform01();
+        particles[i].circle = @Circle(particleSize, @color(0f, 0.6f, 1f));
+        particles[i].circle:position(@vec2f(x, y));
+    }
+
+    particles:updatePhysics(spatialLookup, startIndices);
+}
+
+const pi = PI as <float>;
+
+func getHashKey(hash: uint, nbParticles: uint)(uint) {
+    return hash % nbParticles;
+}
+
+const maxuint = 4294967295;
+
+func updateSpatialLookup(particles: list<Particle>, radius: float, spatialLookup: list<vec2u>, startIndices: list<uint>) {
+    // Create unordered spatial lookup table
+    loop (pointId, particles.size) {
+        var cellPos = positionToCell(particles[pointId].circle:localPosition2D, radius);
+        var cellKey = getHashKey(hashvec2i(cellPos), particles.size);
+
+        spatialLookup[pointId] = @vec2u(pointId, cellKey);
+        startIndices[pointId] = maxuint;
+    }
+
+    // Sort by cell key
+    spatialLookup:sortbyvalue();
+
+    /*print("Spacial lookup after sort: ");
+    loop (pointId, particles.size) {
+        print("spacialLookup[" ~ pointId as <string> ~ "]: (" ~ spatialLookup[pointId].x as <string> ~ ", " ~ spatialLookup[pointId].y as <string> ~ ")");
+    }*/
+
+    // Calculate start indices of each key cell in the spatial lookup
+    loop (pointId, particles.size) {
+        var currentKey = spatialLookup[pointId].y;
+
+        var previousKey = maxuint;
+        if (pointId != 0) {
+            previousKey = spatialLookup[pointId - 1].y;
+        }
+
+        if (currentKey != previousKey) {
+            startIndices[currentKey] = pointId;
+        }
+    }
+
+    /*print("Start indices: ");
+    loop (i, particles.size) {
+        var value = startIndices[i];
+        var sValue : string;
+        if (value == maxuint) {
+            sValue = "-1";
+        } else {
+            sValue = value as <string>;
+        }
+
+        print("startIndices[" ~ i as <string> ~ "]: " ~ sValue);
+    }*/
+}
+
+// 3x3 offset grid
+const cellOffsets = [
+    @vec2i(-1,  1),
+    @vec2i( 0,  1),
+    @vec2i( 1,  1),
+    @vec2i(-1,  0),
+    @vec2i( 0,  0),
+    @vec2i( 1,  0),
+    @vec2i(-1, -1),
+    @vec2i( 0, -1),
+    @vec2i( 1, -1),
+];
+
+export func debugFluid(mousePos: vec2f) {
+    var mouseCellPos = positionToCell(mousePos, smoothingRadius);
+
+    print("Mouse pos: " ~ mousePos);
+    print("Mouse cell: " ~ mouseCellPos);
+
+    loop (offsetId, cellOffsets.size) {
+        var cellPos = mouseCellPos + cellOffsets[offsetId];
+        print("Offset cell: " ~ cellPos[offsetId]);
+    }
+}
+
+func computeSampleDensity(particles: list<Particle>, spatialLookup: list<vec2u>, startIndices: list<uint>, samplePoint: vec2f)(float) {
+    // Fetch cell in which sample point is
+    var sampleCellPos = positionToCell(samplePoint, smoothingRadius);
+
+    // Loop over all cells of the 3x3 block around the sample cell
+    var density = 0f;
+    loop (offsetId, cellOffsets.size) {
+        // Get cell key
+        var cellPos = sampleCellPos + cellOffsets[offsetId];
+        var cellKey = getHashKey(hashvec2i(cellPos), particles.size);
+
+        // Visit cells in spatial lookup after current one
+        var cellStartId = startIndices[cellKey];
+        var cellId = cellStartId;
+        while (cellId < spatialLookup.size as <uint>) {
+            // Exit loop if we're no longer in the right cell
+            if (spatialLookup[cellId].y != cellKey) {
+                break;
+            }
+
+            // Get sample point distance to other particle
+            var particleId = spatialLookup[cellId].x;
+            var towards = particles[particleId].circle:localPosition2D - samplePoint;
+            var squaredDistance = towards:squaredMagnitude;
+
+            // Test if sample point falls within radius
+            if (squaredDistance < squaredSmoothingRadius) {
+                var distance = towards:magnitude;
+                var influence = smoothingKernel(smoothingRadius, distance);
+                density += mass * influence;
+            }
+
+            cellId++;
+        }
+    }
+
+    //print("density: " ~ density);
+
+    return density;
+}
+
+func smoothingKernel(radius: float, distance: float)(float) {
+    if (distance >= radius) {
+        return 0f;
+    }
+
+    var unitRadius = radius / 100f;
+    var unitDistance = distance / 100f;
+
+    var radius4 = unitRadius * unitRadius * unitRadius;
+    var volume = (pi * radius4 / 6f);
+    return (unitRadius - unitDistance) * (unitRadius - unitDistance) / volume;
+}
+
+func smoothingKernelDerivative(radius: float, distance: float)(float) {
+    if (distance >= radius) {
+        return 0f;
+    }
+
+    var unitRadius = radius / 100f;
+    var unitDistance = distance / 100f;
+
+    var radius4 = unitRadius * unitRadius * unitRadius;
+    var rate = 12f / (pi * radius4);
+    return (unitDistance - unitRadius) * rate;
+}
+
+func computeDensity(particles: list<Particle>, spatialLookup: list<vec2u>, startIndices: list<uint>, particleId: uint)(float) {
+    var samplePoint = particles[particleId].circle:localPosition2D;
+    return computeSampleDensity(particles, spatialLookup, startIndices, samplePoint);
+}
+
+func densityToPressure(density: float)(float) {
+    var densityError = density - targetDensity;
+    var pressure = densityError * pressureMultiplier;
+    return pressure;
+}
+
+func computeSharedPressure(density1: float, density2: float)(float) {
+    var pressure1 = densityToPressure(density1);
+    var pressure2 = densityToPressure(density2);
+    return (pressure1 + pressure2) / 2f;
+}
+
+func getRandomDirection()(vec2f) {
+    var x = (uniform01() - 0.5f) * 2f;
+    var y = (uniform01() - 0.5f) * 2f;
+    return @vec2f(x, y);
+}
+
+func computePressureForce(particles: list<Particle>, spatialLookup: list<vec2u>, startIndices: list<uint>, particleId: uint)(vec2f) {
+    // Get sample point
+    var samplePoint = particles[particleId].circle:localPosition2D;
+
+    // Fetch cell in which sample point is
+    var sampleCellPos = positionToCell(samplePoint, smoothingRadius);
+
+    // Loop over all cells of the 3x3 block around the sample cell
+    var pressureForce: vec2f;
+    loop (offsetId, cellOffsets.size) {
+        // Get cell key
+        var cellPos = sampleCellPos + cellOffsets[offsetId];
+        var cellKey = getHashKey(hashvec2i(cellPos), particles.size);
+
+        // Visit cells in spatial lookup after current one
+        var cellStartId = startIndices[cellKey];
+        var cellId = cellStartId;
+        while (cellId < spatialLookup.size as <uint>) {
+            // Exit loop if we're no longer in the right cell
+            if (spatialLookup[cellId].y != cellKey) {
+                break;
+            }
+
+            // Get sample point distance to other particle
+            var otherParticleId = spatialLookup[cellId].x;
+            var towards = particles[otherParticleId].circle:localPosition2D - samplePoint;
+            var squaredDistance = towards:squaredMagnitude;
+
+            // Test if sample point falls within radius
+            if (squaredDistance < squaredSmoothingRadius) {
+                var distance = towards:magnitude;
+
+                var direction = @vec2f;
+                if (distance == 0) {
+                    direction = getRandomDirection();
+                } else {
+                    direction = towards / distance;
+                }
+
+                var slope = smoothingKernelDerivative(smoothingRadius, distance);
+
+                //print("slope: " ~ slope);
+
+                var density = particles[particleId].density;
+
+                //print("density: " ~ density);
+
+                if (density != 0) {
+                    var sharedPressure = computeSharedPressure(density, particles[otherParticleId].density);
+
+                    //print("sharedPressure: " ~ sharedPressure);
+
+                    pressureForce += sharedPressure * direction * slope * mass / density;
+                    
+                    //print("intermediate pressureForce: " ~ pressureForce);
+                }
+            }
+
+            cellId++;
+        }
+    }
+
+    //print("pressureForce: " ~ pressureForce);
+
+    return pressureForce;
+}
+
+func updatePhysics(particles: list<Particle>, spatialLookup: list<vec2u>, startIndices: list<uint>) {
+    loop yield {
+        updateSpatialLookup(particles, smoothingRadius, spatialLookup, startIndices);
+        computeGravityDensity(particles, spatialLookup, startIndices);
+        computePressure(particles, spatialLookup, startIndices);
+        applyPhysics(particles);
+    }
+}
+
+const deltaTime = 0.016f;
+
+func computeGravityDensity(particles: list<Particle>, spatialLookup: list<vec2u>, startIndices: list<uint>) {
+    loop (i, particles.size) {
+        particles[i].velocity += @vec2f(0f, 1f) * 9.8f * deltaTime;
+        particles[i].density = computeDensity(particles, spatialLookup, startIndices, i);
+    }
+}
+
+func computePressure(particles: list<Particle>, spatialLookup: list<vec2u>, startIndices: list<uint>) {
+    loop (i, particles.size) {
+        var pressureForce = computePressureForce(particles, spatialLookup, startIndices, i);
+        var pressureAcceleration = pressureForce / particles[i].density;
+        particles[i].velocity += pressureAcceleration * deltaTime;
+    }
+}
+
+func applyPhysics(particles: list<Particle>) {
+    loop (i, particles.size) {
+        var particlePos = particles[i].circle:localPosition2D + particles[i].velocity;
+        bounce(particles[i].circle, particlePos, particles[i].velocity);
+        particles[i].circle:position(particlePos);
+    }
+}
+
+func bounce(circle: Circle, position: vec2f, velocity: vec2f) {
+    var collisionLeft  = left + circle.size / 2f;
+    var collisionRight = right - circle.size / 2f;
+    var collisionUp    = up + circle.size / 2f;
+    var collisionDown  = down - circle.size / 2f;
+
+    var drag = 0.8f;
+
+    if (position.x < collisionLeft) {
+        position.x = collisionLeft;
+        velocity.x *= -1 * drag;
+    }
+
+    if (position.x > collisionRight) {
+        position.x = collisionRight;
+        velocity.x *= -1 * drag;
+    }
+
+    if (position.y < collisionUp) {
+        position.y = collisionUp;
+        velocity.y *= -1 * drag;
+    }
+
+    if (position.y > collisionDown) {
+        position.y = collisionDown;
+        velocity.y *= -1 * drag;
+    }
+}

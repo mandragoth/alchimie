@@ -101,8 +101,7 @@ event input(input: InputEvent) {
 
         // Debug cell
         /*var mousePos = @vec2f(input.globalX as <float>, input.globalY as <float>);
-        print("Mouse pos: " ~ mousePos);
-        print("Mouse cell: " ~ positionToCell(mousePos, 100f));*/
+        debugFluid(mousePos);*/
     }
 
     if (isActionActivated("exit")) {
