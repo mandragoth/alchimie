@@ -33,7 +33,13 @@ struct ParticleData {
     vec4 color;
 
     /// Speed
-    vec4 speed;
+    vec2 speed;
+
+    /// Density
+    float test;
+
+    /// Padding
+    float padding;
 }
 
 /// Particle pool
@@ -64,7 +70,9 @@ class ParticlePool : Drawable2D {
         BufferLayout bufferLayout = new BufferLayout([
             BufferElement("position", LayoutType.ltFloat4),
             BufferElement("color", LayoutType.ltFloat4),
-            BufferElement("speed", LayoutType.ltFloat4),
+            BufferElement("speed", LayoutType.ltFloat2),
+            BufferElement("density", LayoutType.ltFloat),
+            BufferElement("test", LayoutType.ltFloat),
         ]);
 
         const GLsizeiptr bufferSize = particleData.length * ParticleData.sizeof;
@@ -84,7 +92,7 @@ class ParticlePool : Drawable2D {
         for (int i = 0; i < nbParticles; ++i) {
             const float x = 800f * uniform01!float() - 400;
             const float y = 600f * uniform01!float() - 300;
-            particleData ~= ParticleData(vec4(x, y, 0f, 1.0f), vec4(0f, 0.6f, 1f, 1f), vec4.zero);
+            particleData ~= ParticleData(vec4(x, y, 0f, 1.0f), vec4(0f, 0.6f, 1f, 1f), vec2.zero);
         }
     }
 

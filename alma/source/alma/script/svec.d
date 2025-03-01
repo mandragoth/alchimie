@@ -91,6 +91,7 @@ private void _loadVec(int dimension)(GrLibDefinition library) {
 
         // Magnitude
         mixin("library.addFunction(&_magnitude!(dimension, type), \"magnitude\", [vec", type, "Type], [grFloat]);");
+        mixin("library.addFunction(&_squaredMagnitude!(dimension, type), \"squaredMagnitude\", [vec", type, "Type], [grFloat]);");
 
         // Conversion to string
         mixin("library.addCast(&_toString!(dimension, type), vec", type, "Type, grString);");
@@ -173,6 +174,11 @@ private void _rotate3(string type)(GrCall call) {
 private void _magnitude(int dimension, string type)(GrCall call) {
     mixin("SVec", dimension, "!Gr", type, " v = call.getNative!(SVec", dimension, "!Gr", type, ")(0);");
     call.setFloat(v.magnitude());
+}
+
+private void _squaredMagnitude(int dimension, string type)(GrCall call) {
+    mixin("SVec", dimension, "!Gr", type, " v = call.getNative!(SVec", dimension, "!Gr", type, ")(0);");
+    call.setFloat(v.squaredMagnitude());
 }
 
 private void _toString(int dimension, string type)(GrCall call) {

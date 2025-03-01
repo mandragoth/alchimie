@@ -76,7 +76,7 @@ struct Vector(type, uint dimension_) {
         }
 
         /// Returns the squared magnitude of the vector
-        real magnitude_squared() const {
+        real squaredMagnitude() const {
             real toReturn = 0;
 
             foreach(i; TupleRange!(0, dimension)) {
@@ -88,7 +88,7 @@ struct Vector(type, uint dimension_) {
 
         /// Returns the magnitude of the vector
         real magnitude() const {
-            return sqrt(magnitude_squared);
+            return sqrt(squaredMagnitude);
         }
 
         alias length = magnitude;

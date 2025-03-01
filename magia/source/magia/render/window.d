@@ -151,13 +151,15 @@ class Window {
     /// Update window behavior depending on its flags
     void update() {
         const uint flags = SDL_GetWindowFlags(_sdlWindow);
-        if (flags & SDL_WINDOW_MOUSE_FOCUS) {
+        /*if (flags & SDL_WINDOW_MOUSE_FOCUS) {
             SDL_SetRelativeMouseMode(SDL_TRUE);
             SDL_ShowCursor(SDL_DISABLE);
         } else {
             SDL_SetRelativeMouseMode(SDL_FALSE);
             SDL_ShowCursor(SDL_ENABLE);
-        }
+        }*/
+
+        SDL_ShowCursor(SDL_ENABLE);
     }
 
     /// Compute framerate and display window content

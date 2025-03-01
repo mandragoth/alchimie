@@ -1,3 +1,5 @@
+import "fluid.gr"
+
 export func setupControls() {
     // 3D camera
     addAction("move_left_3d");
@@ -96,6 +98,11 @@ event input(input: InputEvent) {
         var input = input.mouseMotion?;
         mouseX = input.relativeX;
         mouseY = input.relativeY;
+
+        // Debug cell
+        /*var mousePos = @vec2f(input.globalX as <float>, input.globalY as <float>);
+        print("Mouse pos: " ~ mousePos);
+        print("Mouse cell: " ~ positionToCell(mousePos, 100f));*/
     }
 
     if (isActionActivated("exit")) {
